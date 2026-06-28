@@ -13,9 +13,24 @@ export async function createProject(formData: FormData) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('default_organization_id')
+    .select('default_organization_id, account_type')
     .eq('user_id', user.id)
     .single();
+
+  let organizationId: string | null = null;
+  if (profile?.default_organization_id && profile.account_type === 'enterprise') {
+    const { data: membership } = await supabase
+      .from('organization_members')
+      .select('organization_id')
+      .eq('organization_id', profile.default_organization_id)
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (membership) {
+      organizationId = profile.default_organization_id;
+    }
+  }
 
   const clientName = formData.get('client_name') as string;
   const projectName = formData.get('project_name') as string;
@@ -76,7 +91,7 @@ export async function createProject(formData: FormData) {
     .from('projects')
     .insert({
       owner_id: user.id,
-      organization_id: profile?.default_organization_id ?? null,
+      organization_id: organizationId,
       parent_project_id: resolvedParentId,
       client_name: clientName.trim(),
       project_name: projectName.trim(),
