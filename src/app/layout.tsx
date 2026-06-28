@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
 import { getSiteUrl } from '@/lib/marketing/seo';
@@ -43,6 +44,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
