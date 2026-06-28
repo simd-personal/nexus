@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
+import { purgeFileDerivedContent } from '@/lib/files/purge-derived-content';
 import type { FileRecord, TimelineEvent } from '@/types/database';
 
 const BUCKET = () => process.env.SUPABASE_STORAGE_BUCKET || 'briefnexus-files';
@@ -342,7 +343,7 @@ export async function removeFileFromProject(
   }
 
   if (file.origin_file_id) {
-    await supabase.from('chunks').delete().eq('file_id', fileId);
+    await purgeFileDerivedContent(supabase, projectId, fileId, file.file_name);
     if (file.storage_path) {
       await removeStorageObject(file.storage_path);
     }
@@ -356,6 +357,8 @@ export async function removeFileFromProject(
   if (file.storage_path) {
     await removeStorageObject(file.storage_path);
   }
+
+  await purgeFileDerivedContent(supabase, projectId, fileId, file.file_name);
   const { error } = await supabase.from('files').delete().eq('id', fileId);
   if (error) {
     return { error: error.message, status: 500 };

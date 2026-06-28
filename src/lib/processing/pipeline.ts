@@ -452,7 +452,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         summary: update.summary,
         why_it_matters: update.why_it_matters,
         suggested_action: update.suggested_action,
-        source_citations: [{ file_name: fileName, snippet: summary }] as Citation[],
+        source_citations: [{ file_id: fileId, file_name: fileName, snippet: summary }] as Citation[],
       });
     } else {
       await supabase.from('sunny_updates').insert({
@@ -461,7 +461,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         summary,
         why_it_matters: formatNaturalSummary('New project material has been added and indexed.'),
         suggested_action: formatNaturalSummary('Review the uploaded content for any follow-up needed.'),
-        source_citations: [{ file_name: fileName, snippet: summary }] as Citation[],
+        source_citations: [{ file_id: fileId, file_name: fileName, snippet: summary }] as Citation[],
       });
     }
 

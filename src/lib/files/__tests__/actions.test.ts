@@ -212,6 +212,7 @@ describe('file actions', () => {
   it('removes a shared copy without requiring origin deletion', async () => {
     const sharedCopy = { ...baseFile, id: 'file-2', origin_file_id: 'file-1', project_id: 'proj-b' };
     const deleteEq = vi.fn().mockResolvedValue({ error: null });
+    const deleteChain = { eq: vi.fn().mockResolvedValue({ error: null }) };
 
     const supabase = buildSupabase({
       files: {
@@ -222,10 +223,20 @@ describe('file actions', () => {
         }),
         delete: vi.fn().mockReturnValue({ eq: deleteEq }),
       },
-      chunks: {
-        delete: vi.fn().mockReturnValue({
-          eq: vi.fn().mockResolvedValue({ error: null }),
-        }),
+      chunks: { delete: vi.fn().mockReturnValue(deleteChain) },
+      entities: { delete: vi.fn().mockReturnValue(deleteChain) },
+      timeline_events: { delete: vi.fn().mockReturnValue(deleteChain) },
+      sunny_updates: {
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [] }) }),
+        delete: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ error: null }) }),
+      },
+      critical_items: {
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [] }) }),
+        delete: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ error: null }) }),
+      },
+      action_items: {
+        select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [] }) }),
+        delete: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ error: null }) }),
       },
     });
 

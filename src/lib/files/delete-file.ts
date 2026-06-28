@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/admin';
+import { purgeFileDerivedContent } from '@/lib/files/purge-derived-content';
 
 export async function deleteProjectFile(
   supabase: SupabaseClient,
@@ -7,13 +8,15 @@ export async function deleteProjectFile(
 ): Promise<{ error?: string; status?: number }> {
   const { data: file, error } = await supabase
     .from('files')
-    .select('id, storage_path, project_id')
+    .select('id, storage_path, project_id, file_name')
     .eq('id', fileId)
     .single();
 
   if (error || !file) {
     return { error: 'File not found', status: 404 };
   }
+
+  await purgeFileDerivedContent(supabase, file.project_id, file.id, file.file_name);
 
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'briefnexus-files';
 
