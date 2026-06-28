@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createEmbedding } from '@/lib/ai/openai';
+import { createEmbeddingOrNull } from '@/lib/ai/openai';
 import { runSunnyAgent } from '@/lib/ai/agent';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       content: message,
     });
 
-    const embedding = await createEmbedding(message);
+    const embedding = await createEmbeddingOrNull(message);
 
     const [
       retrieved,

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createEmbedding } from '@/lib/ai/openai';
+import { createEmbeddingOrNull } from '@/lib/ai/openai';
+import { formatStreamError } from '@/lib/ai/errors';
 import {
   streamSearchAnswer,
   classifyChatIntent,
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const embedding = await createEmbedding(query);
+        const embedding = await createEmbeddingOrNull(query);
         const retrieved = filterResultsToProject(
           await retrieveForQuery(supabase, query, embedding, {
             projectId: scopedProjectId,
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
           }
 
           send({ event: 'status', data: { message: 'Gathering project materials...' } });
-          const createEmbeddingVec = await createEmbedding(query);
+          const createEmbeddingVec = await createEmbeddingOrNull(query);
           const [{ data: targetProject }, createRetrieved, { data: projCritical }, { data: projTimeline }] =
             await Promise.all([
               supabase.from('projects').select('id, client_name, project_name, last_summary').eq('id', targetProjectId).single(),
@@ -261,7 +262,7 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         send({
           event: 'error',
-          data: { message: error instanceof Error ? error.message : 'Search failed' },
+          data: { message: formatStreamError(error) },
         });
       } finally {
         controller.close();

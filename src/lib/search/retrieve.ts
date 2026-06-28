@@ -39,7 +39,7 @@ type RpcChunk = {
 export async function retrieveForQuery(
   supabase: SupabaseClient,
   query: string,
-  embedding: number[],
+  embedding: number[] | null,
   options: { projectId?: string | null; limit?: number } = {}
 ): Promise<RetrievedChunk[]> {
   const limit = options.limit ?? 24;
@@ -47,12 +47,14 @@ export async function retrieveForQuery(
 
   const [{ data: vectorResults }, { data: keywordResults }, { data: fuzzyResults }] =
     await Promise.all([
-      supabase.rpc('match_chunks', {
-        query_embedding: embedding,
-        match_threshold: 0.2,
-        match_count: limit,
-        filter_project_id: projectId,
-      }),
+      embedding
+        ? supabase.rpc('match_chunks', {
+            query_embedding: embedding,
+            match_threshold: 0.2,
+            match_count: limit,
+            filter_project_id: projectId,
+          })
+        : Promise.resolve({ data: [] as RpcChunk[] | null }),
       supabase.rpc('search_chunks_keyword', {
         search_query: query,
         filter_project_id: projectId,

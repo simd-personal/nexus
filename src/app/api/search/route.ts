@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createEmbedding } from '@/lib/ai/openai';
+import { createEmbeddingOrNull } from '@/lib/ai/openai';
 import { searchAnswer } from '@/lib/ai/sunny';
 import { retrieveForQuery } from '@/lib/search/retrieve';
 import {
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const scopedProjectId = normalizeProjectId(project_id);
 
-    const embedding = await createEmbedding(query);
+    const embedding = await createEmbeddingOrNull(query);
     const retrieved = filterResultsToProject(
       await retrieveForQuery(supabase, query, embedding, {
         projectId: scopedProjectId,

@@ -1,5 +1,6 @@
 import { chatCompletion, structuredExtraction, OPENAI_MODELS } from './openai';
 import { generateLongForm, generateStructured, CLAUDE_MODELS } from './claude';
+import { isOpenAIUnavailable } from '@/lib/ai/errors';
 import {
   DECK_SYSTEM_PROMPT,
   STYLE_GUIDE,
@@ -108,17 +109,32 @@ async function answerFromContext(
   }
 
   const contextText = formatContext(context);
+  const system = `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing. Return JSON with: answer, confidence, suggested_next_step (optional), citation_indices (array of source numbers used).`;
+  const user = `Context:\n${contextText}\n\nUser query: ${question}`;
 
-  const result = await structuredExtraction<{
+  let result: {
     answer: string;
     confidence: 'high' | 'medium' | 'low';
     suggested_next_step?: string;
     citation_indices: number[];
-  }>(
-    `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing. Return JSON with: answer, confidence, suggested_next_step (optional), citation_indices (array of source numbers used).`,
-    `Context:\n${contextText}\n\nUser query: ${question}`,
-    OPENAI_MODELS.chat
-  );
+  };
+
+  try {
+    result = await structuredExtraction(system, user, OPENAI_MODELS.chat);
+  } catch (error) {
+    if (!isOpenAIUnavailable(error)) throw error;
+    console.warn('[openai] Search answer unavailable — falling back to Claude');
+    const text = await generateLongForm(
+      `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing.`,
+      user,
+      CLAUDE_MODELS.brief
+    );
+    result = {
+      answer: text,
+      confidence: 'high',
+      citation_indices: buildCitations(context).map((_, i) => i + 1).slice(0, 3),
+    };
+  }
 
   const citations = (result.citation_indices ?? [])
     .map((i) => buildCitations(context)[i - 1])

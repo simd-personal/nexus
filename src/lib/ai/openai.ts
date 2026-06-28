@@ -1,4 +1,5 @@
 import OpenAI from 'openai';
+import { isOpenAIUnavailable } from '@/lib/ai/errors';
 
 let openaiClient: OpenAI | null = null;
 
@@ -43,6 +44,19 @@ export async function createEmbedding(text: string): Promise<number[]> {
     dimensions: EMBEDDING_DIMENSIONS,
   });
   return response.data[0].embedding;
+}
+
+/** Returns null when OpenAI embeddings are unavailable (quota/rate limit). */
+export async function createEmbeddingOrNull(text: string): Promise<number[] | null> {
+  try {
+    return await createEmbedding(text);
+  } catch (error) {
+    if (isOpenAIUnavailable(error)) {
+      console.warn('[openai] Embedding unavailable — quota exceeded — falling back to keyword search');
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function createEmbeddings(texts: string[]): Promise<number[][]> {

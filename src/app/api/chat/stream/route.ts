@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createEmbedding } from '@/lib/ai/openai';
+import { createEmbeddingOrNull } from '@/lib/ai/openai';
+import { formatStreamError } from '@/lib/ai/errors';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { runSunnyAgentStream } from '@/lib/ai/stream-agent';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
 
         send({ event: 'status', data: { message: 'Reading project materials...' } });
 
-        const embedding = await createEmbedding(message);
+        const embedding = await createEmbeddingOrNull(message);
         const [retrieved, { data: projectMeta }, { data: criticalItems }, { data: timelineEvents }] =
           await Promise.all([
             retrieveForQuery(supabase, message, embedding, { projectId: project_id, limit: PROJECT_RETRIEVAL_LIMIT }),
@@ -133,7 +134,7 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         send({
           event: 'error',
-          data: { message: error instanceof Error ? error.message : 'Chat failed' },
+          data: { message: formatStreamError(error) },
         });
       } finally {
         controller.close();

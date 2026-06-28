@@ -1,5 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { structuredExtraction, OPENAI_MODELS } from './openai';
+import { generateStructured, CLAUDE_MODELS } from './claude';
+import { isOpenAIUnavailable } from '@/lib/ai/errors';
 import {
   askSunny,
   generateSunnyBrief,
@@ -68,16 +70,24 @@ export async function classifyIntent(
   email_version?: 'short' | 'detailed' | 'executive';
 }> {
   const historySnippet = formatHistoryForClassification(chatHistory);
+  const system = `${AGENT_PERSONA}\n\nClassify the latest user message. Return JSON: { "action": "...", "instructions": "optional focus/tone/refinement", "email_version": "short|detailed|executive" }`;
+  const user = `Recent chat:\n${historySnippet || '(none)'}\n\nLatest message: ${message}`;
 
-  return structuredExtraction<{
-    action: SunnyAgentAction;
-    instructions?: string;
-    email_version?: 'short' | 'detailed' | 'executive';
-  }>(
-    `${AGENT_PERSONA}\n\nClassify the latest user message. Return JSON: { "action": "...", "instructions": "optional focus/tone/refinement", "email_version": "short|detailed|executive" }`,
-    `Recent chat:\n${historySnippet || '(none)'}\n\nLatest message: ${message}`,
-    OPENAI_MODELS.extraction
-  );
+  try {
+    return await structuredExtraction<{
+      action: SunnyAgentAction;
+      instructions?: string;
+      email_version?: 'short' | 'detailed' | 'executive';
+    }>(system, user, OPENAI_MODELS.extraction);
+  } catch (error) {
+    if (!isOpenAIUnavailable(error)) throw error;
+    console.warn('[openai] Intent classification unavailable — falling back to Claude');
+    return generateStructured<{
+      action: SunnyAgentAction;
+      instructions?: string;
+      email_version?: 'short' | 'detailed' | 'executive';
+    }>(system, user, CLAUDE_MODELS.strategy);
+  }
 }
 
 function contextAsText(context: RetrievedContext): string {

@@ -82,6 +82,25 @@ describe('streamSearchAnswer', () => {
     expect(mockStreamChat).not.toHaveBeenCalled();
   });
 
+  it('falls back to Claude when GPT hits quota errors', async () => {
+    mockStreamChat.mockRejectedValueOnce(
+      new Error('429 You exceeded your current quota, please check your plan')
+    );
+
+    const tokens: string[] = [];
+    const result = await streamSearchAnswer(
+      'What happened in Denver?',
+      baseContext,
+      (t) => tokens.push(t),
+      { engine: 'gpt' }
+    );
+
+    expect(mockStreamChat).toHaveBeenCalledOnce();
+    expect(mockStreamLongForm).toHaveBeenCalledOnce();
+    expect(tokens.join('')).toBe('Claude says Denver.');
+    expect(result.model).toBe('claude');
+  });
+
   it('includes scope instructions in the GPT system prompt', async () => {
     await streamSearchAnswer('Denver?', baseContext, () => {}, {
       engine: 'gpt',

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { streamChatCompletion, OPENAI_MODELS } from './openai';
 import { streamLongForm, CLAUDE_MODELS } from './claude';
+import { isOpenAIUnavailable } from '@/lib/ai/errors';
 import { classifyIntent, type SunnyAgentAction } from './agent';
 import { extractActionItems } from './sunny';
 import { fitChunksToBudget } from './context-budget';
@@ -100,13 +101,24 @@ export async function streamSearchAnswer(
   const system = `${SEARCH_STREAM_PERSONA}${scopeNote}`;
   const userPrompt = `Context:\n${formatContext(context)}\n\nUser query: ${query}`;
 
-  if (engine === 'claude') {
-    await streamLongForm(system, userPrompt, onToken, CLAUDE_MODELS.brief);
-  } else {
-    await streamChatCompletion(system, userPrompt, onToken, OPENAI_MODELS.chat);
+  let usedEngine = engine;
+  try {
+    if (engine === 'claude') {
+      await streamLongForm(system, userPrompt, onToken, CLAUDE_MODELS.brief);
+    } else {
+      await streamChatCompletion(system, userPrompt, onToken, OPENAI_MODELS.chat);
+    }
+  } catch (error) {
+    if (engine === 'gpt' && isOpenAIUnavailable(error)) {
+      console.warn('[openai] Chat unavailable — falling back to Claude for search answer');
+      usedEngine = 'claude';
+      await streamLongForm(system, userPrompt, onToken, CLAUDE_MODELS.brief);
+    } else {
+      throw error;
+    }
   }
 
-  return { citations: buildCitations(context), confidence: 'high', model: engine };
+  return { citations: buildCitations(context), confidence: 'high', model: usedEngine };
 }
 
 export type CreateAction = Exclude<SunnyAgentAction, 'answer'>;
@@ -206,10 +218,20 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
     system: string,
     user: string,
     model: string = CLAUDE_MODELS.playbook
-  ) =>
-    engine === 'gpt'
-      ? streamChatCompletion(system, user, onToken, OPENAI_MODELS.summary)
-      : streamLongForm(system, user, onToken, model);
+  ) => {
+    if (engine === 'gpt') {
+      try {
+        return await streamChatCompletion(system, user, onToken, OPENAI_MODELS.summary);
+      } catch (error) {
+        if (isOpenAIUnavailable(error)) {
+          console.warn('[openai] Chat unavailable — falling back to Claude for generation');
+          return streamLongForm(system, user, onToken, model);
+        }
+        throw error;
+      }
+    }
+    return streamLongForm(system, user, onToken, model);
+  };
 
   switch (action) {
     case 'brief': {
