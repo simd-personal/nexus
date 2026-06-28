@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { resendSignupConfirmation } from '@/lib/actions/auth';
+import { resendSignupConfirmation, requestPasswordReset, signUpIndividual } from '@/lib/actions/auth';
 import { APP_NAME, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { Sun } from 'lucide-react';
 
@@ -29,38 +29,22 @@ export default function LoginPageClient() {
       const supabase = createClient();
 
       if (mode === 'forgot') {
-        const siteUrl = window.location.origin;
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: `${siteUrl}/auth/reset-password`,
-        });
-        setMessage(
-          error
-            ? error.message
-            : 'If an account exists for that email, a password reset link has been sent.'
-        );
+        const result = await requestPasswordReset(email);
+        setMessage(result.error ?? result.message ?? 'Password reset email sent.');
         setLoading(false);
         return;
       }
 
       if (mode === 'signup') {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              full_name: fullName,
-              account_type: 'individual',
-            },
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        if (error) {
-          setMessage(error.message);
-        } else if (data.session) {
+        const result = await signUpIndividual({ email, password, fullName });
+        if (result.error) {
+          setMessage(result.error);
+        } else if (result.immediate) {
           window.location.href = '/dashboard';
         } else {
           setMessage(
-            'Account created. Check your email to confirm your address, then sign in. You can reset your password anytime from the sign-in screen.'
+            result.message ??
+              'Account created. Check your email to confirm your address, then sign in.'
           );
         }
       } else {
