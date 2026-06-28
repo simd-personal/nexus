@@ -6,13 +6,13 @@ import { createClient } from '@/lib/supabase/server';
 export const metadata = createMarketingMetadata({
   title: 'UpperDeck',
   description:
-    'Client intelligence for consultants. Upload decks, emails, and meetings — Sunny surfaces briefs and risks with citations. Latest GPT and Claude included, no separate AI subscription.',
+    'Hire Sunny — your first AI employee for client work. Upload decks, emails, and meetings; get briefs and risks with citations. Latest GPT and Claude included. Gets more capable as we ship new features.',
   path: '/',
   keywords: [
+    'first AI employee',
+    'AI employee for consultants',
     'client intelligence software',
-    'consultant project management',
     'AI client briefs',
-    'client command center',
     'UpperDeck',
   ],
 });

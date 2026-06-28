@@ -7,10 +7,10 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'For consultants',
   description:
-    'UpperDeck helps independent consultants manage multiple clients — one command center for briefs, decks, emails, and follow-ups with AI-powered client intelligence.',
+    'Hire Sunny — your first AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow-ups with cited client intelligence.',
   path: '/for-consultants',
   keywords: [
-    'consultant client management',
+    'AI employee for consultants',
     'freelance consultant software',
     'multi-client project tool',
     'consulting AI assistant',
@@ -21,17 +21,17 @@ export default function ForConsultantsPage() {
   return (
     <MarketingPageLayout
       eyebrow="Solutions"
-      title="Built for consultants juggling multiple clients"
-      description="You cannot afford to miss a timeline shift, a contradictory deck, or a follow-up buried in email. UpperDeck keeps every engagement in one intelligence layer."
+      title="Your first AI employee for consultants juggling multiple clients"
+      description="You cannot afford to miss a timeline shift, a contradictory deck, or a follow-up buried in email. Hire Sunny — an AI employee who keeps every engagement separate and gets more useful as UpperDeck ships new features."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container grid gap-12 lg:grid-cols-2">
           <div>
-            <h2 className="marketing-section-title">From solo project to full book of business</h2>
+            <h2 className="marketing-section-title">From your first AI employee to a full book of business</h2>
             <p className="marketing-section-body mt-4">
-              Start free with one active client project. When you land your second and third
-              engagement, Pro unlocks unlimited projects and unlimited {AI_EMPLOYEE_NAME} — so
-              context never bleeds between clients.
+              Start free with one active client project — your AI employee on a single engagement.
+              When you land your second and third client, Pro unlocks unlimited projects and
+              unlimited {AI_EMPLOYEE_NAME} so context never bleeds between clients.
             </p>
             <ul className="mt-8 space-y-3">
               {[

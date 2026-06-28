@@ -16,12 +16,12 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Product',
   description:
-    'UpperDeck is an AI command center for client work — ingest meetings and files, understand context with Sunny, and act with briefs, decks, and follow-ups.',
+    'Hire Sunny — your first AI employee for client work. Ingest meetings and files, get briefs, decks, and follow-ups with citations. Latest GPT and Claude included; more capable with every release.',
   path: '/product',
   keywords: [
-    'client project software',
+    'first AI employee',
+    'AI employee for consultants',
     'AI executive briefs',
-    'consultant workflow tool',
     'client context management',
   ],
 });
@@ -30,12 +30,12 @@ export default function ProductPage() {
   return (
     <MarketingPageLayout
       eyebrow="Product"
-      title="Your command deck for every client project"
-      description="UpperDeck brings meetings, emails, decks, PDFs, and notes into one searchable workspace — then Sunny, your AI employee, surfaces what matters before your next client call."
+      title="Hire your first AI employee for every client project"
+      description="UpperDeck is where you onboard Sunny — an AI employee who reads meetings, emails, decks, PDFs, and notes in each client project, then surfaces what matters before your next call. And Sunny keeps getting more capable as we ship new features."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">
-          <h2 className="marketing-section-title">How UpperDeck works</h2>
+          <h2 className="marketing-section-title">How your AI employee works</h2>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
             {[
               {
@@ -76,8 +76,9 @@ export default function ProductPage() {
         <div className="marketing-container">
           <h2 className="marketing-section-title">Built for client operators</h2>
           <p className="marketing-section-body mt-4 max-w-2xl">
-            Whether you run one engagement or twenty, UpperDeck keeps context out of inboxes and
-            slide decks — and puts it where you can use it.
+            Whether you run one engagement or twenty, your AI employee keeps context out of inboxes
+            and slide decks — and puts it where you can use it. New integrations and workflows land
+            regularly so Sunny does more for you over time.
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
             {[
@@ -98,10 +99,11 @@ export default function ProductPage() {
       <section className="marketing-section bg-white">
         <div className="marketing-container grid gap-10 lg:grid-cols-2 lg:items-center">
           <div>
-            <h2 className="marketing-section-title">Evidence-backed AI, not guesswork</h2>
+            <h2 className="marketing-section-title">An AI employee that cites your sources</h2>
             <p className="marketing-section-body mt-4">
-              {AI_EMPLOYEE_NAME} answers from your uploaded sources — meeting transcripts, decks,
-              emails, and notes — with citations so you can verify before you share with a client.
+              {AI_EMPLOYEE_NAME} is not a blank chat window. Your AI employee answers from uploaded
+              sources — meeting transcripts, decks, emails, and notes — with citations so you can
+              verify before you share with a client.
             </p>
             <ul className="mt-6 space-y-3">
               {[

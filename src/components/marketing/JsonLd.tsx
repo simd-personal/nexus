@@ -37,11 +37,12 @@ export function SoftwareApplicationJsonLd() {
       description: 'Free plan with one client project',
     },
     featureList: [
-      'Client project command center',
-      `${AI_EMPLOYEE_NAME} AI assistant`,
+      'First AI employee for client work',
+      `${AI_EMPLOYEE_NAME} — AI employee with full project context`,
       'Executive briefs and timelines',
       'Critical item detection',
       'Semantic search across client files',
+      'Growing integrations and capabilities',
     ],
   };
 

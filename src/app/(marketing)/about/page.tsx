@@ -5,30 +5,32 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'About',
   description:
-    'UpperDeck is an AI command center for client intelligence — helping consultants and operators see every project, deck, email, and decision in one place.',
+    'UpperDeck is where you hire Sunny — your first AI employee for client intelligence. Built for consultants and operators; gets more capable with every release.',
   path: '/about',
-  keywords: ['about UpperDeck', 'UpperDeck team', 'client intelligence company'],
+  keywords: ['about UpperDeck', 'first AI employee', 'client intelligence company'],
 });
 
 export default function AboutPage() {
   return (
     <MarketingPageLayout
       eyebrow="About"
-      title="Intelligence, elevated."
+      title="Hire your first AI employee for client work"
       description={BRAND_TAGLINE}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container max-w-3xl marketing-prose">
           <h2>What we&apos;re building</h2>
           <p>
-            UpperDeck ({APP_DOMAIN}) is a command center for client work. We help consultants,
-            agencies, and operators stop reconstructing context from inboxes and slide decks —
-            and start every engagement with a clear, evidence-backed picture of what matters.
+            UpperDeck ({APP_DOMAIN}) is where you hire your first AI employee for client work. We
+            help consultants, agencies, and operators stop reconstructing context from inboxes and
+            slide decks — and start every engagement with a clear, evidence-backed picture of what
+            matters.
           </p>
           <p>
-            At the center is {AI_EMPLOYEE_NAME}, an AI employee with full project context. She reads
-            your meetings, emails, decks, and notes — then surfaces briefs, risks, follow-ups, and
-            answers with citations, not guesses.
+            At the center is {AI_EMPLOYEE_NAME}, an AI employee with full project context.{' '}
+            {AI_EMPLOYEE_NAME} reads your meetings, emails, decks, and notes — then surfaces briefs,
+            risks, follow-ups, and answers with citations, not guesses. And {AI_EMPLOYEE_NAME} keeps
+            getting more capable as we ship integrations, connectors, and new skills.
           </p>
 
           <h2>Who we serve</h2>
@@ -40,8 +42,9 @@ export default function AboutPage() {
 
           <h2>Our principles</h2>
           <ul>
-            <li>Client context should live in one place, not across twelve tabs</li>
+            <li>Your first AI employee should think in projects, not one-off prompts</li>
             <li>AI should cite sources — especially when stakes are high</li>
+            <li>Your AI employee should get more capable over time, not stay static</li>
             <li>Security and access control should scale from freelancer to enterprise</li>
             <li>Pricing should let you prove value before you pay</li>
           </ul>

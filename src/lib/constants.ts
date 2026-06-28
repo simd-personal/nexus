@@ -9,10 +9,10 @@ export const APP_NAME = 'UpperDeck';
 export const APP_DOMAIN = 'upperdeck.dev';
 export const AI_EMPLOYEE_NAME = 'Sunny';
 /** Brand guide tagline */
-export const BRAND_TAGLINE = 'AI command center for client intelligence';
+export const BRAND_TAGLINE = 'Your first AI employee for client work';
 /** Marketing / hero copy */
 export const TAGLINE =
-  'One place for every client project, deck, email, and decision.';
+  'Hire Sunny once — client briefs, risks, and follow-ups from every deck, email, and call.';
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   healthy: 'Healthy',

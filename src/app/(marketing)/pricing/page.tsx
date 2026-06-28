@@ -7,13 +7,13 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Pricing',
   description:
-    'UpperDeck pricing: start free with one client project, upgrade to Pro for unlimited projects and Sunny AI, or request an enterprise quote for organizations.',
+    'UpperDeck pricing: hire your first AI employee free on one client project, upgrade to Pro for unlimited Sunny, or request an enterprise quote for organizations.',
   path: '/pricing',
   keywords: [
+    'AI employee pricing',
     'consultant software pricing',
-    'client intelligence pricing',
     'UpperDeck Pro',
-    'freemium consultant tool',
+    'freemium AI employee',
   ],
 });
 
@@ -21,8 +21,8 @@ export default function PricingPage() {
   return (
     <MarketingPageLayout
       eyebrow="Pricing"
-      title="Start free. Upgrade when you have more clients."
-      description="The best model for solo operators: prove value on one client for free, then upgrade when you're managing multiple engagements."
+      title="Hire your first AI employee free. Upgrade when you add clients."
+      description="The best way to try an AI employee: prove value on one client for free, then upgrade when you're managing multiple engagements. Sunny gets more capable as we ship new features."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">

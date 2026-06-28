@@ -44,8 +44,8 @@ export function MarketingFooter() {
           <div className="lg:col-span-2">
             <UpperDeckLogo size="sm" theme="light" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--ud-slate)]">
-              AI command center for client intelligence. One place for every project, deck, email,
-              and decision.
+              Hire Sunny — your first AI employee for client work. Briefs, risks, and follow-ups
+              from every deck, email, and call — getting more capable with every release.
             </p>
           </div>
           <FooterColumn title="Product" links={PRODUCT_LINKS} />

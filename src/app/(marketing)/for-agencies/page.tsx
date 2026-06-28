@@ -6,7 +6,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'For agencies',
   description:
-    'UpperDeck gives agencies and delivery teams a shared client intelligence layer — admin controls, organization workspaces, audit trails, and PHI options for regulated work.',
+    'Give agency delivery teams a shared AI employee — organization workspaces, admin controls, audit trails, and PHI options. Sunny gets more capable as integrations ship.',
   path: '/for-agencies',
   keywords: [
     'agency client management',
@@ -20,8 +20,8 @@ export default function ForAgenciesPage() {
   return (
     <MarketingPageLayout
       eyebrow="Solutions"
-      title="Shared client context for agency delivery teams"
-      description="Principals, PMs, and strategists should not reconstruct context from Slack threads and shared drives. UpperDeck gives every team member the same source of truth."
+      title="A shared AI employee for agency delivery teams"
+      description="Principals, PMs, and strategists should not reconstruct context from Slack threads and shared drives. Give every team member the same AI employee with full client context — and more capability with every UpperDeck release."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">

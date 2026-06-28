@@ -8,7 +8,7 @@ export const PRODUCT_LINKS: SiteNavLink[] = [
   {
     href: '/product',
     label: 'Product',
-    description: 'AI command center for client work',
+    description: 'Hire Sunny — your first AI employee for client work',
   },
   {
     href: '/client-intelligence',
