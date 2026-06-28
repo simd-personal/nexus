@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
-import { enqueueFileProcessing } from '@/lib/processing/enqueue';
+import { runFileProcessing } from '@/lib/processing/run-file-processing';
 import {
   getFileProcessingProgress,
   isProcessingActive,
@@ -39,7 +39,7 @@ export async function GET(
 }
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -49,6 +49,8 @@ export async function POST(
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  const force = new URL(request.url).searchParams.get('force') === '1';
 
   const { data: file, error } = await supabase
     .from('files')
@@ -62,11 +64,11 @@ export async function POST(
 
   const metadata = file.metadata as Record<string, unknown>;
 
-  if (file.status === 'processed') {
+  if (file.status === 'processed' && !force) {
     return NextResponse.json({ error: 'File is already processed' }, { status: 409 });
   }
 
-  if (isProcessingActive(file.status, metadata)) {
+  if (!force && isProcessingActive(file.status, metadata)) {
     return NextResponse.json({
       success: true,
       status: 'processing',
@@ -74,25 +76,40 @@ export async function POST(
     });
   }
 
-  const resume = file.status === 'processing' && isProcessingStale(file.status, metadata);
+  const resume = !force && file.status === 'processing' && isProcessingStale(file.status, metadata);
+  const admin = createServiceClient();
 
-  if (file.status === 'processing' && !resume) {
-    return NextResponse.json({ error: 'File is already processing' }, { status: 409 });
-  }
-
-  if (file.status === 'pending' || file.status === 'failed' || resume) {
-    const admin = createServiceClient();
+  if (file.status === 'pending' || file.status === 'failed' || resume || force) {
     await admin
       .from('files')
-      .update({ status: 'processing' })
+      .update({
+        status: 'processing',
+        metadata: {
+          ...metadata,
+          processing_lock: null,
+          processing_progress: {
+            stage: 'queued',
+            percent: resume ? 15 : 3,
+            label: resume ? 'Resuming processing…' : 'Starting processing…',
+            updated_at: new Date().toISOString(),
+          },
+        },
+      })
       .eq('id', id);
   }
 
-  enqueueFileProcessing(id, { resume });
+  await runFileProcessing(id, { resume, force });
+
+  const { data: updated } = await admin
+    .from('files')
+    .select('status, metadata')
+    .eq('id', id)
+    .single();
 
   return NextResponse.json({
     success: true,
-    status: 'processing',
+    status: updated?.status ?? 'processing',
     resumed: resume,
+    progress: getFileProcessingProgress(updated?.metadata as Record<string, unknown>),
   });
 }

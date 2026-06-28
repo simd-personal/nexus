@@ -3,6 +3,7 @@ import { runFileProcessing } from '@/lib/processing/run-file-processing';
 
 export interface EnqueueFileProcessingOptions {
   resume?: boolean;
+  force?: boolean;
 }
 
 /** Schedule durable background processing via Next.js after() / Vercel waitUntil. */

@@ -51,7 +51,7 @@ async function parseUploadResponse(res: Response): Promise<{ error?: string; dat
 export async function uploadProjectFile(
   projectId: string,
   file: File
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; fileId?: string; error?: string }> {
   const formData = new FormData();
   formData.append('project_id', projectId);
   formData.append('file', file, sanitizeUploadFileName(file.name));
@@ -69,7 +69,14 @@ export async function uploadProjectFile(
     return { ok: false, error: data.error ?? 'Upload failed' };
   }
 
-  return { ok: true };
+  const fileId = (data as { data?: { id?: string } }).data?.id;
+  return { ok: true, fileId };
+}
+
+/** Start durable server-side processing (runs in a long-lived /process request). */
+export function kickFileProcessing(fileId: string, force = false): void {
+  const query = force ? '?force=1' : '';
+  void fetch(`/api/files/${fileId}/process${query}`, { method: 'POST' });
 }
 
 export async function uploadProjectFiles(
@@ -83,6 +90,7 @@ export async function uploadProjectFiles(
     const result = await uploadProjectFile(projectId, file);
     if (result.ok) {
       uploaded.push(file.name);
+      if (result.fileId) kickFileProcessing(result.fileId);
     } else {
       errors.push(`${file.name}: ${result.error ?? 'Upload failed'}`);
     }

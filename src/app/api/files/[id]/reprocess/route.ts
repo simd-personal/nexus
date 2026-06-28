@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
-import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 import { isProcessingActive } from '@/lib/processing/progress';
 
 export const maxDuration = 300;
@@ -38,10 +37,11 @@ export async function POST(
   await admin
     .from('files')
     .update({
-      status: 'processing',
+      status: 'pending',
       metadata: {
         ...(file.metadata as Record<string, unknown>),
         processing_phase: 'extract',
+        processing_lock: null,
         processing_progress: {
           stage: 'queued',
           percent: 0,
@@ -52,7 +52,5 @@ export async function POST(
     })
     .eq('id', file.id);
 
-  enqueueFileProcessing(file.id, { resume: false });
-
-  return NextResponse.json({ success: true, status: 'processing' });
+  return NextResponse.json({ success: true, status: 'pending', file_id: file.id });
 }

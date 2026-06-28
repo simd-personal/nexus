@@ -4,6 +4,7 @@ import {
   getFileProcessingProgress,
   isProcessingActive,
   isProcessingStale,
+  needsProcessingKick,
 } from '@/lib/processing/progress';
 
 describe('file processing progress', () => {
@@ -44,6 +45,28 @@ describe('file processing progress', () => {
     };
     expect(isProcessingActive('processing', stale)).toBe(false);
     expect(isProcessingStale('processing', stale)).toBe(true);
+  });
+
+  it('treats processing without heartbeat as stale, not active', () => {
+    expect(isProcessingActive('processing', {})).toBe(false);
+    expect(isProcessingStale('processing', {})).toBe(true);
+  });
+
+  it('kicks pending uploads that never started', () => {
+    expect(
+      needsProcessingKick({
+        status: 'pending',
+        created_at: new Date(Date.now() - 15_000).toISOString(),
+        metadata: {
+          processing_progress: {
+            stage: 'queued',
+            percent: 0,
+            label: 'Queued for processing…',
+            updated_at: new Date(Date.now() - 15_000).toISOString(),
+          },
+        },
+      })
+    ).toBe(true);
   });
 
   it('maps embedding progress into the 20-75 percent band', () => {

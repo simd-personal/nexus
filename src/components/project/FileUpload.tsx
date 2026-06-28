@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import {
   isFileDragEvent,
   uploadProjectFiles,
+  kickFileProcessing,
   UPLOAD_ACCEPT,
 } from '@/lib/upload/client';
 
@@ -84,6 +85,9 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
         setPasteText('');
         setPasteMode(null);
         onUploadComplete?.();
+        if (data.data?.id) {
+          kickFileProcessing(data.data.id);
+        }
       }
     } catch {
       setMessage('Upload failed');

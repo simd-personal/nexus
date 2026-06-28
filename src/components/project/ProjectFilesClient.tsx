@@ -7,12 +7,13 @@ import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
-import { isProcessingStale } from '@/lib/processing/progress';
+import { needsProcessingKick } from '@/lib/processing/progress';
+import { kickFileProcessing } from '@/lib/upload/client';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
 import { Eye, FileText, RefreshCw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 export function ProjectFilesClient({ projectId, initialFiles }: {
   projectId: string;
@@ -21,7 +22,15 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
   const [files, setFiles] = useState<FileRecord[]>(initialFiles);
   const [viewingFile, setViewingFile] = useState<FileRecord | null>(null);
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
+  const kickingRef = useRef(new Set<string>());
   const router = useRouter();
+
+  const kickProcessing = useCallback((file: FileRecord, force = false) => {
+    if (kickingRef.current.has(file.id)) return;
+    kickingRef.current.add(file.id);
+    kickFileProcessing(file.id, force);
+    window.setTimeout(() => kickingRef.current.delete(file.id), 15_000);
+  }, []);
 
   const fetchFiles = useCallback(async () => {
     const res = await fetch(`/api/projects/${projectId}/files`);
@@ -31,12 +40,12 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
       setFiles(nextFiles);
 
       for (const file of nextFiles) {
-        if (isProcessingStale(file.status, file.metadata)) {
-          void fetch(`/api/files/${file.id}/process`, { method: 'POST' });
+        if (needsProcessingKick(file)) {
+          kickProcessing(file);
         }
       }
     }
-  }, [projectId]);
+  }, [projectId, kickProcessing]);
 
   const hasActiveProcessing = files.some(
     (file) => file.status === 'processing' || file.status === 'pending'
@@ -91,6 +100,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
         window.alert(data.error ?? 'Failed to reprocess file');
         return;
       }
+      kickProcessing(file, true);
       await fetchFiles();
       router.refresh();
     } finally {

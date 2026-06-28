@@ -83,8 +83,8 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
 
   await report({
     stage: resume ? 'embedding' : 'queued',
-    percent: resume ? 20 : 2,
-    label: resume ? 'Resuming indexing…' : 'Queued for processing…',
+    percent: resume ? 20 : 5,
+    label: resume ? 'Resuming indexing…' : 'Starting processing…',
   });
 
   try {
@@ -394,6 +394,7 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       source_type: resolvedSourceType,
       chunk_count: textChunks.length,
       processing_phase: 'done',
+      processing_lock: null,
       processing_progress: {
         stage: 'complete',
         percent: 100,
@@ -417,6 +418,7 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
         status: 'failed',
         metadata: {
           ...metadata,
+          processing_lock: null,
           error: message,
           processing_progress: {
             stage: 'failed',

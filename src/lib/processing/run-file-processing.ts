@@ -1,9 +1,41 @@
 import { createServiceClient } from '@/lib/supabase/admin';
-import { isProcessingActive } from '@/lib/processing/progress';
+import {
+  getFileProcessingProgress,
+  isProcessingActive,
+  isProcessingStale,
+} from '@/lib/processing/progress';
 import { loadFileContent } from '@/lib/processing/load-content';
 import { processFile } from '@/lib/processing/pipeline';
 import type { SourceType } from '@/types/database';
 import type { EnqueueFileProcessingOptions } from '@/lib/processing/enqueue';
+
+const LOCK_TTL_MS = 120_000;
+
+async function tryAcquireProcessingLock(
+  supabase: ReturnType<typeof createServiceClient>,
+  fileId: string,
+  metadata: Record<string, unknown>
+): Promise<boolean> {
+  const lockRaw = metadata.processing_lock;
+  if (typeof lockRaw === 'string') {
+    const lockAge = Date.now() - new Date(lockRaw).getTime();
+    if (lockAge < LOCK_TTL_MS) return false;
+  }
+
+  const { data } = await supabase
+    .from('files')
+    .update({
+      metadata: {
+        ...metadata,
+        processing_lock: new Date().toISOString(),
+      },
+    })
+    .eq('id', fileId)
+    .select('metadata')
+    .single();
+
+  return Boolean(data);
+}
 
 export async function runFileProcessing(
   fileId: string,
@@ -21,13 +53,19 @@ export async function runFileProcessing(
     return;
   }
 
-  const resume = options.resume ?? file.status === 'processing';
+  const metadata = (file.metadata as Record<string, unknown> | undefined) ?? {};
+  const resume = options.resume ?? (file.status === 'processing' && isProcessingStale(file.status, metadata));
 
-  if (!resume && isProcessingActive(file.status, file.metadata as Record<string, unknown>)) {
+  if (!resume && isProcessingActive(file.status, metadata)) {
     return;
   }
 
-  if (file.status === 'processed' && !options.resume) {
+  if (file.status === 'processed' && !options.force) {
+    return;
+  }
+
+  const locked = await tryAcquireProcessingLock(supabase, fileId, metadata);
+  if (!locked) {
     return;
   }
 
@@ -46,13 +84,14 @@ export async function runFileProcessing(
         .update({
           status: 'failed',
           metadata: {
-            ...(file.metadata as Record<string, unknown>),
+            ...metadata,
+            processing_lock: null,
             error: 'Could not load file content',
             processing_progress: {
               stage: 'failed',
               percent: 0,
               label: 'Processing failed',
-              detail: 'Could not load file content',
+              detail: loadError instanceof Error ? loadError.message : 'Could not load file content',
               updated_at: new Date().toISOString(),
             },
           },
@@ -63,13 +102,39 @@ export async function runFileProcessing(
     pastedText = file.extracted_text;
   }
 
-  await processFile({
-    fileId: file.id,
-    projectId: file.project_id,
-    fileName: file.file_name,
-    sourceType: file.source_type as SourceType,
-    buffer,
-    pastedText,
-    resume,
-  });
+  try {
+    await processFile({
+      fileId: file.id,
+      projectId: file.project_id,
+      fileName: file.file_name,
+      sourceType: file.source_type as SourceType,
+      buffer,
+      pastedText,
+      resume,
+    });
+  } catch (processingError) {
+    console.error(
+      'runFileProcessing: pipeline error',
+      processingError instanceof Error ? processingError.message : 'Unknown'
+    );
+    const progress = getFileProcessingProgress(metadata);
+    await supabase
+      .from('files')
+      .update({
+        status: 'failed',
+        metadata: {
+          ...metadata,
+          processing_lock: null,
+          error: processingError instanceof Error ? processingError.message : 'Processing failed',
+          processing_progress: {
+            stage: 'failed',
+            percent: progress?.percent ?? 0,
+            label: 'Processing failed',
+            detail: processingError instanceof Error ? processingError.message : 'Processing failed',
+            updated_at: new Date().toISOString(),
+          },
+        },
+      })
+      .eq('id', fileId);
+  }
 }
