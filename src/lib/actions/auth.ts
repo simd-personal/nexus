@@ -1,8 +1,16 @@
 'use server';
 
 import { createClient, requireUser } from '@/lib/supabase/server';
-import { getSiteUrl } from '@/lib/auth/site-url';
-import { isDuplicateSignUp, mapAuthErrorMessage } from '@/lib/auth/auth-errors';
+import {
+  getAuthCallbackUrlFromHeaders,
+  getSiteUrlFromHeaders,
+} from '@/lib/auth/site-url';
+import {
+  isDuplicateSignUp,
+  isEmailRateLimitError,
+  mapAuthErrorMessage,
+} from '@/lib/auth/auth-errors';
+import { recoverAccountAfterEmailRateLimit } from '@/lib/auth/email-rate-limit-recovery';
 
 export async function signUpIndividual(input: {
   email: string;
@@ -21,7 +29,7 @@ export async function signUpIndividual(input: {
   }
 
   const supabase = await createClient();
-  const siteUrl = getSiteUrl();
+  const emailRedirectTo = await getAuthCallbackUrlFromHeaders();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -30,15 +38,36 @@ export async function signUpIndividual(input: {
         full_name: fullName,
         account_type: 'individual',
       },
-      emailRedirectTo: `${siteUrl}/auth/callback`,
+      emailRedirectTo,
     },
   });
 
   if (error) {
-    return { error: mapAuthErrorMessage(error.message) };
+    if (isEmailRateLimitError(error.message)) {
+      const recovery = await recoverAccountAfterEmailRateLimit({
+        email,
+        password,
+        fullName,
+      });
+      if (recovery.recovered) {
+        return { success: true, message: recovery.message, recoveredFromRateLimit: true };
+      }
+    }
+    return {
+      error: mapAuthErrorMessage(error.message),
+      rateLimited: isEmailRateLimitError(error.message),
+    };
   }
 
   if (isDuplicateSignUp(data)) {
+    const recovery = await recoverAccountAfterEmailRateLimit({
+      email,
+      password,
+      fullName,
+    });
+    if (recovery.recovered) {
+      return { success: true, message: recovery.message, recoveredFromRateLimit: true };
+    }
     return {
       error:
         'An account with this email already exists. Sign in instead, or use Forgot password if you need help.',
@@ -76,12 +105,17 @@ export async function requestPasswordReset(email: string) {
   if (!trimmed) return { error: 'Email is required' };
 
   const supabase = await createClient();
-  const siteUrl = getSiteUrl();
+  const siteUrl = await getSiteUrlFromHeaders();
   const { error } = await supabase.auth.resetPasswordForEmail(trimmed, {
     redirectTo: `${siteUrl}/auth/reset-password`,
   });
 
-  if (error) return { error: mapAuthErrorMessage(error.message) };
+  if (error) {
+    return {
+      error: mapAuthErrorMessage(error.message),
+      rateLimited: isEmailRateLimitError(error.message),
+    };
+  }
   return {
     success: true,
     message: 'If an account exists for that email, a reset link has been sent.',
@@ -104,13 +138,24 @@ export async function resendSignupConfirmation(email: string) {
   if (!trimmed) return { error: 'Email is required' };
 
   const supabase = await createClient();
-  const siteUrl = getSiteUrl();
+  const emailRedirectTo = await getAuthCallbackUrlFromHeaders();
   const { error } = await supabase.auth.resend({
     type: 'signup',
     email: trimmed,
-    options: { emailRedirectTo: `${siteUrl}/auth/callback` },
+    options: { emailRedirectTo },
   });
 
-  if (error) return { error: mapAuthErrorMessage(error.message) };
+  if (error) {
+    if (isEmailRateLimitError(error.message)) {
+      const recovery = await recoverAccountAfterEmailRateLimit({ email: trimmed });
+      if (recovery.recovered) {
+        return { success: true, message: recovery.message, recoveredFromRateLimit: true };
+      }
+    }
+    return {
+      error: mapAuthErrorMessage(error.message),
+      rateLimited: isEmailRateLimitError(error.message),
+    };
+  }
   return { success: true, message: 'Confirmation email sent. Check your inbox.' };
 }

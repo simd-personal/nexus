@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { provisionEnterpriseOrganization } from '@/lib/organizations/provision';
+import { getSiteUrlFromRequest, safeAuthNextPath } from '@/lib/auth/site-url';
 import type { OrganizationIndustry } from '@/types/database';
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/dashboard';
+  const next = safeAuthNextPath(searchParams.get('next'));
+  const siteUrl = getSiteUrlFromRequest(request);
 
   if (code) {
     const supabase = await createClient();
@@ -21,9 +23,9 @@ export async function GET(request: Request) {
         }
       }
 
-      return NextResponse.redirect(`${origin}${next}`);
+      return NextResponse.redirect(`${siteUrl}${next}`);
     }
   }
 
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  return NextResponse.redirect(`${siteUrl}/login?error=auth`);
 }

@@ -9,6 +9,25 @@ import { Sun } from 'lucide-react';
 
 type AuthMode = 'signin' | 'signup' | 'forgot';
 
+function isSuccessMessage(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes('check your email') ||
+    lower.includes('reset link') ||
+    lower.includes('confirmation email') ||
+    lower.includes('account created') ||
+    lower.includes('sign in with your email') ||
+    lower.includes('already confirmed') ||
+    lower.includes('confirmation is complete') ||
+    lower.includes('account ready')
+  );
+}
+
+function isRateLimitMessage(message: string): boolean {
+  const lower = message.toLowerCase();
+  return lower.includes('too many confirmation emails') || lower.includes('rate limit');
+}
+
 export default function LoginPageClient() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -38,6 +57,9 @@ export default function LoginPageClient() {
           setMessage(result.error);
         } else if (result.immediate) {
           window.location.href = '/dashboard';
+        } else if (result.recoveredFromRateLimit) {
+          setMode('signin');
+          setMessage(result.message ?? 'Account ready. Sign in with your email and password.');
         } else {
           setMessage(
             result.message ??
@@ -66,6 +88,9 @@ export default function LoginPageClient() {
     }
     setLoading(true);
     const result = await resendSignupConfirmation(email);
+    if (result.recoveredFromRateLimit) {
+      setMode('signin');
+    }
     setMessage(result.error ?? result.message ?? 'Confirmation email sent.');
     setLoading(false);
   }
@@ -197,12 +222,11 @@ export default function LoginPageClient() {
               <div className="space-y-2">
                 <p
                   className={`text-sm ${
-                    message.includes('Check your email') ||
-                    message.includes('reset link') ||
-                    message.includes('Confirmation email') ||
-                    message.includes('Account created')
+                    isSuccessMessage(message)
                       ? 'text-emerald-600'
-                      : 'text-red-600'
+                      : isRateLimitMessage(message)
+                        ? 'text-amber-700'
+                        : 'text-red-600'
                   }`}
                 >
                   {message}
@@ -218,6 +242,12 @@ export default function LoginPageClient() {
                   >
                     Go to sign in
                   </button>
+                )}
+                {isRateLimitMessage(message) && (
+                  <p className="text-xs text-amber-800">
+                    If you already created an account, try signing in. Otherwise wait about an hour
+                    and use Create free account again.
+                  </p>
                 )}
                 {mode === 'signin' &&
                   (message.toLowerCase().includes('confirm') ||

@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { isDuplicateSignUp, mapAuthErrorMessage } from '@/lib/auth/auth-errors';
+import {
+  isDuplicateSignUp,
+  isEmailRateLimitError,
+  mapAuthErrorMessage,
+} from '@/lib/auth/auth-errors';
 
 describe('mapAuthErrorMessage', () => {
   it('maps duplicate registration errors', () => {
@@ -8,6 +12,16 @@ describe('mapAuthErrorMessage', () => {
 
   it('maps invalid credentials', () => {
     expect(mapAuthErrorMessage('Invalid login credentials')).toBe('Incorrect email or password.');
+  });
+
+  it('maps email rate limit errors', () => {
+    expect(mapAuthErrorMessage('email rate limit exceeded')).toContain('Too many confirmation emails');
+  });
+});
+
+describe('isEmailRateLimitError', () => {
+  it('detects Supabase rate limit messages', () => {
+    expect(isEmailRateLimitError('429: email rate limit exceeded')).toBe(true);
   });
 });
 

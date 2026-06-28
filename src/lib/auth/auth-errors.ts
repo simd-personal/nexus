@@ -1,5 +1,18 @@
+export function isEmailRateLimitError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes('email rate limit exceeded') ||
+    lower.includes('over_email_send_rate_limit') ||
+    lower.includes('rate limit')
+  );
+}
+
 export function mapAuthErrorMessage(message: string): string {
   const lower = message.toLowerCase();
+
+  if (isEmailRateLimitError(message)) {
+    return 'Too many confirmation emails were sent recently. Wait about an hour and try again, or sign in if you already confirmed your email.';
+  }
 
   if (
     lower.includes('already registered') ||
