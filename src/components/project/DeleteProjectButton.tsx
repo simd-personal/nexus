@@ -10,10 +10,12 @@ export function DeleteProjectButton({
   projectId,
   projectName,
   clientName,
+  iconOnly = false,
 }: {
   projectId: string;
   projectName: string;
   clientName: string;
+  iconOnly?: boolean;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -43,6 +45,21 @@ export function DeleteProjectButton({
     } finally {
       setBusy(false);
     }
+  }
+
+  if (iconOnly) {
+    return (
+      <button
+        type="button"
+        disabled={busy}
+        onClick={handleDelete}
+        aria-label={busy ? 'Deleting project…' : `Delete ${projectName}`}
+        title="Delete project"
+        className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+      >
+        <Trash2 className="h-4 w-4" />
+      </button>
+    );
   }
 
   return (

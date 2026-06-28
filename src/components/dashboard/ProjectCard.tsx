@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DeleteProjectButton } from '@/components/project/DeleteProjectButton';
 import { formatRelativeTime } from '@/lib/utils';
 import type { ProjectWithStats } from '@/types/database';
 import { FileText, Mail, Calendar, AlertTriangle, CheckSquare } from 'lucide-react';
@@ -9,12 +10,20 @@ import { FileText, Mail, Calendar, AlertTriangle, CheckSquare } from 'lucide-rea
 export function ProjectCard({ project }: { project: ProjectWithStats }) {
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-3">
-        <div>
+      <div className="flex items-start justify-between mb-3 gap-2">
+        <div className="min-w-0">
           <h3 className="text-base font-semibold text-gray-900">{project.project_name}</h3>
           <p className="text-sm text-gray-500">{project.client_name}</p>
         </div>
-        <StatusBadge status={project.status} />
+        <div className="flex shrink-0 items-center gap-1">
+          <DeleteProjectButton
+            iconOnly
+            projectId={project.id}
+            projectName={project.project_name}
+            clientName={project.client_name}
+          />
+          <StatusBadge status={project.status} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-4">
