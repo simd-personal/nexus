@@ -24,15 +24,15 @@ export default async function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Executive Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">{TAGLINE}</p>
+      <div className="p-4 sm:p-6 lg:p-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Executive Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-500">{TAGLINE}</p>
         </div>
 
-        <GlobalSearchBar className="mb-8" />
+        <GlobalSearchBar className="mb-6 sm:mb-8" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3">
           <div className="lg:col-span-1">
             <SunnyCard
               criticalCount={stats.criticalCount}
@@ -41,10 +41,10 @@ export default async function DashboardPage() {
               conflictsCount={stats.conflictsCount}
             />
           </div>
-          <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
+          <div className="min-w-0 lg:col-span-2">
+            <div className="mb-4 flex items-center justify-between gap-3">
               <h2 className="text-lg font-semibold text-gray-900">Critical Items</h2>
-              <Link href="/critical-items">
+              <Link href="/critical-items" className="shrink-0">
                 <Button variant="ghost" size="sm">View all</Button>
               </Link>
             </div>
@@ -52,10 +52,10 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-900">Recent Sunny Updates</h2>
-            <Link href="/updates">
+            <Link href="/updates" className="shrink-0">
               <Button variant="ghost" size="sm">View all</Button>
             </Link>
           </div>
@@ -63,10 +63,10 @@ export default async function DashboardPage() {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="text-lg font-semibold text-gray-900">Active Projects</h2>
-            <Link href="/projects">
-              <Button variant="secondary" size="sm">Manage Projects</Button>
+            <Link href="/projects" className="shrink-0">
+              <Button variant="secondary" size="sm" className="w-full sm:w-auto">Manage Projects</Button>
             </Link>
           </div>
           {projects.length === 0 ? (

@@ -20,8 +20,8 @@ export default async function ProjectLayout({
   return (
     <AppShell>
       <ProjectLayoutClient projectId={id}>
-        <div className="border-b border-gray-200 bg-white px-8 py-6">
-          <div className="flex items-center justify-between">
+        <div className="border-b border-gray-200 bg-white px-4 py-4 sm:px-8 sm:py-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-500">{project.client_name}</p>
               <h1 className="text-xl font-bold text-gray-900">{project.project_name}</h1>
@@ -30,7 +30,7 @@ export default async function ProjectLayout({
           </div>
         </div>
         <ProjectNav projectId={id} />
-        <div className="p-8">{children}</div>
+        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
       </ProjectLayoutClient>
     </AppShell>
   );

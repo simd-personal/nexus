@@ -23,7 +23,7 @@ export function ProjectNav({ projectId }: { projectId: string }) {
 
   return (
     <div className="border-b border-gray-200 bg-white">
-      <nav className="flex gap-1 px-6 overflow-x-auto">
+      <nav className="flex gap-1 overflow-x-auto px-4 sm:px-6">
         {tabs.map((tab) => {
           const href = `${basePath}/${tab.href}`;
           const isActive = pathname === href || (tab.href === 'overview' && pathname === basePath);
