@@ -45,19 +45,22 @@ function HeroStatCard({
 function HeroDashboard() {
   return (
     <div className="marketing-hero-dashboard" aria-hidden>
-      <div className="marketing-hero-stats">
-        <HeroStatCard label="Projects" value="24" sub="Active clients" dark />
-        <HeroStatCard label="Decks" value="18" sub="Updated this week" />
-        <HeroStatCard label="Emails" value="36" sub="Synced this week" />
-        <HeroStatCard label="Decisions" value="9" sub="Waiting on you" dark />
-      </div>
-      <div className="marketing-hero-activity">
-        <p className="marketing-hero-activity-label">Recent activity</p>
-        <ul className="marketing-hero-activity-list">
-          <li>Client Q2 Strategy Deck · Updated 2h ago</li>
-          <li>Homepage Redesign Brief · Updated 5h ago</li>
-          <li>Follow-up email draft · Sunny suggested 1h ago</li>
-        </ul>
+      <div className="marketing-hero-dashboard-ribbon" />
+      <div className="marketing-hero-dashboard-inner">
+        <div className="marketing-hero-stats">
+          <HeroStatCard label="Projects" value="24" sub="Active clients" dark />
+          <HeroStatCard label="Decks" value="18" sub="Updated this week" />
+          <HeroStatCard label="Emails" value="36" sub="Synced this week" />
+          <HeroStatCard label="Decisions" value="9" sub="Waiting on you" dark />
+        </div>
+        <div className="marketing-hero-activity">
+          <p className="marketing-hero-activity-label">Recent activity</p>
+          <ul className="marketing-hero-activity-list">
+            <li>Client Q2 Strategy Deck · Updated 2h ago</li>
+            <li>Homepage Redesign Brief · Updated 5h ago</li>
+            <li>Follow-up email draft · Sunny suggested 1h ago</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
@@ -97,7 +100,7 @@ export function HomePage() {
             </p>
 
             <div className="marketing-hero-actions mt-8">
-              <Link href="/login" className="marketing-btn-primary marketing-btn-hero marketing-btn-lg group">
+              <Link href="/login" className="marketing-btn-primary marketing-btn-lg group">
                 Get started free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
