@@ -20,7 +20,7 @@ describe('DeckViewer rendering', () => {
 
     // Real slide content is rendered
     expect(html).toContain('Executive Summary');
-    expect(html).toContain('Q3 revenue is up 12 percent');
+    expect(html).toContain('Q3 revenue up 12%');
 
     // Deck chrome present (title, slide count, controls)
     expect(html).toContain('Acme Corp — Q3 Business Review');

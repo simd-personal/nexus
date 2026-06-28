@@ -29,8 +29,8 @@ describe('deck format validation', () => {
 
   it('rejects decks with inline citation numbers', () => {
     const bad = SAMPLE_VALID_DECK.replace(
-      'Q3 revenue is up 12 percent',
-      'Q3 revenue is up 12 percent [5]'
+      'Q3 revenue up 12% with board alignment on west expansion',
+      'Q3 revenue up 12% with board alignment on west expansion [5]'
     );
     const result = validateDeckFormat(bad);
     expect(result.valid).toBe(false);
@@ -39,8 +39,8 @@ describe('deck format validation', () => {
 
   it('rejects decks that use asterisk emphasis', () => {
     const bad = SAMPLE_VALID_DECK.replace(
-      'Q3 revenue is up 12 percent',
-      'Q3 revenue is up **12 percent**'
+      'Q3 revenue up 12% with board alignment on west expansion',
+      'Q3 revenue up **12%** with board alignment on west expansion'
     );
     const result = validateDeckFormat(bad);
     expect(result.valid).toBe(false);
@@ -74,17 +74,23 @@ describe('parseDeckForViewer (visual rendering)', () => {
     expect(view.subtitle).toBe('Prepared for Acme Corp');
   });
 
-  it('returns each slide with a title and clean bullet list', () => {
+  it('returns each slide with layout metadata and clean content', () => {
     const view = parseDeckForViewer(SAMPLE_VALID_DECK);
     expect(view.slides).toHaveLength(7);
 
     const first = view.slides[0];
     expect(first.number).toBe(1);
     expect(first.title).toBe('Executive Summary');
+    expect(first.layout).toBe('hero');
+    expect(first.highlight).toContain('Q3 revenue up 12%');
     expect(first.bullets.length).toBeGreaterThanOrEqual(3);
-    expect(first.bullets[0]).toBe('Q3 revenue is up 12 percent');
-    // bullets must not carry markdown markers
+    expect(first.bullets[0]).toBe('Denver and Phoenix markets approved for expansion');
     expect(first.bullets.every((b) => !b.startsWith('-') && !b.includes('*'))).toBe(true);
+
+    const metrics = view.slides[1];
+    expect(metrics.layout).toBe('metrics');
+    expect(metrics.metrics?.length).toBe(4);
+    expect(metrics.metrics?.[0].value).toBe('12%');
   });
 
   it('handles content with no title heading gracefully', () => {
