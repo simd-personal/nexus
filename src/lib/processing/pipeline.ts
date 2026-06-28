@@ -7,13 +7,14 @@ import {
   generateSunnyUpdate,
   summarizeContent,
 } from '@/lib/ai/sunny';
-import { chunkText, chunkByPages } from '@/lib/processing/chunk';
+import { chunkText, chunkByPages, chunkBySheets } from '@/lib/processing/chunk';
 import {
   extractTextFromBuffer,
   parseEmailMetadata,
   parseEmailBody,
 } from '@/lib/processing/extract';
 import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constants';
+import { parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { normalizeEntityName } from '@/lib/utils';
 import type { Citation, SourceType } from '@/types/database';
@@ -40,17 +41,28 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
     let text = options.pastedText ?? '';
     let metadata: Record<string, unknown> = {};
     let pages: Array<{ pageNumber: number; text: string }> | undefined;
+    let sheets: Array<{ name: string; rows: string[][] }> | undefined;
+    const ext = getFileExtension(fileName);
+    const resolvedSourceType =
+      ext === '.xlsx' || ext === '.xls' ? 'csv' : sourceType;
+
+    await supabase.from('chunks').delete().eq('file_id', fileId);
 
     if (options.buffer) {
-      const ext = getFileExtension(fileName);
-
       if (AUDIO_EXTENSIONS.includes(ext)) {
         text = await transcribeAudio(options.buffer, fileName);
         metadata = { transcribed: true, source_type: 'transcript' };
       } else if (isProcessable(fileName)) {
-        const extracted = await extractTextFromBuffer(options.buffer, fileName);
-        text = extracted.text;
-        pages = extracted.pages;
+        if (ext === '.xlsx' || ext === '.xls') {
+          const parsed = await parseSpreadsheetBuffer(options.buffer);
+          text = parsed.text;
+          sheets = parsed.sheets;
+          metadata = { ...metadata, sheet_count: parsed.sheets.length, source_type: 'csv' };
+        } else {
+          const extracted = await extractTextFromBuffer(options.buffer, fileName);
+          text = extracted.text;
+          pages = extracted.pages;
+        }
 
         if (ext === '.eml') {
           const emailMeta = parseEmailMetadata(text);
@@ -82,20 +94,22 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       return;
     }
 
-    // Save extracted text
+    // Keep extracted text while indexing continues
     await supabase
       .from('files')
       .update({
         extracted_text: text,
-        status: 'processed',
-        metadata: { ...metadata, source_type: sourceType },
+        source_type: resolvedSourceType,
+        metadata: { ...metadata, source_type: resolvedSourceType },
       })
       .eq('id', fileId);
 
-    // Chunk text
-    const textChunks = pages
-      ? chunkByPages(pages, { source_type: sourceType, file_name: fileName, ...metadata })
-      : chunkText(text, { source_type: sourceType, file_name: fileName, ...metadata });
+    const chunkBase = { source_type: resolvedSourceType, file_name: fileName, ...metadata };
+    const textChunks = sheets
+      ? chunkBySheets(sheets, chunkBase)
+      : pages
+        ? chunkByPages(pages, chunkBase)
+        : chunkText(text, chunkBase);
 
     // Generate embeddings in batches
     const batchSize = 20;
@@ -127,7 +141,7 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
     }
 
     // Extract entities
-    const entities = await extractEntities(text);
+    const entities = await extractEntities(text, fileName);
     for (const entity of entities) {
       await supabase.from('entities').insert({
         project_id: projectId,
@@ -264,6 +278,11 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
     }
 
     await supabase.from('projects').update(updateFields).eq('id', projectId);
+
+    await supabase
+      .from('files')
+      .update({ status: 'processed', metadata: { ...metadata, source_type: resolvedSourceType, chunk_count: textChunks.length } })
+      .eq('id', fileId);
   } catch (error) {
     console.error('File processing error:', error instanceof Error ? error.message : 'Unknown');
     await supabase

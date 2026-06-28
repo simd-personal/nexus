@@ -7,6 +7,7 @@ import type {
   FileRecord,
   ActionItem,
   ChatMessage,
+  ChatSession,
   GeneratedDocument,
 } from '@/types/database';
 
@@ -155,16 +156,54 @@ export async function getProjectTimeline(projectId: string): Promise<TimelineEve
 }
 
 export async function getProjectChatMessages(projectId: string): Promise<ChatMessage[]> {
+  const latest = await getLatestChatSession({ sessionType: 'project', projectId });
+  return latest?.messages ?? [];
+}
+
+export async function getLatestChatSession(opts: {
+  sessionType: 'project' | 'search';
+  projectId?: string | null;
+}): Promise<{ session: ChatSession; messages: ChatMessage[] } | null> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from('chat_messages')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: true });
-  return (data ?? []).map((msg) => ({
-    ...msg,
-    citations: msg.citations ?? [],
-  }));
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  let query = supabase
+    .from('chat_sessions')
+    .select('id, owner_id, title, project_id, session_type, created_at, updated_at')
+    .eq('owner_id', user.id)
+    .eq('session_type', opts.sessionType)
+    .order('updated_at', { ascending: false })
+    .limit(40);
+
+  if (opts.projectId) {
+    query = query.eq('project_id', opts.projectId);
+  } else if (opts.sessionType === 'search') {
+    query = query.is('project_id', null);
+  }
+
+  const { data: sessions } = await query;
+  if (!sessions?.length) return null;
+
+  for (const session of sessions) {
+    const { data: messages } = await supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('session_id', session.id)
+      .order('created_at', { ascending: true });
+
+    if (!messages?.length) continue;
+
+    return {
+      session: session as ChatSession,
+      messages: messages.map((msg) => ({
+        ...msg,
+        citations: msg.citations ?? [],
+      })),
+    };
+  }
+
+  return null;
 }
 
 export async function getGeneratedDocuments(

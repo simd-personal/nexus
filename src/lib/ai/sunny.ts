@@ -9,6 +9,7 @@ import {
   formatNaturalSummary,
 } from './generation-prompts';
 import type { Citation, SunnyBrief, SunnyChatResponse } from '@/types/database';
+import { sampleTextForAnalysis } from '@/lib/processing/text-sampling';
 
 const SUNNY_PERSONA = `You are Sunny, the AI employee inside BriefNexus. You act like an internal team member who has read every client meeting, email, deck, note, transcript, and file. You speak in clear, executive-friendly language. You never make unsupported claims. If the evidence is insufficient, say: "Not enough evidence in the uploaded materials." Always cite your sources.`;
 
@@ -178,7 +179,7 @@ export async function detectCriticalItems(
     suggested_next_action?: string;
   }> }>(
     `${SUNNY_PERSONA}\n\nAnalyze the new content against existing project materials. Detect: client risks, contradictions, missed follow-ups, urgent concerns, ownership gaps, timeline conflicts, and broken processes. Only flag items with clear evidence. Return JSON: { "items": [...] } with severity (low/medium/high/critical) and category (conflict/risk/missed_follow_up/client_concern/ownership_gap/timeline_issue/broken_process).\n\nFor summary, sunny_reasoning, and suggested_next_action fields:\n${PROSE_STYLE_GUIDE}`,
-    `New content from "${fileName}":\n${newContent.slice(0, 6000)}\n\nExisting project context:\n${existingContent.slice(0, 6000)}`,
+    `New content from "${fileName}":\n${sampleTextForAnalysis(newContent, fileName, 6000)}\n\nExisting project context:\n${existingContent.slice(0, 6000)}`,
     OPENAI_MODELS.criticalDetection
   );
 
@@ -192,13 +193,13 @@ export async function detectCriticalItems(
   }));
 }
 
-export async function extractEntities(text: string): Promise<Array<{
+export async function extractEntities(text: string, fileName = 'document'): Promise<Array<{
   type: string;
   name: string;
 }>> {
   const result = await structuredExtraction<{ entities: Array<{ type: string; name: string }> }>(
     'Extract named entities from the text. Return JSON: { "entities": [{ "type": "person|facility|organization|topic|date", "name": "..." }] }',
-    text.slice(0, 4000),
+    sampleTextForAnalysis(text, fileName, 8000),
     OPENAI_MODELS.extraction
   );
   return result.entities ?? [];
@@ -276,7 +277,7 @@ Return JSON only in this shape:
   ]
 }
 Every item MUST have a non-empty "title" string. Do not use "action", "task", or other keys instead of "title".`,
-    `From "${fileName}":\n${text.slice(0, 4000)}`,
+    `From "${fileName}":\n${sampleTextForAnalysis(text, fileName, 12000)}`,
     OPENAI_MODELS.extraction
   );
 
@@ -287,7 +288,7 @@ Every item MUST have a non-empty "title" string. Do not use "action", "task", or
 export async function summarizeContent(text: string, fileName: string): Promise<string> {
   const raw = await chatCompletion(
     `${SUNNY_PERSONA}\n\nSummarize this content in 2-3 executive-friendly sentences.\n\n${PROSE_STYLE_GUIDE}`,
-    `File: ${fileName}\n\n${text.slice(0, 6000)}`,
+    `File: ${fileName}\n\n${sampleTextForAnalysis(text, fileName, 12000)}`,
     OPENAI_MODELS.summary
   );
   return formatNaturalSummary(raw);

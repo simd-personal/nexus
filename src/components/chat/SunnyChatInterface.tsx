@@ -18,7 +18,9 @@ import {
   chatCacheKey,
   dedupeSessions,
   getOrInitChatScopeState,
+  loadPersistedActiveSession,
   patchChatScopeState,
+  persistActiveSession,
   sessionsCacheFresh,
 } from '@/lib/chat/cache';
 import { consumeInitialQuery } from '@/lib/chat/initial-query';
@@ -232,6 +234,7 @@ export function SunnyChatInterface({
   const initialQuerySentRef = useRef(false);
   const sendingRef = useRef(false);
   const sessionsLoadedRef = useRef(sessionsCacheFresh(scopeKey));
+  const restoredRef = useRef(false);
   const sessionIdRef = useRef<string | undefined>(initialSessionId ?? cachedScope.activeSessionId);
   const projectIdRef = useRef<string | undefined>(projectId);
   const scopeKeyRef = useRef(scopeKey);
@@ -262,6 +265,7 @@ export function SunnyChatInterface({
       modelPreference,
       sessionsFetchedAt: sessionsLoadedRef.current ? state.sessionsFetchedAt ?? Date.now() : undefined,
     });
+    if (sessionId) persistActiveSession(key, sessionId);
   }, [sessions, sessionId, messages, sidebarOpen, sourceFilter, modelPreference]);
 
   useEffect(() => {
@@ -272,6 +276,7 @@ export function SunnyChatInterface({
     if (scopeKeyRef.current === scopeKey) return;
     persistScope();
     scopeKeyRef.current = scopeKey;
+    restoredRef.current = false;
 
     const cached = getOrInitChatScopeState(scopeKey);
     setSessions(cached.sessions);
@@ -303,6 +308,80 @@ export function SunnyChatInterface({
   const ensureSessions = useCallback(async () => {
     await loadSessions();
   }, [loadSessions]);
+
+  // Restore saved conversations from Supabase on first load / scope change.
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+
+    void (async () => {
+      await loadSessions(true);
+
+      if (initialSessionId && initialMessages.length > 0) {
+        sessionIdRef.current = initialSessionId;
+        setSessionId(initialSessionId);
+        setMessages(initialMessages);
+        persistActiveSession(scopeKey, initialSessionId);
+        patchChatScopeState(scopeKey, {
+          activeSessionId: initialSessionId,
+          messages: initialMessages,
+          messageCache: {
+            ...getOrInitChatScopeState(scopeKey).messageCache,
+            [initialSessionId]: initialMessages,
+          },
+        });
+        return;
+      }
+
+      if (initialSessionId && initialMessages.length === 0) {
+        const res = await fetch(`/api/chat/sessions/${initialSessionId}`);
+        if (res.ok) {
+          const data = await res.json();
+          sessionIdRef.current = initialSessionId;
+          setSessionId(initialSessionId);
+          setMessages(data.messages ?? []);
+          persistActiveSession(scopeKey, initialSessionId);
+          patchChatScopeState(scopeKey, {
+            activeSessionId: initialSessionId,
+            messages: data.messages ?? [],
+            messageCache: {
+              ...getOrInitChatScopeState(scopeKey).messageCache,
+              [initialSessionId]: data.messages ?? [],
+            },
+          });
+          return;
+        }
+      }
+
+      const persistedId = loadPersistedActiveSession(scopeKey);
+      const latestId = getOrInitChatScopeState(scopeKey).sessions[0]?.id;
+      const targetId = persistedId ?? latestId;
+      if (!targetId) return;
+
+      const cached = getOrInitChatScopeState(scopeKey).messageCache[targetId];
+      if (cached?.length) {
+        sessionIdRef.current = targetId;
+        setSessionId(targetId);
+        setMessages(cached);
+        return;
+      }
+
+      const res = await fetch(`/api/chat/sessions/${targetId}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      sessionIdRef.current = targetId;
+      setSessionId(targetId);
+      setMessages(data.messages ?? []);
+      patchChatScopeState(scopeKey, {
+        activeSessionId: targetId,
+        messages: data.messages ?? [],
+        messageCache: {
+          ...getOrInitChatScopeState(scopeKey).messageCache,
+          [targetId]: data.messages ?? [],
+        },
+      });
+    })();
+  }, [scopeKey, initialSessionId, initialMessages, loadSessions]);
 
   // Only auto-scroll when the user is already near the bottom (native chat feel).
   useEffect(() => {
@@ -369,6 +448,7 @@ export function SunnyChatInterface({
     setSessionId(undefined);
     sessionIdRef.current = undefined;
     setMessages([]);
+    persistActiveSession(scopeKey, undefined);
     patchChatScopeState(scopeKey, { activeSessionId: undefined, messages: [] });
   };
 
@@ -474,9 +554,30 @@ export function SunnyChatInterface({
     await stream({
       endpoint,
       body,
-      onSession: (id) => {
+      onSession: (id, title) => {
         setSessionId(id);
         sessionIdRef.current = id;
+        persistActiveSession(scopeKey, id);
+        if (title) {
+          setSessions((prev) => {
+            const existing = prev.find((s) => s.id === id);
+            if (existing) {
+              return prev.map((s) => (s.id === id ? { ...s, title } : s));
+            }
+            return [
+              {
+                id,
+                owner_id: '',
+                title,
+                project_id: projectId ?? null,
+                session_type: mode,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              },
+              ...prev,
+            ];
+          });
+        }
         loadSessions(true);
       },
       onStatus: setStatusHint,
@@ -524,6 +625,7 @@ export function SunnyChatInterface({
           )
         );
         setStatusHint('');
+        loadSessions(true);
       },
     });
     } finally {

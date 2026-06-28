@@ -69,3 +69,25 @@ export function dedupeSessions(sessions: ChatSession[]): ChatSession[] {
     (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
   );
 }
+
+const STORAGE_PREFIX = 'briefnexus-chat:';
+
+export function loadPersistedActiveSession(scopeKey: string): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    return window.localStorage.getItem(`${STORAGE_PREFIX}${scopeKey}:active`) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function persistActiveSession(scopeKey: string, sessionId?: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const key = `${STORAGE_PREFIX}${scopeKey}:active`;
+    if (sessionId) window.localStorage.setItem(key, sessionId);
+    else window.localStorage.removeItem(key);
+  } catch {
+    // private browsing / storage disabled
+  }
+}

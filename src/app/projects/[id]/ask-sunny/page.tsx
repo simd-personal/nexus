@@ -1,5 +1,5 @@
 import { AskSunnyChat } from '@/components/project/AskSunnyChat';
-import { getProjectChatMessages, getProject } from '@/lib/data/queries';
+import { getProject, getLatestChatSession } from '@/lib/data/queries';
 
 export default async function AskSunnyPage({
   params,
@@ -7,15 +7,16 @@ export default async function AskSunnyPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [messages, project] = await Promise.all([
-    getProjectChatMessages(id),
+  const [latestChat, project] = await Promise.all([
+    getLatestChatSession({ sessionType: 'project', projectId: id }),
     getProject(id),
   ]);
 
   return (
     <AskSunnyChat
       projectId={id}
-      initialMessages={messages}
+      initialMessages={latestChat?.messages ?? []}
+      initialSessionId={latestChat?.session.id}
       projectName={project ? `${project.client_name} — ${project.project_name}` : undefined}
     />
   );

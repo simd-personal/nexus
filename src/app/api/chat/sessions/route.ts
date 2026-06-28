@@ -25,14 +25,13 @@ export async function GET(request: NextRequest) {
   const sessions = data ?? [];
   if (sessions.length === 0) return NextResponse.json({ sessions: [] });
 
-  const { data: replied } = await supabase
+  const { data: withMessages } = await supabase
     .from('chat_messages')
     .select('session_id')
-    .in('session_id', sessions.map((s) => s.id))
-    .eq('role', 'assistant');
+    .in('session_id', sessions.map((s) => s.id));
 
-  const repliedIds = new Set((replied ?? []).map((r) => r.session_id));
-  return NextResponse.json({ sessions: sessions.filter((s) => repliedIds.has(s.id)) });
+  const messageSessionIds = new Set((withMessages ?? []).map((r) => r.session_id));
+  return NextResponse.json({ sessions: sessions.filter((s) => messageSessionIds.has(s.id)) });
 }
 
 export async function POST(request: NextRequest) {

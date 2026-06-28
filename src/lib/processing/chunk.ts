@@ -67,3 +67,27 @@ export function chunkByPages(
 
   return allChunks;
 }
+
+export function chunkBySheets(
+  sheets: Array<{ name: string; rows: string[][] }>,
+  baseMetadata: Record<string, unknown> = {}
+): TextChunk[] {
+  const allChunks: TextChunk[] = [];
+  let globalIndex = 0;
+
+  for (const sheet of sheets) {
+    const lines = sheet.rows
+      .map((row) => row.filter(Boolean).join(' | '))
+      .filter(Boolean);
+    const sheetText = lines.join('\n');
+    const sheetChunks = chunkText(sheetText, {
+      ...baseMetadata,
+      sheet_name: sheet.name,
+    });
+    for (const chunk of sheetChunks) {
+      allChunks.push({ ...chunk, index: globalIndex++ });
+    }
+  }
+
+  return allChunks;
+}

@@ -29,5 +29,7 @@ describe('spreadsheet helpers', () => {
     expect(parsed.sheets).toHaveLength(1);
     expect(parsed.sheets[0].name).toBe('Actions');
     expect(parsed.sheets[0].rows[1]).toEqual(['Revenue Cycle', 'Review denials queue']);
+    expect(parsed.text).toContain('Owner | Action');
+    expect(parsed.text).not.toMatch(/,{3,}/);
   });
 });
