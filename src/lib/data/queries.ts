@@ -7,6 +7,7 @@ import {
   sunnyUpdateStillValid,
 } from '@/lib/data/fresh-data';
 import type {
+  Project,
   ProjectWithStats,
   SunnyUpdate,
   CriticalItem,
@@ -21,9 +22,9 @@ import type {
 
 async function enrichProjectStats(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  project: Record<string, unknown>
+  project: Project
 ): Promise<ProjectWithStats> {
-  const projectId = project.id as string;
+  const projectId = project.id;
   const [files, criticalItems, actionItems, sunnyUpdates] = await Promise.all([
     supabase.from('files').select('id, source_type').eq('project_id', projectId),
     supabase.from('critical_items').select('id').eq('project_id', projectId).eq('status', 'open'),
@@ -38,7 +39,7 @@ async function enrichProjectStats(
 
   const fileList = files.data ?? [];
   return {
-    ...(project as ProjectWithStats),
+    ...project,
     file_count: fileList.length,
     meeting_count: fileList.filter((f) => f.source_type === 'meeting' || f.source_type === 'transcript').length,
     email_count: fileList.filter((f) => f.source_type === 'email').length,
@@ -216,21 +217,29 @@ export async function getProjectCriticalItems(
   const supabase = await createClient();
   const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
 
+  if (options?.includeSubProjects) {
+    const { data } = await supabase
+      .from('critical_items')
+      .select('*, projects(client_name, project_name)')
+      .in('project_id', projectIds)
+      .order('created_at', { ascending: false });
+
+    return (data ?? []).map((item) => ({
+      ...item,
+      source_citations: item.source_citations ?? [],
+      project: item.projects as CriticalItem['project'],
+    }));
+  }
+
   const { data } = await supabase
     .from('critical_items')
-    .select(
-      options?.includeSubProjects
-        ? '*, projects(client_name, project_name)'
-        : '*'
-    )
+    .select('*')
     .in('project_id', projectIds)
     .order('created_at', { ascending: false });
+
   return (data ?? []).map((item) => ({
     ...item,
     source_citations: item.source_citations ?? [],
-    project: options?.includeSubProjects
-      ? (item.projects as CriticalItem['project'])
-      : undefined,
   }));
 }
 
