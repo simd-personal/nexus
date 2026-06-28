@@ -24,6 +24,11 @@ export type TimelineEventType =
   | 'follow_up_email'
   | 'contradiction';
 export type GeneratedDocType = 'playbook' | 'follow_up_email' | 'brief' | 'memo';
+export type AccountType = 'individual' | 'enterprise';
+export type OrganizationIndustry = 'software' | 'healthcare' | 'other';
+export type OrganizationMemberRole = 'owner' | 'admin' | 'member';
+export type OrganizationMemberStatus = 'active' | 'suspended';
+export type AccessRequestStatus = 'pending' | 'approved' | 'denied';
 
 export interface Citation {
   file_id?: string;
@@ -42,12 +47,46 @@ export interface Profile {
   user_id: string;
   full_name: string | null;
   role: string;
+  account_type: AccountType;
+  default_organization_id: string | null;
+  created_at: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  industry: OrganizationIndustry;
+  phi_protection_enabled: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  role: OrganizationMemberRole;
+  status: OrganizationMemberStatus;
+  joined_at: string;
+}
+
+export interface OrganizationAccessRequest {
+  id: string;
+  organization_id: string;
+  user_id: string;
+  message: string | null;
+  status: AccessRequestStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
   created_at: string;
 }
 
 export interface Project {
   id: string;
   owner_id: string;
+  organization_id: string | null;
   client_name: string;
   project_name: string;
   description: string | null;
