@@ -42,6 +42,7 @@ export function SearchPageClient({
       projectName={projectName}
       projects={projects}
       lockProject={lockProject}
+      embedded={lockProject}
       onProjectChange={(id) => setSelectedProjectId(id || undefined)}
       initialQuery={initialQuery}
     />

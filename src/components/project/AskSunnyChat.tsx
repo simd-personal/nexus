@@ -18,6 +18,7 @@ export function AskSunnyChat(props: AskSunnyChatProps) {
       projectName={props.projectName}
       initialMessages={props.initialMessages}
       initialSessionId={props.initialSessionId}
+      embedded
     />
   );
 }

@@ -26,6 +26,7 @@ export function PageGenerationChat({
       initialMessages={initialMessages}
       initialSessionId={initialSessionId}
       lockProject
+      embedded
     />
   );
 }

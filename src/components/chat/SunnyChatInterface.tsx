@@ -74,6 +74,7 @@ export interface SunnyChatInterfaceProps {
   projects?: ProjectWithStats[];
   onProjectChange?: (projectId: string) => void;
   lockProject?: boolean;
+  embedded?: boolean;
   initialSessionId?: string;
   initialMessages?: ChatMessage[];
   initialQuery?: string;
@@ -220,6 +221,7 @@ export function SunnyChatInterface({
   projects,
   onProjectChange,
   lockProject = false,
+  embedded = false,
   initialSessionId,
   initialMessages = [],
   initialQuery,
@@ -286,6 +288,19 @@ export function SunnyChatInterface({
   useEffect(() => {
     persistScope();
   }, [persistScope]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(min-width: 1024px)');
+    const syncSidebarForViewport = () => {
+      if (!mediaQuery.matches) {
+        setSidebarOpen(false);
+      }
+    };
+
+    syncSidebarForViewport();
+    mediaQuery.addEventListener('change', syncSidebarForViewport);
+    return () => mediaQuery.removeEventListener('change', syncSidebarForViewport);
+  }, []);
 
   useEffect(() => {
     if (scopeKeyRef.current === scopeKey) return;
@@ -432,6 +447,9 @@ export function SunnyChatInterface({
       setSessionId(id);
       sessionIdRef.current = id;
       setMessages(cached);
+      if (!window.matchMedia('(min-width: 1024px)').matches) {
+        setSidebarOpen(false);
+      }
       return;
     }
 
@@ -457,6 +475,9 @@ export function SunnyChatInterface({
       activeSessionId: id,
       messages: data.messages ?? [],
     });
+    if (!window.matchMedia('(min-width: 1024px)').matches) {
+      setSidebarOpen(false);
+    }
   };
 
   const startNewChat = () => {
@@ -736,12 +757,30 @@ export function SunnyChatInterface({
             ];
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] -mx-4 sm:-mx-0 rounded-xl border border-gray-200 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)] overflow-hidden shadow-sm">
-      {/* Session sidebar */}
+    <div
+      className={cn(
+        'relative flex w-full min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]',
+        embedded ? 'min-h-[360px] flex-1 -mx-4 sm:mx-0' : 'h-[calc(100dvh-3.5rem)]'
+      )}
+    >
+      {sidebarOpen && (
+        <button
+          type="button"
+          className="absolute inset-0 z-10 bg-black/40 lg:hidden"
+          aria-label="Close chat history"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Session sidebar — overlay on phone, inline on desktop */}
       <aside
         className={cn(
-          'flex flex-col border-r border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] transition-all',
-          sidebarOpen ? 'w-56' : 'w-0 overflow-hidden'
+          'z-20 flex shrink-0 flex-col border-r border-gray-200 bg-gray-50 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]',
+          'absolute inset-y-0 left-0 w-64 max-w-[85vw] shadow-xl transition-transform duration-200 ease-in-out',
+          'lg:relative lg:inset-auto lg:max-w-none lg:shadow-none lg:transition-[width]',
+          sidebarOpen
+            ? 'translate-x-0 lg:w-56'
+            : '-translate-x-full pointer-events-none lg:pointer-events-auto lg:translate-x-0 lg:w-0 lg:overflow-hidden'
         )}
       >
         <div className="p-3 border-b border-gray-200 dark:border-[var(--ud-cloud)]">

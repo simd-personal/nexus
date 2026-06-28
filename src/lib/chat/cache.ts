@@ -23,7 +23,7 @@ function emptyState(): ChatScopeState {
     sessions: [],
     messages: [],
     messageCache: {},
-    sidebarOpen: true,
+    sidebarOpen: false,
     sourceFilter: '',
     modelPreference: 'auto',
   };

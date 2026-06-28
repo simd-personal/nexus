@@ -8,10 +8,10 @@ export default async function SunnyChatPage() {
 
   return (
     <AppShell>
-      <div className="flex h-[calc(100dvh-3.5rem)] flex-col px-4 py-4 lg:h-screen">
-        <div className="mb-4">
+      <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
+        <div className="mb-4 shrink-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Chat with {AI_EMPLOYEE_NAME}</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             Create decks, emails, and briefs live in chat, just like ChatGPT and Claude
           </p>
         </div>

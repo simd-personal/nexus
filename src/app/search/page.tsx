@@ -10,16 +10,18 @@ export default async function SearchPage() {
 
   return (
     <AppShell>
-      <div className="flex h-[calc(100dvh-3.5rem)] flex-col px-4 py-4 lg:h-screen">
-        <div className="mb-4">
+      <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
+        <div className="mb-4 shrink-0">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Search</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             Chat with {AI_EMPLOYEE_NAME} across all your projects. Answers stream live and conversations are saved
           </p>
         </div>
-        <Suspense fallback={<LoadingState />}>
-          <GlobalSearchPageClient projects={projects} />
-        </Suspense>
+        <div className="flex min-h-0 flex-1 flex-col">
+          <Suspense fallback={<LoadingState />}>
+            <GlobalSearchPageClient projects={projects} />
+          </Suspense>
+        </div>
       </div>
     </AppShell>
   );
