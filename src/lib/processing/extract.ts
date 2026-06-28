@@ -1,7 +1,7 @@
 import mammoth from 'mammoth';
-import { PDFParse } from 'pdf-parse';
 import { extractTextFromImage } from '@/lib/ai/openai';
 import { getFileExtension, IMAGE_EXTENSIONS, TRANSCRIPT_EXTENSIONS } from '@/lib/constants';
+import { ensurePdfParseEnvironment } from '@/lib/processing/pdf-env';
 
 function mimeForExtension(ext: string): string {
   switch (ext) {
@@ -18,6 +18,8 @@ function mimeForExtension(ext: string): string {
 }
 
 async function extractPdfText(buffer: Buffer): Promise<{ text: string; pages: Array<{ pageNumber: number; text: string }> }> {
+  await ensurePdfParseEnvironment();
+  const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();

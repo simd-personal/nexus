@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
-import { processFile } from '@/lib/processing/pipeline';
 import { inferSourceType } from '@/lib/constants';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
+
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Process asynchronously — don't block the response
+    const { processFile } = await import('@/lib/processing/pipeline');
     processFile({
       fileId: fileRecord.id,
       projectId,
