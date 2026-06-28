@@ -17,6 +17,7 @@ import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constan
 import { parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { normalizeEntityName } from '@/lib/utils';
+import { redactPhi, redactPhiPages } from '@/lib/compliance/phi-redact';
 import {
   embeddingPercent,
   updateFileProgress,
@@ -49,6 +50,63 @@ async function countExistingChunks(
     .select('*', { count: 'exact', head: true })
     .eq('file_id', fileId);
   return count ?? 0;
+}
+
+async function shouldRedactPhi(
+  supabase: ReturnType<typeof createServiceClient>,
+  projectId: string
+): Promise<boolean> {
+  const { data: project } = await supabase
+    .from('projects')
+    .select('organization_id')
+    .eq('id', projectId)
+    .single();
+
+  if (!project?.organization_id) return false;
+
+  const { data: organization } = await supabase
+    .from('organizations')
+    .select('phi_protection_enabled')
+    .eq('id', project.organization_id)
+    .single();
+
+  return organization?.phi_protection_enabled ?? false;
+}
+
+function applyPhiRedaction(
+  text: string,
+  pages: Array<{ pageNumber: number; text: string }> | undefined,
+  metadata: Record<string, unknown>
+): {
+  text: string;
+  pages?: Array<{ pageNumber: number; text: string }>;
+  metadata: Record<string, unknown>;
+} {
+  if (pages?.length) {
+    const redacted = redactPhiPages(pages);
+    return {
+      text: redacted.pages.map((page) => page.text).join('\n\n'),
+      pages: redacted.pages,
+      metadata: {
+        ...metadata,
+        phi_redacted: true,
+        phi_redaction_count: redacted.redactionCount,
+        phi_categories: redacted.categories,
+      },
+    };
+  }
+
+  const redacted = redactPhi(text);
+  return {
+    text: redacted.text,
+    pages,
+    metadata: {
+      ...metadata,
+      phi_redacted: redacted.redactionCount > 0,
+      phi_redaction_count: redacted.redactionCount,
+      phi_categories: redacted.categories,
+    },
+  };
 }
 
 export async function processFile(options: ProcessFileOptions): Promise<ProcessFileResult> {
@@ -173,6 +231,18 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
           detail: 'No text could be extracted from this file',
         });
         return { completed: false, stage: 'failed' };
+      }
+
+      if (await shouldRedactPhi(supabase, projectId)) {
+        const redacted = applyPhiRedaction(text, pages, metadata);
+        text = redacted.text;
+        pages = redacted.pages;
+        metadata = redacted.metadata;
+        await report({
+          stage: 'extracting',
+          percent: 12,
+          label: 'Redacting protected health information…',
+        });
       }
 
       await report({

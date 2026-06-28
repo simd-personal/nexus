@@ -10,6 +10,12 @@ export async function createProject(formData: FormData) {
   const user = await requireUser();
   const supabase = await createClient();
 
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('default_organization_id')
+    .eq('user_id', user.id)
+    .single();
+
   const clientName = formData.get('client_name') as string;
   const projectName = formData.get('project_name') as string;
   const description = formData.get('description') as string;
@@ -39,6 +45,7 @@ export async function createProject(formData: FormData) {
     .from('projects')
     .insert({
       owner_id: user.id,
+      organization_id: profile?.default_organization_id ?? null,
       client_name: clientName.trim(),
       project_name: projectName.trim(),
       description: enrichedDescription,
