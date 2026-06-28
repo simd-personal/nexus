@@ -2,13 +2,14 @@
 
 import { createClient, requireUser } from '@/lib/supabase/server';
 import { getSiteUrl } from '@/lib/auth/site-url';
+import { isDuplicateSignUp, mapAuthErrorMessage } from '@/lib/auth/auth-errors';
 
 export async function signUpIndividual(input: {
   email: string;
   password: string;
   fullName: string;
 }) {
-  const email = input.email.trim();
+  const email = input.email.trim().toLowerCase();
   const fullName = input.fullName.trim();
   const password = input.password;
 
@@ -33,7 +34,18 @@ export async function signUpIndividual(input: {
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    return { error: mapAuthErrorMessage(error.message) };
+  }
+
+  if (isDuplicateSignUp(data)) {
+    return {
+      error:
+        'An account with this email already exists. Sign in instead, or use Forgot password if you need help.',
+      duplicateEmail: true,
+    };
+  }
+
   if (data.session) return { success: true, immediate: true };
   return {
     success: true,
@@ -42,8 +54,25 @@ export async function signUpIndividual(input: {
   };
 }
 
+export async function signInIndividual(input: { email: string; password: string }) {
+  const email = input.email.trim().toLowerCase();
+  const password = input.password;
+
+  if (!email || !password) {
+    return { error: 'Email and password are required.' };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) {
+    return { error: mapAuthErrorMessage(error.message) };
+  }
+
+  return { success: true };
+}
+
 export async function requestPasswordReset(email: string) {
-  const trimmed = email.trim();
+  const trimmed = email.trim().toLowerCase();
   if (!trimmed) return { error: 'Email is required' };
 
   const supabase = await createClient();
@@ -52,7 +81,7 @@ export async function requestPasswordReset(email: string) {
     redirectTo: `${siteUrl}/auth/reset-password`,
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: mapAuthErrorMessage(error.message) };
   return {
     success: true,
     message: 'If an account exists for that email, a reset link has been sent.',
@@ -66,12 +95,12 @@ export async function updatePassword(newPassword: string) {
 
   const supabase = await createClient();
   const { error } = await supabase.auth.updateUser({ password: newPassword });
-  if (error) return { error: error.message };
+  if (error) return { error: mapAuthErrorMessage(error.message) };
   return { success: true };
 }
 
 export async function resendSignupConfirmation(email: string) {
-  const trimmed = email.trim();
+  const trimmed = email.trim().toLowerCase();
   if (!trimmed) return { error: 'Email is required' };
 
   const supabase = await createClient();
@@ -82,6 +111,6 @@ export async function resendSignupConfirmation(email: string) {
     options: { emailRedirectTo: `${siteUrl}/auth/callback` },
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: mapAuthErrorMessage(error.message) };
   return { success: true, message: 'Confirmation email sent. Check your inbox.' };
 }

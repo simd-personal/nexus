@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { resendSignupConfirmation, requestPasswordReset, signUpIndividual } from '@/lib/actions/auth';
+import { resendSignupConfirmation, requestPasswordReset, signInIndividual, signUpIndividual } from '@/lib/actions/auth';
 import { APP_NAME, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { Sun } from 'lucide-react';
 
@@ -26,8 +25,6 @@ export default function LoginPageClient() {
     setMessage('');
 
     try {
-      const supabase = createClient();
-
       if (mode === 'forgot') {
         const result = await requestPasswordReset(email);
         setMessage(result.error ?? result.message ?? 'Password reset email sent.');
@@ -48,9 +45,9 @@ export default function LoginPageClient() {
           );
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) {
-          setMessage(error.message);
+        const result = await signInIndividual({ email, password });
+        if (result.error) {
+          setMessage(result.error);
         } else {
           window.location.href = '/dashboard';
         }
@@ -202,14 +199,29 @@ export default function LoginPageClient() {
                   className={`text-sm ${
                     message.includes('Check your email') ||
                     message.includes('reset link') ||
-                    message.includes('Confirmation email')
+                    message.includes('Confirmation email') ||
+                    message.includes('Account created')
                       ? 'text-emerald-600'
                       : 'text-red-600'
                   }`}
                 >
                   {message}
                 </p>
-                {mode === 'signin' && message.toLowerCase().includes('confirm') && (
+                {mode === 'signup' && message.includes('already exists') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('signin');
+                      setMessage('');
+                    }}
+                    className="text-xs font-medium text-gray-700 underline"
+                  >
+                    Go to sign in
+                  </button>
+                )}
+                {mode === 'signin' &&
+                  (message.toLowerCase().includes('confirm') ||
+                    message.includes('Incorrect email or password')) && (
                   <button
                     type="button"
                     onClick={handleResendConfirmation}
