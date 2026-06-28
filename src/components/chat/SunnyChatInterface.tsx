@@ -18,9 +18,11 @@ import {
   chatCacheKey,
   dedupeSessions,
   getOrInitChatScopeState,
+  hydrateChatScopeFromStorage,
   loadPersistedActiveSession,
   patchChatScopeState,
   persistActiveSession,
+  persistMessageCache,
   sessionsCacheFresh,
 } from '@/lib/chat/cache';
 import { consumeInitialQuery } from '@/lib/chat/initial-query';
@@ -213,6 +215,7 @@ export function SunnyChatInterface({
   initialQuery,
 }: SunnyChatInterfaceProps) {
   const scopeKey = chatCacheKey(mode, projectId);
+  hydrateChatScopeFromStorage(scopeKey);
   const cachedScope = getOrInitChatScopeState(scopeKey);
 
   const [sessions, setSessions] = useState<ChatSession[]>(cachedScope.sessions);
@@ -253,18 +256,20 @@ export function SunnyChatInterface({
   const persistScope = useCallback(() => {
     const key = scopeKeyRef.current;
     const state = getOrInitChatScopeState(key);
+    const messageCache = sessionId
+      ? { ...state.messageCache, [sessionId]: messages }
+      : state.messageCache;
     patchChatScopeState(key, {
       sessions,
       activeSessionId: sessionId,
       messages,
-      messageCache: sessionId
-        ? { ...state.messageCache, [sessionId]: messages }
-        : state.messageCache,
+      messageCache,
       sidebarOpen,
       sourceFilter,
       modelPreference,
       sessionsFetchedAt: sessionsLoadedRef.current ? state.sessionsFetchedAt ?? Date.now() : undefined,
     });
+    persistMessageCache(key, messageCache);
     if (sessionId) persistActiveSession(key, sessionId);
   }, [sessions, sessionId, messages, sidebarOpen, sourceFilter, modelPreference]);
 
@@ -278,7 +283,7 @@ export function SunnyChatInterface({
     scopeKeyRef.current = scopeKey;
     restoredRef.current = false;
 
-    const cached = getOrInitChatScopeState(scopeKey);
+    const cached = hydrateChatScopeFromStorage(scopeKey);
     setSessions(cached.sessions);
     setSessionId(cached.activeSessionId);
     setMessages(cached.messages);

@@ -4,6 +4,7 @@ import { createEmbedding } from '@/lib/ai/openai';
 import { runSunnyAgent } from '@/lib/ai/agent';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
+import { PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
     ] = await Promise.all([
       retrieveForQuery(supabase, message, embedding, {
         projectId: project_id,
-        limit: 12,
+        limit: PROJECT_RETRIEVAL_LIMIT,
       }),
       supabase.from('projects').select('last_summary').eq('id', project_id).single(),
       supabase.from('critical_items').select('title, summary, severity').eq('project_id', project_id).eq('status', 'open').limit(5),

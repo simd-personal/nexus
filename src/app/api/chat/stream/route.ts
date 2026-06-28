@@ -4,6 +4,8 @@ import { createEmbedding } from '@/lib/ai/openai';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { runSunnyAgentStream } from '@/lib/ai/stream-agent';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
+import { PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
+import { loadSessionHistory } from '@/lib/chat/memory';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
 import { encodeSse } from '@/lib/sse';
 
@@ -56,19 +58,14 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        const { data: history } = await supabase
-          .from('chat_messages')
-          .select('role, content')
-          .eq('session_id', session.id)
-          .order('created_at', { ascending: true })
-          .limit(20);
+        const history = await loadSessionHistory(supabase, session.id);
 
         send({ event: 'status', data: { message: 'Reading project materials...' } });
 
         const embedding = await createEmbedding(message);
         const [retrieved, { data: projectMeta }, { data: criticalItems }, { data: timelineEvents }] =
           await Promise.all([
-            retrieveForQuery(supabase, message, embedding, { projectId: project_id, limit: 12 }),
+            retrieveForQuery(supabase, message, embedding, { projectId: project_id, limit: PROJECT_RETRIEVAL_LIMIT }),
             supabase.from('projects').select('last_summary').eq('id', project_id).single(),
             supabase.from('critical_items').select('title, summary, severity').eq('project_id', project_id).eq('status', 'open').limit(5),
             supabase.from('timeline_events').select('title, description, created_at').eq('project_id', project_id).order('created_at', { ascending: false }).limit(10),
@@ -86,7 +83,7 @@ export async function POST(request: NextRequest) {
           message,
           context,
           project,
-          chatHistory: (history ?? []).slice(0, -1) as Array<{ role: 'user' | 'assistant'; content: string }>,
+          chatHistory: history.slice(0, -1),
           supabase,
           modelPreference: model_preference,
           onStatus: (msg) => send({ event: 'status', data: { message: msg } }),

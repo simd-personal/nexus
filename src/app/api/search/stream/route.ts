@@ -9,6 +9,7 @@ import {
   resolveEngine,
 } from '@/lib/ai/stream-agent';
 import { retrieveForQuery } from '@/lib/search/retrieve';
+import { toSearchContext } from '@/lib/search/retrieve';
 import { filterSubstantiveChunks, formatNaturalProse } from '@/lib/ai/generation-prompts';
 import {
   normalizeProjectId,
@@ -17,7 +18,9 @@ import {
   buildScopeInstruction,
   chunksForAnswer,
 } from '@/lib/search/scope';
+import { SEARCH_RETRIEVAL_LIMIT, PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
+import { buildHistoryNote, loadSessionHistory } from '@/lib/chat/memory';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
@@ -27,7 +30,7 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const { query, project_id, source_type, session_id, model_preference, regenerate, limit = 20 } = await request.json();
+  const { query, project_id, source_type, session_id, model_preference, regenerate, limit = SEARCH_RETRIEVAL_LIMIT } = await request.json();
   if (!query?.trim()) {
     return new Response(JSON.stringify({ error: 'Query required' }), { status: 400 });
   }
@@ -109,21 +112,13 @@ export async function POST(request: NextRequest) {
         );
         const scopeInstruction = buildScopeInstruction(scopedProjectId, projectLabel);
 
-        const { data: history } = await supabase
-          .from('chat_messages')
-          .select('role, content')
-          .eq('session_id', session.id)
-          .order('created_at', { ascending: true })
-          .limit(10);
-
-        const historyNote = (history ?? []).slice(0, -1).length
-          ? `\n\nRecent conversation:\n${(history ?? []).slice(-4).map((m) => `${m.role}: ${m.content.slice(0, 200)}`).join('\n')}`
-          : '';
+        const history = await loadSessionHistory(supabase, session.id);
+        const historyNote = buildHistoryNote(history.slice(0, -1));
 
         send({ event: 'status', data: { message: 'Understanding your request...' } });
         const intent = await classifyChatIntent(
           query,
-          (history ?? []).slice(0, -1) as Array<{ role: 'user' | 'assistant'; content: string }>
+          history.slice(0, -1) as Array<{ role: 'user' | 'assistant'; content: string }>
         );
 
         // If the user asked Sunny to CREATE something (deck, email, brief, etc.),
@@ -145,27 +140,22 @@ export async function POST(request: NextRequest) {
           }
 
           send({ event: 'status', data: { message: 'Gathering project materials...' } });
-          const [{ data: targetProject }, { data: projChunks }, { data: projCritical }] = await Promise.all([
-            supabase.from('projects').select('id, client_name, project_name, last_summary').eq('id', targetProjectId).single(),
-            supabase.from('chunks').select('text, file_id, metadata').eq('project_id', targetProjectId).order('created_at', { ascending: false }).limit(20),
-            supabase.from('critical_items').select('title, summary, severity').eq('project_id', targetProjectId).eq('status', 'open').limit(5),
-          ]);
-
-          const fileIds = [...new Set((projChunks ?? []).map((c) => c.file_id))];
-          const { data: projFiles } = await supabase.from('files').select('id, file_name, source_type').in('id', fileIds);
-          const fileMap = new Map((projFiles ?? []).map((f) => [f.id, f]));
+          const createEmbeddingVec = await createEmbedding(query);
+          const [{ data: targetProject }, createRetrieved, { data: projCritical }, { data: projTimeline }] =
+            await Promise.all([
+              supabase.from('projects').select('id, client_name, project_name, last_summary').eq('id', targetProjectId).single(),
+              retrieveForQuery(supabase, query, createEmbeddingVec, {
+                projectId: targetProjectId,
+                limit: PROJECT_RETRIEVAL_LIMIT,
+              }),
+              supabase.from('critical_items').select('title, summary, severity').eq('project_id', targetProjectId).eq('status', 'open').limit(8),
+              supabase.from('timeline_events').select('title, description, created_at').eq('project_id', targetProjectId).order('created_at', { ascending: false }).limit(12),
+            ]);
 
           const createContext = {
-            chunks: filterSubstantiveChunks(
-              (projChunks ?? []).map((c) => ({
-                text: c.text,
-                file_name: fileMap.get(c.file_id)?.file_name ?? 'Unknown',
-                source_type: fileMap.get(c.file_id)?.source_type,
-                metadata: c.metadata as Record<string, unknown>,
-              }))
-            ),
+            chunks: filterSubstantiveChunks(toSearchContext(createRetrieved)),
             criticalItems: projCritical ?? [],
-            timelineEvents: [],
+            timelineEvents: projTimeline ?? [],
             projectSummary: targetProject?.last_summary ?? null,
           };
 

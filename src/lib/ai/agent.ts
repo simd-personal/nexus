@@ -9,6 +9,8 @@ import {
   extractActionItems,
 } from './sunny';
 import type { Citation, SunnyChatResponse } from '@/types/database';
+import { fitChunksToBudget } from './context-budget';
+import { buildHistoryNote, formatHistoryForClassification } from '@/lib/chat/memory';
 
 export type SunnyAgentAction =
   | 'answer'
@@ -65,10 +67,7 @@ export async function classifyIntent(
   instructions?: string;
   email_version?: 'short' | 'detailed' | 'executive';
 }> {
-  const historySnippet = chatHistory
-    .slice(-6)
-    .map((m) => `${m.role}: ${m.content.slice(0, 400)}`)
-    .join('\n');
+  const historySnippet = formatHistoryForClassification(chatHistory);
 
   return structuredExtraction<{
     action: SunnyAgentAction;
@@ -84,7 +83,7 @@ export async function classifyIntent(
 function contextAsText(context: RetrievedContext): string {
   return [
     context.projectSummary,
-    ...context.chunks.map((c) => c.text),
+    ...fitChunksToBudget(context.chunks).map((c) => c.text),
   ].filter(Boolean).join('\n\n');
 }
 
@@ -94,9 +93,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
   const focus = instructions?.trim() || message;
 
   if (action === 'answer') {
-    const historyNote = chatHistory.length
-      ? `\n\nRecent conversation:\n${chatHistory.slice(-4).map((m) => `${m.role}: ${m.content}`).join('\n')}`
-      : '';
+    const historyNote = buildHistoryNote(chatHistory);
     const response = await askSunny(`${message}${historyNote}`, context);
     return { ...response, model: 'gpt' };
   }

@@ -3,6 +3,8 @@ import { streamChatCompletion, OPENAI_MODELS } from './openai';
 import { streamLongForm, CLAUDE_MODELS } from './claude';
 import { classifyIntent, type SunnyAgentAction } from './agent';
 import { extractActionItems } from './sunny';
+import { fitChunksToBudget } from './context-budget';
+import { buildHistoryNote, formatHistoryForClassification } from '@/lib/chat/memory';
 import {
   BRIEF_SYSTEM_PROMPT,
   DECK_SYSTEM_PROMPT,
@@ -56,7 +58,8 @@ function formatContext(ctx: AgentStreamContext): string {
     parts.push('## Critical Items\n' + ctx.criticalItems.map((c) => `- [${c.severity}] ${c.title}: ${c.summary}`).join('\n'));
   }
   if (ctx.chunks.length) {
-    parts.push('## Source Materials\n' + ctx.chunks.map((c, i) =>
+    const chunks = fitChunksToBudget(ctx.chunks);
+    parts.push('## Source Materials\n' + chunks.map((c, i) =>
       `[${i + 1}] (${c.source_type ?? 'document'}) ${c.file_name}:\n${c.text}`
     ).join('\n\n'));
   }
@@ -64,7 +67,7 @@ function formatContext(ctx: AgentStreamContext): string {
 }
 
 function buildCitations(ctx: AgentStreamContext): Citation[] {
-  return ctx.chunks.slice(0, 5).map((c) => ({
+  return fitChunksToBudget(ctx.chunks).slice(0, 8).map((c) => ({
     file_name: c.file_name,
     source_type: c.source_type as Citation['source_type'],
     snippet: c.text.slice(0, 200),
@@ -72,7 +75,10 @@ function buildCitations(ctx: AgentStreamContext): Citation[] {
 }
 
 function contextAsText(context: AgentStreamContext): string {
-  return [context.projectSummary, ...context.chunks.map((c) => c.text)].filter(Boolean).join('\n\n');
+  return [
+    context.projectSummary,
+    ...fitChunksToBudget(context.chunks).map((c) => c.text),
+  ].filter(Boolean).join('\n\n');
 }
 
 export async function streamSearchAnswer(
@@ -140,9 +146,7 @@ export async function runSunnyAgentStream(params: StreamAgentParams): Promise<Su
 
   if (action === 'answer') {
     onStatus('Searching project materials...');
-    const historyNote = chatHistory.length
-      ? `\n\nRecent conversation:\n${chatHistory.slice(-4).map((m) => `${m.role}: ${m.content}`).join('\n')}`
-      : '';
+    const historyNote = buildHistoryNote(chatHistory);
     const engine = resolveEngine(modelPreference, 'answer');
     const meta = await streamSearchAnswer(`${message}${historyNote}`, context, onToken, { engine });
     return { answer: '', citations: meta.citations, confidence: meta.confidence, model: meta.model };

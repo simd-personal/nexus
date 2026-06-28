@@ -42,7 +42,7 @@ export async function retrieveForQuery(
   embedding: number[],
   options: { projectId?: string | null; limit?: number } = {}
 ): Promise<RetrievedChunk[]> {
-  const limit = options.limit ?? 20;
+  const limit = options.limit ?? 24;
   const projectId = options.projectId ?? null;
 
   const [{ data: vectorResults }, { data: keywordResults }, { data: fuzzyResults }] =
@@ -122,7 +122,7 @@ async function fetchSupplementalContent(
       id: `file-text-${file.id}`,
       project_id: file.project_id,
       file_id: file.id,
-      text: text.slice(0, 2000),
+      text: text.slice(0, 4000),
       metadata: { file_name: file.file_name, source_type: file.source_type },
       match_reason: 'File content match',
       file_name: file.file_name,
@@ -206,7 +206,7 @@ async function fetchSupplementalContent(
       add({
         id: `${prefix}-${String(record.id)}`,
         project_id: String(record.project_id),
-        text: text.slice(0, 2000),
+        text: text.slice(0, 4000),
         metadata: { source_type: 'note', file_name: prefix },
         match_reason: `${table.replace('_', ' ')} match`,
         file_name: project ? `${project.client_name} — ${project.project_name}` : undefined,

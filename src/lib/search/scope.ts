@@ -1,6 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { RetrievedChunk } from './retrieve';
 import { toSearchContext } from './retrieve';
+import { ANSWER_CONTEXT_CHUNK_LIMIT } from '@/lib/search/context-limits';
 
 export function normalizeProjectId(projectId?: string | null): string | null {
   const trimmed = projectId?.trim();
@@ -67,5 +68,5 @@ export function buildScopeInstruction(
 }
 
 export function chunksForAnswer(results: RetrievedChunk[], scopedProjectId: string | null) {
-  return toSearchContext(results.slice(0, 12), { labelProject: !scopedProjectId });
+  return toSearchContext(results.slice(0, ANSWER_CONTEXT_CHUNK_LIMIT), { labelProject: !scopedProjectId });
 }

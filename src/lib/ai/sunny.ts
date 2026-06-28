@@ -10,6 +10,7 @@ import {
 } from './generation-prompts';
 import type { Citation, SunnyBrief, SunnyChatResponse } from '@/types/database';
 import { sampleTextForAnalysis } from '@/lib/processing/text-sampling';
+import { fitChunksToBudget } from '@/lib/ai/context-budget';
 
 const SUNNY_PERSONA = `You are Sunny, the AI employee inside BriefNexus. You act like an internal team member who has read every client meeting, email, deck, note, transcript, and file. You speak in clear, executive-friendly language. You never make unsupported claims. If the evidence is insufficient, say: "Not enough evidence in the uploaded materials." Always cite your sources.`;
 
@@ -56,7 +57,8 @@ function formatContext(ctx: RetrievedContext): string {
   }
 
   if (ctx.chunks.length) {
-    parts.push('## Source Materials\n' + ctx.chunks.map((c, i) =>
+    const chunks = fitChunksToBudget(ctx.chunks);
+    parts.push('## Source Materials\n' + chunks.map((c, i) =>
       `[${i + 1}] (${c.source_type ?? 'document'}) ${c.file_name}:\n${c.text}`
     ).join('\n\n'));
   }
@@ -65,7 +67,7 @@ function formatContext(ctx: RetrievedContext): string {
 }
 
 function buildCitations(ctx: RetrievedContext): Citation[] {
-  return ctx.chunks.slice(0, 5).map((c) => ({
+  return fitChunksToBudget(ctx.chunks).slice(0, 8).map((c) => ({
     file_name: c.file_name,
     source_type: c.source_type as Citation['source_type'],
     snippet: c.text.slice(0, 200),

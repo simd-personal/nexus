@@ -62,11 +62,11 @@ describe('search scope helpers', () => {
   });
 
   it('limits chunks passed to the answer model', () => {
-    const many = Array.from({ length: 20 }, (_, i) => ({
+    const many = Array.from({ length: 30 }, (_, i) => ({
       ...sampleChunks[0],
       id: String(i),
       chunk_index: i,
     }));
-    expect(chunksForAnswer(many, 'proj-a')).toHaveLength(12);
+    expect(chunksForAnswer(many, 'proj-a')).toHaveLength(22);
   });
 });
