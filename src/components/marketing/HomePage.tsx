@@ -22,32 +22,43 @@ import {
 import { INTEGRATIONS, INTEGRATION_STATUS_LABEL } from '@/lib/marketing/integrations';
 import { B2B_CAPABILITIES, B2C_PRICING } from '@/lib/marketing/pricing';
 
-function HeroGlassCard({
+function HeroStatCard({
   label,
   value,
   sub,
   dark = false,
-  className = '',
 }: {
   label: string;
   value: string;
   sub: string;
   dark?: boolean;
-  className?: string;
 }) {
   return (
-    <div className={`${dark ? 'auth-glass-card-dark' : 'auth-glass-card'} px-5 py-4 ${className}`}>
-      <p
-        className={`text-[11px] font-medium uppercase tracking-wider ${dark ? 'text-white/55' : 'text-[var(--ud-slate)]'}`}
-      >
-        {label}
-      </p>
-      <p
-        className={`mt-1 text-2xl font-semibold ${dark ? 'text-white' : 'text-[var(--ud-graphite)]'}`}
-      >
-        {value}
-      </p>
-      <p className={`mt-0.5 text-xs ${dark ? 'text-white/45' : 'text-[var(--ud-slate)]'}`}>{sub}</p>
+    <div className={dark ? 'marketing-hero-stat marketing-hero-stat-dark' : 'marketing-hero-stat'}>
+      <p className="marketing-hero-stat-label">{label}</p>
+      <p className="marketing-hero-stat-value">{value}</p>
+      <p className="marketing-hero-stat-sub">{sub}</p>
+    </div>
+  );
+}
+
+function HeroDashboard() {
+  return (
+    <div className="marketing-hero-dashboard" aria-hidden>
+      <div className="marketing-hero-stats">
+        <HeroStatCard label="Projects" value="24" sub="Active clients" dark />
+        <HeroStatCard label="Decks" value="18" sub="Updated this week" />
+        <HeroStatCard label="Emails" value="36" sub="Synced this week" />
+        <HeroStatCard label="Decisions" value="9" sub="Waiting on you" dark />
+      </div>
+      <div className="marketing-hero-activity">
+        <p className="marketing-hero-activity-label">Recent activity</p>
+        <ul className="marketing-hero-activity-list">
+          <li>Client Q2 Strategy Deck · Updated 2h ago</li>
+          <li>Homepage Redesign Brief · Updated 5h ago</li>
+          <li>Follow-up email draft · Sunny suggested 1h ago</li>
+        </ul>
+      </div>
     </div>
   );
 }
@@ -74,9 +85,9 @@ export function HomePage() {
       <section className="marketing-hero">
         <div className="auth-brand-blob-a" />
         <div className="auth-brand-blob-b" />
-        <div className="marketing-container relative z-10 grid items-center gap-10 py-10 sm:gap-14 sm:py-16 lg:grid-cols-2 lg:py-24">
+        <div className="marketing-container relative z-10 grid items-center gap-10 py-10 sm:gap-12 sm:py-16 lg:grid-cols-2 lg:gap-16 lg:py-24">
           <div className="marketing-fade-up min-w-0">
-            <p className="auth-brand-tagline mb-4">{BRAND_TAGLINE}</p>
+            <p className="marketing-hero-eyebrow">{BRAND_TAGLINE}</p>
             <h1 className="marketing-hero-title">
               One place for every client project, deck, email, and decision.
             </h1>
@@ -86,7 +97,7 @@ export function HomePage() {
             </p>
 
             <div className="marketing-hero-actions mt-8">
-              <Link href="/login" className="marketing-btn-primary marketing-btn-lg group">
+              <Link href="/login" className="marketing-btn-primary marketing-btn-hero marketing-btn-lg group">
                 Get started free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -95,67 +106,30 @@ export function HomePage() {
               </Link>
             </div>
 
-            <div className="auth-trust-row marketing-trust-row mt-8 sm:mt-10">
-              <div className="auth-trust-item">
-                <span className="auth-trust-icon">
+            <ul className="marketing-hero-trust mt-8 sm:mt-10">
+              <li className="marketing-hero-trust-item">
+                <span className="marketing-hero-trust-icon">
                   <Check className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
                 No credit card required
-              </div>
-              <div className="auth-trust-item">
-                <span className="auth-trust-icon">
+              </li>
+              <li className="marketing-hero-trust-item">
+                <span className="marketing-hero-trust-icon">
                   <Users className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
-                Built for consultants & operators
-              </div>
-              <div className="auth-trust-item">
-                <span className="auth-trust-icon">
+                Built for consultants &amp; operators
+              </li>
+              <li className="marketing-hero-trust-item">
+                <span className="marketing-hero-trust-icon">
                   <Shield className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
                 Enterprise security available
-              </div>
-            </div>
+              </li>
+            </ul>
           </div>
 
-          <div className="relative hidden min-h-[420px] lg:block">
-            <div className="marketing-hero-visual">
-              <div className="marketing-hero-ribbon" />
-            </div>
-            <HeroGlassCard
-              label="Projects"
-              value="24"
-              sub="Active client projects"
-              dark
-              className="absolute left-[8%] top-[10%] z-10 w-48"
-            />
-            <HeroGlassCard
-              label="Decks"
-              value="18"
-              sub="Updated this week"
-              className="absolute right-[4%] top-[28%] z-10 w-44"
-            />
-            <HeroGlassCard
-              label="Emails"
-              value="36"
-              sub="Synced this week"
-              className="absolute left-[18%] top-[48%] z-10 w-44"
-            />
-            <HeroGlassCard
-              label="Decisions"
-              value="9"
-              sub="Waiting on you"
-              className="absolute bottom-[12%] right-[12%] z-10 w-44"
-            />
-            <div className="auth-glass-card-dark absolute bottom-[8%] left-[6%] right-[6%] z-10 px-5 py-4">
-              <p className="text-[11px] font-medium uppercase tracking-wider text-white/50">
-                Recent activity
-              </p>
-              <div className="mt-3 space-y-2.5 text-sm text-white/85">
-                <p>Client Q2 Strategy Deck · Updated 2h ago</p>
-                <p>Homepage Redesign Brief · Updated 5h ago</p>
-                <p>Follow-up email draft · Sunny suggested 1h ago</p>
-              </div>
-            </div>
+          <div className="marketing-hero-visual-wrap">
+            <HeroDashboard />
           </div>
         </div>
       </section>
