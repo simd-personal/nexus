@@ -2,15 +2,21 @@
 
 import { Button } from '@/components/ui/Button';
 import type { FileRecord } from '@/types/database';
-import { FileText, Image as ImageIcon, Loader2, X } from 'lucide-react';
+import { FileText, Image as ImageIcon, Loader2, Table2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+
+interface SpreadsheetSheet {
+  name: string;
+  rows: string[][];
+}
 
 interface FileViewPayload {
   fileName: string;
   mimeType: string;
-  viewType: 'image' | 'pdf' | 'text' | 'unsupported';
+  viewType: 'image' | 'pdf' | 'text' | 'spreadsheet' | 'unsupported';
   url: string | null;
   text: string | null;
+  sheets?: SpreadsheetSheet[];
   status: string;
   hasOriginal: boolean;
 }
@@ -25,7 +31,7 @@ export function FileViewerModal({
   const [payload, setPayload] = useState<FileViewPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<'original' | 'text'>('original');
+  const [tab, setTab] = useState<'original' | 'spreadsheet' | 'text'>('text');
 
   const loadPreview = useCallback(async () => {
     setLoading(true);
@@ -37,7 +43,9 @@ export function FileViewerModal({
       }
       const data = (await res.json()) as FileViewPayload;
       setPayload(data);
-      if (!data.hasOriginal || data.viewType === 'text') {
+      if (data.viewType === 'spreadsheet' && data.sheets?.length) {
+        setTab('spreadsheet');
+      } else if (!data.hasOriginal || data.viewType === 'text') {
         setTab('text');
       } else {
         setTab('original');
@@ -61,7 +69,8 @@ export function FileViewerModal({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
 
-  const showOriginalTab = payload?.hasOriginal && payload.viewType !== 'text';
+  const showOriginalTab = payload?.hasOriginal && payload.viewType !== 'text' && payload.viewType !== 'spreadsheet';
+  const showSpreadsheetTab = payload?.viewType === 'spreadsheet' && Boolean(payload.sheets?.length);
   const showTextTab = Boolean(payload?.text?.trim());
 
   return (
@@ -72,19 +81,24 @@ export function FileViewerModal({
         aria-label="Close preview"
         onClick={onClose}
       />
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
+      <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold text-gray-900">{file.file_name}</h3>
-            <p className="text-xs text-gray-500 capitalize">{file.status.replace('_', ' ')}</p>
+            <p className="text-xs text-gray-500 capitalize">{file.status.replaceAll('_', ' ')}</p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
             <X className="h-4 w-4" />
           </Button>
         </div>
 
-        {(showOriginalTab || showTextTab) && (
+        {(showOriginalTab || showSpreadsheetTab || showTextTab) && (
           <div className="flex gap-1 border-b border-gray-100 px-4 pt-2">
+            {showSpreadsheetTab && (
+              <TabButton active={tab === 'spreadsheet'} onClick={() => setTab('spreadsheet')}>
+                Spreadsheet
+              </TabButton>
+            )}
             {showOriginalTab && (
               <TabButton active={tab === 'original'} onClick={() => setTab('original')}>
                 {payload?.viewType === 'image' ? 'Image' : payload?.viewType === 'pdf' ? 'PDF' : 'Original'}
@@ -120,8 +134,12 @@ export function FileViewerModal({
             <OriginalPreview payload={payload} />
           )}
 
+          {!loading && !error && payload && tab === 'spreadsheet' && (
+            <SpreadsheetPreview sheets={payload.sheets ?? []} />
+          )}
+
           {!loading && !error && payload && tab === 'text' && (
-            <TextPreview text={payload.text} status={payload.status} />
+            <TextPreview text={payload.text} status={payload.status} viewType={payload.viewType} />
           )}
         </div>
       </div>
@@ -194,13 +212,64 @@ function OriginalPreview({ payload }: { payload: FileViewPayload }) {
   );
 }
 
-function TextPreview({ text, status }: { text: string | null; status: string }) {
+function SpreadsheetPreview({ sheets }: { sheets: SpreadsheetSheet[] }) {
+  if (!sheets.length) {
+    return (
+      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500">
+        <Table2 className="mr-2 h-5 w-5" />
+        No spreadsheet data found in this file.
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {sheets.map((sheet) => (
+        <div key={sheet.name} className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 bg-gray-100 px-4 py-2">
+            <h4 className="text-sm font-semibold text-gray-800">{sheet.name}</h4>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 text-sm">
+              <tbody className="divide-y divide-gray-100">
+                {sheet.rows.map((row, rowIndex) => (
+                  <tr key={`${sheet.name}-${rowIndex}`} className={rowIndex === 0 ? 'bg-gray-50 font-medium' : ''}>
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={`${rowIndex}-${cellIndex}`}
+                        className="whitespace-pre-wrap px-3 py-2 align-top text-gray-800"
+                      >
+                        {cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TextPreview({
+  text,
+  status,
+  viewType,
+}: {
+  text: string | null;
+  status: string;
+  viewType: FileViewPayload['viewType'];
+}) {
   if (!text?.trim()) {
     return (
       <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500">
         {status === 'processing' || status === 'pending'
           ? 'Text will appear here once Sunny finishes processing this file.'
-          : 'No extracted text available for this file.'}
+          : viewType === 'spreadsheet'
+            ? 'Could not read spreadsheet content.'
+            : 'No extracted text available for this file.'}
       </div>
     );
   }

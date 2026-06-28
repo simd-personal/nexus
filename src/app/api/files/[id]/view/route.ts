@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/admin';
 import { getFileExtension, IMAGE_EXTENSIONS } from '@/lib/constants';
+import { isSpreadsheetFile, parseSpreadsheetBuffer, type SpreadsheetSheet } from '@/lib/processing/spreadsheet';
 
-type ViewType = 'image' | 'pdf' | 'text' | 'unsupported';
+export type FileViewType = 'image' | 'pdf' | 'text' | 'spreadsheet' | 'unsupported';
 
-function inferViewType(fileName: string, mimeType: string): ViewType {
+function inferViewType(fileName: string, mimeType: string): FileViewType {
   const lower = fileName.toLowerCase();
+  if (isSpreadsheetFile(fileName, mimeType)) return 'spreadsheet';
   if (mimeType.startsWith('image/') || IMAGE_EXTENSIONS.some((ext) => lower.endsWith(ext))) {
     return 'image';
   }
@@ -58,12 +61,32 @@ export async function GET(
     url = signed.signedUrl;
   }
 
+  let text = file.extracted_text;
+  let sheets: SpreadsheetSheet[] | undefined;
+
+  if (viewType === 'spreadsheet' && file.storage_path) {
+    const admin = createServiceClient();
+    const { data: blob, error: downloadError } = await admin.storage
+      .from(bucket)
+      .download(file.storage_path);
+
+    if (downloadError || !blob) {
+      return NextResponse.json({ error: 'Could not load spreadsheet preview' }, { status: 500 });
+    }
+
+    const buffer = Buffer.from(await blob.arrayBuffer());
+    const parsed = await parseSpreadsheetBuffer(buffer);
+    text = parsed.text || text;
+    sheets = parsed.sheets;
+  }
+
   return NextResponse.json({
     fileName: file.file_name,
     mimeType: file.file_type,
     viewType,
     url,
-    text: file.extracted_text,
+    text,
+    sheets,
     status: file.status,
     hasOriginal: Boolean(file.storage_path),
   });

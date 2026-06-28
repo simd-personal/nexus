@@ -5,10 +5,10 @@ import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { SOURCE_TYPE_LABELS } from '@/lib/constants';
+import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
-import { Eye, FileText, RefreshCw } from 'lucide-react';
+import { Eye, FileText, RefreshCw, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -18,6 +18,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 }) {
   const [files, setFiles] = useState<FileRecord[]>(initialFiles);
   const [viewingFile, setViewingFile] = useState<FileRecord | null>(null);
+  const [busyFileId, setBusyFileId] = useState<string | null>(null);
   const router = useRouter();
 
   const fetchFiles = useCallback(async () => {
@@ -46,6 +47,45 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     fetchFiles();
     router.refresh();
   }
+
+  async function handleDelete(file: FileRecord) {
+    const confirmed = window.confirm(`Delete "${file.file_name}"? This removes the file and its indexed content.`);
+    if (!confirmed) return;
+
+    setBusyFileId(file.id);
+    try {
+      const res = await fetch(`/api/files/${file.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        window.alert(data.error ?? 'Failed to delete file');
+        return;
+      }
+      if (viewingFile?.id === file.id) setViewingFile(null);
+      await fetchFiles();
+      router.refresh();
+    } finally {
+      setBusyFileId(null);
+    }
+  }
+
+  async function handleReprocess(file: FileRecord) {
+    setBusyFileId(file.id);
+    try {
+      const res = await fetch(`/api/files/${file.id}/reprocess`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        window.alert(data.error ?? 'Failed to reprocess file');
+        return;
+      }
+      await fetchFiles();
+      router.refresh();
+    } finally {
+      setBusyFileId(null);
+    }
+  }
+
+  const canReprocess = (status: FileRecord['status']) =>
+    status === 'uploaded_unprocessed' || status === 'failed' || status === 'processed';
 
   return (
     <div className="space-y-6">
@@ -92,6 +132,29 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                       <Eye className="w-4 h-4" />
                       View
                     </Button>
+                    {canReprocess(file.status) && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={busyFileId === file.id}
+                        onClick={() => handleReprocess(file)}
+                        aria-label={`Reprocess ${file.file_name}`}
+                      >
+                        <RefreshCw className={`w-4 h-4 ${busyFileId === file.id ? 'animate-spin' : ''}`} />
+                        Reprocess
+                      </Button>
+                    )}
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={busyFileId === file.id}
+                      onClick={() => handleDelete(file)}
+                      aria-label={`Delete ${file.file_name}`}
+                      className="text-red-600 hover:text-red-700 hover:border-red-200"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </Button>
                     {file.status === 'processing' && (
                       <RefreshCw className="w-4 h-4 text-amber-500 animate-spin" />
                     )}
@@ -99,12 +162,18 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                       file.status === 'processed' ? 'healthy' :
                       file.status === 'processing' ? 'watch' :
                       file.status === 'failed' ? 'critical' :
+                      file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) ? 'watch' :
                       'needs_review'
                     } />
                   </div>
                 </div>
-                {file.status === 'uploaded_unprocessed' && (
-                  <p className="text-xs text-gray-500 mt-2">Uploaded but not processed (unsupported format)</p>
+                {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
+                  <p className="text-xs text-amber-700 mt-2">
+                    Not indexed for search yet — open View to read the spreadsheet, or click Reprocess to index it.
+                  </p>
+                )}
+                {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (
+                  <p className="text-xs text-gray-500 mt-2">This file type is stored but cannot be processed.</p>
                 )}
               </Card>
             ))}

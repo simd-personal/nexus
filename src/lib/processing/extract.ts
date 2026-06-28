@@ -2,6 +2,7 @@ import mammoth from 'mammoth';
 import { extractTextFromImage } from '@/lib/ai/openai';
 import { getFileExtension, IMAGE_EXTENSIONS, TRANSCRIPT_EXTENSIONS } from '@/lib/constants';
 import { ensurePdfParseEnvironment } from '@/lib/processing/pdf-env';
+import { extractSpreadsheetText } from '@/lib/processing/spreadsheet';
 
 function mimeForExtension(ext: string): string {
   switch (ext) {
@@ -67,8 +68,14 @@ export async function extractTextFromBuffer(
     case '.md':
     case '.markdown':
     case '.csv':
+      return { text: buffer.toString('utf-8') };
+
     case '.eml':
       return { text: buffer.toString('utf-8') };
+
+    case '.xlsx':
+    case '.xls':
+      return { text: await extractSpreadsheetText(buffer) };
 
     case '.vtt':
     case '.srt':

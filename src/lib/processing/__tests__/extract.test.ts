@@ -52,6 +52,21 @@ Maria Santos: Vendor plan due July 15.`;
     expect(extractTextFromImage).toHaveBeenCalledOnce();
     expect(text).toContain('Q3 revenue');
   });
+
+  it('extracts spreadsheet rows from xlsx files', async () => {
+    const XLSX = await import('xlsx');
+    const workbook = XLSX.utils.book_new();
+    const sheet = XLSX.utils.aoa_to_sheet([
+      ['Owner', 'Action'],
+      ['Revenue Cycle', 'Review denials queue'],
+    ]);
+    XLSX.utils.book_append_sheet(workbook, sheet, 'Actions');
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+
+    const { text } = await extractTextFromBuffer(buffer, 'plan.xlsx');
+    expect(text).toContain('Sheet: Actions');
+    expect(text).toContain('Review denials queue');
+  });
 });
 
 describe('email parsing', () => {

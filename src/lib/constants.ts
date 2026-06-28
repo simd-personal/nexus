@@ -47,7 +47,7 @@ export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
 };
 
 export const SUPPORTED_EXTENSIONS = [
-  '.txt', '.md', '.markdown', '.pdf', '.docx', '.csv',
+  '.txt', '.md', '.markdown', '.pdf', '.docx', '.csv', '.xlsx', '.xls',
   '.mp3', '.m4a', '.wav', '.eml',
   '.png', '.jpg', '.jpeg', '.webp',
   '.vtt', '.srt',
@@ -66,6 +66,8 @@ export const MIME_TO_SOURCE: Record<string, SourceType> = {
   'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'pdf',
   'text/csv': 'csv',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'csv',
+  'application/vnd.ms-excel': 'csv',
   'message/rfc822': 'email',
   'audio/mpeg': 'audio',
   'audio/mp4': 'audio',
@@ -96,7 +98,7 @@ export function inferSourceType(fileName: string, mimeType?: string): SourceType
   if (IMAGE_EXTENSIONS.some((ext) => lower.endsWith(ext))) return 'note';
   if (mimeType && MIME_TO_SOURCE[mimeType]) return MIME_TO_SOURCE[mimeType];
   if (lower.endsWith('.pdf')) return 'pdf';
-  if (lower.endsWith('.csv')) return 'csv';
+  if (lower.endsWith('.csv') || lower.endsWith('.xlsx') || lower.endsWith('.xls')) return 'csv';
   if (lower.endsWith('.txt') || lower.endsWith('.md') || lower.endsWith('.markdown')) return 'note';
   return 'other';
 }

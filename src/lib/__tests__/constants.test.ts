@@ -32,5 +32,6 @@ describe('file constants', () => {
   it('marks unsupported extensions as not processable', () => {
     expect(isProcessable('archive.zip')).toBe(false);
     expect(isProcessable('slides.pptx')).toBe(false);
+    expect(isProcessable('plan.xlsx')).toBe(true);
   });
 });
