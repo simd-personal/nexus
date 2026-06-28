@@ -15,7 +15,7 @@ type EmailView = {
   from: string;
   subject: string;
   text: string;
-  attachments: Array<{ filename: string; contentType: string; size: number }>;
+  attachments: Array<{ filename: string; contentType: string; size: number; inline?: boolean }>;
   contentAvailable: boolean;
   assignable: boolean;
 };
@@ -279,13 +279,16 @@ function PendingInboundRow({
                   {viewData?.attachments && viewData.attachments.length > 0 && (
                     <div className="mt-4">
                       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Attachments
+                        Files and images
                       </p>
                       <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
                         {viewData.attachments.map((attachment) => (
-                          <li key={attachment.filename} className="flex items-center gap-2">
+                          <li key={`${attachment.filename}-${attachment.inline ? 'inline' : 'file'}`} className="flex items-center gap-2">
                             <Paperclip className="h-3.5 w-3.5 shrink-0" />
-                            {attachment.filename}
+                            <span>
+                              {attachment.filename}
+                              {attachment.inline ? ' · from email body' : ''}
+                            </span>
                           </li>
                         ))}
                       </ul>

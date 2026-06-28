@@ -8,6 +8,7 @@ export interface InboundAttachmentMeta {
   filename: string;
   contentType: string;
   size: number;
+  inline?: boolean;
 }
 
 export interface PendingInboundEventRecord {
@@ -24,6 +25,7 @@ export function buildAttachmentsMeta(payload: InboundEmailPayload): InboundAttac
     filename: attachment.filename,
     contentType: attachment.contentType,
     size: attachment.content.length,
+    inline: attachment.inline ?? false,
   }));
 }
 
@@ -69,6 +71,7 @@ export function formatPendingEmailForView(
       filename: attachment.filename,
       contentType: attachment.contentType,
       size: attachment.content.length,
+      inline: attachment.inline ?? false,
     })) ??
     event.attachments_meta ??
     [];

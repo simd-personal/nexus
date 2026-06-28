@@ -7,6 +7,7 @@ interface SerializedAttachment {
   filename: string;
   contentType: string;
   contentBase64: string;
+  inline?: boolean;
 }
 
 interface SerializedInboundPayload {
@@ -36,6 +37,7 @@ export function serializeInboundPayload(payload: InboundEmailPayload): string {
       filename: attachment.filename,
       contentType: attachment.contentType,
       contentBase64: attachment.content.toString('base64'),
+      inline: attachment.inline,
     })),
   };
   return JSON.stringify(serialized);
@@ -53,6 +55,7 @@ export function deserializeInboundPayload(raw: string): InboundEmailPayload {
       filename: attachment.filename,
       contentType: attachment.contentType,
       content: Buffer.from(attachment.contentBase64, 'base64'),
+      inline: attachment.inline,
     })),
   };
 }

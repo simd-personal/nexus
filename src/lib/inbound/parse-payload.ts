@@ -1,7 +1,10 @@
+import { enrichInboundPayload } from '@/lib/inbound/enrich-payload';
+
 export interface InboundAttachment {
   filename: string;
   contentType: string;
   content: Buffer;
+  inline?: boolean;
 }
 
 export interface InboundEmailPayload {
@@ -72,14 +75,14 @@ export function parseResendInboundPayload(body: unknown): InboundEmailPayload | 
         ? payload.html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
         : '';
 
-  return {
+  return enrichInboundPayload({
     from: String(payload.from ?? ''),
     to: parseAddressList(payload.to),
     subject: String(payload.subject ?? '(no subject)'),
     text,
     html: typeof payload.html === 'string' ? payload.html : undefined,
     attachments,
-  };
+  });
 }
 
 export async function parseSendGridInboundForm(formData: FormData): Promise<InboundEmailPayload | null> {
@@ -89,21 +92,39 @@ export async function parseSendGridInboundForm(formData: FormData): Promise<Inbo
   const text = String(formData.get('text') ?? '');
   const html = String(formData.get('html') ?? '');
 
+  const attachmentInfo = parseSendGridAttachmentInfo(formData.get('attachment-info'));
+
   const attachments: InboundAttachment[] = [];
   const count = Number(formData.get('attachments') ?? formData.get('attachment-count') ?? 0);
   for (let index = 1; index <= count; index += 1) {
-    const file = formData.get(`attachment${index}`) ?? formData.get(`attachment-${index}`);
+    const attachmentKey = `attachment${index}`;
+    const file = formData.get(attachmentKey) ?? formData.get(`attachment-${index}`);
     if (!(file instanceof File) || file.size === 0) continue;
+
+    const info = attachmentInfo[attachmentKey];
+    const contentId = info?.['content-id'] ?? info?.contentId;
+    const infoFilename = info?.filename || info?.name;
+    const contentType = info?.type || file.type || 'application/octet-stream';
+    const isInlineImage = Boolean(contentId) && contentType.startsWith('image/');
+
+    let filename = infoFilename || file.name || attachmentKey;
+    if (isInlineImage && (!infoFilename || infoFilename === attachmentKey)) {
+      const ext = extensionFromMime(contentType) ?? 'png';
+      const cidSlug = sanitizeContentId(contentId!);
+      filename = `inline-${cidSlug}.${ext}`;
+    }
+
     attachments.push({
-      filename: file.name || `attachment-${index}`,
-      contentType: file.type || 'application/octet-stream',
+      filename,
+      contentType,
       content: Buffer.from(await file.arrayBuffer()),
+      inline: isInlineImage,
     });
   }
 
-  if (!from && !to.length && !text && !attachments.length) return null;
+  if (!from && !to.length && !text && !html && !attachments.length) return null;
 
-  return {
+  const payload: InboundEmailPayload = {
     from,
     to,
     subject,
@@ -111,6 +132,41 @@ export async function parseSendGridInboundForm(formData: FormData): Promise<Inbo
     html: html || undefined,
     attachments,
   };
+
+  return enrichInboundPayload(payload);
+}
+
+interface SendGridAttachmentInfoEntry {
+  filename?: string;
+  name?: string;
+  type?: string;
+  'content-id'?: string;
+  contentId?: string;
+}
+
+function parseSendGridAttachmentInfo(value: FormDataEntryValue | null): Record<string, SendGridAttachmentInfoEntry> {
+  if (typeof value !== 'string' || !value.trim()) return {};
+  try {
+    const parsed = JSON.parse(value) as Record<string, SendGridAttachmentInfoEntry>;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function extensionFromMime(mimeType: string): string | null {
+  const map: Record<string, string> = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/jpg': 'jpg',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+  };
+  return map[mimeType.toLowerCase()] ?? null;
+}
+
+function sanitizeContentId(contentId: string): string {
+  return contentId.replace(/[^a-zA-Z0-9._-]+/g, '-').slice(0, 40) || 'image';
 }
 
 export function buildEmailDocument(payload: InboundEmailPayload): string {

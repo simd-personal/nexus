@@ -133,13 +133,16 @@ export async function ingestInboundEmail(
       buffer: attachment.content,
       mimeType: attachment.contentType,
       sourceType: inferSourceTypeFromAttachment(attachment.filename, attachment.contentType),
-      userNote: `Attachment from forwarded email: ${payload.subject}`,
+      userNote: attachment.inline
+        ? `Image from email body: ${payload.subject}`
+        : `Attachment from forwarded email: ${payload.subject}`,
       metadata: {
         inbound_email: {
           from: payload.from,
           subject: payload.subject,
           routing: target.routing,
           parent_email_file_id: emailFile.fileId,
+          inline_image: attachment.inline ?? false,
         },
       },
     });

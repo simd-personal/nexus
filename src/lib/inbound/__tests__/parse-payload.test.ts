@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   buildEmailDocument,
   parseResendInboundPayload,
+  parseSendGridInboundForm,
 } from '@/lib/inbound/parse-payload';
+
+const PNG_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
 describe('parse inbound payload', () => {
   it('parses Resend inbound webhook shape', () => {
@@ -41,5 +45,39 @@ describe('parse inbound payload', () => {
     expect(doc).toContain('From: a@example.com');
     expect(doc).toContain('Subject: Hello');
     expect(doc).toContain('Body text');
+  });
+
+  it('parses SendGrid inline image metadata and embedded HTML images', async () => {
+    const formData = new FormData();
+    formData.set('from', 'shop@example.com');
+    formData.set('to', 'u.token@inbound.upperdeck.dev');
+    formData.set('subject', 'Promo');
+    formData.set('text', '');
+    formData.set(
+      'html',
+      `<p>Sale</p><img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" /><img src="cid:ii_abc123" />`
+    );
+    formData.set('attachments', '1');
+    formData.set(
+      'attachment-info',
+      JSON.stringify({
+        attachment1: {
+          filename: 'hero.png',
+          type: 'image/png',
+          'content-id': 'ii_abc123',
+        },
+      })
+    );
+    formData.set(
+      'attachment1',
+      new File([Buffer.from(PNG_BASE64, 'base64')], 'hero.png', { type: 'image/png' })
+    );
+
+    const payload = await parseSendGridInboundForm(formData);
+
+    expect(payload).not.toBeNull();
+    expect(payload?.attachments.length).toBeGreaterThanOrEqual(2);
+    expect(payload?.attachments.some((item) => item.inline)).toBe(true);
+    expect(payload?.attachments.some((item) => item.filename.startsWith('embedded-image-'))).toBe(true);
   });
 });
