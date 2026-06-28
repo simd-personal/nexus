@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { CitationsList } from '@/components/ui/Citations';
+import { CitationsList, searchResultsToCitations } from '@/components/ui/Citations';
 import { SOURCE_TYPE_LABELS } from '@/lib/constants';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { useSunnyStream } from '@/hooks/useSunnyStream';
@@ -171,26 +171,6 @@ function ArtifactToolbar({ artifact }: { artifact: SunnyChatArtifact }) {
         <Download className="w-3.5 h-3.5" />
         Download .{ext}
       </button>
-    </div>
-  );
-}
-
-function SearchResultsPanel({ results }: { results: SearchResult[] }) {
-  if (!results.length) return null;
-  return (
-    <div className="mt-3 space-y-2">
-      <p className="text-xs font-medium text-gray-500">{results.length} source{results.length !== 1 ? 's' : ''} found</p>
-      {results.slice(0, 5).map((r) => (
-        <div key={r.id} className="rounded-lg border border-gray-200 bg-white p-3 text-xs">
-          <div className="flex gap-2 mb-1">
-            {r.source_type && <Badge>{SOURCE_TYPE_LABELS[r.source_type as SourceType] ?? r.source_type}</Badge>}
-            <Badge variant="neutral">{r.match_reason}</Badge>
-          </div>
-          <p className="font-medium text-gray-900">{r.file_name}</p>
-          {r.project_name && <p className="text-gray-500">{r.client_name} · {r.project_name}</p>}
-          <p className="text-gray-600 mt-1 line-clamp-2">{r.text}</p>
-        </div>
-      ))}
     </div>
   );
 }
@@ -912,6 +892,14 @@ export function SunnyChatInterface({
                   ? `Here's your ${artifact.title}. Review it below. Use Copy or Download when you're ready.`
                   : msg.content;
 
+              const sourceCitations =
+                msg.citations.length > 0
+                  ? msg.citations
+                  : results
+                    ? searchResultsToCitations(results)
+                    : [];
+              const sourceProjectId = projectId ?? results?.[0]?.project_id;
+
               return (
                 <div key={msg.id} className={cn('group flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {msg.role === 'assistant' && (
@@ -957,7 +945,6 @@ export function SunnyChatInterface({
                         ))}
                       </div>
                     )}
-                    {msg.role === 'assistant' && results && <SearchResultsPanel results={results} />}
                     {msg.role === 'assistant' && artifact && !streaming && (
                       isDeck
                         ? <DeckViewer artifact={artifact} />
@@ -967,8 +954,8 @@ export function SunnyChatInterface({
                             ? <ArtifactToolbar artifact={artifact} />
                             : <ArtifactPanel artifact={artifact} />
                     )}
-                    {msg.role === 'assistant' && msg.citations.length > 0 && !streaming && (
-                      <CitationsList citations={msg.citations} />
+                    {msg.role === 'assistant' && sourceCitations.length > 0 && !streaming && (
+                      <CitationsList citations={sourceCitations} projectId={sourceProjectId} />
                     )}
                     {msg.role === 'assistant' && !streaming && (msg.content || artifact) && (
                       <MessageActions

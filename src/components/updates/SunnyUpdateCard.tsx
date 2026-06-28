@@ -44,7 +44,7 @@ export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
             </div>
           )}
 
-          <CitationsList citations={update.source_citations} />
+          <CitationsList citations={update.source_citations} projectId={update.project_id} />
         </div>
       </div>
     </Card>

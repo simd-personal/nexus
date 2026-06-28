@@ -409,6 +409,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
     const criticalItems = await detectCriticalItems(text, existingContent, fileName);
     for (const item of criticalItems) {
       const citation: Citation = {
+        file_id: fileId,
         file_name: fileName,
         source_type: sourceType,
         snippet: text.slice(0, 200),

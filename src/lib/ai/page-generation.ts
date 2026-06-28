@@ -49,6 +49,7 @@ function formatContext(ctx: PageGenerationContext): string {
 
 function buildCitations(ctx: PageGenerationContext): Citation[] {
   return ctx.chunks.slice(0, 5).map((c) => ({
+    file_id: c.metadata?.file_id as string | undefined,
     file_name: c.file_name,
     source_type: c.source_type as Citation['source_type'],
     snippet: c.text.slice(0, 200),

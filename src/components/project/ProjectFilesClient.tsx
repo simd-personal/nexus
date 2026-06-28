@@ -12,7 +12,7 @@ import { kickFileProcessing } from '@/lib/upload/client';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
 import { Eye, FileText, RefreshCw, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 export function ProjectFilesClient({ projectId, initialFiles }: {
@@ -24,6 +24,8 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
   const kickingRef = useRef(new Set<string>());
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const highlightedFileId = searchParams.get('file');
 
   const kickProcessing = useCallback((file: FileRecord, force = false) => {
     if (kickingRef.current.has(file.id)) return;
@@ -65,6 +67,14 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     window.addEventListener('project-files-uploaded', onUploaded);
     return () => window.removeEventListener('project-files-uploaded', onUploaded);
   }, [fetchFiles, router]);
+
+  useEffect(() => {
+    if (!highlightedFileId) return;
+    const match = files.find((file) => file.id === highlightedFileId);
+    if (match) {
+      setViewingFile(match);
+    }
+  }, [files, highlightedFileId]);
 
   function handleUploadComplete() {
     fetchFiles();

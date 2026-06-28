@@ -57,7 +57,7 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
         </div>
       )}
 
-      <CitationsList citations={item.source_citations} />
+      <CitationsList citations={item.source_citations} projectId={item.project_id} />
 
       {item.status === 'open' && (
         <div className="flex gap-2 mt-4">

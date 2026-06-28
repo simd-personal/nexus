@@ -265,7 +265,7 @@ export function toSearchContext(
       text: r.text,
       file_name,
       source_type: r.source_type,
-      metadata: r.metadata,
+      metadata: { ...r.metadata, file_id: r.file_id },
     };
   });
 }
