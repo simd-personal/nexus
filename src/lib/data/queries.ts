@@ -161,7 +161,7 @@ export async function getProjectChatMessages(projectId: string): Promise<ChatMes
 }
 
 export async function getLatestChatSession(opts: {
-  sessionType: 'project' | 'search';
+  sessionType: 'project' | 'search' | 'brief' | 'playbook';
   projectId?: string | null;
 }): Promise<{ session: ChatSession; messages: ChatMessage[] } | null> {
   const supabase = await createClient();

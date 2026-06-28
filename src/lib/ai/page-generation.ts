@@ -2,7 +2,7 @@
  * GPT generation for project pages (/api/generate) — outside chat.
  * Output is natural prose with no asterisks or dashes.
  */
-import { chatCompletion, generateLongForm, structuredExtraction, OPENAI_MODELS } from '@/lib/ai/openai';
+import { chatCompletion, generateLongForm, streamLongForm, structuredExtraction, OPENAI_MODELS } from '@/lib/ai/openai';
 import {
   BRIEF_SYSTEM_PROMPT,
   EMAIL_SYSTEM_PROMPT,
@@ -13,6 +13,7 @@ import {
   formatNaturalProse,
 } from '@/lib/ai/generation-prompts';
 import type { Citation, SunnyBrief } from '@/types/database';
+import { buildHistoryNote, type ChatTurn } from '@/lib/chat/memory';
 
 export interface PageGenerationContext {
   chunks: Array<{
@@ -169,6 +170,65 @@ export async function generatePageDeck(
       `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${formatContext(filtered)}`,
       instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
     ].join(''),
+    OPENAI_MODELS.generation
+  );
+  return formatNaturalProse(raw);
+}
+
+function buildPageChatPrompt(
+  context: PageGenerationContext,
+  message: string,
+  history: ChatTurn[],
+  extra?: string
+): string {
+  const historyNote = buildHistoryNote(history);
+  return [
+    extra ?? '',
+    `Evidence:\n${formatContext(context)}`,
+    historyNote,
+    `\nLatest request:\n${message.trim()}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+}
+
+/** Streaming executive brief for Sunny Brief page chat */
+export async function streamPageBrief(
+  context: PageGenerationContext,
+  message: string,
+  history: ChatTurn[],
+  onToken: (token: string) => void
+): Promise<{ content: string; citations: Citation[] }> {
+  const userPrompt = buildPageChatPrompt(context, message, history);
+  const raw = await streamLongForm(
+    `${SUNNY_PERSONA}\n\n${BRIEF_SYSTEM_PROMPT}\n\nWrite a complete executive brief with clear section titles and prose paragraphs. Cover executive summary, what changed recently, critical items, client concerns, risks, opportunities, open action items, and recommended next steps.`,
+    userPrompt,
+    onToken,
+    OPENAI_MODELS.generationHigh,
+    { reasoningEffort: 'high' }
+  );
+  return { content: formatNaturalProse(raw), citations: buildCitations(context) };
+}
+
+/** Streaming operating playbook for Playbook page chat */
+export async function streamPagePlaybook(
+  projectName: string,
+  clientName: string,
+  context: PageGenerationContext,
+  message: string,
+  history: ChatTurn[],
+  onToken: (token: string) => void
+): Promise<string> {
+  const userPrompt = buildPageChatPrompt(
+    context,
+    message,
+    history,
+    `Client: ${clientName}\nProject: ${projectName}`
+  );
+  const raw = await streamLongForm(
+    `${SUNNY_PERSONA}\n\n${PLAYBOOK_SYSTEM_PROMPT}`,
+    userPrompt,
+    onToken,
     OPENAI_MODELS.generation
   );
   return formatNaturalProse(raw);

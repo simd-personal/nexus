@@ -1,5 +1,5 @@
-import { GenerateButton } from '@/components/project/GenerateButton';
-import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { PageGenerationChat } from '@/components/project/PageGenerationChat';
+import { getLatestChatSession, getProject } from '@/lib/data/queries';
 
 export default async function PlaybookPage({
   params,
@@ -7,13 +7,18 @@ export default async function PlaybookPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const [latestChat, project] = await Promise.all([
+    getLatestChatSession({ sessionType: 'playbook', projectId: id }),
+    getProject(id),
+  ]);
 
   return (
-    <GenerateButton
+    <PageGenerationChat
       projectId={id}
       type="playbook"
-      label="Operating Playbook"
-      description={`Generate a comprehensive client operating playbook with ${AI_EMPLOYEE_NAME} — grounded in your project evidence.`}
+      projectName={project ? `${project.client_name} — ${project.project_name}` : undefined}
+      initialMessages={latestChat?.messages ?? []}
+      initialSessionId={latestChat?.session.id}
     />
   );
 }

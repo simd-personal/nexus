@@ -1,5 +1,5 @@
-import { GenerateButton } from '@/components/project/GenerateButton';
-import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { PageGenerationChat } from '@/components/project/PageGenerationChat';
+import { getLatestChatSession, getProject } from '@/lib/data/queries';
 
 export default async function SunnyBriefPage({
   params,
@@ -7,13 +7,18 @@ export default async function SunnyBriefPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const [latestChat, project] = await Promise.all([
+    getLatestChatSession({ sessionType: 'brief', projectId: id }),
+    getProject(id),
+  ]);
 
   return (
-    <GenerateButton
+    <PageGenerationChat
       projectId={id}
       type="brief"
-      label={`${AI_EMPLOYEE_NAME} Brief`}
-      description="Generate an executive brief with summary, critical items, concerns, risks, and recommended next steps — all with citations."
+      projectName={project ? `${project.client_name} — ${project.project_name}` : undefined}
+      initialMessages={latestChat?.messages ?? []}
+      initialSessionId={latestChat?.session.id}
     />
   );
 }

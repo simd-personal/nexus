@@ -108,6 +108,17 @@ export async function streamChatCompletion(
   onToken: (token: string) => void,
   model: string = OPENAI_MODELS.chat
 ): Promise<string> {
+  return streamLongForm(systemPrompt, userPrompt, onToken, model);
+}
+
+/** Streaming long-form GPT generation for project page chats. */
+export async function streamLongForm(
+  systemPrompt: string,
+  userPrompt: string,
+  onToken: (token: string) => void,
+  model: string = OPENAI_MODELS.generation,
+  options?: GenerationOptions
+): Promise<string> {
   const openai = getOpenAI();
   const stream = await openai.chat.completions.create({
     model,
@@ -115,7 +126,9 @@ export async function streamChatCompletion(
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt },
     ],
+    max_completion_tokens: 8192,
     stream: true,
+    ...(options?.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}),
   });
 
   let full = '';

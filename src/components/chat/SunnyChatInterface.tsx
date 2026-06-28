@@ -37,8 +37,38 @@ import type {
 } from '@/types/database';
 import { cn } from '@/lib/utils';
 
+type ChatMode = 'project' | 'search' | 'brief' | 'playbook';
+
+function isProjectScopedMode(mode: ChatMode): boolean {
+  return mode === 'project' || mode === 'brief' || mode === 'playbook';
+}
+
+function isPageGenerationMode(mode: ChatMode): boolean {
+  return mode === 'brief' || mode === 'playbook';
+}
+
+function chatTitle(mode: ChatMode): string {
+  if (mode === 'search') return 'Search with Sunny';
+  if (mode === 'brief') return 'Sunny Brief';
+  if (mode === 'playbook') return 'Operating Playbook';
+  return `Chat with ${AI_EMPLOYEE_NAME}`;
+}
+
+function chatDescription(mode: ChatMode): string {
+  if (mode === 'brief') {
+    return 'Generate and refine executive briefs from your project materials. Conversations are saved automatically.';
+  }
+  if (mode === 'playbook') {
+    return 'Build and refine client operating playbooks from your project evidence. Conversations are saved automatically.';
+  }
+  if (mode === 'search') {
+    return 'Ask anything across your projects. Sunny searches your materials and saves the conversation automatically.';
+  }
+  return 'Ask anything or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.';
+}
+
 export interface SunnyChatInterfaceProps {
-  mode: 'project' | 'search';
+  mode: 'project' | 'search' | 'brief' | 'playbook';
   projectId?: string;
   projectName?: string;
   projects?: ProjectWithStats[];
@@ -481,7 +511,7 @@ export function SunnyChatInterface({
 
   const sendMessage = useCallback(async (text: string, opts?: { regenerate?: boolean }) => {
     if (!text.trim() || sendingRef.current) return;
-    if (mode === 'project' && !projectId) return;
+    if (isProjectScopedMode(mode) && !projectId) return;
 
     const regenerate = opts?.regenerate ?? false;
     sendingRef.current = true;
@@ -533,9 +563,20 @@ export function SunnyChatInterface({
     }
     setStatusHint('Connecting...');
 
-    const endpoint = mode === 'search' ? '/api/search/stream' : '/api/chat/stream';
-    const body =
-      mode === 'search'
+    const endpoint = isPageGenerationMode(mode)
+      ? '/api/generate/stream'
+      : mode === 'search'
+        ? '/api/search/stream'
+        : '/api/chat/stream';
+    const body = isPageGenerationMode(mode)
+      ? {
+          project_id: projectId,
+          message: text.trim(),
+          session_id: activeSessionId,
+          type: mode,
+          regenerate,
+        }
+      : mode === 'search'
         ? {
             query: text.trim(),
             project_id: projectIdRef.current ?? null,
@@ -650,7 +691,7 @@ export function SunnyChatInterface({
     (text: string, opts?: { regenerate?: boolean }) => {
       const trimmed = text.trim();
       if (!trimmed) return;
-      if (mode === 'project' && !projectId) return;
+      if (isProjectScopedMode(mode) && !projectId) return;
 
       if (!opts?.regenerate && (isStreaming || sendingRef.current)) {
         if (queueFull) return;
@@ -693,12 +734,26 @@ export function SunnyChatInterface({
           'Who mentioned vendor consolidation?',
           'Summarize critical items this week',
         ]
-      : [
-          'Draft a follow-up email about staffing concerns',
-          'Create a Q3 review deck for the board',
-          'What are the critical issues?',
-          'Pull out action items and add them',
-        ];
+      : mode === 'brief'
+        ? [
+            'Generate an executive brief from project materials',
+            'Focus on risks and recommended next steps',
+            'Make the brief shorter and more executive',
+            'Highlight what changed recently',
+          ]
+        : mode === 'playbook'
+          ? [
+              'Build an operating playbook from project materials',
+              'Include follow-up cadence and owner actions',
+              'Emphasize client concerns and operational risks',
+              'Make it shorter for a VP read',
+            ]
+          : [
+              'Draft a follow-up email about staffing concerns',
+              'Create a Q3 review deck for the board',
+              'What are the critical issues?',
+              'Pull out action items and add them',
+            ];
 
   return (
     <div className="flex h-[calc(100vh-4rem)] -mx-4 sm:-mx-0 rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
@@ -772,6 +827,7 @@ export function SunnyChatInterface({
           <span className="text-sm font-medium text-gray-900">{AI_EMPLOYEE_NAME}</span>
           {projectName && <span className="text-xs text-gray-400 truncate">· {projectName}</span>}
           <div className="ml-auto flex items-center gap-2">
+            {!isPageGenerationMode(mode) && (
             <div
               className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 shadow-sm"
               title="Auto routes Q&A to ChatGPT and document creation to Claude"
@@ -792,6 +848,7 @@ export function SunnyChatInterface({
                 <option value="claude">Claude</option>
               </select>
             </div>
+            )}
             {mode === 'search' && !lockProject && projects && projects.length > 0 && (
               <select
                 value={projectId ?? ''}
@@ -818,10 +875,10 @@ export function SunnyChatInterface({
                   <Sun className="w-6 h-6 text-amber-600" />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                  {mode === 'search' ? 'Search with Sunny' : `Chat with ${AI_EMPLOYEE_NAME}`}
+                  {chatTitle(mode)}
                 </h2>
                 <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
-                  Ask anything or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.
+                  {chatDescription(mode)}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center max-w-lg mx-auto">
                   {suggestions.map((s) => (
@@ -1013,12 +1070,16 @@ export function SunnyChatInterface({
                     ? queueFull
                       ? 'Queue full — wait for Sunny to finish...'
                       : 'Queue your next message...'
-                    : mode === 'search'
-                      ? 'Ask anything about your projects...'
-                      : `Message ${AI_EMPLOYEE_NAME}...`
+                    : isPageGenerationMode(mode)
+                      ? mode === 'brief'
+                        ? 'Generate or refine an executive brief...'
+                        : 'Generate or refine an operating playbook...'
+                      : mode === 'search'
+                        ? 'Ask anything about your projects...'
+                        : `Message ${AI_EMPLOYEE_NAME}...`
                 }
                 rows={1}
-                disabled={mode === 'project' && !projectId}
+                disabled={isProjectScopedMode(mode) && !projectId}
                 className="flex-1 resize-none bg-transparent px-2 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none max-h-[200px]"
               />
               <div className="flex shrink-0 items-center gap-1">
@@ -1032,7 +1093,7 @@ export function SunnyChatInterface({
                   size="sm"
                   disabled={
                     !input.trim() ||
-                    (mode === 'project' && !projectId) ||
+                    (isProjectScopedMode(mode) && !projectId) ||
                     (isStreaming && queueFull)
                   }
                   className="rounded-xl"

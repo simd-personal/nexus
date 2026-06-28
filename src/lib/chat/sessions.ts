@@ -5,7 +5,7 @@ export async function getOrCreateSession(
   userId: string,
   opts: {
     sessionId?: string;
-    sessionType: 'project' | 'search';
+    sessionType: 'project' | 'search' | 'brief' | 'playbook';
     projectId?: string | null;
     title?: string;
   }
@@ -70,7 +70,7 @@ async function findReusableSession(
   supabase: SupabaseClient,
   userId: string,
   opts: {
-    sessionType: 'project' | 'search';
+    sessionType: 'project' | 'search' | 'brief' | 'playbook';
     projectId?: string | null;
   },
   title: string

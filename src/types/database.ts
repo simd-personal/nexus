@@ -158,7 +158,7 @@ export interface ChatSession {
   id: string;
   owner_id: string;
   project_id: string | null;
-  session_type: 'project' | 'search';
+  session_type: 'project' | 'search' | 'brief' | 'playbook';
   title: string | null;
   created_at: string;
   updated_at: string;
