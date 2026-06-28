@@ -111,4 +111,61 @@ describe('GET /api/files/[id]/view integration', () => {
     const res = await GET(req, { params: Promise.resolve({ id: 'file-1' }) });
     expect(res.status).toBe(401);
   });
+
+  it('returns formatted docx preview html', async () => {
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    zip.file(
+      '[Content_Types].xml',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`
+    );
+    zip.folder('_rels')?.file(
+      '.rels',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`
+    );
+    zip.folder('word')?.file(
+      'document.xml',
+      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:r><w:t>Epic rollout scope</w:t></w:r></w:p>
+  </w:body>
+</w:document>`
+    );
+    const buffer = await zip.generateAsync({ type: 'nodebuffer' });
+
+    mockSingle.mockResolvedValue({
+      data: {
+        id: 'file-3',
+        file_name: 'scope.docx',
+        file_type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        storage_path: 'proj-1/123-scope.docx',
+        extracted_text: null,
+        status: 'uploaded_unprocessed',
+        project_id: 'proj-1',
+      },
+      error: null,
+    });
+    mockDownload.mockResolvedValue({
+      data: new Blob([buffer]),
+      error: null,
+    });
+
+    const req = new NextRequest('http://localhost:3000/api/files/file-3/view');
+    const res = await GET(req, { params: Promise.resolve({ id: 'file-3' }) });
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.viewType).toBe('docx');
+    expect(body.html).toContain('Epic rollout scope');
+    expect(body.text).toContain('Epic rollout scope');
+  });
 });

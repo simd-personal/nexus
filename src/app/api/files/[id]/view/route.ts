@@ -2,13 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { getFileExtension, IMAGE_EXTENSIONS } from '@/lib/constants';
+import { convertDocxBufferToHtml, isDocxFile } from '@/lib/processing/docx-preview';
 import { isSpreadsheetFile, parseSpreadsheetBuffer, type SpreadsheetSheet } from '@/lib/processing/spreadsheet';
 
-export type FileViewType = 'image' | 'pdf' | 'text' | 'spreadsheet' | 'unsupported';
+export type FileViewType = 'image' | 'pdf' | 'text' | 'spreadsheet' | 'docx' | 'unsupported';
 
 function inferViewType(fileName: string, mimeType: string): FileViewType {
   const lower = fileName.toLowerCase();
   if (isSpreadsheetFile(fileName, mimeType)) return 'spreadsheet';
+  if (isDocxFile(fileName, mimeType)) return 'docx';
   if (mimeType.startsWith('image/') || IMAGE_EXTENSIONS.some((ext) => lower.endsWith(ext))) {
     return 'image';
   }
@@ -63,21 +65,29 @@ export async function GET(
 
   let text = file.extracted_text;
   let sheets: SpreadsheetSheet[] | undefined;
+  let html: string | undefined;
 
-  if (viewType === 'spreadsheet' && file.storage_path) {
+  if ((viewType === 'spreadsheet' || viewType === 'docx') && file.storage_path) {
     const admin = createServiceClient();
     const { data: blob, error: downloadError } = await admin.storage
       .from(bucket)
       .download(file.storage_path);
 
     if (downloadError || !blob) {
-      return NextResponse.json({ error: 'Could not load spreadsheet preview' }, { status: 500 });
+      return NextResponse.json({ error: 'Could not load file preview' }, { status: 500 });
     }
 
     const buffer = Buffer.from(await blob.arrayBuffer());
-    const parsed = await parseSpreadsheetBuffer(buffer);
-    text = parsed.text || text;
-    sheets = parsed.sheets;
+
+    if (viewType === 'spreadsheet') {
+      const parsed = await parseSpreadsheetBuffer(buffer);
+      text = parsed.text || text;
+      sheets = parsed.sheets;
+    } else {
+      const parsed = await convertDocxBufferToHtml(buffer);
+      html = parsed.html || undefined;
+      text = parsed.text || text;
+    }
   }
 
   return NextResponse.json({
@@ -86,6 +96,7 @@ export async function GET(
     viewType,
     url,
     text,
+    html,
     sheets,
     status: file.status,
     hasOriginal: Boolean(file.storage_path),
