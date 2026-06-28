@@ -121,9 +121,10 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
         disabled={busy}
         onClick={() => setOpen((current) => !current)}
         aria-label={`File actions for ${file.file_name}`}
+        className="shrink-0"
       >
         <MoreHorizontal className="h-4 w-4" />
-        Actions
+        <span className="hidden sm:inline">Actions</span>
       </Button>
 
       {open && (

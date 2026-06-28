@@ -124,6 +124,18 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
   const canReprocess = (status: FileRecord['status']) =>
     status === 'uploaded_unprocessed' || status === 'failed' || status === 'processed';
 
+  function fileStatusBadge(file: FileRecord) {
+    return (
+      <StatusBadge status={
+        file.status === 'processed' ? 'healthy' :
+        file.status === 'processing' || file.status === 'pending' ? 'watch' :
+        file.status === 'failed' ? 'critical' :
+        file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) ? 'watch' :
+        'needs_review'
+      } />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <PhotoCaptureUpload
@@ -133,7 +145,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
       />
       <FileUploadCenter projectId={projectId} onUploadComplete={handleUploadComplete} />
       {uploadMessage && (
-        <p className={`text-sm ${uploadMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
+        <p className={`rounded-lg px-1 text-sm ${uploadMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
           {uploadMessage}
         </p>
       )}
@@ -150,34 +162,43 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
             <p className="text-sm text-gray-500">No files uploaded yet</p>
           </Card>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {files.map((file) => (
-              <Card key={file.id} padding={true}>
-                <div className="flex items-center justify-between gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setViewingFile(file)}
-                    className="flex min-w-0 flex-1 items-center gap-3 text-left hover:opacity-80"
-                  >
-                    {isImageFileName(file.file_name) ? (
-                      <ImageIcon className="w-5 h-5 text-violet-500 shrink-0" />
-                    ) : (
-                      <FileText className="w-5 h-5 text-gray-400 shrink-0" />
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{file.file_name}</p>
-                      <p className="text-xs text-gray-500">
-                        {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
-                        {' · '}
-                        {formatRelativeTime(file.created_at)}
-                        {file.origin_file_id ? ' · Shared copy' : ''}
-                      </p>
-                      {file.user_note && (
-                        <p className="mt-1 text-xs text-gray-600 line-clamp-2">{file.user_note}</p>
+              <Card key={file.id} padding={true} className="overflow-hidden">
+                <div className="space-y-3">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setViewingFile(file)}
+                      className="flex min-w-0 flex-1 items-start gap-3 text-left hover:opacity-80"
+                    >
+                      {isImageFileName(file.file_name) ? (
+                        <ImageIcon className="h-5 w-5 shrink-0 text-violet-500" />
+                      ) : (
+                        <FileText className="h-5 w-5 shrink-0 text-gray-400" />
                       )}
-                    </div>
-                  </button>
-                  <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-sm font-medium text-gray-900 break-words">{file.file_name}</p>
+                          <span className="sm:hidden">{fileStatusBadge(file)}</span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
+                          {' · '}
+                          {formatRelativeTime(file.created_at)}
+                          {file.origin_file_id ? ' · Shared copy' : ''}
+                        </p>
+                        {file.user_note && (
+                          <p className="mt-1 line-clamp-2 text-xs text-gray-600">{file.user_note}</p>
+                        )}
+                      </div>
+                    </button>
+                    {file.status === 'processing' && (
+                      <RefreshCw className="h-4 w-4 shrink-0 animate-spin text-amber-500" />
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 sm:border-0 sm:pt-0">
                     <FileActionsMenu
                       file={file}
                       currentProjectId={projectId}
@@ -192,9 +213,10 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                       size="sm"
                       onClick={() => setViewingFile(file)}
                       aria-label={`View ${file.file_name}`}
+                      className="shrink-0"
                     >
-                      <Eye className="w-4 h-4" />
-                      View
+                      <Eye className="h-4 w-4" />
+                      <span className="hidden sm:inline">View</span>
                     </Button>
                     {canReprocess(file.status) && (
                       <Button
@@ -203,9 +225,10 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                         disabled={busyFileId === file.id}
                         onClick={() => handleReprocess(file)}
                         aria-label={`Reprocess ${file.file_name}`}
+                        className="shrink-0"
                       >
-                        <RefreshCw className={`w-4 h-4 ${busyFileId === file.id ? 'animate-spin' : ''}`} />
-                        Reprocess
+                        <RefreshCw className={`h-4 w-4 ${busyFileId === file.id ? 'animate-spin' : ''}`} />
+                        <span className="hidden sm:inline">Reprocess</span>
                       </Button>
                     )}
                     <Button
@@ -214,34 +237,26 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                       disabled={busyFileId === file.id}
                       onClick={() => handleDelete(file)}
                       aria-label={`Delete ${file.file_name}`}
-                      className="text-red-600 hover:text-red-700 hover:border-red-200"
+                      className="shrink-0 text-red-600 hover:border-red-200 hover:text-red-700"
                     >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
+                      <Trash2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">Delete</span>
                     </Button>
-                    {file.status === 'processing' && (
-                      <RefreshCw className="w-4 h-4 text-amber-500 animate-spin" />
-                    )}
-                    <StatusBadge status={
-                      file.status === 'processed' ? 'healthy' :
-                      file.status === 'processing' || file.status === 'pending' ? 'watch' :
-                      file.status === 'failed' ? 'critical' :
-                      file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) ? 'watch' :
-                      'needs_review'
-                    } />
+                    <span className="hidden sm:inline">{fileStatusBadge(file)}</span>
                   </div>
+
+                  {(file.status === 'processing' || file.status === 'pending') && (
+                    <FileProcessingProgress file={file} />
+                  )}
+                  {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
+                    <p className="text-xs text-amber-700">
+                      Not indexed for search yet. Open View to read the spreadsheet, or tap Reprocess to index it.
+                    </p>
+                  )}
+                  {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (
+                    <p className="text-xs text-gray-500">This file type is stored but cannot be processed.</p>
+                  )}
                 </div>
-                {(file.status === 'processing' || file.status === 'pending') && (
-                  <FileProcessingProgress file={file} />
-                )}
-                {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
-                  <p className="text-xs text-amber-700 mt-2">
-                    Not indexed for search yet. Open View to read the spreadsheet, or click Reprocess to index it.
-                  </p>
-                )}
-                {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (
-                  <p className="text-xs text-gray-500 mt-2">This file type is stored but cannot be processed.</p>
-                )}
               </Card>
             ))}
           </div>

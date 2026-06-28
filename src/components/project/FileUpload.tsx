@@ -140,7 +140,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           className={cn(
-            'border-2 border-dashed rounded-xl p-8 text-center transition-colors',
+            'rounded-xl border-2 border-dashed p-4 text-center transition-colors sm:p-8',
             dragging ? 'border-gray-400 bg-gray-50' : 'border-gray-200'
           )}
         >
@@ -175,7 +175,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
       <Card>
         <CardHeader title="Paste Content" description="Paste emails, meeting notes, or transcripts" />
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           <PasteButton icon={Mail} label="Email" active={pasteMode === 'email'} onClick={() => setPasteMode('email')} />
           <PasteButton icon={StickyNote} label="Meeting Notes" active={pasteMode === 'meeting'} onClick={() => setPasteMode('meeting')} />
           <PasteButton icon={Mic} label="Transcript" active={pasteMode === 'transcript'} onClick={() => setPasteMode('transcript')} />
@@ -215,7 +215,7 @@ function PasteButton({ icon: Icon, label, active, onClick }: {
     <button
       onClick={onClick}
       className={cn(
-        'flex flex-col items-center gap-1.5 p-3 rounded-lg border text-sm transition-colors',
+        'flex flex-col items-center gap-1 rounded-lg border p-2.5 text-xs transition-colors sm:gap-1.5 sm:p-3 sm:text-sm',
         active ? 'border-gray-900 bg-gray-50 text-gray-900' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
       )}
     >
