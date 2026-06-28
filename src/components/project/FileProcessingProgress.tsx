@@ -12,10 +12,11 @@ export function FileProcessingProgress({ file }: { file: FileRecord }) {
   const progress = getFileProcessingProgress(file.metadata);
   const percent = progress?.percent ?? (file.status === 'pending' ? 0 : 5);
   const label = progress?.label ?? 'Waiting to start…';
+  const isLarge = Boolean(file.metadata?.is_large_file);
   const detail =
     progress?.chunks_total != null && progress.chunks_done != null
-      ? `${progress.chunks_done} of ${progress.chunks_total} sections indexed`
-      : progress?.detail;
+      ? `${progress.chunks_done} of ${progress.chunks_total} sections indexed${isLarge ? ' · large file' : ''}`
+      : progress?.detail ?? (isLarge ? 'Large file — indexing may take several minutes' : undefined);
 
   return (
     <div className="mt-3 space-y-2">

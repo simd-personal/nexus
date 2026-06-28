@@ -103,7 +103,7 @@ export async function runFileProcessing(
   }
 
   try {
-    await processFile({
+    const result = await processFile({
       fileId: file.id,
       projectId: file.project_id,
       fileName: file.file_name,
@@ -112,6 +112,10 @@ export async function runFileProcessing(
       pastedText,
       resume,
     });
+
+    if (!result.completed && result.stage === 'embedding') {
+      return;
+    }
   } catch (processingError) {
     console.error(
       'runFileProcessing: pipeline error',

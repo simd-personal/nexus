@@ -110,6 +110,7 @@ export async function POST(
     success: true,
     status: updated?.status ?? 'processing',
     resumed: resume,
+    incomplete: updated?.status === 'processing',
     progress: getFileProcessingProgress(updated?.metadata as Record<string, unknown>),
   });
 }

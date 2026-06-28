@@ -21,7 +21,7 @@ export interface FileProcessingProgress {
 }
 
 /** No progress heartbeat for this long → treat as stalled and allow retry. */
-const STALE_PROCESSING_MS = 45_000;
+const STALE_PROCESSING_MS = 60_000;
 
 /** Pending uploads get a process kick after this delay if still not running. */
 const PENDING_KICK_MS = 8_000;

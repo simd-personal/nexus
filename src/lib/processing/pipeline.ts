@@ -22,6 +22,12 @@ import {
   updateFileProgress,
   type FileProcessingProgress,
 } from '@/lib/processing/progress';
+import {
+  getChunkConfig,
+  isLargeDocument,
+  shouldPauseForTimeBudget,
+  type ProcessFileResult,
+} from '@/lib/processing/large-file';
 import type { Citation, SourceType } from '@/types/database';
 
 interface ProcessFileOptions {
@@ -45,9 +51,10 @@ async function countExistingChunks(
   return count ?? 0;
 }
 
-export async function processFile(options: ProcessFileOptions): Promise<void> {
+export async function processFile(options: ProcessFileOptions): Promise<ProcessFileResult> {
   const supabase = createServiceClient();
   const { fileId, projectId, fileName, sourceType, resume = false } = options;
+  const startedAt = Date.now();
 
   const { data: existingFile } = await supabase
     .from('files')
@@ -120,7 +127,12 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
             const parsed = await parseSpreadsheetBuffer(options.buffer);
             text = parsed.text;
             sheets = parsed.sheets;
-            metadata = { ...metadata, sheet_count: parsed.sheets.length, source_type: 'csv' };
+            metadata = {
+              ...metadata,
+              ...parsed.stats,
+              sheet_count: parsed.stats.sheets,
+              source_type: 'csv',
+            };
           } else {
             const extracted = await extractTextFromBuffer(options.buffer, fileName);
             text = extracted.text;
@@ -145,7 +157,7 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
             description: 'File stored but not processed (unsupported format)',
             source_file_id: fileId,
           });
-          return;
+          return { completed: false, stage: 'unsupported' };
         }
       }
 
@@ -160,10 +172,18 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
           label: 'Processing failed',
           detail: 'No text could be extracted from this file',
         });
-        return;
+        return { completed: false, stage: 'failed' };
       }
 
-      await report({ stage: 'extracting', percent: 15, label: 'Text extracted' });
+      await report({
+        stage: 'extracting',
+        percent: 15,
+        label: pages?.length
+          ? `Extracted ${pages.length} pages`
+          : sheets?.length
+            ? `Extracted ${sheets.length} sheet(s)`
+            : 'Text extracted',
+      });
 
       await supabase
         .from('files')
@@ -181,21 +201,33 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
 
     await report({ stage: 'chunking', percent: 18, label: 'Preparing searchable sections…' });
 
+    const chunkConfig = getChunkConfig(text.length);
     const chunkBase = { source_type: resolvedSourceType, file_name: fileName, ...metadata };
     const textChunks = sheets
-      ? chunkBySheets(sheets, chunkBase)
+      ? chunkBySheets(sheets, chunkBase, chunkConfig.rowsPerSheetChunk)
       : pages
-        ? chunkByPages(pages, chunkBase)
-        : chunkText(text, chunkBase);
+        ? chunkByPages(pages, chunkBase, chunkConfig)
+        : chunkText(text, chunkBase, chunkConfig);
+
+    const largeFile = isLargeDocument(text.length, textChunks.length);
+    metadata = {
+      ...metadata,
+      char_count: text.length,
+      chunk_count: textChunks.length,
+      page_count: pages?.length,
+      is_large_file: largeFile,
+    };
+    await supabase.from('files').update({ metadata }).eq('id', fileId);
 
     const startIndex = resume ? existingChunkCount : 0;
-    const batchSize = 20;
+    const batchSize = textChunks.length > 300 ? 30 : 20;
     const insertBatchSize = 50;
+    const indexingLabel = largeFile ? 'Indexing large file…' : 'Building search index…';
 
     await report({
       stage: 'embedding',
       percent: embeddingPercent(startIndex, textChunks.length),
-      label: startIndex > 0 ? 'Resuming search indexing…' : 'Building search index…',
+      label: startIndex > 0 ? 'Resuming search indexing…' : indexingLabel,
       chunks_done: startIndex,
       chunks_total: textChunks.length,
       detail: `${startIndex} of ${textChunks.length} sections indexed`,
@@ -229,11 +261,24 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       await report({
         stage: 'embedding',
         percent: embeddingPercent(done, textChunks.length),
-        label: 'Building search index…',
+        label: indexingLabel,
         chunks_done: done,
         chunks_total: textChunks.length,
         detail: `${done} of ${textChunks.length} sections indexed`,
       });
+
+      if (shouldPauseForTimeBudget(startedAt) && done < textChunks.length) {
+        await setPhase('embedding');
+        await report({
+          stage: 'embedding',
+          percent: embeddingPercent(done, textChunks.length),
+          label: 'Large file — continuing indexing…',
+          chunks_done: done,
+          chunks_total: textChunks.length,
+          detail: `${done} of ${textChunks.length} sections indexed (resumes automatically)`,
+        });
+        return { completed: false, stage: 'embedding', chunkCount: textChunks.length };
+      }
     }
 
     await setPhase('analyzing');
@@ -409,6 +454,8 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       .from('files')
       .update({ status: 'processed', metadata: finalMetadata })
       .eq('id', fileId);
+
+    return { completed: true, stage: 'complete', chunkCount: textChunks.length };
   } catch (error) {
     console.error('File processing error:', error instanceof Error ? error.message : 'Unknown');
     const message = error instanceof Error ? error.message : 'Processing failed';
@@ -432,5 +479,6 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
         },
       })
       .eq('id', fileId);
+    return { completed: false, stage: 'failed' };
   }
 }

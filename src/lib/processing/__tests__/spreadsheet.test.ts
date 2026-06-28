@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { isSpreadsheetFile, parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
+import { chunkBySheets } from '@/lib/processing/chunk';
+import { isSpreadsheetFile, normalizeSpreadsheetRows, parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
 
 describe('spreadsheet helpers', () => {
   it('detects spreadsheet files by extension and mime type', () => {
@@ -31,5 +32,26 @@ describe('spreadsheet helpers', () => {
     expect(parsed.sheets[0].rows[1]).toEqual(['Revenue Cycle', 'Review denials queue']);
     expect(parsed.text).toContain('Owner | Action');
     expect(parsed.text).not.toMatch(/,{3,}/);
+    expect(parsed.stats.indexed_rows).toBeGreaterThan(0);
+  });
+
+  it('drops duplicate and mostly-empty rows from messy sheets', () => {
+    const rows = normalizeSpreadsheetRows([
+      ['Owner', 'Action', '', '', ''],
+      ['Maria', 'Review queue', '', '', ''],
+      ['Maria', 'Review queue', '', '', ''],
+      ['', '', '', '', ''],
+      ['x', '', '', '', '', '', '', '', '', '', '', '', ''],
+    ]);
+    expect(rows).toHaveLength(2);
+    expect(rows[1]).toEqual(['Maria', 'Review queue']);
+  });
+
+  it('chunks spreadsheets by row batches for stable search sections', () => {
+    const rows = Array.from({ length: 80 }, (_, i) => [`Task ${i}`, `Owner ${i % 5}`]);
+    const chunks = chunkBySheets([{ name: 'Plan', rows }], { file_name: 'plan.xlsx' }, 25);
+    expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks[0].text).toContain('Sheet: Plan');
+    expect(chunks[0].metadata.row_start).toBe(1);
   });
 });
