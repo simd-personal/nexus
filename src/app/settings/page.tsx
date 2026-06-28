@@ -105,7 +105,7 @@ export default async function SettingsPage() {
           <CardHeader title="Security & Privacy" description="Current safeguards" />
           <ul className="text-sm text-gray-600 space-y-2">
             <li>Free personal accounts include email confirmation and password reset</li>
-            <li>Organization accounts support admin-approved team access</li>
+            <li>Organization tenants are sold via quote — admin access, audit trail, PHI options</li>
             <li>Healthcare tenants can enable PHI redaction during file processing</li>
             <li>API keys are server-side only — never exposed to the browser</li>
             <li>Row Level Security limits data access to authorized users</li>
@@ -118,8 +118,8 @@ export default async function SettingsPage() {
         {!isEnterprise && (
           <p className="mt-6 text-sm text-gray-500">
             Need a shared tenant with admin controls?{' '}
-            <Link href="/login" className="text-gray-900 underline">
-              Create an organization account
+            <Link href="/request-quote" className="text-gray-900 underline">
+              Request a quote
             </Link>
           </p>
         )}

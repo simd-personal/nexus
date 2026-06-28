@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { resendSignupConfirmation } from '@/lib/actions/auth';
 import { APP_NAME, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { Sun } from 'lucide-react';
-import type { OrganizationIndustry } from '@/types/database';
 
 type AuthMode = 'signin' | 'signup' | 'forgot';
 
@@ -15,9 +15,6 @@ export default function LoginPageClient() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [organizationName, setOrganizationName] = useState('');
-  const [organizationIndustry, setOrganizationIndustry] = useState<OrganizationIndustry>('other');
-  const [accountRoute, setAccountRoute] = useState<'individual' | 'enterprise'>('individual');
   const [mode, setMode] = useState<AuthMode>('signin');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -46,22 +43,13 @@ export default function LoginPageClient() {
       }
 
       if (mode === 'signup') {
-        const isEnterprise = accountRoute === 'enterprise';
-        if (isEnterprise && !organizationName.trim()) {
-          setMessage('Organization name is required for team accounts.');
-          setLoading(false);
-          return;
-        }
-
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               full_name: fullName,
-              account_type: isEnterprise ? 'enterprise' : 'individual',
-              organization_name: isEnterprise ? organizationName.trim() : undefined,
-              organization_industry: isEnterprise ? organizationIndustry : undefined,
+              account_type: 'individual',
             },
             emailRedirectTo: `${window.location.origin}/auth/callback`,
           },
@@ -123,6 +111,12 @@ export default function LoginPageClient() {
               Free signup, email confirmation, and password recovery — like ChatGPT.
             </p>
           </div>
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+            <p className="text-sm font-medium text-white">Organization accounts</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Multi-tenant admin controls and healthcare PHI safeguards — request a quote, not free self-serve signup.
+            </p>
+          </div>
           <div className="flex items-center gap-3 bg-white/5 rounded-xl p-4">
             <Sun className="w-8 h-8 text-amber-400" />
             <div>
@@ -165,29 +159,6 @@ export default function LoginPageClient() {
             </p>
           )}
 
-          {mode === 'signup' && (
-            <div className="mb-6 grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1">
-              <button
-                type="button"
-                onClick={() => setAccountRoute('individual')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  accountRoute === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
-                }`}
-              >
-                Personal
-              </button>
-              <button
-                type="button"
-                onClick={() => setAccountRoute('enterprise')}
-                className={`rounded-md px-3 py-2 text-sm font-medium ${
-                  accountRoute === 'enterprise' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
-                }`}
-              >
-                Organization
-              </button>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
               <div>
@@ -200,38 +171,6 @@ export default function LoginPageClient() {
                   required
                 />
               </div>
-            )}
-
-            {mode === 'signup' && accountRoute === 'enterprise' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Organization name</label>
-                  <input
-                    type="text"
-                    value={organizationName}
-                    onChange={(e) => setOrganizationName(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
-                  <select
-                    value={organizationIndustry}
-                    onChange={(e) => setOrganizationIndustry(e.target.value as OrganizationIndustry)}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                  >
-                    <option value="software">Software company</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="other">Other</option>
-                  </select>
-                  {organizationIndustry === 'healthcare' && (
-                    <p className="mt-2 text-xs text-amber-700">
-                      Healthcare tenants enable PHI redaction on uploaded files by default.
-                    </p>
-                  )}
-                </div>
-              </>
             )}
 
             <div>
@@ -358,20 +297,12 @@ export default function LoginPageClient() {
             )}
           </p>
 
-          {mode === 'signin' && (
+          {(mode === 'signin' || mode === 'signup') && (
             <p className="text-xs text-gray-400 mt-4 text-center">
-              Need enterprise admin controls?{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode('signup');
-                  setAccountRoute('enterprise');
-                  setMessage('');
-                }}
-                className="text-gray-600 underline"
-              >
-                Create an organization account
-              </button>
+              Need an organization tenant with admin controls?{' '}
+              <Link href="/request-quote" className="text-gray-600 underline">
+                Request a quote
+              </Link>
             </p>
           )}
         </div>
