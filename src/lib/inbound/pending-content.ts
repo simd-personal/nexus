@@ -66,15 +66,16 @@ export function formatPendingEmailForView(
   attachments: InboundAttachmentMeta[];
   contentAvailable: boolean;
 } {
-  const attachments =
+  const payloadAttachments =
     payload?.attachments.map((attachment) => ({
       filename: attachment.filename,
       contentType: attachment.contentType,
       size: attachment.content.length,
       inline: attachment.inline ?? false,
-    })) ??
-    event.attachments_meta ??
-    [];
+    })) ?? [];
+
+  const attachments =
+    payloadAttachments.length > 0 ? payloadAttachments : event.attachments_meta ?? [];
 
   const text =
     payload?.text?.trim() ||

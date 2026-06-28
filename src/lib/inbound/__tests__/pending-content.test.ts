@@ -61,4 +61,65 @@ describe('pending inbound content', () => {
     expect(view.attachments).toHaveLength(1);
     expect(view.contentAvailable).toBe(true);
   });
+
+  it('prefers payload attachments and body when payload is loaded', () => {
+    const view = formatPendingEmailForView(
+      {
+        payload_storage_path: 'pending/evt-1.json',
+        from_address: 'legacy@example.com',
+        subject: 'Legacy subject',
+        body_text: 'Legacy body',
+        body_preview: 'Legacy preview',
+        attachments_meta: [{ filename: 'old.pdf', contentType: 'application/pdf', size: 1 }],
+      },
+      {
+        ...payload,
+        text: 'Loaded body with attachment',
+        attachments: [
+          {
+            filename: 'loaded.png',
+            contentType: 'image/png',
+            content: Buffer.from('png'),
+            inline: true,
+          },
+        ],
+      }
+    );
+
+    expect(view.text).toBe('Loaded body with attachment');
+    expect(view.attachments).toEqual([
+      {
+        filename: 'loaded.png',
+        contentType: 'image/png',
+        size: 3,
+        inline: true,
+      },
+    ]);
+    expect(view.from).toBe('sender@example.com');
+    expect(view.subject).toBe('Meeting notes');
+  });
+
+  it('falls back to attachment metadata when payload has no files', () => {
+    const view = formatPendingEmailForView(
+      {
+        payload_storage_path: null,
+        from_address: 'sender@example.com',
+        subject: 'Meeting notes',
+        body_text: 'Body only',
+        body_preview: 'Body only',
+        attachments_meta: [{ filename: 'deck.pdf', contentType: 'application/pdf', size: 3 }],
+      },
+      {
+        from: 'sender@example.com',
+        to: [],
+        subject: 'Meeting notes',
+        text: 'Body only',
+        attachments: [],
+      }
+    );
+
+    expect(view.attachments).toEqual([
+      { filename: 'deck.pdf', contentType: 'application/pdf', size: 3 },
+    ]);
+  });
 });
