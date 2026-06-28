@@ -9,7 +9,7 @@
   --ud-slate: #aab2c3;
   --ud-graphite: #0e1115;
   --ud-gradient: linear-gradient(135deg, #5b9cf6 0%, #7c6cf0 52%, #9333ea 100%);
-  --ud-gradient-soft: linear-gradient(135deg, rgba(91, 156, 246, 0.18) 0%, rgba(124, 108, 240, 0.22) 50%, rgba(147, 51, 234, 0.16) 100%);
+  --ud-gradient-soft: linear-gradient(180deg, #f7f8fa 0%, #f3f4f7 100%);
 }
 
 @theme inline {
@@ -485,6 +485,47 @@ body {
   background: var(--ud-stone);
 }
 
+.marketing-hero .auth-brand-blob-a {
+  background: radial-gradient(circle, rgba(91, 156, 246, 0.08) 0%, transparent 72%);
+  filter: blur(48px);
+}
+
+.marketing-hero .auth-brand-blob-b {
+  background: radial-gradient(circle, rgba(124, 108, 240, 0.05) 0%, transparent 72%);
+  filter: blur(56px);
+}
+
+.marketing-hero-visual {
+  position: absolute;
+  inset: 0;
+  border-radius: 1.5rem;
+  border: 1px solid var(--ud-mist);
+  background: linear-gradient(165deg, #f3f4f7 0%, #eceef3 55%, #e8ebf2 100%);
+  overflow: hidden;
+}
+
+.marketing-hero-ribbon {
+  position: absolute;
+  inset: -15% -20% -10% -10%;
+  background:
+    radial-gradient(ellipse 50% 42% at 72% 38%, rgba(124, 108, 240, 0.1), transparent 68%),
+    radial-gradient(ellipse 38% 32% at 42% 68%, rgba(91, 156, 246, 0.07), transparent 62%);
+  pointer-events: none;
+}
+
+.marketing-hero .auth-glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 4px 20px rgba(14, 17, 21, 0.05),
+    0 1px 2px rgba(255, 255, 255, 0.8) inset;
+}
+
+.marketing-hero .auth-glass-card-dark {
+  background: rgba(24, 22, 48, 0.82);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
 .marketing-hero-title {
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
   font-size: clamp(1.875rem, 5vw, 3.5rem);
@@ -525,6 +566,8 @@ body {
 
 .marketing-section-gradient {
   background: var(--ud-gradient-soft);
+  border-top: 1px solid var(--ud-mist);
+  border-bottom: 1px solid var(--ud-mist);
 }
 
 .marketing-section-dark {
@@ -721,8 +764,8 @@ body {
 
 .marketing-org-banner {
   border-radius: 1.25rem;
-  border: 1px solid rgba(124, 108, 240, 0.2);
-  background: linear-gradient(135deg, rgba(124, 108, 240, 0.06) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border: 1px solid var(--ud-mist);
+  background: #fff;
   padding: 1.25rem;
 }
 
@@ -743,6 +786,11 @@ body {
 
 .marketing-hero-compact {
   min-height: auto;
+}
+
+.marketing-hero-compact .auth-brand-blob-a,
+.marketing-hero-compact .auth-brand-blob-b {
+  opacity: 0.45;
 }
 
 .marketing-seo-content {

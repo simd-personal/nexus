@@ -118,33 +118,35 @@ export function HomePage() {
           </div>
 
           <div className="relative hidden min-h-[420px] lg:block">
-            <div className="auth-visual-ribbon absolute inset-0 rounded-3xl opacity-90" />
+            <div className="marketing-hero-visual">
+              <div className="marketing-hero-ribbon" />
+            </div>
             <HeroGlassCard
               label="Projects"
               value="24"
               sub="Active client projects"
               dark
-              className="absolute left-[8%] top-[10%] w-48"
+              className="absolute left-[8%] top-[10%] z-10 w-48"
             />
             <HeroGlassCard
               label="Decks"
               value="18"
               sub="Updated this week"
-              className="absolute right-[4%] top-[28%] w-44"
+              className="absolute right-[4%] top-[28%] z-10 w-44"
             />
             <HeroGlassCard
               label="Emails"
               value="36"
               sub="Synced this week"
-              className="absolute left-[18%] top-[48%] w-44"
+              className="absolute left-[18%] top-[48%] z-10 w-44"
             />
             <HeroGlassCard
               label="Decisions"
               value="9"
               sub="Waiting on you"
-              className="absolute bottom-[12%] right-[12%] w-44"
+              className="absolute bottom-[12%] right-[12%] z-10 w-44"
             />
-            <div className="auth-glass-card-dark absolute bottom-[8%] left-[6%] right-[6%] px-5 py-4">
+            <div className="auth-glass-card-dark absolute bottom-[8%] left-[6%] right-[6%] z-10 px-5 py-4">
               <p className="text-[11px] font-medium uppercase tracking-wider text-white/50">
                 Recent activity
               </p>
