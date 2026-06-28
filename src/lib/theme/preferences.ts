@@ -53,4 +53,13 @@ export function saveThemePreferences(preferences: ThemePreferences): void {
   window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: preferences }));
 }
 
-export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{var d=document.documentElement;var t=localStorage.getItem('${THEME_STORAGE_KEY}');var w=localStorage.getItem('${WARMTH_STORAGE_KEY}');if(t==='dark'){d.classList.add('dark');d.dataset.theme='dark';}if(w==='on'){d.classList.add('warmth');d.dataset.warmth='on';}}catch(e){}})();`;
+export function syncThemePreferences(): ThemePreferences {
+  const preferences = readThemePreferences();
+  applyThemePreferences(preferences);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: preferences }));
+  }
+  return preferences;
+}
+
+export const THEME_BOOTSTRAP_SCRIPT = `(function(){try{var d=document.documentElement;var t=localStorage.getItem('${THEME_STORAGE_KEY}');var w=localStorage.getItem('${WARMTH_STORAGE_KEY}');var dark=t==='dark';var warm=w==='on';d.classList.toggle('dark',dark);d.classList.toggle('warmth',warm);d.dataset.theme=dark?'dark':'light';d.dataset.warmth=warm?'on':'off';}catch(e){}})();`;

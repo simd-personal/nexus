@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseThemeMode, parseWarmthMode } from '@/lib/theme/preferences';
 
 describe('theme preferences', () => {
