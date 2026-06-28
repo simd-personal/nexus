@@ -17,7 +17,10 @@ function isAuthorized(request: NextRequest): boolean {
   if (authHeader === `Bearer ${secret}`) return true;
 
   const headerSecret = request.headers.get('x-upperdeck-inbound-secret');
-  return headerSecret === secret;
+  if (headerSecret === secret) return true;
+
+  const querySecret = request.nextUrl.searchParams.get('secret');
+  return querySecret === secret;
 }
 
 async function parseInboundRequest(request: NextRequest): Promise<InboundEmailPayload | null> {
