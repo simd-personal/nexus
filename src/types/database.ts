@@ -55,6 +55,7 @@ export interface Profile {
   stripe_subscription_id: string | null;
   plan: 'free' | 'pro' | 'pro_annual';
   subscription_status: string | null;
+  inbound_token: string | null;
   created_at: string;
 }
 
@@ -99,6 +100,7 @@ export interface Project {
   status: ProjectStatus;
   last_summary: string | null;
   last_activity_at: string | null;
+  inbound_token: string | null;
   created_at: string;
   updated_at: string;
 }

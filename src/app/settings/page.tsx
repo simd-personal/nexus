@@ -7,6 +7,7 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SecuritySettings } from '@/components/settings/SecuritySettings';
 import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
+import { EmailForwardSettings } from '@/components/settings/EmailForwardSettings';
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
 import { BillingSettings } from '@/components/settings/BillingSettings';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
@@ -39,6 +40,14 @@ export default async function SettingsPage({
             description="Display preferences saved on this device"
           />
           <AppearanceSettings />
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader
+            title="Email forwarding"
+            description="Forward from Outlook to track emails and attachments automatically"
+          />
+          <EmailForwardSettings />
         </Card>
 
         <Card className="mt-6">
@@ -102,9 +111,9 @@ export default async function SettingsPage({
             />
 
             {isOrgAdmin && (
-              <form action={updateOrganizationSettings} className="mt-6 border-t border-gray-100 pt-4">
+              <form action={updateOrganizationSettings} className="mt-6 border-t border-gray-100 pt-4 dark:border-[var(--ud-cloud)]">
                 <input type="hidden" name="organization_id" value={orgContext.organization.id} />
-                <label className="flex items-start gap-3 text-sm text-gray-700">
+                <label className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
                   <input
                     type="checkbox"
                     name="phi_protection_enabled"
@@ -137,22 +146,22 @@ export default async function SettingsPage({
 
         <Card className="mt-6">
           <CardHeader title="Security & Privacy" description="Current safeguards" />
-          <ul className="text-sm text-gray-600 space-y-2">
+          <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
             <li>Free personal accounts include email confirmation and password reset</li>
             <li>Organization tenants are sold via quote for admin access, audit trail, and PHI options</li>
             <li>Healthcare tenants can enable PHI redaction during file processing</li>
             <li>API keys are server side only and never exposed to the browser</li>
             <li>Row Level Security limits data access to authorized users</li>
-            <li className="text-amber-700">
+            <li className="text-amber-700 dark:text-amber-400">
               HIPAA compliance for production healthcare use still requires legal review, BAAs, and audit controls beyond this MVP layer.
             </li>
           </ul>
         </Card>
 
         {!isEnterprise && (
-          <p className="mt-6 text-sm text-gray-500">
+          <p className="mt-6 text-sm text-gray-500 dark:text-gray-400">
             Need a shared tenant with admin controls?{' '}
-            <Link href="/request-quote" className="text-gray-900 underline">
+            <Link href="/request-quote" className="text-gray-900 underline dark:text-gray-100">
               Request a quote
             </Link>
           </p>

@@ -1,6 +1,7 @@
 'use client';
 
 import { PhotoCaptureUpload, isImageFileName } from '@/components/project/PhotoCaptureUpload';
+import { EmailForwardCard } from '@/components/project/EmailForwardCard';
 import { FileActionsMenu } from '@/components/project/FileActionsMenu';
 import { FileUploadCenter } from '@/components/project/FileUpload';
 import { FileViewerModal } from '@/components/project/FileViewerModal';
@@ -138,6 +139,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 
   return (
     <div className="space-y-6">
+      <EmailForwardCard projectId={projectId} />
       <PhotoCaptureUpload
         projectId={projectId}
         onUploadComplete={handleUploadComplete}
@@ -155,11 +157,11 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
       )}
 
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Uploaded Files</h2>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Uploaded Files</h2>
         {files.length === 0 ? (
           <Card className="text-center py-8">
-            <FileText className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No files uploaded yet</p>
+            <FileText className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+            <p className="text-sm text-gray-500 dark:text-gray-400">No files uploaded yet</p>
           </Card>
         ) : (
           <div className="space-y-3">
@@ -175,21 +177,21 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                       {isImageFileName(file.file_name) ? (
                         <ImageIcon className="h-5 w-5 shrink-0 text-violet-500" />
                       ) : (
-                        <FileText className="h-5 w-5 shrink-0 text-gray-400" />
+                        <FileText className="h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500" />
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-gray-900 break-words">{file.file_name}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{file.file_name}</p>
                           <span className="sm:hidden">{fileStatusBadge(file)}</span>
                         </div>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
                           {' · '}
                           {formatRelativeTime(file.created_at)}
                           {file.origin_file_id ? ' · Shared copy' : ''}
                         </p>
                         {file.user_note && (
-                          <p className="mt-1 line-clamp-2 text-xs text-gray-600">{file.user_note}</p>
+                          <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">{file.user_note}</p>
                         )}
                       </div>
                     </button>
@@ -198,7 +200,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 sm:border-0 sm:pt-0">
+                  <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 dark:border-[var(--ud-cloud)] sm:border-0 sm:pt-0">
                     <FileActionsMenu
                       file={file}
                       currentProjectId={projectId}
@@ -254,7 +256,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                     </p>
                   )}
                   {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (
-                    <p className="text-xs text-gray-500">This file type is stored but cannot be processed.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">This file type is stored but cannot be processed.</p>
                   )}
                 </div>
               </Card>
