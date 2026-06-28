@@ -5,6 +5,8 @@ import { LoadingState } from '@/components/ui/EmptyState';
 import { getProjectsWithStats } from '@/lib/data/queries';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SearchPage() {
   const projects = await getProjectsWithStats();
 

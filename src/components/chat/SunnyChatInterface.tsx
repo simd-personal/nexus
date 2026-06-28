@@ -23,6 +23,7 @@ import {
   patchChatScopeState,
   persistActiveSession,
   persistMessageCache,
+  normalizeChatMessages,
   sessionsCacheFresh,
 } from '@/lib/chat/cache';
 import { consumeInitialQuery } from '@/lib/chat/initial-query';
@@ -235,7 +236,9 @@ export function SunnyChatInterface({
     initialSessionId ?? cachedScope.activeSessionId
   );
   const [messages, setMessages] = useState<ChatMessage[]>(
-    initialMessages.length ? initialMessages : cachedScope.messages
+    initialMessages.length
+      ? normalizeChatMessages(initialMessages)
+      : normalizeChatMessages(cachedScope.messages)
   );
   const [input, setInput] = useState('');
   const [statusHint, setStatusHint] = useState('');
@@ -311,7 +314,7 @@ export function SunnyChatInterface({
     const cached = hydrateChatScopeFromStorage(scopeKey);
     setSessions(cached.sessions);
     setSessionId(cached.activeSessionId);
-    setMessages(cached.messages);
+    setMessages(normalizeChatMessages(cached.messages));
     setSidebarOpen(cached.sidebarOpen);
     setSourceFilter(cached.sourceFilter);
     setModelPreference(cached.modelPreference);
@@ -350,7 +353,7 @@ export function SunnyChatInterface({
       if (initialSessionId && initialMessages.length > 0) {
         sessionIdRef.current = initialSessionId;
         setSessionId(initialSessionId);
-        setMessages(initialMessages);
+        setMessages(normalizeChatMessages(initialMessages));
         persistActiveSession(scopeKey, initialSessionId);
         patchChatScopeState(scopeKey, {
           activeSessionId: initialSessionId,
@@ -369,7 +372,7 @@ export function SunnyChatInterface({
           const data = await res.json();
           sessionIdRef.current = initialSessionId;
           setSessionId(initialSessionId);
-          setMessages(data.messages ?? []);
+          setMessages(normalizeChatMessages(data.messages ?? []));
           persistActiveSession(scopeKey, initialSessionId);
           patchChatScopeState(scopeKey, {
             activeSessionId: initialSessionId,
@@ -392,7 +395,7 @@ export function SunnyChatInterface({
       if (cached?.length) {
         sessionIdRef.current = targetId;
         setSessionId(targetId);
-        setMessages(cached);
+        setMessages(normalizeChatMessages(cached));
         return;
       }
 
@@ -401,7 +404,7 @@ export function SunnyChatInterface({
       const data = await res.json();
       sessionIdRef.current = targetId;
       setSessionId(targetId);
-      setMessages(data.messages ?? []);
+      setMessages(normalizeChatMessages(data.messages ?? []));
       patchChatScopeState(scopeKey, {
         activeSessionId: targetId,
         messages: data.messages ?? [],
@@ -446,7 +449,7 @@ export function SunnyChatInterface({
     if (cached) {
       setSessionId(id);
       sessionIdRef.current = id;
-      setMessages(cached);
+      setMessages(normalizeChatMessages(cached));
       if (!window.matchMedia('(min-width: 1024px)').matches) {
         setSidebarOpen(false);
       }
@@ -931,9 +934,10 @@ export function SunnyChatInterface({
                   ? `Here's your ${artifact.title}. Review it below. Use Copy or Download when you're ready.`
                   : msg.content;
 
+              const messageCitations = msg.citations ?? [];
               const sourceCitations =
-                msg.citations.length > 0
-                  ? msg.citations
+                messageCitations.length > 0
+                  ? messageCitations
                   : results
                     ? searchResultsToCitations(results)
                     : [];

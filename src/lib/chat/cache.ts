@@ -89,6 +89,23 @@ type StoredChatMessage = Pick<
   'id' | 'session_id' | 'role' | 'content' | 'created_at' | 'citations' | 'metadata'
 >;
 
+export function normalizeChatMessage(message: Partial<ChatMessage> & Pick<ChatMessage, 'id' | 'role' | 'content'>): ChatMessage {
+  return {
+    id: message.id,
+    session_id: message.session_id ?? '',
+    project_id: message.project_id ?? '',
+    role: message.role,
+    content: message.content,
+    created_at: message.created_at ?? new Date().toISOString(),
+    citations: message.citations ?? [],
+    metadata: message.metadata ?? {},
+  };
+}
+
+export function normalizeChatMessages(messages: Array<Partial<ChatMessage> & Pick<ChatMessage, 'id' | 'role' | 'content'>>): ChatMessage[] {
+  return messages.map((message) => normalizeChatMessage(message));
+}
+
 function trimMessageForStorage(message: ChatMessage): StoredChatMessage {
   const artifact = message.metadata?.artifact as { type?: string; title?: string } | undefined;
   const metadata =
@@ -124,7 +141,7 @@ export function loadPersistedMessageCache(scopeKey: string): Record<string, Chat
     const parsed = JSON.parse(raw) as Record<string, StoredChatMessage[]>;
     const result: Record<string, ChatMessage[]> = {};
     for (const [sessionId, rows] of Object.entries(parsed)) {
-      result[sessionId] = rows as ChatMessage[];
+      result[sessionId] = normalizeChatMessages(rows);
     }
     return result;
   } catch {

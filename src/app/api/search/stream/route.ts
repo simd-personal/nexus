@@ -9,6 +9,7 @@ import {
   executeCreateStream,
   resolveEngine,
 } from '@/lib/ai/stream-agent';
+import type { SunnyAgentAction } from '@/lib/ai/agent';
 import { retrieveForQuery } from '@/lib/search/retrieve';
 import { toSearchContext } from '@/lib/search/retrieve';
 import { filterSubstantiveChunks, formatNaturalProse } from '@/lib/ai/generation-prompts';
@@ -117,10 +118,20 @@ export async function POST(request: NextRequest) {
         const historyNote = buildHistoryNote(history.slice(0, -1));
 
         send({ event: 'status', data: { message: 'Understanding your request...' } });
-        const intent = await classifyChatIntent(
-          query,
-          history.slice(0, -1) as Array<{ role: 'user' | 'assistant'; content: string }>
-        );
+        let intent: {
+          action: SunnyAgentAction;
+          instructions?: string;
+          email_version?: 'short' | 'detailed' | 'executive';
+        };
+        try {
+          intent = await classifyChatIntent(
+            query,
+            history.slice(0, -1) as Array<{ role: 'user' | 'assistant'; content: string }>
+          );
+        } catch (error) {
+          console.warn('[search] Intent classification failed — defaulting to answer', error);
+          intent = { action: 'answer' };
+        }
 
         // If the user asked Sunny to CREATE something (deck, email, brief, etc.),
         // resolve a project and actually build it — even from the global search chat.

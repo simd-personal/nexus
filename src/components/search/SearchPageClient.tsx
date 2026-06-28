@@ -6,6 +6,17 @@ import { useSearchParams } from 'next/navigation';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
 import type { ProjectWithStats } from '@/types/database';
 
+function flattenProjects(projects: ProjectWithStats[]): ProjectWithStats[] {
+  const flattened: ProjectWithStats[] = [];
+  for (const project of projects) {
+    flattened.push(project);
+    for (const subProject of project.sub_projects ?? []) {
+      flattened.push(subProject);
+    }
+  }
+  return flattened;
+}
+
 const SunnyChatInterface = dynamic(
   () => import('@/components/chat/SunnyChatInterface').then((m) => m.SunnyChatInterface),
   { loading: () => <ChatLoadingShell />, ssr: false }
@@ -24,11 +35,13 @@ export function SearchPageClient({
 }) {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') ?? undefined;
+  const projectFromUrl = searchParams.get('project') ?? undefined;
   const [selectedProjectId, setSelectedProjectId] = useState<string | undefined>(
-    initialProjectId || undefined
+    initialProjectId || projectFromUrl || undefined
   );
 
-  const selectedProject = projects.find((p) => p.id === selectedProjectId);
+  const projectOptions = flattenProjects(projects);
+  const selectedProject = projectOptions.find((p) => p.id === selectedProjectId);
   const projectName =
     initialProjectName ??
     (selectedProject
@@ -40,7 +53,7 @@ export function SearchPageClient({
       mode="search"
       projectId={selectedProjectId}
       projectName={projectName}
-      projects={projects}
+      projects={projectOptions}
       lockProject={lockProject}
       embedded={lockProject}
       onProjectChange={(id) => setSelectedProjectId(id || undefined)}

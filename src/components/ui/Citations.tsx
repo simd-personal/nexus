@@ -11,7 +11,8 @@ function dedupeCitations(citations: Citation[]): Citation[] {
   const unique: Citation[] = [];
 
   for (const citation of citations) {
-    const key = citation.file_id ?? citation.file_name.trim().toLowerCase();
+    const fileName = citation.file_name?.trim();
+    const key = citation.file_id ?? fileName?.toLowerCase();
     if (!key || seen.has(key)) continue;
     seen.add(key);
     unique.push(citation);
@@ -31,7 +32,7 @@ function citationHref(citation: Citation, projectId?: string): string | null {
 }
 
 function citationLabel(citation: Citation): string {
-  const parts = [citation.file_name];
+  const parts = [citation.file_name?.trim() || 'Unknown source'];
   if (citation.page_number) parts.push(`p.${citation.page_number}`);
   return parts.join(', ');
 }
