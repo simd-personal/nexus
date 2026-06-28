@@ -94,26 +94,6 @@ export default function LoginPage() {
             {isSignUp ? 'Start your command center' : 'Sign in to your command center'}
           </p>
 
-          {!isSignUp && (
-            <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <p className="text-xs font-medium text-amber-900 mb-1">Demo account (testing)</p>
-              <p className="text-sm text-amber-800 mb-3">
-                <span className="font-medium">sim@test.com</span> / <span className="font-medium">admin</span>
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setEmail('sim@test.com');
-                  setPassword('admin');
-                  setMessage('');
-                }}
-                className="text-xs font-medium text-amber-900 underline hover:text-amber-950"
-              >
-                Fill demo credentials
-              </button>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {isSignUp && (
               <div>
