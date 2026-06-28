@@ -1,0 +1,326 @@
+import { chatCompletion, structuredExtraction, OPENAI_MODELS } from './openai';
+import { generateLongForm, generateStructured, CLAUDE_MODELS } from './claude';
+import { DECK_SYSTEM_PROMPT, STYLE_GUIDE, filterSubstantiveChunks } from './generation-prompts';
+import type { Citation, SunnyBrief, SunnyChatResponse } from '@/types/database';
+
+const SUNNY_PERSONA = `You are Sunny, the AI employee inside BriefNexus. You act like an internal team member who has read every client meeting, email, deck, note, transcript, and file. You speak in clear, executive-friendly language. You never make unsupported claims. If the evidence is insufficient, say: "Not enough evidence in the uploaded materials." Always cite your sources.`;
+
+const SEARCH_PERSONA = `${SUNNY_PERSONA}
+
+You power BriefNexus search (ChatGPT). Adapt every answer to what the user actually asked:
+- "find / where / show me" → lead with location and source file names
+- "tell me everything / summarize" → comprehensive structured summary
+- person, facility, or topic questions → focus on every mention with context
+- comparison or contradiction questions → call out differences explicitly
+- vague or broad queries → cover all relevant projects and materials found
+
+${STYLE_GUIDE}`;
+
+interface RetrievedContext {
+  chunks: Array<{
+    text: string;
+    file_name: string;
+    source_type?: string;
+    metadata?: Record<string, unknown>;
+  }>;
+  criticalItems: Array<{ title: string; summary: string; severity: string }>;
+  timelineEvents: Array<{ title: string; description: string | null; created_at: string }>;
+  projectSummary: string | null;
+}
+
+function formatContext(ctx: RetrievedContext): string {
+  const parts: string[] = [];
+
+  if (ctx.projectSummary) {
+    parts.push(`## Project Summary\n${ctx.projectSummary}`);
+  }
+
+  if (ctx.criticalItems.length) {
+    parts.push('## Critical Items\n' + ctx.criticalItems.map((c) =>
+      `- [${c.severity}] ${c.title}: ${c.summary}`
+    ).join('\n'));
+  }
+
+  if (ctx.timelineEvents.length) {
+    parts.push('## Recent Timeline\n' + ctx.timelineEvents.map((e) =>
+      `- ${e.created_at}: ${e.title}${e.description ? ' — ' + e.description : ''}`
+    ).join('\n'));
+  }
+
+  if (ctx.chunks.length) {
+    parts.push('## Source Materials\n' + ctx.chunks.map((c, i) =>
+      `[${i + 1}] (${c.source_type ?? 'document'}) ${c.file_name}:\n${c.text}`
+    ).join('\n\n'));
+  }
+
+  return parts.join('\n\n');
+}
+
+function buildCitations(ctx: RetrievedContext): Citation[] {
+  return ctx.chunks.slice(0, 5).map((c) => ({
+    file_name: c.file_name,
+    source_type: c.source_type as Citation['source_type'],
+    snippet: c.text.slice(0, 200),
+    page_number: c.metadata?.page_number as number | undefined,
+    sender: c.metadata?.sender as string | undefined,
+    date: c.metadata?.date as string | undefined,
+  }));
+}
+
+/** OpenAI — project Q&A (Ask Sunny tab) */
+export async function askSunny(
+  question: string,
+  context: RetrievedContext
+): Promise<SunnyChatResponse> {
+  return answerFromContext(question, context, SEARCH_PERSONA);
+}
+
+/** OpenAI — global and project search */
+export async function searchAnswer(
+  query: string,
+  context: RetrievedContext
+): Promise<SunnyChatResponse> {
+  return answerFromContext(query, context, SEARCH_PERSONA);
+}
+
+async function answerFromContext(
+  question: string,
+  context: RetrievedContext,
+  persona: string
+): Promise<SunnyChatResponse> {
+  if (context.chunks.length === 0 && !context.projectSummary) {
+    return {
+      answer: 'Not enough evidence in the uploaded materials.',
+      citations: [],
+      confidence: 'low',
+    };
+  }
+
+  const contextText = formatContext(context);
+
+  const result = await structuredExtraction<{
+    answer: string;
+    confidence: 'high' | 'medium' | 'low';
+    suggested_next_step?: string;
+    citation_indices: number[];
+  }>(
+    `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing. Return JSON with: answer, confidence, suggested_next_step (optional), citation_indices (array of source numbers used).`,
+    `Context:\n${contextText}\n\nUser query: ${question}`,
+    OPENAI_MODELS.chat
+  );
+
+  const citations = (result.citation_indices ?? [])
+    .map((i) => buildCitations(context)[i - 1])
+    .filter(Boolean);
+
+  return {
+    answer: result.answer,
+    citations: citations.length ? citations : buildCitations(context).slice(0, 3),
+    confidence: result.confidence,
+    suggested_next_step: result.suggested_next_step,
+  };
+}
+
+/** Claude — executive brief generation */
+export async function generateSunnyBrief(
+  context: RetrievedContext,
+  instructions?: string
+): Promise<SunnyBrief> {
+  const contextText = formatContext(context);
+  const userPrompt = [
+    `Evidence:\n${contextText}`,
+    instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
+    '\nReturn JSON with keys: executive_summary, what_changed_recently, critical_items, client_concerns, risks, opportunities, people_mentioned, facilities_mentioned, open_action_items, contradictions, recommended_next_steps',
+    'For any section without evidence, write "Not enough evidence in the uploaded materials."',
+  ].join('');
+
+  const result = await generateStructured<Omit<SunnyBrief, 'citations'>>(
+    `${SUNNY_PERSONA}\n\nGenerate an executive brief grounded ONLY in the evidence. Adapt tone and emphasis to the user's instructions when provided.`,
+    userPrompt,
+    CLAUDE_MODELS.brief
+  );
+
+  return {
+    ...result,
+    citations: buildCitations(context),
+  };
+}
+
+export async function detectCriticalItems(
+  newContent: string,
+  existingContent: string,
+  fileName: string
+): Promise<Array<{
+  title: string;
+  summary: string;
+  severity: string;
+  category: string;
+  sunny_reasoning: string;
+  suggested_owner?: string;
+  suggested_next_action?: string;
+}>> {
+  const result = await structuredExtraction<{ items: Array<{
+    title: string;
+    summary: string;
+    severity: string;
+    category: string;
+    sunny_reasoning: string;
+    suggested_owner?: string;
+    suggested_next_action?: string;
+  }> }>(
+    `${SUNNY_PERSONA}\n\nAnalyze the new content against existing project materials. Detect: client risks, contradictions, missed follow-ups, urgent concerns, ownership gaps, timeline conflicts, and broken processes. Only flag items with clear evidence. Return JSON: { "items": [...] } with severity (low/medium/high/critical) and category (conflict/risk/missed_follow_up/client_concern/ownership_gap/timeline_issue/broken_process).`,
+    `New content from "${fileName}":\n${newContent.slice(0, 6000)}\n\nExisting project context:\n${existingContent.slice(0, 6000)}`,
+    OPENAI_MODELS.criticalDetection
+  );
+
+  return result.items ?? [];
+}
+
+export async function extractEntities(text: string): Promise<Array<{
+  type: string;
+  name: string;
+}>> {
+  const result = await structuredExtraction<{ entities: Array<{ type: string; name: string }> }>(
+    'Extract named entities from the text. Return JSON: { "entities": [{ "type": "person|facility|organization|topic|date", "name": "..." }] }',
+    text.slice(0, 4000),
+    OPENAI_MODELS.extraction
+  );
+  return result.entities ?? [];
+}
+
+export async function extractActionItems(text: string, fileName: string): Promise<Array<{
+  title: string;
+  description?: string;
+  owner?: string;
+  due_date?: string;
+}>> {
+  const result = await structuredExtraction<{ action_items: Array<{
+    title: string;
+    description?: string;
+    owner?: string;
+    due_date?: string;
+  }> }>(
+    'Extract action items and follow-ups from the text. Return JSON: { "action_items": [...] }',
+    `From "${fileName}":\n${text.slice(0, 4000)}`,
+    OPENAI_MODELS.extraction
+  );
+  return result.action_items ?? [];
+}
+
+export async function summarizeContent(text: string, fileName: string): Promise<string> {
+  return chatCompletion(
+    `${SUNNY_PERSONA}\n\nSummarize this content in 2-3 executive-friendly sentences.`,
+    `File: ${fileName}\n\n${text.slice(0, 6000)}`,
+    OPENAI_MODELS.summary
+  );
+}
+
+export async function generateSunnyUpdate(
+  projectName: string,
+  changes: string
+): Promise<{ title: string; summary: string; why_it_matters: string; suggested_action: string }> {
+  return structuredExtraction(
+    `${SUNNY_PERSONA}\n\nGenerate a Sunny update for the VP. Return JSON with title, summary, why_it_matters, suggested_action.`,
+    `Project: ${projectName}\n\nChanges:\n${changes}`,
+    OPENAI_MODELS.summary
+  );
+}
+
+/** Claude — project setup when user creates a project */
+export async function enrichProjectSetup(input: {
+  clientName: string;
+  projectName: string;
+  description?: string;
+  userNotes?: string;
+}): Promise<{ description: string; initial_summary: string }> {
+  const userPrompt = [
+    `Client: ${input.clientName}`,
+    `Project: ${input.projectName}`,
+    input.description ? `Description: ${input.description}` : '',
+    input.userNotes ? `User notes (follow these closely): ${input.userNotes}` : '',
+    '\nReturn JSON: { "description": "...", "initial_summary": "..." }',
+    'description: 1-2 sentences expanding what this project is about.',
+    'initial_summary: what Sunny should track and watch for based on the user input.',
+  ].filter(Boolean).join('\n');
+
+  return generateStructured<{ description: string; initial_summary: string }>(
+    `${SUNNY_PERSONA}\n\nHelp set up a new client project. Adapt to whatever the user provided — industry, goals, concerns, timeline, stakeholders. If details are sparse, infer sensible defaults without inventing client-specific facts.`,
+    userPrompt,
+    CLAUDE_MODELS.strategy
+  );
+}
+
+/** Claude — operating playbook */
+export async function generatePlaybook(
+  projectName: string,
+  clientName: string,
+  context: RetrievedContext,
+  instructions?: string
+): Promise<string> {
+  const contextText = formatContext(context);
+
+  return generateLongForm(
+    `${SUNNY_PERSONA}\n\nGenerate a comprehensive client operating playbook grounded ONLY in the provided evidence. Include: Client Situation Overview, What the Client Cares About, Key Problems, Operational Risks, Facility/Client Concerns, Recommended Operating Playbook, Follow-up Cadence, Owner/Action Table, Executive Talking Points, Client Follow-up Strategy, and Source-Backed Rationale. Use markdown formatting. If evidence is missing for a section, state it clearly. Adapt structure and emphasis to the user's instructions.`,
+    [
+      `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${contextText}`,
+      instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
+    ].join(''),
+    CLAUDE_MODELS.playbook
+  );
+}
+
+/** Claude — follow-up email */
+export async function generateFollowUpEmail(
+  projectName: string,
+  clientName: string,
+  context: RetrievedContext,
+  version: 'short' | 'detailed' | 'executive' = 'detailed',
+  instructions?: string
+): Promise<string> {
+  const contextText = formatContext(context);
+  const versionGuide = {
+    short: 'Keep it to 3-4 sentences.',
+    detailed: 'Include key discussion points and clear next steps in 2-3 paragraphs.',
+    executive: 'Write for a senior executive audience — concise, strategic, no sales language.',
+  };
+
+  return generateLongForm(
+    `${SUNNY_PERSONA}\n\nDraft a professional follow-up email. ${versionGuide[version]} Ground every claim in the evidence. Do not be salesy. Adapt tone and content to the user's instructions.`,
+    [
+      `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${contextText}`,
+      instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
+    ].join(''),
+    CLAUDE_MODELS.memo
+  );
+}
+
+/** Claude — presentation deck outline / content */
+export async function generateDeck(
+  projectName: string,
+  clientName: string,
+  context: RetrievedContext,
+  instructions?: string
+): Promise<string> {
+  const filtered = {
+    ...context,
+    chunks: filterSubstantiveChunks(context.chunks),
+  };
+  const contextText = formatContext(filtered);
+
+  return generateLongForm(
+    DECK_SYSTEM_PROMPT,
+    [
+      `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${contextText}`,
+      instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
+    ].join(''),
+    CLAUDE_MODELS.deck
+  );
+}
+
+/** @deprecated use searchAnswer */
+export async function globalSearchAnswer(
+  query: string,
+  context: RetrievedContext
+): Promise<SunnyChatResponse> {
+  return searchAnswer(query, context);
+}
