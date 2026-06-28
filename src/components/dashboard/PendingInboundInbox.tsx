@@ -2,23 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, Mail, Paperclip, X } from 'lucide-react';
+import { Eye, Mail, Paperclip } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { formatRelativeTime } from '@/lib/utils';
 import { hasAssignableInboundContent } from '@/lib/inbound/pending-content';
+import {
+  PendingInboundEmailPreview,
+  type PendingEmailView,
+} from '@/components/dashboard/PendingInboundEmailPreview';
 import type { InboundEmailEvent, ProjectWithStats } from '@/types/database';
 
 type ProjectOption = { id: string; label: string };
-
-type EmailView = {
-  from: string;
-  subject: string;
-  text: string;
-  attachments: Array<{ filename: string; contentType: string; size: number; inline?: boolean }>;
-  contentAvailable: boolean;
-  assignable: boolean;
-};
 
 export function PendingInboundInbox({
   emails,
@@ -64,7 +59,7 @@ function PendingInboundRow({
   const [viewOpen, setViewOpen] = useState(false);
   const [viewLoading, setViewLoading] = useState(false);
   const [viewError, setViewError] = useState('');
-  const [viewData, setViewData] = useState<EmailView | null>(null);
+  const [viewData, setViewData] = useState<PendingEmailView | null>(null);
 
   const assignable = hasAssignableInboundContent(email);
 
@@ -130,7 +125,7 @@ function PendingInboundRow({
         setViewData(null);
         return;
       }
-      setViewData(data as EmailView);
+      setViewData(data as PendingEmailView);
     } finally {
       setViewLoading(false);
     }
@@ -244,68 +239,16 @@ function PendingInboundRow({
         </div>
       </div>
 
-      {viewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4">
-          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-xl bg-white shadow-xl dark:bg-[var(--ud-mist)]">
-            <div className="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 dark:border-[var(--ud-cloud)]">
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 break-words">
-                  {viewData?.subject ?? email.subject ?? '(No subject)'}
-                </h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">
-                  {viewData?.from ?? email.from_address}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setViewOpen(false)}
-                className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-[var(--ud-stone)]"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-              {viewLoading ? (
-                <p className="text-sm text-gray-500 dark:text-gray-400">Loading email…</p>
-              ) : viewError ? (
-                <p className="text-sm text-red-600">{viewError}</p>
-              ) : (
-                <>
-                  <div className="rounded-lg bg-gray-50 p-4 text-sm text-gray-800 whitespace-pre-wrap dark:bg-[var(--ud-stone)] dark:text-gray-200">
-                    {viewData?.text}
-                  </div>
-                  {viewData?.attachments && viewData.attachments.length > 0 && (
-                    <div className="mt-4">
-                      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                        Files and images
-                      </p>
-                      <ul className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                        {viewData.attachments.map((attachment) => (
-                          <li key={`${attachment.filename}-${attachment.inline ? 'inline' : 'file'}`} className="flex items-center gap-2">
-                            <Paperclip className="h-3.5 w-3.5 shrink-0" />
-                            <span>
-                              {attachment.filename}
-                              {attachment.inline ? ' · from email body' : ''}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            <div className="border-t border-gray-200 px-5 py-4 dark:border-[var(--ud-cloud)]">
-              <Button variant="secondary" onClick={() => setViewOpen(false)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <PendingInboundEmailPreview
+        emailId={email.id}
+        fallbackSubject={email.subject}
+        fallbackFrom={email.from_address}
+        open={viewOpen}
+        loading={viewLoading}
+        error={viewError}
+        data={viewData}
+        onClose={() => setViewOpen(false)}
+      />
     </>
   );
 }
