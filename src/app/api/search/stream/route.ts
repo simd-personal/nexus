@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
               project_name: targetProject?.project_name ?? 'Project',
             },
             supabase,
+            userId: user.id,
             engine: createEngine,
             onStatus: (m) => send({ event: 'status', data: { message: m } }),
             onToken: (token) => {

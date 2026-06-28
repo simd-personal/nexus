@@ -30,6 +30,10 @@ describe('normalizeActionItems', () => {
         description: 'Raised in June site visit notes',
         owner: 'Sim Patel',
         due_date: '2025-07-15',
+        item_kind: 'commitment',
+        applies_to_me: true,
+        matched_terms: ['Sim', 'Portland'],
+        confidence: 'high',
       },
     ]);
     expect(items[0]).toEqual({
@@ -37,6 +41,10 @@ describe('normalizeActionItems', () => {
       description: 'Raised in June site visit notes',
       owner: 'Sim Patel',
       due_date: '2025-07-15',
+      item_kind: 'commitment',
+      applies_to_me: true,
+      matched_terms: ['Sim', 'Portland'],
+      confidence: 'high',
     });
   });
 });

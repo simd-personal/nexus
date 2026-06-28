@@ -11,6 +11,7 @@ import { EmailForwardSettings } from '@/components/settings/EmailForwardSettings
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
 import { BillingSettings } from '@/components/settings/BillingSettings';
 import { SignOutButton } from '@/components/auth/SignOutButton';
+import { RelevanceProfileFields } from '@/components/settings/RelevanceProfileFields';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
 import { planDisplayName } from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
@@ -77,6 +78,11 @@ export default async function SettingsPage({
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100 dark:focus:ring-gray-500"
               />
             </div>
+            <RelevanceProfileFields
+              companyName={data?.profile?.company_name ?? null}
+              nameAliases={data?.profile?.name_aliases ?? []}
+              watchKeywords={data?.profile?.watch_keywords ?? []}
+            />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account type</label>
               <input

@@ -28,7 +28,12 @@ async function enrichProjectStats(
   const [files, criticalItems, actionItems, sunnyUpdates] = await Promise.all([
     supabase.from('files').select('id, source_type').eq('project_id', projectId),
     supabase.from('critical_items').select('id').eq('project_id', projectId).eq('status', 'open'),
-    supabase.from('action_items').select('id').eq('project_id', projectId).eq('status', 'open'),
+    supabase
+      .from('action_items')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('status', 'open')
+      .eq('applies_to_me', true),
     supabase
       .from('sunny_updates')
       .select('created_at')
@@ -116,7 +121,11 @@ export async function getDashboardStats() {
       .select('id, project_id, source_citations, created_at')
       .gte('created_at', since)
       .order('created_at', { ascending: false }),
-    supabase.from('action_items').select('id', { count: 'exact' }).eq('status', 'open'),
+    supabase
+      .from('action_items')
+      .select('id', { count: 'exact' })
+      .eq('status', 'open')
+      .eq('applies_to_me', true),
     supabase.from('critical_items').select('id', { count: 'exact' }).eq('category', 'conflict').eq('status', 'open'),
   ]);
 
@@ -267,19 +276,25 @@ export async function getProjectCriticalItems(
 
 export async function getProjectActionItems(
   projectId: string,
-  options?: { includeSubProjects?: boolean }
+  options?: { includeSubProjects?: boolean; forMe?: boolean }
 ): Promise<ActionItem[]> {
   const supabase = await createClient();
   const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
 
-  const { data } = await supabase
+  let query = supabase
     .from('action_items')
     .select('*')
-    .in('project_id', projectIds)
-    .order('created_at', { ascending: false });
+    .in('project_id', projectIds);
+
+  if (options?.forMe !== false) {
+    query = query.eq('applies_to_me', true);
+  }
+
+  const { data } = await query.order('created_at', { ascending: false });
   return (data ?? []).map((item) => ({
     ...item,
     source_citations: item.source_citations ?? [],
+    matched_terms: item.matched_terms ?? [],
   }));
 }
 

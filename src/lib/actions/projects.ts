@@ -6,6 +6,7 @@ import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
 import { enrichProjectSetup } from '@/lib/ai/sunny';
 import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
 import type { ProjectStatus } from '@/types/database';
+import { parseKeywordList } from '@/lib/relevance/watchlist';
 
 export async function createProject(formData: FormData) {
   const user = await requireUser();
@@ -155,11 +156,37 @@ export async function updateProfile(formData: FormData): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
   const fullName = formData.get('full_name') as string;
+  const companyName = (formData.get('company_name') as string)?.trim() || null;
+  const nameAliases = parseKeywordList(formData.get('name_aliases') as string);
+  const watchKeywords = parseKeywordList(formData.get('watch_keywords') as string);
 
   await supabase
     .from('profiles')
-    .update({ full_name: fullName?.trim() })
+    .update({
+      full_name: fullName?.trim() || null,
+      company_name: companyName,
+      name_aliases: nameAliases,
+      watch_keywords: watchKeywords,
+    })
     .eq('user_id', user.id);
 
   revalidatePath('/settings');
+}
+
+export async function updateProjectRelevance(projectId: string, formData: FormData): Promise<void> {
+  await requireUser();
+  const supabase = await createClient();
+  const watchKeywords = parseKeywordList(formData.get('watch_keywords') as string);
+  const myRole = (formData.get('my_role') as string)?.trim() || null;
+
+  const { error } = await supabase
+    .from('projects')
+    .update({
+      watch_keywords: watchKeywords,
+      my_role: myRole,
+    })
+    .eq('id', projectId);
+
+  if (error) throw new Error(error.message);
+  revalidatePath(`/projects/${projectId}/overview`);
 }

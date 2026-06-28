@@ -8,8 +8,8 @@ import {
   generatePlaybook,
   generateFollowUpEmail,
   generateDeck,
-  extractActionItems,
 } from './sunny';
+import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
 import type { Citation, SunnyChatResponse } from '@/types/database';
 import { fitChunksToBudget } from './context-budget';
 import { buildHistoryNote, formatHistoryForClassification } from '@/lib/chat/memory';
@@ -46,6 +46,7 @@ interface RunSunnyAgentParams {
   project: { id: string; client_name: string; project_name: string };
   chatHistory: ChatTurn[];
   supabase: SupabaseClient;
+  userId: string;
 }
 
 const AGENT_PERSONA = `You are Sunny, the AI employee in UpperDeck. You can ANSWER questions from project materials OR CREATE things when asked.
@@ -98,7 +99,7 @@ function contextAsText(context: RetrievedContext): string {
 }
 
 export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyChatResponse> {
-  const { message, context, project, chatHistory, supabase } = params;
+  const { message, context, project, chatHistory, supabase, userId } = params;
   const { action, instructions, email_version } = await classifyIntent(message, chatHistory);
   const focus = instructions?.trim() || message;
 
@@ -242,10 +243,15 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
 
     case 'action_items': {
       const sourceText = contextAsText(context);
-      const items = await extractActionItems(sourceText || message, 'chat-request');
+      const items = await extractRelevantActionItems(
+        project.id,
+        userId,
+        sourceText || message,
+        'chat-request'
+      );
       const created: string[] = [];
 
-      for (const item of items.slice(0, 8)) {
+      for (const item of items) {
         if (!item.title?.trim()) continue;
         const citation: Citation = { file_name: 'Project materials', snippet: item.title };
         await supabase.from('action_items').insert({
@@ -254,6 +260,9 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
           description: item.description,
           owner: item.owner,
           due_date: item.due_date,
+          applies_to_me: item.applies_to_me ?? true,
+          item_kind: item.item_kind ?? null,
+          matched_terms: item.matched_terms ?? [],
           source_citations: [citation],
         });
         created.push(item.title);

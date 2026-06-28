@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
           chatHistory: history.slice(0, -1),
           supabase,
           modelPreference: model_preference,
+          userId: user.id,
           onStatus: (msg) => send({ event: 'status', data: { message: msg } }),
           onToken: (token) => {
             fullText += token;

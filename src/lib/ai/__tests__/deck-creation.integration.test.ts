@@ -70,6 +70,7 @@ describe('deck creation integration', () => {
         project_name: 'Q3 Business Review',
       },
       supabase,
+      userId: 'test-user',
       onStatus: (m) => statuses.push(m),
       onToken: (t) => tokens.push(t),
     });
@@ -102,6 +103,7 @@ describe('deck creation integration', () => {
         project_name: 'Q3 Business Review',
       },
       supabase,
+      userId: 'test-user',
       onStatus: () => {},
       onToken: () => {},
     });
@@ -131,6 +133,7 @@ describe('deck creation integration', () => {
         project_name: 'Q3 Business Review',
       },
       supabase,
+      userId: 'test-user',
       onStatus: () => {},
       onToken: () => {},
     });
@@ -169,6 +172,7 @@ describe('deck creation integration', () => {
         project_name: 'Empty',
       },
       supabase,
+      userId: 'test-user',
       onStatus: () => {},
       onToken: (t) => tokens.push(t),
     });

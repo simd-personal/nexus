@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
       project,
       chatHistory: (history ?? []) as Array<{ role: 'user' | 'assistant'; content: string }>,
       supabase,
+      userId: user.id,
     });
 
     const savedAnswer =

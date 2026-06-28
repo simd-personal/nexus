@@ -18,6 +18,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { Sun, AlertTriangle, Users, MapPin, CheckSquare } from 'lucide-react';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { DeleteProjectButton } from '@/components/project/DeleteProjectButton';
+import { ProjectRelevancePanel } from '@/components/project/ProjectRelevancePanel';
 
 export default async function ProjectOverviewPage({
   params,
@@ -69,6 +70,12 @@ export default async function ProjectOverviewPage({
       )}
 
       {isProgram && <SubProjectsPanel parentProject={project} subProjects={subProjects} />}
+
+      <ProjectRelevancePanel
+        projectId={project.id}
+        watchKeywords={project.watch_keywords ?? []}
+        myRole={project.my_role ?? null}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
@@ -128,7 +135,10 @@ export default async function ProjectOverviewPage({
 
       {openActions.length > 0 && (
         <Card>
-          <CardHeader title="Open Action Items" />
+          <CardHeader
+            title="Open Action Items"
+            description="Filtered to follow-ups relevant to you. Adjust keywords above to tune what Sunny surfaces."
+          />
           <div className="space-y-3">
             {openActions.map((item) => (
               <div key={item.id} className="flex items-start justify-between py-2 border-b border-gray-100 last:border-0 dark:border-[var(--ud-cloud)]">

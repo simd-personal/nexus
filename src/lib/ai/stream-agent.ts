@@ -3,7 +3,7 @@ import { streamChatCompletion, OPENAI_MODELS } from './openai';
 import { streamLongForm, CLAUDE_MODELS } from './claude';
 import { isOpenAIUnavailable } from '@/lib/ai/errors';
 import { classifyIntent, type SunnyAgentAction } from './agent';
-import { extractActionItems } from './sunny';
+import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
 import { fitChunksToBudget } from './context-budget';
 import { buildHistoryNote, formatHistoryForClassification } from '@/lib/chat/memory';
 import {
@@ -149,10 +149,11 @@ interface StreamAgentParams {
   onToken: (token: string) => void;
   supabase: SupabaseClient;
   modelPreference?: ModelPreference;
+  userId: string;
 }
 
 export async function runSunnyAgentStream(params: StreamAgentParams): Promise<SunnyChatResponse> {
-  const { message, context, project, chatHistory, onStatus, onToken, supabase, modelPreference } = params;
+  const { message, context, project, chatHistory, onStatus, onToken, supabase, modelPreference, userId } = params;
 
   onStatus('Understanding your request...');
   const { action, instructions, email_version } = await classifyIntent(message, chatHistory);
@@ -175,6 +176,7 @@ export async function runSunnyAgentStream(params: StreamAgentParams): Promise<Su
     onStatus,
     onToken,
     supabase,
+    userId,
     engine: resolveEngine(modelPreference, 'create'),
   });
 }
@@ -189,11 +191,12 @@ interface ExecuteCreateParams {
   onStatus: (message: string) => void;
   onToken: (token: string) => void;
   supabase: SupabaseClient;
+  userId: string;
   engine?: ModelEngine;
 }
 
 export async function executeCreateStream(params: ExecuteCreateParams): Promise<SunnyChatResponse> {
-  const { action, message, instructions, email_version, context, project, onStatus, onToken, supabase } = params;
+  const { action, message, instructions, email_version, context, project, onStatus, onToken, supabase, userId } = params;
   const engine = params.engine ?? 'claude';
   const focus = instructions?.trim() || message;
 
@@ -307,9 +310,14 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
     }
     case 'action_items': {
       onStatus('Extracting action items...');
-      const items = await extractActionItems(contextAsText(context) || message, 'chat-request');
+      const items = await extractRelevantActionItems(
+        project.id,
+        userId,
+        contextAsText(context) || message,
+        'chat-request'
+      );
       const created: string[] = [];
-      for (const item of items.slice(0, 8)) {
+      for (const item of items) {
         if (!item.title?.trim()) continue;
         await supabase.from('action_items').insert({
           project_id: project.id,
@@ -317,6 +325,9 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
           description: item.description,
           owner: item.owner,
           due_date: item.due_date,
+          applies_to_me: item.applies_to_me ?? true,
+          item_kind: item.item_kind ?? null,
+          matched_terms: item.matched_terms ?? [],
           source_citations: [{ file_name: 'Project materials', snippet: item.title }],
         });
         created.push(item.title);

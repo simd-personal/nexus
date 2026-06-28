@@ -48,6 +48,9 @@ export interface Profile {
   id: string;
   user_id: string;
   full_name: string | null;
+  company_name: string | null;
+  name_aliases: string[];
+  watch_keywords: string[];
   role: string;
   account_type: AccountType;
   default_organization_id: string | null;
@@ -102,6 +105,8 @@ export interface Project {
   last_activity_at: string | null;
   inbound_token: string | null;
   parent_project_id: string | null;
+  watch_keywords: string[];
+  my_role: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -180,6 +185,9 @@ export interface ActionItem {
   owner: string | null;
   due_date: string | null;
   status: ActionItemStatus;
+  applies_to_me: boolean;
+  item_kind: string | null;
+  matched_terms: string[];
   source_citations: Citation[];
   created_at: string;
 }

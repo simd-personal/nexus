@@ -2,7 +2,6 @@ import { createServiceClient } from '@/lib/supabase/admin';
 import { createEmbeddings, transcribeAudio } from '@/lib/ai/openai';
 import {
   detectCriticalItems,
-  extractActionItems,
   extractEntities,
   generateSunnyUpdate,
   summarizeContent,
@@ -29,6 +28,7 @@ import {
   shouldPauseForTimeBudget,
   type ProcessFileResult,
 } from '@/lib/processing/large-file';
+import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
 import type { Citation, SourceType } from '@/types/database';
 
 interface ProcessFileOptions {
@@ -378,7 +378,29 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
 
     await report({ stage: 'analyzing', percent: 82, label: 'Extracting action items…' });
 
-    const actionItems = await extractActionItems(text, fileName);
+    const { data: fileMeta } = await supabase
+      .from('files')
+      .select('uploaded_by')
+      .eq('id', fileId)
+      .single();
+    const { data: projectMeta } = await supabase
+      .from('projects')
+      .select('owner_id')
+      .eq('id', projectId)
+      .single();
+    const relevanceUserId = fileMeta?.uploaded_by ?? projectMeta?.owner_id;
+    let actionItems: Awaited<ReturnType<typeof extractRelevantActionItems>> = [];
+
+    if (relevanceUserId) {
+      actionItems = await extractRelevantActionItems(
+        projectId,
+        relevanceUserId,
+        text,
+        fileName,
+        sourceType
+      );
+    }
+
     for (const item of actionItems) {
       if (!item.title?.trim()) continue;
       await supabase.from('action_items').insert({
@@ -387,6 +409,9 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         description: item.description,
         owner: item.owner,
         due_date: item.due_date,
+        applies_to_me: item.applies_to_me ?? true,
+        item_kind: item.item_kind ?? null,
+        matched_terms: item.matched_terms ?? [],
         source_citations: [{ file_name: fileName, snippet: item.title }] as Citation[],
       });
     }

@@ -224,11 +224,23 @@ export async function extractEntities(text: string, fileName = 'document'): Prom
   return result.entities ?? [];
 }
 
+export type ActionItemKind = 'commitment' | 'decision' | 'informational' | 'risk';
+export type ActionItemConfidence = 'high' | 'medium' | 'low';
+
 export interface NormalizedActionItem {
   title: string;
   description?: string;
   owner?: string;
   due_date?: string;
+  item_kind?: ActionItemKind;
+  applies_to_me?: boolean;
+  matched_terms?: string[];
+  confidence?: ActionItemConfidence;
+}
+
+export interface ActionItemExtractionContext {
+  watchlistPrompt: string;
+  sourceType?: string;
 }
 
 const ACTION_TITLE_KEYS = [
@@ -272,27 +284,72 @@ export function normalizeActionItems(raw: unknown): NormalizedActionItem[] {
     const title = pickStringField(obj, ACTION_TITLE_KEYS);
     if (!title) continue;
 
+    const itemKind = pickStringField(obj, ['item_kind', 'kind', 'type']);
+    const confidence = pickStringField(obj, ['confidence']);
+    const appliesRaw = obj.applies_to_me;
+    const matchedRaw = obj.matched_terms;
+
     items.push({
       title,
       description: pickStringField(obj, ACTION_DESC_KEYS),
       owner: pickStringField(obj, ACTION_OWNER_KEYS),
       due_date: pickStringField(obj, ACTION_DUE_KEYS),
+      item_kind: isActionItemKind(itemKind) ? itemKind : undefined,
+      applies_to_me: typeof appliesRaw === 'boolean' ? appliesRaw : undefined,
+      matched_terms: Array.isArray(matchedRaw)
+        ? matchedRaw.filter((term): term is string => typeof term === 'string' && term.trim().length > 0)
+        : undefined,
+      confidence: isActionItemConfidence(confidence) ? confidence : undefined,
     });
   }
   return items;
 }
 
-export async function extractActionItems(text: string, fileName: string): Promise<NormalizedActionItem[]> {
+function isActionItemKind(value: string | undefined): value is ActionItemKind {
+  return value === 'commitment' || value === 'decision' || value === 'informational' || value === 'risk';
+}
+
+function isActionItemConfidence(value: string | undefined): value is ActionItemConfidence {
+  return value === 'high' || value === 'medium' || value === 'low';
+}
+
+export async function extractActionItems(
+  text: string,
+  fileName: string,
+  context?: ActionItemExtractionContext
+): Promise<NormalizedActionItem[]> {
+  const watchlistSection = context?.watchlistPrompt
+    ? `\n\nAccount watchlist (only surface items relevant to this person or these terms):\n${context.watchlistPrompt}`
+    : '';
+
   const result = await structuredExtraction<{
     action_items?: unknown;
     items?: unknown;
     tasks?: unknown;
   }>(
-    `Extract concrete action items and follow-ups from the text.
-Return JSON only in this shape:
+    `Extract follow-ups from the text that are relevant to the account holder or their watchlist terms.
+${watchlistSection}
+
+Rules:
+- Skip background updates, other people's tasks, and pure FYI unless they require follow-up from the account holder.
+- item_kind must be one of: commitment, decision, informational, risk
+- applies_to_me: true only when the account holder (or their company/role) should act or was explicitly assigned
+- matched_terms: watchlist terms that appear in the item (empty array if none)
+- confidence: high | medium | low — use low for vague mentions
+
+Return JSON only:
 {
   "action_items": [
-    { "title": "Complete ROI model", "description": "optional context", "owner": "Lisa Park", "due_date": "2025-06-28" }
+    {
+      "title": "Sim to send Epic cutover timeline",
+      "description": "optional context",
+      "owner": "Sim Patel",
+      "due_date": "2025-06-28",
+      "item_kind": "commitment",
+      "applies_to_me": true,
+      "matched_terms": ["Sim", "Epic"],
+      "confidence": "high"
+    }
   ]
 }
 Every item MUST have a non-empty "title" string. Do not use "action", "task", or other keys instead of "title".`,
