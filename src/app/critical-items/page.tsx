@@ -2,6 +2,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { CriticalItemsList } from '@/components/critical/CriticalItemCard';
 import { getCriticalItems } from '@/lib/data/queries';
 
+export const dynamic = 'force-dynamic';
+
 export default async function CriticalItemsPage() {
   const items = await getCriticalItems();
 

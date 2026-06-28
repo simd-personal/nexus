@@ -14,6 +14,8 @@ import { TAGLINE } from '@/lib/constants';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const [projects, stats, criticalItems, updates] = await Promise.all([
     getProjectsWithStats(),

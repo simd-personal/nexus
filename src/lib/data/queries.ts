@@ -1,5 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
-import { sunnyUpdateStillValid } from '@/lib/files/purge-derived-content';
+import {
+  ensureFreshAppData,
+  recordCitationsStillValid,
+  refreshDerivedRecords,
+  sunnyUpdateStillValid,
+} from '@/lib/data/fresh-data';
 import type {
   ProjectWithStats,
   SunnyUpdate,
@@ -58,10 +63,13 @@ export async function getProject(projectId: string) {
 }
 
 export async function getDashboardStats() {
+  await ensureFreshAppData();
   const supabase = await createClient();
   const since = new Date(Date.now() - 86400000).toISOString();
 
-  const [criticalItems, recentUpdates, actionItems, conflicts, files] = await Promise.all([
+  const filesByProject = await refreshDerivedRecords(supabase);
+
+  const [criticalItems, recentUpdates, actionItems, conflicts] = await Promise.all([
     supabase.from('critical_items').select('id', { count: 'exact' }).eq('status', 'open'),
     supabase
       .from('sunny_updates')
@@ -70,16 +78,7 @@ export async function getDashboardStats() {
       .order('created_at', { ascending: false }),
     supabase.from('action_items').select('id', { count: 'exact' }).eq('status', 'open'),
     supabase.from('critical_items').select('id', { count: 'exact' }).eq('category', 'conflict').eq('status', 'open'),
-    supabase.from('files').select('project_id, file_name'),
   ]);
-
-  const filesByProject = new Map<string, Set<string>>();
-  for (const file of files.data ?? []) {
-    if (!filesByProject.has(file.project_id)) {
-      filesByProject.set(file.project_id, new Set());
-    }
-    filesByProject.get(file.project_id)!.add(file.file_name);
-  }
 
   const validRecentUpdates = (recentUpdates.data ?? []).filter((update) =>
     sunnyUpdateStillValid(update, filesByProject)
@@ -94,25 +93,35 @@ export async function getDashboardStats() {
 }
 
 export async function getCriticalItems(limit?: number): Promise<CriticalItem[]> {
+  await ensureFreshAppData();
   const supabase = await createClient();
+  const filesByProject = await refreshDerivedRecords(supabase);
+
   let query = supabase
     .from('critical_items')
     .select('*, projects(client_name, project_name)')
     .eq('status', 'open')
     .order('created_at', { ascending: false });
 
-  if (limit) query = query.limit(limit);
+  if (limit) query = query.limit(limit * 3);
 
   const { data } = await query;
-  return (data ?? []).map((item) => ({
-    ...item,
-    source_citations: item.source_citations ?? [],
-    project: item.projects as CriticalItem['project'],
-  }));
+  const items = (data ?? [])
+    .map((item) => ({
+      ...item,
+      source_citations: item.source_citations ?? [],
+      project: item.projects as CriticalItem['project'],
+    }))
+    .filter((item) => recordCitationsStillValid(item, filesByProject));
+
+  return limit ? items.slice(0, limit) : items;
 }
 
 export async function getSunnyUpdates(limit?: number): Promise<SunnyUpdate[]> {
+  await ensureFreshAppData();
   const supabase = await createClient();
+  const filesByProject = await refreshDerivedRecords(supabase);
+
   let query = supabase
     .from('sunny_updates')
     .select('*, projects(client_name, project_name)')
@@ -121,31 +130,13 @@ export async function getSunnyUpdates(limit?: number): Promise<SunnyUpdate[]> {
   if (limit) query = query.limit(limit * 3);
 
   const { data } = await query;
-  const rawUpdates = (data ?? []).map((update) => ({
-    ...update,
-    source_citations: update.source_citations ?? [],
-    project: update.projects as SunnyUpdate['project'],
-  }));
-
-  if (rawUpdates.length === 0) return [];
-
-  const projectIds = [...new Set(rawUpdates.map((update) => update.project_id))];
-  const { data: files } = await supabase
-    .from('files')
-    .select('project_id, file_name')
-    .in('project_id', projectIds);
-
-  const filesByProject = new Map<string, Set<string>>();
-  for (const file of files ?? []) {
-    if (!filesByProject.has(file.project_id)) {
-      filesByProject.set(file.project_id, new Set());
-    }
-    filesByProject.get(file.project_id)!.add(file.file_name);
-  }
-
-  const validUpdates = rawUpdates.filter((update) =>
-    sunnyUpdateStillValid(update, filesByProject)
-  );
+  const validUpdates = (data ?? [])
+    .map((update) => ({
+      ...update,
+      source_citations: update.source_citations ?? [],
+      project: update.projects as SunnyUpdate['project'],
+    }))
+    .filter((update) => sunnyUpdateStillValid(update, filesByProject));
 
   return limit ? validUpdates.slice(0, limit) : validUpdates;
 }

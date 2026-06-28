@@ -4,6 +4,8 @@ import { getSunnyUpdates } from '@/lib/data/queries';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { Sun } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export default async function SunnyUpdatesPage() {
   const updates = await getSunnyUpdates();
 

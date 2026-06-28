@@ -1,6 +1,19 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Citation } from '@/types/database';
 
+export function buildFilesByProject(
+  files: Array<{ project_id: string; file_name: string }>
+): Map<string, Set<string>> {
+  const filesByProject = new Map<string, Set<string>>();
+  for (const file of files) {
+    if (!filesByProject.has(file.project_id)) {
+      filesByProject.set(file.project_id, new Set());
+    }
+    filesByProject.get(file.project_id)!.add(file.file_name);
+  }
+  return filesByProject;
+}
+
 function citationsReferenceFile(
   citations: Citation[] | null | undefined,
   fileId: string,
@@ -10,6 +23,69 @@ function citationsReferenceFile(
   return citations.some(
     (citation) => citation.file_id === fileId || citation.file_name === fileName
   );
+}
+
+export function recordCitationsStillValid(
+  record: { project_id: string; source_citations?: Citation[] | null },
+  filesByProject: Map<string, Set<string>>
+): boolean {
+  const citations = record.source_citations ?? [];
+  if (citations.length === 0) return true;
+
+  const projectFiles = filesByProject.get(record.project_id);
+  if (!projectFiles) return false;
+
+  return citations.some((citation) => citation.file_name && projectFiles.has(citation.file_name));
+}
+
+export const sunnyUpdateStillValid = recordCitationsStillValid;
+
+export async function pruneOrphanedDerivedRecords(
+  supabase: SupabaseClient,
+  filesByProject: Map<string, Set<string>>
+): Promise<void> {
+  const [{ data: sunnyUpdates }, { data: criticalItems }, { data: actionItems }] =
+    await Promise.all([
+      supabase.from('sunny_updates').select('id, project_id, source_citations'),
+      supabase.from('critical_items').select('id, project_id, source_citations'),
+      supabase.from('action_items').select('id, project_id, source_citations'),
+    ]);
+
+  const staleSunnyUpdateIds = (sunnyUpdates ?? [])
+    .filter(
+      (row) =>
+        (row.source_citations as Citation[] | null)?.length &&
+        !recordCitationsStillValid(row, filesByProject)
+    )
+    .map((row) => row.id);
+
+  if (staleSunnyUpdateIds.length > 0) {
+    await supabase.from('sunny_updates').delete().in('id', staleSunnyUpdateIds);
+  }
+
+  const staleCriticalItemIds = (criticalItems ?? [])
+    .filter(
+      (row) =>
+        (row.source_citations as Citation[] | null)?.length &&
+        !recordCitationsStillValid(row, filesByProject)
+    )
+    .map((row) => row.id);
+
+  if (staleCriticalItemIds.length > 0) {
+    await supabase.from('critical_items').delete().in('id', staleCriticalItemIds);
+  }
+
+  const staleActionItemIds = (actionItems ?? [])
+    .filter(
+      (row) =>
+        (row.source_citations as Citation[] | null)?.length &&
+        !recordCitationsStillValid(row, filesByProject)
+    )
+    .map((row) => row.id);
+
+  if (staleActionItemIds.length > 0) {
+    await supabase.from('action_items').delete().in('id', staleActionItemIds);
+  }
 }
 
 export async function purgeFileDerivedContent(
@@ -58,17 +134,4 @@ export async function purgeFileDerivedContent(
   if (actionItemIds.length > 0) {
     await supabase.from('action_items').delete().in('id', actionItemIds);
   }
-}
-
-export function sunnyUpdateStillValid(
-  update: { project_id: string; source_citations?: Citation[] | null },
-  filesByProject: Map<string, Set<string>>
-): boolean {
-  const citations = update.source_citations ?? [];
-  if (citations.length === 0) return true;
-
-  const projectFiles = filesByProject.get(update.project_id);
-  if (!projectFiles) return false;
-
-  return citations.some((citation) => citation.file_name && projectFiles.has(citation.file_name));
 }
