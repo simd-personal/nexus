@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Menu } from 'lucide-react';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 import { Sidebar } from './Sidebar';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
@@ -41,6 +42,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Link href="/dashboard" className="min-w-0 flex-1">
           <UpperDeckLogo size="sm" theme={darkMode ? 'dark' : 'light'} />
         </Link>
+        <SignOutButton variant="icon" />
       </header>
 
       {mobileOpen && (

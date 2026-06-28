@@ -148,10 +148,3 @@ export async function updateProfile(formData: FormData): Promise<void> {
 
   revalidatePath('/settings');
 }
-
-export async function signOut() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
-  const { redirect } = await import('next/navigation');
-  redirect('/login');
-}

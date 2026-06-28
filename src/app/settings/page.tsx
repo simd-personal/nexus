@@ -10,6 +10,7 @@ import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { EmailForwardSettings } from '@/components/settings/EmailForwardSettings';
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
 import { BillingSettings } from '@/components/settings/BillingSettings';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
 import { planDisplayName } from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
@@ -149,6 +150,14 @@ export default async function SettingsPage({
             userEmail={data?.user.email ?? null}
             billingNotice={params.billing ?? null}
           />
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader
+            title="Sign out"
+            description="End your session on this device"
+          />
+          <SignOutButton variant="settings" />
         </Card>
 
         <Card className="mt-6">

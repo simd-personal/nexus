@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { LogOut } from 'lucide-react';
-import { signOut } from '@/lib/actions/projects';
+import { SignOutButton } from '@/components/auth/SignOutButton';
 
 type AccountSummary = {
   displayName: string;
@@ -52,15 +51,7 @@ export function SidebarAccountFooter() {
           <p className="truncate text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
         </div>
       </div>
-      <form action={signOut}>
-        <button
-          type="submit"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[var(--ud-cloud)] dark:hover:text-gray-100"
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          Sign out
-        </button>
-      </form>
+      <SignOutButton variant="sidebar" />
     </div>
   );
 }

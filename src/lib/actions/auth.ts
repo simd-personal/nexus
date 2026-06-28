@@ -139,6 +139,13 @@ export async function updatePassword(newPassword: string) {
   return { success: true };
 }
 
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  const { redirect } = await import('next/navigation');
+  redirect('/login');
+}
+
 export async function resendSignupConfirmation(email: string) {
   const trimmed = email.trim().toLowerCase();
   if (!trimmed) return { error: 'Email is required' };
