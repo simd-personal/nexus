@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { hasProAccess, isPremiumTestEmail } from '@/lib/billing/test-accounts';
 
 describe('isPremiumTestEmail', () => {
-  it('recognizes the demo account regardless of case', () => {
+  it('recognizes premium test accounts regardless of case', () => {
     expect(isPremiumTestEmail('sim@test.com')).toBe(true);
     expect(isPremiumTestEmail('SIM@TEST.COM')).toBe(true);
+    expect(isPremiumTestEmail('taegh@test.com')).toBe(true);
+    expect(isPremiumTestEmail('TAEGH@TEST.COM')).toBe(true);
   });
 
   it('rejects other emails', () => {
