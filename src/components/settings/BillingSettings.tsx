@@ -4,20 +4,33 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { hasActiveSubscription, planDisplayName } from '@/lib/billing/plans';
+import { hasProAccess, isPremiumTestEmail } from '@/lib/billing/test-accounts';
 import type { Profile } from '@/types/database';
 
 export function BillingSettings({
   profile,
+  userEmail,
   billingNotice,
 }: {
   profile: Profile | null;
+  userEmail?: string | null;
   billingNotice?: string | null;
 }) {
   const [loading, setLoading] = useState<'checkout' | 'portal' | null>(null);
   const [error, setError] = useState('');
 
   const isEnterprise = profile?.account_type === 'enterprise';
-  const isPro = hasActiveSubscription(profile?.plan, profile?.subscription_status);
+  const isTestPremium = isPremiumTestEmail(userEmail);
+  const isPro = hasProAccess({
+    plan: profile?.plan,
+    subscriptionStatus: profile?.subscription_status,
+    accountType: profile?.account_type,
+    email: userEmail,
+  });
+  const hasStripeSubscription = hasActiveSubscription(
+    profile?.plan,
+    profile?.subscription_status
+  );
 
   async function openCheckout(plan: 'pro' | 'pro-annual') {
     setLoading('checkout');
@@ -82,14 +95,18 @@ export function BillingSettings({
 
       <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
         <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{planDisplayName(profile?.plan)}</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {isTestPremium && !hasStripeSubscription ? 'Pro (test account)' : planDisplayName(profile?.plan)}
+          </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {isPro
-              ? `Status: ${profile?.subscription_status ?? 'active'}`
+              ? isTestPremium && !hasStripeSubscription
+                ? 'Unlimited projects and Sunny chat'
+                : `Status: ${profile?.subscription_status ?? 'active'}`
               : '1 project · 25 Sunny messages / month'}
           </p>
         </div>
-        {isPro ? (
+        {isPro && hasStripeSubscription ? (
           <Button
             type="button"
             size="sm"

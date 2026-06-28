@@ -1,21 +1,26 @@
 import { createClient } from '@/lib/supabase/server';
-import {
-  FREE_CHAT_MESSAGES_PER_MONTH,
-  FREE_PROJECT_LIMIT,
-  hasActiveSubscription,
-} from '@/lib/billing/plans';
+import { FREE_CHAT_MESSAGES_PER_MONTH, FREE_PROJECT_LIMIT } from '@/lib/billing/plans';
+import { hasProAccess } from '@/lib/billing/test-accounts';
 
 export async function getBillingContextForUser(userId: string) {
   const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('plan, subscription_status, account_type')
-    .eq('user_id', userId)
-    .single();
+  const [{ data: profile }, { data: { user } }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('plan, subscription_status, account_type')
+      .eq('user_id', userId)
+      .single(),
+    supabase.auth.getUser(),
+  ]);
 
+  const email = user?.id === userId ? user.email : null;
   const isEnterprise = profile?.account_type === 'enterprise';
-  const isPro =
-    isEnterprise || hasActiveSubscription(profile?.plan, profile?.subscription_status);
+  const isPro = hasProAccess({
+    plan: profile?.plan,
+    subscriptionStatus: profile?.subscription_status,
+    accountType: profile?.account_type,
+    email,
+  });
 
   return {
     profile,

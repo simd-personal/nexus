@@ -11,7 +11,8 @@ import { EmailForwardSettings } from '@/components/settings/EmailForwardSettings
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
 import { BillingSettings } from '@/components/settings/BillingSettings';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
-import { hasActiveSubscription, planDisplayName } from '@/lib/billing/plans';
+import { planDisplayName } from '@/lib/billing/plans';
+import { hasProAccess } from '@/lib/billing/test-accounts';
 
 export default async function SettingsPage({
   searchParams,
@@ -22,7 +23,12 @@ export default async function SettingsPage({
   const orgContext = await getOrganizationAdminContext();
   const params = await searchParams;
   const isEnterprise = orgContext.profile?.account_type === 'enterprise';
-  const isPro = hasActiveSubscription(data?.profile?.plan, data?.profile?.subscription_status);
+  const isPro = hasProAccess({
+    plan: data?.profile?.plan,
+    subscriptionStatus: data?.profile?.subscription_status,
+    accountType: data?.profile?.account_type,
+    email: data?.user.email,
+  });
   const isOrgAdmin =
     orgContext.membership?.role === 'owner' || orgContext.membership?.role === 'admin';
 
@@ -140,6 +146,7 @@ export default async function SettingsPage({
           />
           <BillingSettings
             profile={data?.profile ?? null}
+            userEmail={data?.user.email ?? null}
             billingNotice={params.billing ?? null}
           />
         </Card>
