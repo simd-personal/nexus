@@ -76,32 +76,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file or text provided' }, { status: 400 });
     }
 
+    const insertPayload: Record<string, unknown> = {
+      project_id: projectId,
+      uploaded_by: user.id,
+      file_name: fileName,
+      file_type: file?.type ?? 'text/plain',
+      source_type: sourceType,
+      storage_path: storagePath,
+      extracted_text: pastedText?.trim() || null,
+      status: 'pending',
+      metadata: {
+        processing_progress: {
+          stage: 'queued',
+          percent: 0,
+          label: 'Queued for processing…',
+          updated_at: new Date().toISOString(),
+        },
+      },
+    };
+    if (userNote) {
+      insertPayload.user_note = userNote;
+    }
+
     const { data: fileRecord, error: insertError } = await supabase
       .from('files')
-      .insert({
-        project_id: projectId,
-        uploaded_by: user.id,
-        file_name: fileName,
-        file_type: file?.type ?? 'text/plain',
-        source_type: sourceType,
-        storage_path: storagePath,
-        extracted_text: pastedText?.trim() || null,
-        user_note: userNote,
-        status: 'pending',
-        metadata: {
-          processing_progress: {
-            stage: 'queued',
-            percent: 0,
-            label: 'Queued for processing…',
-            updated_at: new Date().toISOString(),
-          },
-        },
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
     if (insertError || !fileRecord) {
       console.error('File record insert error:', insertError?.message);
+      if (storagePath) {
+        const admin = createServiceClient();
+        const { error: cleanupError } = await admin.storage.from(bucket).remove([storagePath]);
+        if (cleanupError) {
+          console.error('Failed to clean up orphaned upload:', cleanupError.message);
+        }
+      }
       return NextResponse.json(
         { error: insertError?.message ?? 'Failed to create file record' },
         { status: 500 }
