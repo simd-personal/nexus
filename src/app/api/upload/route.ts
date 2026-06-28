@@ -3,8 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { inferSourceType } from '@/lib/constants';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
+import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +25,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Project ID required' }, { status: 400 });
     }
 
-    // Verify project ownership
     const { data: project } = await supabase
       .from('projects')
       .select('id')
@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
     let fileName: string;
     let sourceType: ReturnType<typeof inferSourceType>;
     let storagePath: string | null = null;
-    let buffer: Buffer | undefined;
 
     if (pastedText) {
       fileName = pastedType === 'email'
@@ -53,7 +52,7 @@ export async function POST(request: NextRequest) {
     } else if (file) {
       fileName = sanitizeUploadFileName(file.name);
       sourceType = inferSourceType(fileName, file.type || 'application/octet-stream');
-      buffer = Buffer.from(await file.arrayBuffer());
+      const buffer = Buffer.from(await file.arrayBuffer());
       storagePath = `${projectId}/${Date.now()}-${fileName}`;
 
       const admin = createServiceClient();
@@ -86,6 +85,14 @@ export async function POST(request: NextRequest) {
         storage_path: storagePath,
         extracted_text: pastedText?.trim() || null,
         status: 'pending',
+        metadata: {
+          processing_progress: {
+            stage: 'queued',
+            percent: 0,
+            label: 'Queued for processing…',
+            updated_at: new Date().toISOString(),
+          },
+        },
       })
       .select()
       .single();
@@ -98,16 +105,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Process asynchronously — don't block the response
-    const { processFile } = await import('@/lib/processing/pipeline');
-    processFile({
-      fileId: fileRecord.id,
-      projectId,
-      fileName,
-      sourceType,
-      buffer,
-      pastedText: pastedText ?? undefined,
-    }).catch(console.error);
+    enqueueFileProcessing(fileRecord.id, { resume: false });
 
     return NextResponse.json({ data: fileRecord });
   } catch (error) {

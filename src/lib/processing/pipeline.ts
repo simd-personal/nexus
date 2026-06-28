@@ -17,6 +17,11 @@ import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constan
 import { parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { normalizeEntityName } from '@/lib/utils';
+import {
+  embeddingPercent,
+  updateFileProgress,
+  type FileProcessingProgress,
+} from '@/lib/processing/progress';
 import type { Citation, SourceType } from '@/types/database';
 
 interface ProcessFileOptions {
@@ -26,83 +31,155 @@ interface ProcessFileOptions {
   sourceType: SourceType;
   buffer?: Buffer;
   pastedText?: string;
+  resume?: boolean;
+}
+
+async function countExistingChunks(
+  supabase: ReturnType<typeof createServiceClient>,
+  fileId: string
+): Promise<number> {
+  const { count } = await supabase
+    .from('chunks')
+    .select('*', { count: 'exact', head: true })
+    .eq('file_id', fileId);
+  return count ?? 0;
 }
 
 export async function processFile(options: ProcessFileOptions): Promise<void> {
   const supabase = createServiceClient();
-  const { fileId, projectId, fileName, sourceType } = options;
+  const { fileId, projectId, fileName, sourceType, resume = false } = options;
+
+  const { data: existingFile } = await supabase
+    .from('files')
+    .select('metadata, extracted_text')
+    .eq('id', fileId)
+    .single();
+
+  let metadata: Record<string, unknown> = {
+    ...((existingFile?.metadata as Record<string, unknown> | undefined) ?? {}),
+  };
+  const processingPhase = (metadata.processing_phase as string | undefined) ?? 'extract';
+
+  const report = async (progress: Omit<FileProcessingProgress, 'updated_at'>) => {
+    await updateFileProgress(supabase, fileId, progress, metadata);
+    metadata = {
+      ...metadata,
+      processing_progress: {
+        ...progress,
+        updated_at: new Date().toISOString(),
+      },
+    };
+  };
+
+  const setPhase = async (phase: string) => {
+    metadata = { ...metadata, processing_phase: phase };
+    await supabase.from('files').update({ metadata }).eq('id', fileId);
+  };
 
   await supabase
     .from('files')
     .update({ status: 'processing' })
     .eq('id', fileId);
 
+  await report({
+    stage: resume ? 'embedding' : 'queued',
+    percent: resume ? 20 : 2,
+    label: resume ? 'Resuming indexing…' : 'Queued for processing…',
+  });
+
   try {
-    let text = options.pastedText ?? '';
-    let metadata: Record<string, unknown> = {};
+    let text = options.pastedText ?? existingFile?.extracted_text ?? '';
     let pages: Array<{ pageNumber: number; text: string }> | undefined;
     let sheets: Array<{ name: string; rows: string[][] }> | undefined;
     const ext = getFileExtension(fileName);
     const resolvedSourceType =
       ext === '.xlsx' || ext === '.xls' ? 'csv' : sourceType;
 
-    await supabase.from('chunks').delete().eq('file_id', fileId);
+    const existingChunkCount = resume ? await countExistingChunks(supabase, fileId) : 0;
+    const skipExtract =
+      resume &&
+      Boolean(text.trim()) &&
+      existingChunkCount > 0 &&
+      (processingPhase === 'embedding' || processingPhase === 'analyzing');
 
-    if (options.buffer) {
-      if (AUDIO_EXTENSIONS.includes(ext)) {
-        text = await transcribeAudio(options.buffer, fileName);
-        metadata = { transcribed: true, source_type: 'transcript' };
-      } else if (isProcessable(fileName)) {
-        if (ext === '.xlsx' || ext === '.xls') {
-          const parsed = await parseSpreadsheetBuffer(options.buffer);
-          text = parsed.text;
-          sheets = parsed.sheets;
-          metadata = { ...metadata, sheet_count: parsed.sheets.length, source_type: 'csv' };
+    if (!skipExtract) {
+      if (!resume) {
+        await supabase.from('chunks').delete().eq('file_id', fileId);
+        await supabase.from('entities').delete().eq('source_file_id', fileId);
+        await setPhase('extract');
+      }
+
+      await report({ stage: 'extracting', percent: 8, label: 'Extracting text…' });
+
+      if (options.buffer) {
+        if (AUDIO_EXTENSIONS.includes(ext)) {
+          text = await transcribeAudio(options.buffer, fileName);
+          metadata = { ...metadata, transcribed: true, source_type: 'transcript' };
+        } else if (isProcessable(fileName)) {
+          if (ext === '.xlsx' || ext === '.xls') {
+            const parsed = await parseSpreadsheetBuffer(options.buffer);
+            text = parsed.text;
+            sheets = parsed.sheets;
+            metadata = { ...metadata, sheet_count: parsed.sheets.length, source_type: 'csv' };
+          } else {
+            const extracted = await extractTextFromBuffer(options.buffer, fileName);
+            text = extracted.text;
+            pages = extracted.pages;
+          }
+
+          if (ext === '.eml') {
+            const emailMeta = parseEmailMetadata(text);
+            metadata = { ...metadata, ...emailMeta, source_type: 'email' };
+            text = parseEmailBody(text);
+          }
         } else {
-          const extracted = await extractTextFromBuffer(options.buffer, fileName);
-          text = extracted.text;
-          pages = extracted.pages;
-        }
+          await supabase
+            .from('files')
+            .update({ status: 'uploaded_unprocessed', metadata })
+            .eq('id', fileId);
 
-        if (ext === '.eml') {
-          const emailMeta = parseEmailMetadata(text);
-          metadata = { ...metadata, ...emailMeta, source_type: 'email' };
-          text = parseEmailBody(text);
+          await supabase.from('timeline_events').insert({
+            project_id: projectId,
+            event_type: 'file_upload',
+            title: `Uploaded: ${fileName}`,
+            description: 'File stored but not processed (unsupported format)',
+            source_file_id: fileId,
+          });
+          return;
         }
-      } else {
+      }
+
+      if (!text.trim()) {
         await supabase
           .from('files')
-          .update({ status: 'uploaded_unprocessed' })
+          .update({ status: 'failed', metadata: { ...metadata, error: 'No text extracted' } })
           .eq('id', fileId);
-
-        await supabase.from('timeline_events').insert({
-          project_id: projectId,
-          event_type: 'file_upload',
-          title: `Uploaded: ${fileName}`,
-          description: 'File stored but not processed (unsupported format)',
-          source_file_id: fileId,
+        await report({
+          stage: 'failed',
+          percent: 0,
+          label: 'Processing failed',
+          detail: 'No text could be extracted from this file',
         });
         return;
       }
-    }
 
-    if (!text.trim()) {
+      await report({ stage: 'extracting', percent: 15, label: 'Text extracted' });
+
       await supabase
         .from('files')
-        .update({ status: 'failed', metadata: { error: 'No text extracted' } })
+        .update({
+          extracted_text: text,
+          source_type: resolvedSourceType,
+          metadata: { ...metadata, source_type: resolvedSourceType },
+        })
         .eq('id', fileId);
-      return;
+    } else if (options.buffer && (ext === '.xlsx' || ext === '.xls')) {
+      const parsed = await parseSpreadsheetBuffer(options.buffer);
+      sheets = parsed.sheets;
+      text = parsed.text;
     }
 
-    // Keep extracted text while indexing continues
-    await supabase
-      .from('files')
-      .update({
-        extracted_text: text,
-        source_type: resolvedSourceType,
-        metadata: { ...metadata, source_type: resolvedSourceType },
-      })
-      .eq('id', fileId);
+    await report({ stage: 'chunking', percent: 18, label: 'Preparing searchable sections…' });
 
     const chunkBase = { source_type: resolvedSourceType, file_name: fileName, ...metadata };
     const textChunks = sheets
@@ -111,9 +188,23 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
         ? chunkByPages(pages, chunkBase)
         : chunkText(text, chunkBase);
 
-    // Generate embeddings in batches
+    const startIndex = resume ? existingChunkCount : 0;
     const batchSize = 20;
-    for (let i = 0; i < textChunks.length; i += batchSize) {
+    const insertBatchSize = 50;
+
+    await report({
+      stage: 'embedding',
+      percent: embeddingPercent(startIndex, textChunks.length),
+      label: startIndex > 0 ? 'Resuming search indexing…' : 'Building search index…',
+      chunks_done: startIndex,
+      chunks_total: textChunks.length,
+      detail: `${startIndex} of ${textChunks.length} sections indexed`,
+    });
+    await setPhase('embedding');
+
+    if (startIndex >= textChunks.length) {
+      // Embedding already complete — jump to analysis
+    } else for (let i = startIndex; i < textChunks.length; i += batchSize) {
       const batch = textChunks.slice(i, i + batchSize);
       const embeddings = await createEmbeddings(batch.map((c) => c.text));
 
@@ -122,25 +213,43 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
         file_id: fileId,
         chunk_index: chunk.index,
         text: chunk.text,
-        embedding: JSON.stringify(embeddings[j]),
+        embedding: embeddings[j],
         metadata: chunk.metadata,
       }));
 
-      // Insert chunks — embedding stored as vector via raw SQL
-      for (const row of chunkRows) {
-        const embedding = embeddings[chunkRows.indexOf(row)];
-        await supabase.from('chunks').insert({
-          project_id: row.project_id,
-          file_id: row.file_id,
-          chunk_index: row.chunk_index,
-          text: row.text,
-          embedding: embedding,
-          metadata: row.metadata,
-        });
+      for (let j = 0; j < chunkRows.length; j += insertBatchSize) {
+        const insertBatch = chunkRows.slice(j, j + insertBatchSize);
+        const { error: insertError } = await supabase.from('chunks').insert(insertBatch);
+        if (insertError) {
+          throw new Error(`Chunk insert failed: ${insertError.message}`);
+        }
       }
+
+      const done = Math.min(i + batch.length, textChunks.length);
+      await report({
+        stage: 'embedding',
+        percent: embeddingPercent(done, textChunks.length),
+        label: 'Building search index…',
+        chunks_done: done,
+        chunks_total: textChunks.length,
+        detail: `${done} of ${textChunks.length} sections indexed`,
+      });
     }
 
-    // Extract entities
+    await setPhase('analyzing');
+
+    if (resume && processingPhase === 'analyzing') {
+      await supabase.from('entities').delete().eq('source_file_id', fileId);
+    }
+
+    await report({
+      stage: 'analyzing',
+      percent: 78,
+      label: 'Analyzing content with Sunny…',
+      chunks_done: textChunks.length,
+      chunks_total: textChunks.length,
+    });
+
     const entities = await extractEntities(text, fileName);
     for (const entity of entities) {
       await supabase.from('entities').insert({
@@ -152,7 +261,8 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       });
     }
 
-    // Extract action items
+    await report({ stage: 'analyzing', percent: 82, label: 'Extracting action items…' });
+
     const actionItems = await extractActionItems(text, fileName);
     for (const item of actionItems) {
       if (!item.title?.trim()) continue;
@@ -166,10 +276,10 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       });
     }
 
-    // Summarize
+    await report({ stage: 'analyzing', percent: 88, label: 'Summarizing…' });
+
     const summary = await summarizeContent(text, fileName);
 
-    // Get existing content for contradiction detection
     const { data: existingChunks } = await supabase
       .from('chunks')
       .select('text')
@@ -179,7 +289,8 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
 
     const existingContent = (existingChunks ?? []).map((c) => c.text).join('\n\n');
 
-    // Detect critical items
+    await report({ stage: 'analyzing', percent: 92, label: 'Checking for critical items…' });
+
     const criticalItems = await detectCriticalItems(text, existingContent, fileName);
     for (const item of criticalItems) {
       const citation: Citation = {
@@ -211,7 +322,8 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       }
     }
 
-    // Create Sunny update if critical items found
+    await report({ stage: 'finishing', percent: 96, label: 'Saving Sunny update…' });
+
     if (criticalItems.length > 0) {
       const update = await generateSunnyUpdate(
         fileName,
@@ -237,7 +349,6 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       });
     }
 
-    // Timeline events
     await supabase.from('timeline_events').insert([
       {
         project_id: projectId,
@@ -265,7 +376,6 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
       });
     }
 
-    // Update project
     const updateFields: Record<string, unknown> = {
       last_summary: summary,
       last_activity_at: new Date().toISOString(),
@@ -279,15 +389,46 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
 
     await supabase.from('projects').update(updateFields).eq('id', projectId);
 
+    const finalMetadata = {
+      ...metadata,
+      source_type: resolvedSourceType,
+      chunk_count: textChunks.length,
+      processing_phase: 'done',
+      processing_progress: {
+        stage: 'complete',
+        percent: 100,
+        label: 'Ready for search',
+        chunks_done: textChunks.length,
+        chunks_total: textChunks.length,
+        updated_at: new Date().toISOString(),
+      } satisfies FileProcessingProgress,
+    };
+
     await supabase
       .from('files')
-      .update({ status: 'processed', metadata: { ...metadata, source_type: resolvedSourceType, chunk_count: textChunks.length } })
+      .update({ status: 'processed', metadata: finalMetadata })
       .eq('id', fileId);
   } catch (error) {
     console.error('File processing error:', error instanceof Error ? error.message : 'Unknown');
+    const message = error instanceof Error ? error.message : 'Processing failed';
     await supabase
       .from('files')
-      .update({ status: 'failed', metadata: { error: 'Processing failed' } })
+      .update({
+        status: 'failed',
+        metadata: {
+          ...metadata,
+          error: message,
+          processing_progress: {
+            stage: 'failed',
+            percent: metadata.processing_progress
+              ? (metadata.processing_progress as FileProcessingProgress).percent
+              : 0,
+            label: 'Processing failed',
+            detail: message,
+            updated_at: new Date().toISOString(),
+          },
+        },
+      })
       .eq('id', fileId);
   }
 }

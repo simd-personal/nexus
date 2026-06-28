@@ -4,7 +4,15 @@ import { NextRequest } from 'next/server';
 const mockGetUser = vi.fn();
 const mockFrom = vi.fn();
 const mockStorageUpload = vi.fn();
-const mockProcessFile = vi.fn();
+const mockEnqueueFileProcessing = vi.fn();
+
+vi.mock('@/lib/processing/enqueue', () => ({
+  enqueueFileProcessing: (...args: unknown[]) => mockEnqueueFileProcessing(...args),
+}));
+
+vi.mock('@/lib/processing/pipeline', () => ({
+  processFile: vi.fn(),
+}));
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
@@ -21,10 +29,6 @@ vi.mock('@/lib/supabase/admin', () => ({
       })),
     },
   })),
-}));
-
-vi.mock('@/lib/processing/pipeline', () => ({
-  processFile: (...args: unknown[]) => mockProcessFile(...args),
 }));
 
 import { POST } from '@/app/api/upload/route';
@@ -61,11 +65,11 @@ describe('POST /api/upload integration', () => {
     mockGetUser.mockReset();
     mockFrom.mockReset();
     mockStorageUpload.mockReset();
-    mockProcessFile.mockReset();
+    mockEnqueueFileProcessing.mockReset();
 
     mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } });
     mockStorageUpload.mockResolvedValue({ error: null });
-    mockProcessFile.mockResolvedValue(undefined);
+    mockEnqueueFileProcessing.mockResolvedValue(undefined);
   });
 
   it('returns 401 when not authenticated', async () => {
@@ -137,13 +141,7 @@ describe('POST /api/upload integration', () => {
         status: 'pending',
       })
     );
-    expect(mockProcessFile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        fileId: 'file-1',
-        projectId: 'proj-1',
-        fileName: 'brief.md',
-      })
-    );
+    expect(mockEnqueueFileProcessing).toHaveBeenCalledWith('file-1', { resume: false });
   });
 
   it('accepts pasted meeting notes without storage upload', async () => {
@@ -187,11 +185,7 @@ describe('POST /api/upload integration', () => {
         storage_path: null,
       })
     );
-    expect(mockProcessFile).toHaveBeenCalledWith(
-      expect.objectContaining({
-        pastedText: 'Client confirmed Q3 priorities.',
-      })
-    );
+    expect(mockEnqueueFileProcessing).toHaveBeenCalledWith('file-2', { resume: false });
   });
 
   it('returns storage error details when upload fails', async () => {

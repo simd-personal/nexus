@@ -2,10 +2,12 @@
 
 import { FileUploadCenter } from '@/components/project/FileUpload';
 import { FileViewerModal } from '@/components/project/FileViewerModal';
+import { FileProcessingProgress } from '@/components/project/FileProcessingProgress';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
+import { isProcessingStale } from '@/lib/processing/progress';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
 import { Eye, FileText, RefreshCw, Trash2 } from 'lucide-react';
@@ -25,14 +27,26 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     const res = await fetch(`/api/projects/${projectId}/files`);
     if (res.ok) {
       const data = await res.json();
-      setFiles(data.files ?? []);
+      const nextFiles: FileRecord[] = data.files ?? [];
+      setFiles(nextFiles);
+
+      for (const file of nextFiles) {
+        if (isProcessingStale(file.status, file.metadata)) {
+          void fetch(`/api/files/${file.id}/process`, { method: 'POST' });
+        }
+      }
     }
   }, [projectId]);
 
+  const hasActiveProcessing = files.some(
+    (file) => file.status === 'processing' || file.status === 'pending'
+  );
+
   useEffect(() => {
-    const interval = setInterval(fetchFiles, 5000);
+    const intervalMs = hasActiveProcessing ? 2000 : 8000;
+    const interval = setInterval(fetchFiles, intervalMs);
     return () => clearInterval(interval);
-  }, [fetchFiles]);
+  }, [fetchFiles, hasActiveProcessing]);
 
   useEffect(() => {
     function onUploaded() {
@@ -160,13 +174,16 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                     )}
                     <StatusBadge status={
                       file.status === 'processed' ? 'healthy' :
-                      file.status === 'processing' ? 'watch' :
+                      file.status === 'processing' || file.status === 'pending' ? 'watch' :
                       file.status === 'failed' ? 'critical' :
                       file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) ? 'watch' :
                       'needs_review'
                     } />
                   </div>
                 </div>
+                {(file.status === 'processing' || file.status === 'pending') && (
+                  <FileProcessingProgress file={file} />
+                )}
                 {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
                   <p className="text-xs text-amber-700 mt-2">
                     Not indexed for search yet — open View to read the spreadsheet, or click Reprocess to index it.
