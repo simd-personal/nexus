@@ -52,7 +52,7 @@ function formatContext(ctx: RetrievedContext): string {
 
   if (ctx.timelineEvents.length) {
     parts.push('## Recent Timeline\n' + ctx.timelineEvents.map((e) =>
-      `- ${e.created_at}: ${e.title}${e.description ? ' — ' + e.description : ''}`
+      `- ${e.created_at}: ${e.title}${e.description ? '. ' + e.description : ''}`
     ).join('\n'));
   }
 
@@ -380,7 +380,7 @@ export async function generateFollowUpEmail(
   const versionGuide = {
     short: 'Keep it to 3-4 sentences.',
     detailed: 'Include key discussion points and clear next steps in 2-3 paragraphs.',
-    executive: 'Write for a senior executive audience — concise, strategic, no sales language.',
+    executive: 'Write for a senior executive audience. Concise, strategic, no sales language.',
   };
 
   return generateLongForm(

@@ -45,7 +45,7 @@ export function EmailForwardCard({ projectId }: { projectId: string }) {
     <Card>
       <CardHeader
         title="Forward from Outlook"
-        description="Forward emails and attachments to this project — no drag and drop needed"
+        description="Forward emails and attachments to this project. No drag and drop needed."
       />
       {error ? (
         <p className="text-sm text-red-600">{error}</p>

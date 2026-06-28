@@ -39,7 +39,7 @@ export async function createProject(formData: FormData) {
       return { error: 'Parent program not found' };
     }
     if (parent.parent_project_id) {
-      return { error: 'Workstreams can only be added under a top-level program project' };
+      return { error: 'Workstreams can only be added under a standalone program project' };
     }
     resolvedParentId = parent.id;
   }

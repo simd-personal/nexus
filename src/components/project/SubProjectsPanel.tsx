@@ -16,7 +16,7 @@ export function SubProjectsPanel({
     <Card>
       <CardHeader
         title="Workstreams"
-        description="Parallel sub-projects under this program — each has its own files, inbox, and Sunny context"
+        description="Parallel workstreams under this program. Each has its own files, inbox, and Sunny context."
       />
       {subProjects.length === 0 ? (
         <p className="text-sm text-gray-500 dark:text-gray-400">

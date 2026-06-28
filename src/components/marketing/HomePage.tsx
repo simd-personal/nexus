@@ -66,7 +66,7 @@ function HeroDashboard() {
           <ul className="marketing-hero-activity-list">
             <li>Client Q2 Strategy Deck · Updated 2h ago</li>
             <li>Homepage Redesign Brief · Updated 5h ago</li>
-            <li>Follow-up email draft · Sunny suggested 1h ago</li>
+            <li>Follow up email draft · Sunny suggested 1h ago</li>
           </ul>
         </div>
       </div>

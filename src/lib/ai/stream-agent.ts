@@ -266,7 +266,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
       );
       const title = `Follow Up Email for ${project.client_name}`;
       artifact = { type: 'follow_up_email', title, content };
-      actions_taken = ['Drafted follow-up email', 'Saved to project documents'];
+      actions_taken = ['Drafted follow up email', 'Saved to project documents'];
       await supabase.from('generated_documents').insert({
         project_id: project.id, type: 'follow_up_email', title, content,
         metadata: { version, source: 'chat', instructions: focus },

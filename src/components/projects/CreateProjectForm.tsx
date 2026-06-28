@@ -87,7 +87,7 @@ export function CreateProjectForm({
     ? `Add workstream · ${lockedParent.project_name}`
     : 'Create New Project';
   const description = lockedParent
-    ? `A parallel track under ${lockedParent.client_name} — separate files and forwarding address.`
+    ? `A parallel track under ${lockedParent.client_name}. Separate files and forwarding address.`
     : `${AI_EMPLOYEE_NAME} uses Claude to adapt the project setup to what you describe.`;
 
   const form = (
@@ -104,7 +104,7 @@ export function CreateProjectForm({
             onChange={(e) => setSelectedParentId(e.target.value)}
             className={INPUT_CLASS}
           >
-            <option value="">Top-level project</option>
+            <option value="">Standalone project</option>
             {programOptions.map((option) => (
               <option key={option.id} value={option.id}>
                 {option.client_name} · {option.project_name}

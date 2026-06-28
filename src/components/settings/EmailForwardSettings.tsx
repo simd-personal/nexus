@@ -75,7 +75,7 @@ export function EmailForwardSettings() {
               the subject, e.g. <code className="text-xs">{info.subject_hint}</code>
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              For a single project every time, use that project&apos;s address on the Files tab instead — no
+              For a single project every time, use that project&apos;s address on the Files tab instead. No
               subject matching required.
             </p>
           </div>

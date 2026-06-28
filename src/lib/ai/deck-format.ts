@@ -320,7 +320,7 @@ export function validateDeckFormat(content: string): DeckFormatResult {
 }
 
 /** Sample deck matching the expected executive markdown format */
-export const SAMPLE_VALID_DECK = `# Acme Corp — Q3 Business Review
+export const SAMPLE_VALID_DECK = `# Acme Corp · Q3 Business Review
 ### Prepared for Acme Corp
 
 ---

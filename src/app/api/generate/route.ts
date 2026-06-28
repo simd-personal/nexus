@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
         await supabase.from('timeline_events').insert({
           project_id,
           event_type: 'follow_up_email',
-          title: `Follow-up email drafted: ${project.client_name}`,
+          title: `Follow up email drafted: ${project.client_name}`,
           description: `${version ?? 'detailed'} version`,
         });
         break;

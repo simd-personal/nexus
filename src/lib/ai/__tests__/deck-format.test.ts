@@ -70,7 +70,7 @@ describe('deck format validation', () => {
 describe('parseDeckForViewer (visual rendering)', () => {
   it('extracts the deck title and subtitle', () => {
     const view = parseDeckForViewer(SAMPLE_VALID_DECK);
-    expect(view.title).toBe('Acme Corp — Q3 Business Review');
+    expect(view.title).toBe('Acme Corp · Q3 Business Review');
     expect(view.subtitle).toBe('Prepared for Acme Corp');
   });
 

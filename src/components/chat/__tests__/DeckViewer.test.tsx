@@ -23,7 +23,7 @@ describe('DeckViewer rendering', () => {
     expect(html).toContain('Q3 revenue up 12%');
 
     // Deck chrome present (title, slide count, controls)
-    expect(html).toContain('Acme Corp — Q3 Business Review');
+    expect(html).toContain('Acme Corp · Q3 Business Review');
     expect(html).toContain('7 slides');
     expect(html).toContain('Present');
     expect(html).toContain('Grid');

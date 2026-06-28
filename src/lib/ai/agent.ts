@@ -206,11 +206,11 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
       });
 
       return {
-        answer: `Here's a draft follow-up email for ${project.client_name}. Copy it, edit as needed, or ask me to make it shorter or more executive.`,
+        answer: `Here's a draft follow up email for ${project.client_name}. Copy it, edit as needed, or ask me to make it shorter or more executive.`,
         citations: [],
         confidence: 'high',
         artifact: { type: 'follow_up_email', title, content },
-        actions_taken: ['Drafted follow-up email', 'Saved to project documents'],
+        actions_taken: ['Drafted follow up email', 'Saved to project documents'],
         model: 'claude',
       };
     }
