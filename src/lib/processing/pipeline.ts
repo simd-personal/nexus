@@ -141,6 +141,7 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
     // Extract action items
     const actionItems = await extractActionItems(text, fileName);
     for (const item of actionItems) {
+      if (!item.title?.trim()) continue;
       await supabase.from('action_items').insert({
         project_id: projectId,
         title: item.title,

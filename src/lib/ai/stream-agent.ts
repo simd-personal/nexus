@@ -282,6 +282,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
       const items = await extractActionItems(contextAsText(context) || message, 'chat-request');
       const created: string[] = [];
       for (const item of items.slice(0, 8)) {
+        if (!item.title?.trim()) continue;
         await supabase.from('action_items').insert({
           project_id: project.id,
           title: item.title,

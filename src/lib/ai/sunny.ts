@@ -204,23 +204,84 @@ export async function extractEntities(text: string): Promise<Array<{
   return result.entities ?? [];
 }
 
-export async function extractActionItems(text: string, fileName: string): Promise<Array<{
+export interface NormalizedActionItem {
   title: string;
   description?: string;
   owner?: string;
   due_date?: string;
-}>> {
-  const result = await structuredExtraction<{ action_items: Array<{
-    title: string;
-    description?: string;
-    owner?: string;
-    due_date?: string;
-  }> }>(
-    'Extract action items and follow-ups from the text. Return JSON: { "action_items": [...] }',
+}
+
+const ACTION_TITLE_KEYS = [
+  'title',
+  'action',
+  'task',
+  'item',
+  'text',
+  'name',
+  'summary',
+  'action_item',
+  'follow_up',
+  'followup',
+];
+const ACTION_OWNER_KEYS = ['owner', 'assignee', 'assigned_to', 'responsible', 'owner_name'];
+const ACTION_DESC_KEYS = ['description', 'details', 'context', 'notes'];
+const ACTION_DUE_KEYS = ['due_date', 'due', 'deadline', 'date', 'target_date'];
+
+function pickStringField(obj: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = obj[key];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return undefined;
+}
+
+/** Normalize GPT extraction output — models often use action/task instead of title. */
+export function normalizeActionItems(raw: unknown): NormalizedActionItem[] {
+  if (!Array.isArray(raw)) return [];
+
+  const items: NormalizedActionItem[] = [];
+  for (const entry of raw) {
+    if (typeof entry === 'string') {
+      const title = entry.trim();
+      if (title) items.push({ title });
+      continue;
+    }
+    if (!entry || typeof entry !== 'object') continue;
+
+    const obj = entry as Record<string, unknown>;
+    const title = pickStringField(obj, ACTION_TITLE_KEYS);
+    if (!title) continue;
+
+    items.push({
+      title,
+      description: pickStringField(obj, ACTION_DESC_KEYS),
+      owner: pickStringField(obj, ACTION_OWNER_KEYS),
+      due_date: pickStringField(obj, ACTION_DUE_KEYS),
+    });
+  }
+  return items;
+}
+
+export async function extractActionItems(text: string, fileName: string): Promise<NormalizedActionItem[]> {
+  const result = await structuredExtraction<{
+    action_items?: unknown;
+    items?: unknown;
+    tasks?: unknown;
+  }>(
+    `Extract concrete action items and follow-ups from the text.
+Return JSON only in this shape:
+{
+  "action_items": [
+    { "title": "Complete ROI model", "description": "optional context", "owner": "Lisa Park", "due_date": "2025-06-28" }
+  ]
+}
+Every item MUST have a non-empty "title" string. Do not use "action", "task", or other keys instead of "title".`,
     `From "${fileName}":\n${text.slice(0, 4000)}`,
     OPENAI_MODELS.extraction
   );
-  return result.action_items ?? [];
+
+  const raw = result.action_items ?? result.items ?? result.tasks ?? [];
+  return normalizeActionItems(raw);
 }
 
 export async function summarizeContent(text: string, fileName: string): Promise<string> {

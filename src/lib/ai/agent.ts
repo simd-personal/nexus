@@ -239,6 +239,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
       const created: string[] = [];
 
       for (const item of items.slice(0, 8)) {
+        if (!item.title?.trim()) continue;
         const citation: Citation = { file_name: 'Project materials', snippet: item.title };
         await supabase.from('action_items').insert({
           project_id: project.id,
