@@ -9,13 +9,11 @@ import {
   AlertTriangle,
   Search,
   Settings,
-  LogOut,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
-import { signOut } from '@/lib/actions/projects';
+import { SidebarAccountFooter } from '@/components/layout/SidebarAccountFooter';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
 
 const navItems = [
@@ -83,26 +81,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         })}
       </nav>
 
-      <div className="border-t border-gray-100 p-4 dark:border-[var(--ud-cloud)]">
-        <div className="mb-2 flex items-center gap-3 px-3 py-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40">
-            <Sun className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME}</p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">AI Employee</p>
-          </div>
-        </div>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[var(--ud-cloud)] dark:hover:text-gray-100"
-          >
-            <LogOut className="h-4 w-4 shrink-0" />
-            Sign out
-          </button>
-        </form>
-      </div>
+      <SidebarAccountFooter />
     </aside>
   );
 }
