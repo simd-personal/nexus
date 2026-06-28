@@ -166,7 +166,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
         ) : (
           <div className="space-y-3">
             {files.map((file) => (
-              <Card key={file.id} padding={true} className="overflow-hidden">
+              <Card key={file.id} padding={true}>
                 <div className="space-y-3">
                   <div className="flex min-w-0 items-start gap-3">
                     <button

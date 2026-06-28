@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import type { FileRecord } from '@/types/database';
 import { FolderInput, Link2, MoreHorizontal, Pencil, StickyNote, Trash2 } from 'lucide-react';
+
+const MENU_WIDTH = 208;
 
 type ProjectOption = {
   id: string;
@@ -21,7 +24,10 @@ type FileActionsMenuProps = {
 type DialogMode = 'rename' | 'note' | 'move' | 'share' | 'remove' | null;
 
 export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: FileActionsMenuProps) {
+  const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [mode, setMode] = useState<DialogMode>(null);
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [value, setValue] = useState('');
@@ -30,10 +36,41 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
   const [error, setError] = useState('');
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setMenuPosition(null);
+      return;
+    }
+
+    function updatePosition() {
+      const anchor = anchorRef.current;
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      let left = rect.right - MENU_WIDTH;
+      left = Math.max(8, Math.min(left, window.innerWidth - MENU_WIDTH - 8));
+      setMenuPosition({ top: rect.bottom + 4, left });
+    }
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+    };
+  }, [open]);
+
+  useEffect(() => {
     if (!open) return;
     function handleClick(event: MouseEvent) {
       const target = event.target as HTMLElement;
-      if (!target.closest('[data-file-actions-root]')) {
+      if (
+        !target.closest('[data-file-actions-root]') &&
+        !target.closest('[data-file-actions-menu]')
+      ) {
         setOpen(false);
       }
     }
@@ -113,29 +150,42 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
     }
   }
 
+  const menu =
+    open && menuPosition && mounted
+      ? createPortal(
+          <div
+            data-file-actions-menu
+            role="menu"
+            className="fixed z-50 w-52 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]"
+            style={{ top: menuPosition.top, left: menuPosition.left }}
+          >
+            <MenuButton icon={Pencil} label="Rename file" onClick={() => startDialog('rename')} />
+            <MenuButton icon={StickyNote} label="Add note or context" onClick={() => startDialog('note')} />
+            <MenuButton icon={FolderInput} label="Move to project" onClick={() => startDialog('move')} />
+            <MenuButton icon={Link2} label="Share with project" onClick={() => startDialog('share')} />
+            <MenuButton icon={Trash2} label="Remove from project" onClick={() => startDialog('remove')} danger />
+          </div>,
+          document.body
+        )
+      : null;
+
   return (
-    <div className="relative" data-file-actions-root>
+    <div className="relative inline-block" data-file-actions-root ref={anchorRef}>
       <Button
         variant="secondary"
         size="sm"
         disabled={busy}
         onClick={() => setOpen((current) => !current)}
         aria-label={`File actions for ${file.file_name}`}
+        aria-expanded={open}
+        aria-haspopup="menu"
         className="shrink-0"
       >
         <MoreHorizontal className="h-4 w-4" />
         <span className="hidden sm:inline">Actions</span>
       </Button>
 
-      {open && (
-        <div className="absolute right-0 z-20 mt-1 w-52 rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-          <MenuButton icon={Pencil} label="Rename file" onClick={() => startDialog('rename')} />
-          <MenuButton icon={StickyNote} label="Add note / context" onClick={() => startDialog('note')} />
-          <MenuButton icon={FolderInput} label="Move to project" onClick={() => startDialog('move')} />
-          <MenuButton icon={Link2} label="Share with project" onClick={() => startDialog('share')} />
-          <MenuButton icon={Trash2} label="Remove from project" onClick={() => startDialog('remove')} danger />
-        </div>
-      )}
+      {menu}
 
       {mode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4">
@@ -231,8 +281,8 @@ function MenuButton({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 ${
-        danger ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'
+      className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-[var(--ud-stone)] ${
+        danger ? 'text-red-600 dark:text-red-400' : 'text-gray-700 dark:text-gray-300'
       }`}
     >
       <Icon className="h-4 w-4" />
