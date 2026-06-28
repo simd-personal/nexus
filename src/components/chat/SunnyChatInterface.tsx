@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Sun, Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, Download, Trash2, Cpu, ArrowDown, RefreshCw,
+  Sun, Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, Download, Trash2, Cpu, ArrowDown, RefreshCw, X, ListOrdered,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -10,6 +10,7 @@ import { CitationsList } from '@/components/ui/Citations';
 import { SOURCE_TYPE_LABELS } from '@/lib/constants';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { useSunnyStream } from '@/hooks/useSunnyStream';
+import { MAX_QUEUED_MESSAGES, useMessageQueue } from '@/hooks/useMessageQueue';
 import { DeckViewer } from '@/components/chat/DeckViewer';
 import { MarkdownMessage } from '@/components/chat/MarkdownMessage';
 import { parseDeckForViewer } from '@/lib/ai/deck-format';
@@ -235,6 +236,8 @@ export function SunnyChatInterface({
   const projectIdRef = useRef<string | undefined>(projectId);
   const scopeKeyRef = useRef(scopeKey);
   const { stream, stop, isStreaming } = useSunnyStream();
+  const { queue: messageQueue, enqueue, dequeue, removeAt, clear: clearQueue, isFull: queueFull } = useMessageQueue();
+  const sendMessageRef = useRef<(text: string, opts?: { regenerate?: boolean }) => Promise<void>>(async () => {});
 
   useEffect(() => {
     sessionIdRef.current = sessionId;
@@ -392,7 +395,7 @@ export function SunnyChatInterface({
   };
 
   const sendMessage = useCallback(async (text: string, opts?: { regenerate?: boolean }) => {
-    if (!text.trim() || isStreaming || sendingRef.current) return;
+    if (!text.trim() || sendingRef.current) return;
     if (mode === 'project' && !projectId) return;
 
     const regenerate = opts?.regenerate ?? false;
@@ -525,8 +528,38 @@ export function SunnyChatInterface({
     });
     } finally {
       sendingRef.current = false;
+      if (!opts?.regenerate) {
+        const next = dequeue();
+        if (next) {
+          void sendMessageRef.current(next);
+        }
+      }
     }
-  }, [isStreaming, mode, projectId, sessionId, sourceFilter, modelPreference, stream, ensureSessions, loadSessions, scopeKey]);
+  }, [mode, projectId, sourceFilter, modelPreference, stream, ensureSessions, loadSessions, dequeue]);
+
+  sendMessageRef.current = sendMessage;
+
+  const submitMessage = useCallback(
+    (text: string, opts?: { regenerate?: boolean }) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      if (mode === 'project' && !projectId) return;
+
+      if (!opts?.regenerate && (isStreaming || sendingRef.current)) {
+        if (queueFull) return;
+        if (enqueue(trimmed)) setInput('');
+        return;
+      }
+
+      void sendMessage(trimmed, opts);
+    },
+    [isStreaming, mode, projectId, queueFull, enqueue, sendMessage]
+  );
+
+  const handleStop = useCallback(() => {
+    stop();
+    clearQueue();
+  }, [stop, clearQueue]);
 
   const regenerateLast = useCallback(() => {
     if (isStreaming || sendingRef.current) return;
@@ -542,7 +575,7 @@ export function SunnyChatInterface({
     const queryKey = `${mode}:${projectId ?? 'all'}:${initialQuery}`;
     if (!consumeInitialQuery(queryKey)) return;
     initialQuerySentRef.current = true;
-    sendMessage(initialQuery);
+    submitMessage(initialQuery);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const suggestions =
@@ -688,7 +721,7 @@ export function SunnyChatInterface({
                     <button
                       key={s}
                       type="button"
-                      onClick={() => sendMessage(s)}
+                      onClick={() => submitMessage(s)}
                       className="text-xs px-3 py-2 bg-gray-100 rounded-xl text-gray-600 hover:bg-gray-200 transition-colors"
                     >
                       {s}
@@ -824,10 +857,37 @@ export function SunnyChatInterface({
                 ))}
               </div>
             )}
+            {messageQueue.length > 0 && (
+              <div className="mb-3 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                  <ListOrdered className="w-3.5 h-3.5" />
+                  Queued ({messageQueue.length}/{MAX_QUEUED_MESSAGES})
+                </div>
+                {messageQueue.map((queued, index) => (
+                  <div
+                    key={`${index}-${queued.slice(0, 24)}`}
+                    className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2"
+                  >
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[10px] font-semibold text-amber-900">
+                      {index + 1}
+                    </span>
+                    <p className="flex-1 text-xs text-gray-700 line-clamp-2">{queued}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeAt(index)}
+                      className="shrink-0 rounded-md p-1 text-gray-400 hover:bg-amber-100 hover:text-gray-700"
+                      aria-label={`Remove queued message ${index + 1}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                sendMessage(input);
+                submitMessage(input);
               }}
               className="relative flex items-end gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-gray-200"
             >
@@ -838,35 +898,46 @@ export function SunnyChatInterface({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    sendMessage(input);
+                    submitMessage(input);
                   }
                 }}
                 placeholder={
-                  mode === 'search'
-                    ? 'Ask anything about your projects...'
-                    : `Message ${AI_EMPLOYEE_NAME}...`
+                  isStreaming
+                    ? queueFull
+                      ? 'Queue full — wait for Sunny to finish...'
+                      : 'Queue your next message...'
+                    : mode === 'search'
+                      ? 'Ask anything about your projects...'
+                      : `Message ${AI_EMPLOYEE_NAME}...`
                 }
                 rows={1}
-                disabled={isStreaming || (mode === 'project' && !projectId)}
+                disabled={mode === 'project' && !projectId}
                 className="flex-1 resize-none bg-transparent px-2 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none max-h-[200px]"
               />
-              {isStreaming ? (
-                <Button type="button" variant="secondary" size="sm" onClick={stop} className="shrink-0 rounded-xl">
-                  <Square className="w-4 h-4" />
-                </Button>
-              ) : (
+              <div className="flex shrink-0 items-center gap-1">
+                {isStreaming && (
+                  <Button type="button" variant="secondary" size="sm" onClick={handleStop} className="rounded-xl">
+                    <Square className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!input.trim() || (mode === 'project' && !projectId)}
-                  className="shrink-0 rounded-xl"
+                  disabled={
+                    !input.trim() ||
+                    (mode === 'project' && !projectId) ||
+                    (isStreaming && queueFull)
+                  }
+                  className="rounded-xl"
+                  title={isStreaming ? 'Add to queue' : 'Send message'}
                 >
-                  <Send className="w-4 h-4" />
+                  {isStreaming ? <ListOrdered className="w-4 h-4" /> : <Send className="w-4 h-4" />}
                 </Button>
-              )}
+              </div>
             </form>
             <p className="text-[10px] text-gray-400 text-center mt-2">
-              Enter to send · Shift+Enter for new line · Conversations saved automatically
+              Enter to send · Shift+Enter for new line
+              {isStreaming ? ` · Queue up to ${MAX_QUEUED_MESSAGES} while Sunny responds` : ' · Conversations saved automatically'}
             </p>
           </div>
         </div>
