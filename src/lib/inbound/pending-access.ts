@@ -3,6 +3,14 @@ import type { PendingInboundEventRecord } from '@/lib/inbound/pending-content';
 
 const VIEWABLE_STATUSES = new Set(['pending_assignment', 'unmatched']);
 
+export type ViewablePendingInboundEvent = PendingInboundEventRecord & {
+  id: string;
+  owner_id: string | null;
+  status: string;
+  attachment_count: number;
+  created_at: string;
+};
+
 export function canAccessPendingEvent(event: { owner_id: string | null }, userId: string): boolean {
   if (!event.owner_id) return true;
   return event.owner_id === userId;
@@ -12,7 +20,7 @@ export async function getPendingInboundEventForUser(
   supabase: SupabaseClient,
   userId: string,
   eventId: string
-): Promise<{ event: PendingInboundEventRecord & { id: string; status: string } } | { error: string; status: number }> {
+): Promise<{ event: ViewablePendingInboundEvent } | { error: string; status: number }> {
   const { data: event, error } = await supabase
     .from('inbound_email_events')
     .select('id, owner_id, status, from_address, subject, body_text, body_preview, payload_storage_path, attachments_meta, attachment_count, created_at')
@@ -31,5 +39,5 @@ export async function getPendingInboundEventForUser(
     return { error: 'This email is no longer in the inbox', status: 410 };
   }
 
-  return { event: event as PendingInboundEventRecord & { id: string; status: string } };
+  return { event: event as ViewablePendingInboundEvent };
 }

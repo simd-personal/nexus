@@ -81,7 +81,8 @@ export function PendingInboundEmailPreview({
   }, [open, onClose]);
 
   useEffect(() => {
-    if (!open || !selectedAttachment) {
+    const attachment = selectedAttachment;
+    if (!open || !attachment) {
       setPreviewLoading(false);
       setPreviewError('');
       setPreviewText(null);
@@ -90,6 +91,7 @@ export function PendingInboundEmailPreview({
       return;
     }
 
+    const { previewUrl: attachmentPreviewUrl, viewType } = attachment;
     let cancelled = false;
     const currentUrl = previewUrl;
 
@@ -101,18 +103,18 @@ export function PendingInboundEmailPreview({
       setPreviewUrl(null);
 
       try {
-        const res = await fetch(selectedAttachment.previewUrl);
+        const res = await fetch(attachmentPreviewUrl);
         if (!res.ok) {
           throw new Error('Could not load attachment preview');
         }
 
-        if (selectedAttachment.viewType === 'text') {
+        if (viewType === 'text') {
           const text = await res.text();
           if (!cancelled) setPreviewText(text);
           return;
         }
 
-        if (selectedAttachment.viewType === 'download') {
+        if (viewType === 'download') {
           if (!cancelled) setPreviewError('Preview is not available for this file type. Download it instead.');
           return;
         }
