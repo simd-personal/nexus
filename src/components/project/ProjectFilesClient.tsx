@@ -1,5 +1,7 @@
 'use client';
 
+import { PhotoCaptureUpload, isImageFileName } from '@/components/project/PhotoCaptureUpload';
+import { FileActionsMenu } from '@/components/project/FileActionsMenu';
 import { FileUploadCenter } from '@/components/project/FileUpload';
 import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { FileProcessingProgress } from '@/components/project/FileProcessingProgress';
@@ -11,7 +13,7 @@ import { needsProcessingKick } from '@/lib/processing/progress';
 import { kickFileProcessing } from '@/lib/upload/client';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
-import { Eye, FileText, RefreshCw, Trash2 } from 'lucide-react';
+import { Eye, FileText, Image as ImageIcon, RefreshCw, Trash2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
@@ -22,6 +24,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
   const [files, setFiles] = useState<FileRecord[]>(initialFiles);
   const [viewingFile, setViewingFile] = useState<FileRecord | null>(null);
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
+  const [uploadMessage, setUploadMessage] = useState('');
   const kickingRef = useRef(new Set<string>());
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,7 +126,17 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 
   return (
     <div className="space-y-6">
+      <PhotoCaptureUpload
+        projectId={projectId}
+        onUploadComplete={handleUploadComplete}
+        onMessage={setUploadMessage}
+      />
       <FileUploadCenter projectId={projectId} onUploadComplete={handleUploadComplete} />
+      {uploadMessage && (
+        <p className={`text-sm ${uploadMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
+          {uploadMessage}
+        </p>
+      )}
 
       {viewingFile && (
         <FileViewerModal file={viewingFile} onClose={() => setViewingFile(null)} />
@@ -146,17 +159,34 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                     onClick={() => setViewingFile(file)}
                     className="flex min-w-0 flex-1 items-center gap-3 text-left hover:opacity-80"
                   >
-                    <FileText className="w-5 h-5 text-gray-400 shrink-0" />
+                    {isImageFileName(file.file_name) ? (
+                      <ImageIcon className="w-5 h-5 text-violet-500 shrink-0" />
+                    ) : (
+                      <FileText className="w-5 h-5 text-gray-400 shrink-0" />
+                    )}
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">{file.file_name}</p>
                       <p className="text-xs text-gray-500">
                         {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
                         {' · '}
                         {formatRelativeTime(file.created_at)}
+                        {file.origin_file_id ? ' · Shared copy' : ''}
                       </p>
+                      {file.user_note && (
+                        <p className="mt-1 text-xs text-gray-600 line-clamp-2">{file.user_note}</p>
+                      )}
                     </div>
                   </button>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                    <FileActionsMenu
+                      file={file}
+                      currentProjectId={projectId}
+                      busy={busyFileId === file.id}
+                      onUpdated={async () => {
+                        await fetchFiles();
+                        router.refresh();
+                      }}
+                    />
                     <Button
                       variant="secondary"
                       size="sm"

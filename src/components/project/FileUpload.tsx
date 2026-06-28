@@ -132,7 +132,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
       <Card>
         <CardHeader
           title="Upload Center"
-          description="Drop files anywhere on this project or paste content for Sunny to process"
+          description="Files upload to this project workspace only. Open the project first, then upload or capture."
         />
 
         <div

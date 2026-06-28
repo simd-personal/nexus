@@ -175,7 +175,7 @@ describe('deck creation integration', () => {
 
     expect(response.confidence).toBe('low');
     expect(response.artifact).toBeUndefined();
-    expect(tokens.join('')).toContain('upload');
+    expect(tokens.join('')).toContain('Upload');
     expect(mockStreamLongForm).not.toHaveBeenCalled();
   });
 });

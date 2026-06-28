@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
     const projectId = formData.get('project_id') as string;
     const pastedText = formData.get('pasted_text') as string | null;
     const pastedType = formData.get('pasted_type') as string | null;
+    const userNoteRaw = formData.get('user_note') as string | null;
+    const userNote = userNoteRaw?.trim() || null;
     const file = formData.get('file') as File | null;
 
     if (!projectId) {
@@ -84,6 +86,7 @@ export async function POST(request: NextRequest) {
         source_type: sourceType,
         storage_path: storagePath,
         extracted_text: pastedText?.trim() || null,
+        user_note: userNote,
         status: 'pending',
         metadata: {
           processing_progress: {

@@ -22,7 +22,9 @@ export type TimelineEventType =
   | 'action_item'
   | 'playbook'
   | 'follow_up_email'
-  | 'contradiction';
+  | 'contradiction'
+  | 'file_moved'
+  | 'file_shared';
 export type GeneratedDocType = 'playbook' | 'follow_up_email' | 'brief' | 'memo';
 export type AccountType = 'individual' | 'enterprise';
 export type OrganizationIndustry = 'software' | 'healthcare' | 'other';
@@ -120,6 +122,8 @@ export interface FileRecord {
   storage_path: string | null;
   status: FileStatus;
   extracted_text: string | null;
+  user_note: string | null;
+  origin_file_id: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
 }

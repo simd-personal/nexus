@@ -50,11 +50,15 @@ async function parseUploadResponse(res: Response): Promise<{ error?: string; dat
 
 export async function uploadProjectFile(
   projectId: string,
-  file: File
+  file: File,
+  options?: { userNote?: string }
 ): Promise<{ ok: boolean; fileId?: string; error?: string }> {
   const formData = new FormData();
   formData.append('project_id', projectId);
   formData.append('file', file, sanitizeUploadFileName(file.name));
+  if (options?.userNote?.trim()) {
+    formData.append('user_note', options.userNote.trim());
+  }
 
   const res = await fetch('/api/upload', {
     method: 'POST',
@@ -81,13 +85,14 @@ export function kickFileProcessing(fileId: string, force = false): void {
 
 export async function uploadProjectFiles(
   projectId: string,
-  files: File[]
+  files: File[],
+  options?: { userNote?: string }
 ): Promise<{ uploaded: string[]; errors: string[] }> {
   const uploaded: string[] = [];
   const errors: string[] = [];
 
   for (const file of files) {
-    const result = await uploadProjectFile(projectId, file);
+    const result = await uploadProjectFile(projectId, file, options);
     if (result.ok) {
       uploaded.push(file.name);
       if (result.fileId) kickFileProcessing(result.fileId);
@@ -101,4 +106,6 @@ export async function uploadProjectFiles(
 
 /** Extensions shown in the upload UI — drops accept any file type. */
 export const UPLOAD_ACCEPT =
-  '.txt,.md,.markdown,.pdf,.docx,.csv,.png,.jpg,.jpeg,.webp,.vtt,.srt,.mp3,.m4a,.wav,.eml';
+  '.txt,.md,.markdown,.pdf,.docx,.csv,.png,.jpg,.jpeg,.webp,.heic,.heif,.vtt,.srt,.mp3,.m4a,.wav,.eml';
+
+export const PHOTO_CAPTURE_ACCEPT = 'image/*';

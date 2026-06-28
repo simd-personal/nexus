@@ -39,6 +39,7 @@ function buildFileRequest(options: {
   fileContent?: string;
   pastedText?: string;
   pastedType?: string;
+  userNote?: string;
 }) {
   const form = new FormData();
   form.append('project_id', options.projectId);
@@ -49,9 +50,13 @@ function buildFileRequest(options: {
   } else if (options.fileName && options.fileContent !== undefined) {
     form.append(
       'file',
-      new Blob([options.fileContent], { type: 'text/markdown' }),
+      new Blob([options.fileContent], { type: 'image/jpeg' }),
       options.fileName
     );
+  }
+
+  if (options.userNote) {
+    form.append('user_note', options.userNote);
   }
 
   return new NextRequest('http://localhost:3000/api/upload', {
@@ -186,6 +191,48 @@ describe('POST /api/upload integration', () => {
       })
     );
     expect(mockEnqueueFileProcessing).toHaveBeenCalledWith('file-2', { resume: false });
+  });
+
+  it('stores optional user note on photo uploads', async () => {
+    const insert = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({
+          data: { id: 'file-photo', status: 'pending' },
+          error: null,
+        }),
+      }),
+    });
+
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'projects') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { id: 'proj-1' } }),
+        };
+      }
+      if (table === 'files') {
+        return { insert };
+      }
+      return {};
+    });
+
+    const res = await POST(
+      buildFileRequest({
+        projectId: 'proj-1',
+        fileName: 'whiteboard.jpg',
+        fileContent: 'binary',
+        userNote: 'Kickoff whiteboard photo',
+      })
+    );
+
+    expect(res.status).toBe(200);
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        project_id: 'proj-1',
+        user_note: 'Kickoff whiteboard photo',
+      })
+    );
   });
 
   it('returns storage error details when upload fails', async () => {
