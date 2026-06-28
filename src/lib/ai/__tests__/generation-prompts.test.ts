@@ -6,6 +6,7 @@ import {
   isSubstantiveSource,
   PROSE_STYLE_GUIDE,
   stripEmphasis,
+  stripInlineCitations,
   SUMMARY_STYLE_GUIDE,
 } from '@/lib/ai/generation-prompts';
 
@@ -30,6 +31,17 @@ describe('formatNaturalProse', () => {
     expect(result).not.toContain('—');
     expect(result).toContain('Denver approved');
   });
+
+  it('removes inline citation brackets and fixes comma splices', () => {
+    const raw =
+      'ROI model due June 28 [4].,Vendor cutover owned by Maria Santos, due July 15 [4][6].,Vendor consolidation is top priority [5].';
+    const result = formatNaturalSummary(raw);
+    expect(result).not.toContain('[');
+    expect(result).not.toContain(']');
+    expect(result).not.toContain('.,');
+    expect(result).toContain('ROI model due June 28');
+    expect(result).toContain('Vendor cutover owned by Maria Santos');
+  });
 });
 
 describe('formatNaturalSummary', () => {
@@ -52,6 +64,12 @@ describe('formatNaturalSummary', () => {
   it('preserves readable sentences without markdown symbols', () => {
     const clean = 'Denver expansion approved. Sarah owns the budget follow up.';
     expect(formatNaturalSummary(clean)).toBe(clean);
+  });
+});
+
+describe('stripInlineCitations', () => {
+  it('removes single and chained citation markers', () => {
+    expect(stripInlineCitations('Aligned on expansion [4][5][6].')).toBe('Aligned on expansion .');
   });
 });
 

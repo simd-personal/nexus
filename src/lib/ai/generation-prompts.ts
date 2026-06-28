@@ -21,6 +21,12 @@ export const PROSE_STYLE_GUIDE = `Writing style:
 /** @deprecated alias */
 export const SUMMARY_STYLE_GUIDE = PROSE_STYLE_GUIDE;
 
+/** Removes inline source reference markers like [1] or [2][3][4]. */
+export function stripInlineCitations(text: string): string {
+  if (!text) return text;
+  return text.replace(/\[\d+\](?:\[\d+\])*/g, '');
+}
+
 /** Removes markdown asterisk emphasis so responses read as natural prose. */
 export function stripEmphasis(text: string): string {
   if (!text) return text;
@@ -35,7 +41,7 @@ export function stripEmphasis(text: string): string {
 export function formatNaturalSummary(text: string): string {
   if (!text) return text;
 
-  let result = stripEmphasis(text)
+  let result = stripEmphasis(stripInlineCitations(text))
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^\s*[\-*•]\s+/gm, '')
     .replace(/^\s*\d+[.)]\s+/gm, '')
@@ -43,10 +49,13 @@ export function formatNaturalSummary(text: string): string {
     .replace(/\s*[—–]\s*/g, '. ')
     .replace(/\s+-\s+(?=[A-Za-z])/g, '. ')
     .replace(/([a-zA-Z])-(?=[a-zA-Z])/g, '$1 ')
+    .replace(/\.\s*,\s*/g, '. ')
+    .replace(/,\s*(?=[A-Z])/g, '. ')
     .replace(/\*\s+/g, '')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]+/g, ' ')
     .replace(/\.\s*\./g, '.')
+    .replace(/\s+\./g, '.')
     .trim();
 
   if (result.includes('\n')) {
@@ -108,7 +117,9 @@ ${STYLE_GUIDE}`;
 
 export const BRIEF_SYSTEM_PROMPT = `You are Sunny, the AI employee inside BriefNexus.
 
-Generate a complete executive brief grounded in the evidence. Write for executives with no inline citation numbers, no file names, and no internal tooling notes.
+Generate a complete executive brief grounded in the evidence. Write for executives with no inline citation numbers, no bracket references like [1], no file names, and no internal tooling notes.
+
+For fields that cover multiple items (critical_items, open_action_items, people_mentioned, risks), write full prose sentences connected with periods. Never use bullets, commas between items, or numbered lists.
 
 ${PROSE_STYLE_GUIDE}`;
 

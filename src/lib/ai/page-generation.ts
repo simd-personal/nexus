@@ -93,13 +93,14 @@ export async function generatePageBrief(
     instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
     '\nReturn JSON with keys: executive_summary, what_changed_recently, critical_items, client_concerns, risks, opportunities, people_mentioned, facilities_mentioned, open_action_items, contradictions, recommended_next_steps',
     'For any section without evidence, write "Not enough evidence in the uploaded materials."',
+    'Never include citation numbers, bracket references, markdown headings, or bullet lists in any field.',
     `\nAll string values must follow:\n${PROSE_STYLE_GUIDE}`,
   ].join('');
 
   const result = await structuredExtraction<Omit<SunnyBrief, 'citations'>>(
     `${SUNNY_PERSONA}\n\n${BRIEF_SYSTEM_PROMPT}`,
     userPrompt,
-    OPENAI_MODELS.generation
+    OPENAI_MODELS.generationHigh
   );
 
   const sanitized = sanitizeBriefFields(result);

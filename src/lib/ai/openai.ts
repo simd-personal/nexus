@@ -9,13 +9,18 @@ export function getOpenAI(): OpenAI {
   return openaiClient;
 }
 
+const generationModel =
+  process.env.OPENAI_GENERATION_MODEL?.trim() || 'gpt-5.5-high';
+
 export const OPENAI_MODELS = {
   /** Keep 1536 dims — matches `chunks.embedding vector(1536)` in Supabase */
   embedding: 'text-embedding-3-large',
   extraction: 'gpt-5.5',
   chat: 'gpt-5.5',
   summary: 'gpt-5.5',
-  generation: 'gpt-5.5',
+  /** Client-facing documents: briefs, playbooks, emails, deck pages */
+  generation: generationModel,
+  generationHigh: generationModel,
   criticalDetection: 'gpt-5.5',
   transcription: 'whisper-1',
   vision: 'gpt-5.5',

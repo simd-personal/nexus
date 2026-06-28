@@ -87,7 +87,7 @@ export function GenerateButton({
             className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Generated with ChatGPT — natural prose, ready to copy and paste.
+            Generated with GPT 5 High — natural prose, ready to copy and paste.
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>
@@ -96,12 +96,12 @@ export function GenerateButton({
         </Button>
       </Card>
 
-      {loading && <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with ChatGPT...`} />}
+      {loading && <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with GPT 5 High...`} />}
 
       {content && (
         <Card className="mt-6">
           {title && <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>}
-          <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap">
+          <div className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap font-normal">
             {content}
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100">
