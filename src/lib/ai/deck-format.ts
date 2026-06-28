@@ -63,7 +63,7 @@ export interface DeckView {
 const SLIDE_HEADING_RE = /^##\s+Slide\s+(\d+):\s+(.+)$/gim;
 const INLINE_CITATION_RE = /\[\d+\]/;
 const INTERNAL_NOTE_RE =
-  /not enough evidence|briefnexus|uploaded files?|sample[-_]slide|pdf upload test/i;
+  /not enough evidence|upperdeck|uploaded files?|sample[-_]slide|pdf upload test/i;
 
 const LAYOUT_ALIASES: Record<string, DeckSlideLayout> = {
   hero: 'hero',
@@ -301,7 +301,7 @@ export function validateDeckFormat(content: string): DeckFormatResult {
   if (INTERNAL_NOTE_RE.test(trimmed)) {
     issues.push({
       code: 'internal_notes',
-      message: 'Deck should not mention missing evidence, BriefNexus, or test uploads',
+      message: 'Deck should not mention missing evidence, UpperDeck, or test uploads',
     });
   }
 

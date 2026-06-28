@@ -3,9 +3,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { resendSignupConfirmation, requestPasswordReset, signInIndividual, signUpIndividual } from '@/lib/actions/auth';
-import { APP_NAME, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
-import { Sun } from 'lucide-react';
+import {
+  resendSignupConfirmation,
+  requestPasswordReset,
+  signInIndividual,
+  signUpIndividual,
+} from '@/lib/actions/auth';
+import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
+import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
 type AuthMode = 'signin' | 'signup' | 'forgot';
 
@@ -28,6 +34,133 @@ function isRateLimitMessage(message: string): boolean {
   return lower.includes('too many confirmation emails') || lower.includes('rate limit');
 }
 
+const MODE_COPY: Record<
+  AuthMode,
+  { title: string; subtitle: string; cta: string; loading: string }
+> = {
+  signin: {
+    title: 'Welcome back',
+    subtitle: 'Sign in to your command center.',
+    cta: 'Continue',
+    loading: 'Signing in…',
+  },
+  signup: {
+    title: 'Create your account',
+    subtitle: 'Free to start. No credit card required.',
+    cta: 'Get started',
+    loading: 'Creating account…',
+  },
+  forgot: {
+    title: 'Reset password',
+    subtitle: 'We’ll email you a secure link.',
+    cta: 'Send reset link',
+    loading: 'Sending…',
+  },
+};
+
+function AuthInput({
+  id,
+  label,
+  type = 'text',
+  value,
+  onChange,
+  required,
+  minLength,
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  minLength?: number;
+  autoComplete?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="auth-label">
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        minLength={minLength}
+        autoComplete={autoComplete}
+        className="auth-input"
+      />
+    </div>
+  );
+}
+
+function ModeTabs({
+  mode,
+  onSignIn,
+  onSignUp,
+}: {
+  mode: AuthMode;
+  onSignIn: () => void;
+  onSignUp: () => void;
+}) {
+  if (mode === 'forgot') return null;
+
+  return (
+    <div className="auth-mode-tabs" role="tablist" aria-label="Authentication mode">
+      <button
+        type="button"
+        role="tab"
+        aria-selected={mode === 'signin'}
+        onClick={onSignIn}
+        className={mode === 'signin' ? 'auth-mode-tab auth-mode-tab-active' : 'auth-mode-tab'}
+      >
+        Sign in
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={mode === 'signup'}
+        onClick={onSignUp}
+        className={mode === 'signup' ? 'auth-mode-tab auth-mode-tab-active' : 'auth-mode-tab'}
+      >
+        Sign up
+      </button>
+    </div>
+  );
+}
+
+function GlassStatCard({
+  label,
+  value,
+  sub,
+  dark = false,
+  className = '',
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  dark?: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`${dark ? 'auth-glass-card-dark' : 'auth-glass-card'} px-4 py-3.5 ${className}`}
+    >
+      <p className={`text-[11px] font-medium uppercase tracking-wider ${dark ? 'text-white/55' : 'text-[var(--ud-slate)]'}`}>
+        {label}
+      </p>
+      <p className={`mt-1 text-xl font-semibold tracking-tight ${dark ? 'text-white' : 'text-[var(--ud-graphite)]'}`}>
+        {value}
+      </p>
+      {sub && (
+        <p className={`mt-0.5 text-xs ${dark ? 'text-white/45' : 'text-[var(--ud-slate)]'}`}>{sub}</p>
+      )}
+    </div>
+  );
+}
+
 export default function LoginPageClient() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
@@ -37,6 +170,12 @@ export default function LoginPageClient() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const authError = searchParams.get('error') === 'auth';
+  const copy = MODE_COPY[mode];
+
+  function switchMode(next: AuthMode) {
+    setMode(next);
+    setMessage('');
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -96,241 +235,221 @@ export default function LoginPageClient() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gray-900 text-white p-12 flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-              <span className="text-white font-bold">BN</span>
-            </div>
-            <h1 className="text-xl font-semibold">{APP_NAME}</h1>
-          </div>
-          <h2 className="text-3xl font-bold leading-tight mb-4">
-            Your AI command center for client performance
-          </h2>
-          <p className="text-gray-400 text-lg">{TAGLINE}</p>
-        </div>
-        <div className="space-y-4">
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-sm font-medium text-white">Personal accounts</p>
-            <p className="text-sm text-gray-400 mt-1">
-              Free signup, email confirmation, and password recovery — like ChatGPT.
-            </p>
-          </div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p className="text-sm font-medium text-white">Organization accounts</p>
-            <p className="text-sm text-gray-400 mt-1">
-              Multi-tenant admin controls and healthcare PHI safeguards — request a quote, not free self-serve signup.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 bg-white/5 rounded-xl p-4">
-            <Sun className="w-8 h-8 text-amber-400" />
-            <div>
-              <p className="font-medium">Meet {AI_EMPLOYEE_NAME}</p>
-              <p className="text-sm text-gray-400">
-                Your AI employee who has read every meeting, email, deck, and note.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="auth-page min-h-screen">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        {/* Brand panel */}
+        <div className="auth-brand-panel flex flex-1 flex-col justify-between px-8 py-10 sm:px-12 lg:max-w-[48%] lg:px-14 lg:py-14 xl:px-16">
+          <div className="auth-brand-blob-a" />
+          <div className="auth-brand-blob-b" />
 
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8">
-            <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
-              <span className="text-white text-sm font-bold">BN</span>
-            </div>
-            <h1 className="text-lg font-semibold">{APP_NAME}</h1>
+          <div className="relative z-10 auth-form-enter">
+            <UpperDeckLogo size="lg" theme="light" />
+            <p className="auth-brand-tagline">{BRAND_TAGLINE}</p>
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            {mode === 'signup'
-              ? 'Create your free account'
-              : mode === 'forgot'
-                ? 'Reset your password'
-                : 'Welcome back'}
-          </h2>
-          <p className="text-gray-500 mb-8">
-            {mode === 'signup'
-              ? 'Start free with email confirmation and password recovery built in.'
-              : mode === 'forgot'
-                ? 'We will email you a secure link to choose a new password.'
-                : 'Sign in to your command center'}
-          </p>
+          <div className="relative z-10 mt-10 lg:mt-0 auth-form-enter">
+            <h2 className="auth-hero-title">Intelligence, elevated.</h2>
+            <p className="auth-hero-body">{TAGLINE}</p>
 
-          {authError && (
-            <p className="mb-4 text-sm text-red-600">
-              Email confirmation failed or the link expired. Try signing in or request a new confirmation email.
-            </p>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {mode === 'signup' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                  required
-                />
+            <div className="auth-trust-row mt-10">
+              <div className="auth-trust-item">
+                <span className="auth-trust-icon">
+                  <Check className="h-3.5 w-3.5" strokeWidth={2} />
+                </span>
+                All your work in one command center
               </div>
-            )}
+              <div className="auth-trust-item">
+                <span className="auth-trust-icon">
+                  <Users className="h-3.5 w-3.5" strokeWidth={2} />
+                </span>
+                Built for focus and collaboration
+              </div>
+              <div className="auth-trust-item">
+                <span className="auth-trust-icon">
+                  <Lock className="h-3.5 w-3.5" strokeWidth={2} />
+                </span>
+                Secure by design · Enterprise ready
+              </div>
+            </div>
+          </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-                required
+          <p className="relative z-10 mt-10 hidden text-xs text-[var(--ud-slate)] lg:block">
+            Meet {AI_EMPLOYEE_NAME} — your AI employee inside UpperDeck.
+          </p>
+        </div>
+
+        {/* Visual + form panel */}
+        <div className="auth-visual-panel relative flex flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:min-h-screen">
+          <div className="auth-visual-ribbon" />
+
+          {/* Decorative glass cards — desktop only */}
+          <div className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block">
+            <GlassStatCard
+              label="Projects"
+              value="24"
+              sub="Active projects"
+              dark
+              className="absolute right-[12%] top-[14%] w-44"
+            />
+            <GlassStatCard
+              label="Decks"
+              value="18"
+              sub="Updated this week"
+              className="absolute right-[6%] top-[38%] w-40"
+            />
+            <GlassStatCard
+              label="Signals"
+              value="9"
+              sub="Waiting on you"
+              className="absolute bottom-[22%] right-[18%] w-40"
+            />
+          </div>
+
+          <div className="auth-form-enter relative z-10 w-full max-w-[400px]">
+            <div className="auth-glass-form p-8 sm:p-9">
+              <div className="mb-6 lg:hidden">
+                <UpperDeckLogo size="md" theme="light" />
+              </div>
+
+              <ModeTabs
+                mode={mode}
+                onSignIn={() => switchMode('signin')}
+                onSignUp={() => switchMode('signup')}
               />
-            </div>
 
-            {mode !== 'forgot' && (
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-gray-700">Password</label>
-                  {mode === 'signin' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMode('forgot');
-                        setMessage('');
-                      }}
-                      className="text-xs font-medium text-gray-600 hover:text-gray-900"
-                    >
-                      Forgot password?
-                    </button>
-                  )}
+              <div key={mode} className="auth-mode-enter mt-7">
+                <h1 className="auth-form-title">{copy.title}</h1>
+                <p className="auth-form-subtitle">{copy.subtitle}</p>
+              </div>
+
+              {authError && (
+                <div className="auth-alert auth-alert-error mt-5">
+                  Email confirmation failed or the link expired. Try signing in or request a new
+                  confirmation email.
                 </div>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+              )}
+
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                {mode === 'signup' && (
+                  <AuthInput
+                    id="fullName"
+                    label="Full name"
+                    value={fullName}
+                    onChange={setFullName}
+                    required
+                    autoComplete="name"
+                  />
+                )}
+
+                <AuthInput
+                  id="email"
+                  label="Email"
+                  type="email"
+                  value={email}
+                  onChange={setEmail}
                   required
-                  minLength={8}
+                  autoComplete="email"
                 />
-              </div>
-            )}
 
-            {message && (
-              <div className="space-y-2">
-                <p
-                  className={`text-sm ${
-                    isSuccessMessage(message)
-                      ? 'text-emerald-600'
-                      : isRateLimitMessage(message)
-                        ? 'text-amber-700'
-                        : 'text-red-600'
-                  }`}
-                >
-                  {message}
+                {mode !== 'forgot' && (
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <label htmlFor="password" className="auth-label mb-0">
+                        Password
+                      </label>
+                      {mode === 'signin' && (
+                        <button
+                          type="button"
+                          onClick={() => switchMode('forgot')}
+                          className="auth-link text-[13px]"
+                        >
+                          Forgot password?
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={8}
+                      autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                      className="auth-input"
+                    />
+                  </div>
+                )}
+
+                {message && (
+                  <div
+                    className={`auth-alert ${
+                      isSuccessMessage(message)
+                        ? 'auth-alert-success'
+                        : isRateLimitMessage(message)
+                          ? 'auth-alert-warn'
+                          : 'auth-alert-error'
+                    }`}
+                  >
+                    <p>{message}</p>
+                    {mode === 'signup' && message.includes('already exists') && (
+                      <button type="button" onClick={() => switchMode('signin')} className="auth-link mt-2">
+                        Go to sign in
+                      </button>
+                    )}
+                    {isRateLimitMessage(message) && (
+                      <p className="mt-2 text-[13px] opacity-90">
+                        If you already created an account, try signing in. Otherwise wait about an
+                        hour and try again.
+                      </p>
+                    )}
+                    {mode === 'signin' &&
+                      (message.toLowerCase().includes('confirm') ||
+                        message.includes('Incorrect email or password')) && (
+                        <button
+                          type="button"
+                          onClick={handleResendConfirmation}
+                          className="auth-link mt-2"
+                        >
+                          Resend confirmation email
+                        </button>
+                      )}
+                  </div>
+                )}
+
+                <button type="submit" disabled={loading} className="auth-submit group mt-2">
+                  {loading ? (
+                    <>
+                      <span className="auth-spinner h-4 w-4 rounded-full border-2 border-white/25 border-t-white" />
+                      {copy.loading}
+                    </>
+                  ) : (
+                    <>
+                      {copy.cta}
+                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {mode === 'forgot' && (
+                <p className="mt-6 text-center text-[14px] text-[var(--ud-slate)]">
+                  Remember your password?{' '}
+                  <button type="button" onClick={() => switchMode('signin')} className="auth-link">
+                    Back to sign in
+                  </button>
                 </p>
-                {mode === 'signup' && message.includes('already exists') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode('signin');
-                      setMessage('');
-                    }}
-                    className="text-xs font-medium text-gray-700 underline"
-                  >
-                    Go to sign in
-                  </button>
-                )}
-                {isRateLimitMessage(message) && (
-                  <p className="text-xs text-amber-800">
-                    If you already created an account, try signing in. Otherwise wait about an hour
-                    and use Create free account again.
-                  </p>
-                )}
-                {mode === 'signin' &&
-                  (message.toLowerCase().includes('confirm') ||
-                    message.includes('Incorrect email or password')) && (
-                  <button
-                    type="button"
-                    onClick={handleResendConfirmation}
-                    className="text-xs font-medium text-gray-700 underline"
-                  >
-                    Resend confirmation email
-                  </button>
-                )}
-              </div>
-            )}
+              )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
-            >
-              {loading
-                ? 'Please wait...'
-                : mode === 'signup'
-                  ? 'Create free account'
-                  : mode === 'forgot'
-                    ? 'Send reset link'
-                    : 'Sign in'}
-            </button>
-          </form>
-
-          <p className="text-sm text-gray-500 mt-6 text-center">
-            {mode === 'signin' && (
-              <>
-                Don&apos;t have an account?{' '}
-                <button
-                  onClick={() => {
-                    setMode('signup');
-                    setMessage('');
-                  }}
-                  className="text-gray-900 font-medium hover:underline"
-                >
-                  Sign up free
-                </button>
-              </>
-            )}
-            {mode === 'signup' && (
-              <>
-                Already have an account?{' '}
-                <button
-                  onClick={() => {
-                    setMode('signin');
-                    setMessage('');
-                  }}
-                  className="text-gray-900 font-medium hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-            {mode === 'forgot' && (
-              <>
-                Remember your password?{' '}
-                <button
-                  onClick={() => {
-                    setMode('signin');
-                    setMessage('');
-                  }}
-                  className="text-gray-900 font-medium hover:underline"
-                >
-                  Back to sign in
-                </button>
-              </>
-            )}
-          </p>
-
-          {(mode === 'signin' || mode === 'signup') && (
-            <p className="text-xs text-gray-400 mt-4 text-center">
-              Need an organization tenant with admin controls?{' '}
-              <Link href="/request-quote" className="text-gray-600 underline">
-                Request a quote
-              </Link>
-            </p>
-          )}
+              {(mode === 'signin' || mode === 'signup') && (
+                <p className="mt-6 text-center text-[13px] text-[var(--ud-slate)]">
+                  Need organization access?{' '}
+                  <Link href="/request-quote" className="auth-link">
+                    Request a quote
+                  </Link>
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

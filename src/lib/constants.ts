@@ -5,10 +5,14 @@ import type {
   SourceType,
 } from '@/types/database';
 
-export const APP_NAME = 'BriefNexus';
+export const APP_NAME = 'UpperDeck';
+export const APP_DOMAIN = 'upperdeck.dev';
 export const AI_EMPLOYEE_NAME = 'Sunny';
+/** Brand guide tagline */
+export const BRAND_TAGLINE = 'AI command center for client intelligence';
+/** Marketing / hero copy */
 export const TAGLINE =
-  'One command center for every client project, conversation, deck, email, and decision.';
+  'One place for every client project, deck, email, and decision.';
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   healthy: 'Healthy',

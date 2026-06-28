@@ -12,7 +12,7 @@ import { createClient } from '@supabase/supabase-js';
 config({ path: resolve(process.cwd(), '.env.local') });
 
 const DEMO_EMAIL = 'sim@test.com';
-const DEMO_PASSWORD = 'admin';
+const DEMO_PASSWORD = 'admin1234';
 const DEMO_NAME = 'Sim Demo';
 
 async function main() {

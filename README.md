@@ -1,8 +1,8 @@
-# BriefNexus
+# UpperDeck
 
 **One command center for every client project, conversation, deck, email, and decision.**
 
-BriefNexus is an AI command center for client performance, client operations, and executive visibility. Sunny — your AI employee inside the platform — reads every meeting, email, deck, note, transcript, and file, then surfaces what matters: critical items, contradictions, follow-ups, and evidence-backed answers.
+UpperDeck is an AI command center for client performance, client operations, and executive visibility. Sunny — your AI employee inside the platform — reads every meeting, email, deck, note, transcript, and file, then surfaces what matters: critical items, contradictions, follow-ups, and evidence-backed answers.
 
 ## Features
 

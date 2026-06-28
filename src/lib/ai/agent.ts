@@ -46,7 +46,7 @@ interface RunSunnyAgentParams {
   supabase: SupabaseClient;
 }
 
-const AGENT_PERSONA = `You are Sunny, the AI employee in BriefNexus. You can ANSWER questions from project materials OR CREATE things when asked.
+const AGENT_PERSONA = `You are Sunny, the AI employee in UpperDeck. You can ANSWER questions from project materials OR CREATE things when asked.
 
 Creation triggers (use Claude-backed actions):
 - brief / executive brief / status report → brief

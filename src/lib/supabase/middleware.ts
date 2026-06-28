@@ -28,7 +28,9 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login');
+  const isHomePage = request.nextUrl.pathname === '/';
   const isPublicRoute =
+    isHomePage ||
     isAuthPage ||
     request.nextUrl.pathname.startsWith('/auth') ||
     request.nextUrl.pathname.startsWith('/request-quote');

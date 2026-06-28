@@ -12,7 +12,8 @@ import {
   LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { APP_NAME, AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { signOut } from '@/lib/actions/projects';
 
 const navItems = [
@@ -29,16 +30,11 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col z-30">
-      <div className="p-6 border-b border-gray-100">
-        <Link href="/dashboard" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
-            <span className="text-white text-sm font-bold">BN</span>
-          </div>
-          <div>
-            <h1 className="text-base font-semibold text-gray-900">{APP_NAME}</h1>
-            <p className="text-xs text-gray-500">Command Center</p>
-          </div>
+    <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col border-r border-[var(--ud-cloud)] bg-white">
+      <div className="border-b border-[var(--ud-mist)] p-6">
+        <Link href="/dashboard" className="block">
+          <UpperDeckLogo size="sm" theme="light" />
+          <p className="mt-1.5 text-xs text-[var(--ud-slate)]">Command Center</p>
         </Link>
       </div>
 
