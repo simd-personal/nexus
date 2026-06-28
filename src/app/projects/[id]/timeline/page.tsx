@@ -11,7 +11,7 @@ export default async function ProjectTimelinePage({
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Timeline</h2>
+      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Project Timeline</h2>
       <TimelineView events={events} />
     </div>
   );

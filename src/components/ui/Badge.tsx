@@ -7,12 +7,12 @@ interface BadgeProps {
 }
 
 const variants = {
-  default: 'bg-gray-100 text-gray-700',
-  success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
-  warning: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200',
-  danger: 'bg-red-50 text-red-700 ring-1 ring-red-200',
-  info: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200',
-  neutral: 'bg-gray-50 text-gray-600 ring-1 ring-gray-200',
+  default: 'bg-gray-100 text-gray-700 dark:bg-[var(--ud-cloud)] dark:text-gray-200',
+  success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800',
+  warning: 'bg-amber-50 text-amber-700 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:ring-amber-800',
+  danger: 'bg-red-50 text-red-700 ring-1 ring-red-200 dark:bg-red-950/40 dark:text-red-300 dark:ring-red-800',
+  info: 'bg-blue-50 text-blue-700 ring-1 ring-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:ring-blue-800',
+  neutral: 'bg-gray-50 text-gray-600 ring-1 ring-gray-200 dark:bg-[var(--ud-stone)] dark:text-gray-300 dark:ring-[var(--ud-cloud)]',
 };
 
 export function Badge({ children, variant = 'default', className }: BadgeProps) {

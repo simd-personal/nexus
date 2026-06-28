@@ -50,7 +50,7 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
   if (!unique.length) return null;
 
   return (
-    <p className="mt-2 text-[10px] leading-relaxed text-gray-400">
+    <p className="mt-2 text-[10px] leading-relaxed text-gray-400 dark:text-gray-500">
       <span>Sources: </span>
       {unique.map((citation, index) => {
         const href = citationHref(citation, projectId);
@@ -58,9 +58,9 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
 
         return (
           <span key={`${citation.file_id ?? citation.file_name}-${index}`}>
-            {index > 0 && <span className="text-gray-300"> · </span>}
+            {index > 0 && <span className="text-gray-300 dark:text-gray-600"> · </span>}
             {href ? (
-              <Link href={href} className="text-gray-500 hover:text-gray-700 hover:underline">
+              <Link href={href} className="text-gray-500 hover:text-gray-700 hover:underline dark:text-gray-400 dark:hover:text-gray-200">
                 {label}
               </Link>
             ) : (

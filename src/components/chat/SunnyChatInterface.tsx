@@ -93,9 +93,9 @@ function ArtifactPanel({ artifact }: { artifact: SunnyChatArtifact }) {
   };
 
   return (
-    <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white">
-        <span className="text-xs font-semibold text-gray-700">{labels[artifact.type]}</span>
+    <div className="mt-3 rounded-xl border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)]">
+        <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{labels[artifact.type]}</span>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -104,7 +104,7 @@ function ArtifactPanel({ artifact }: { artifact: SunnyChatArtifact }) {
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
             }}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800"
+            className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-200"
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             {copied ? 'Copied' : 'Copy'}
@@ -120,14 +120,14 @@ function ArtifactPanel({ artifact }: { artifact: SunnyChatArtifact }) {
               a.click();
               URL.revokeObjectURL(url);
             }}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800"
+            className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 dark:text-gray-200"
           >
             <Download className="w-3.5 h-3.5" />
             Download
           </button>
         </div>
       </div>
-      <div className="p-4 max-h-96 overflow-y-auto text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+      <div className="p-4 max-h-96 overflow-y-auto text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
         {artifact.content}
       </div>
     </div>
@@ -158,7 +158,7 @@ function ArtifactToolbar({ artifact }: { artifact: SunnyChatArtifact }) {
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         }}
-        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]"
       >
         {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
         {copied ? 'Copied' : 'Copy'}
@@ -166,7 +166,7 @@ function ArtifactToolbar({ artifact }: { artifact: SunnyChatArtifact }) {
       <button
         type="button"
         onClick={download}
-        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
+        className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]"
       >
         <Download className="w-3.5 h-3.5" />
         Download .{ext}
@@ -194,7 +194,7 @@ function MessageActions({
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         }}
-        className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+        className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-cloud)] hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300"
       >
         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
         {copied ? 'Copied' : 'Copy'}
@@ -203,7 +203,7 @@ function MessageActions({
         <button
           type="button"
           onClick={onRegenerate}
-          className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+          className="flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-cloud)] hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300"
         >
           <RefreshCw className="h-3 w-3" />
           Regenerate
@@ -736,19 +736,19 @@ export function SunnyChatInterface({
             ];
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] -mx-4 sm:-mx-0 rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+    <div className="flex h-[calc(100vh-4rem)] -mx-4 sm:-mx-0 rounded-xl border border-gray-200 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)] overflow-hidden shadow-sm">
       {/* Session sidebar */}
       <aside
         className={cn(
-          'flex flex-col border-r border-gray-200 bg-gray-50 transition-all',
+          'flex flex-col border-r border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] transition-all',
           sidebarOpen ? 'w-56' : 'w-0 overflow-hidden'
         )}
       >
-        <div className="p-3 border-b border-gray-200">
+        <div className="p-3 border-b border-gray-200 dark:border-[var(--ud-cloud)]">
           <button
             type="button"
             onClick={startNewChat}
-            className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="flex w-full items-center gap-2 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)] px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]"
           >
             <Plus className="w-4 h-4" />
             New chat
@@ -760,7 +760,7 @@ export function SunnyChatInterface({
               key={s.id}
               className={cn(
                 'group flex items-center rounded-lg',
-                sessionId === s.id ? 'bg-gray-200' : 'hover:bg-gray-100'
+                sessionId === s.id ? 'bg-gray-200 dark:bg-[var(--ud-cloud)]' : 'hover:bg-gray-100 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-cloud)]'
               )}
             >
               <button
@@ -768,7 +768,7 @@ export function SunnyChatInterface({
                 onClick={() => loadSession(s.id)}
                 className={cn(
                   'flex-1 min-w-0 text-left px-3 py-2 text-xs truncate',
-                  sessionId === s.id ? 'text-gray-900' : 'text-gray-600'
+                  sessionId === s.id ? 'text-gray-900 dark:text-gray-100' : 'text-gray-600 dark:text-gray-300'
                 )}
               >
                 <MessageSquare className="w-3 h-3 inline mr-1.5 opacity-50" />
@@ -780,7 +780,7 @@ export function SunnyChatInterface({
                   e.stopPropagation();
                   void deleteSession(s.id);
                 }}
-                className="shrink-0 p-1.5 mr-1 rounded-md text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 transition-opacity"
+                className="shrink-0 p-1.5 mr-1 rounded-md text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 hover:text-red-600 hover:bg-red-50 transition-opacity"
                 aria-label="Delete chat"
               >
                 <Trash2 className="w-3.5 h-3.5" />
@@ -792,33 +792,33 @@ export function SunnyChatInterface({
 
       {/* Main chat */}
       <div className="flex flex-1 flex-col min-w-0">
-        <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-white">
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-gray-100 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)]">
           <button
             type="button"
             onClick={() => {
               setSidebarOpen(!sidebarOpen);
               if (!sidebarOpen) void ensureSessions();
             }}
-            className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500"
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-cloud)] text-gray-500 dark:text-gray-400"
           >
             {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
           <Sun className="w-4 h-4 text-amber-500" />
-          <span className="text-sm font-medium text-gray-900">{AI_EMPLOYEE_NAME}</span>
-          {projectName && <span className="text-xs text-gray-400 truncate">· {projectName}</span>}
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME}</span>
+          {projectName && <span className="text-xs text-gray-400 dark:text-gray-500 truncate">· {projectName}</span>}
           <div className="ml-auto flex items-center gap-2">
             {!isPageGenerationMode(mode) && (
             <div
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 shadow-sm"
+              className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] px-2.5 py-1.5 shadow-sm"
               title="Auto routes Q&A to ChatGPT and document creation to Claude"
             >
-              <Cpu className="w-4 h-4 shrink-0 text-gray-500" aria-hidden />
-              <span className="text-xs font-medium text-gray-600 whitespace-nowrap">Model</span>
+              <Cpu className="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">Model</span>
               <select
                 value={modelPreference}
                 onChange={(e) => setModelPreference(e.target.value as ModelPreference)}
                 aria-label="Choose AI model"
-                className="text-xs font-semibold text-gray-900 border-0 bg-transparent py-0 pl-1 pr-6 cursor-pointer focus:outline-none focus:ring-0 appearance-none bg-[length:12px] bg-[right_0_center] bg-no-repeat"
+                className="text-xs font-semibold text-gray-900 dark:text-gray-100 border-0 bg-transparent py-0 pl-1 pr-6 cursor-pointer focus:outline-none focus:ring-0 appearance-none bg-[length:12px] bg-[right_0_center] bg-no-repeat"
                 style={{
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
                 }}
@@ -833,7 +833,7 @@ export function SunnyChatInterface({
               <select
                 value={projectId ?? ''}
                 onChange={(e) => onProjectChange?.(e.target.value)}
-                className="text-xs border border-gray-200 rounded-lg px-2 py-1 bg-white max-w-[220px]"
+                className="text-xs border border-gray-200 dark:border-[var(--ud-cloud)] rounded-lg px-2 py-1 bg-white dark:bg-[var(--ud-mist)] max-w-[220px]"
               >
                 <option value="">All projects</option>
                 {projects.map((p) => (
@@ -854,10 +854,10 @@ export function SunnyChatInterface({
                 <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
                   <Sun className="w-6 h-6 text-amber-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {chatTitle(mode)}
                 </h2>
-                <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
                   {chatDescription(mode)}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center max-w-lg mx-auto">
@@ -866,7 +866,7 @@ export function SunnyChatInterface({
                       key={s}
                       type="button"
                       onClick={() => submitMessage(s)}
-                      className="text-xs px-3 py-2 bg-gray-100 rounded-xl text-gray-600 hover:bg-gray-200 transition-colors"
+                      className="text-xs px-3 py-2 bg-gray-100 dark:bg-[var(--ud-cloud)] rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[var(--ud-slate)]/30 dark:bg-[var(--ud-cloud)] transition-colors"
                     >
                       {s}
                     </button>
@@ -910,7 +910,7 @@ export function SunnyChatInterface({
                   <div className={cn('max-w-[85%]', msg.role === 'user' && 'order-first')}>
                     {msg.role === 'assistant' && (
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-gray-500">{AI_EMPLOYEE_NAME}</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{AI_EMPLOYEE_NAME}</span>
                         {model && (
                           <Badge variant="neutral">{model === 'claude' ? 'Claude' : 'ChatGPT'}</Badge>
                         )}
@@ -921,7 +921,7 @@ export function SunnyChatInterface({
                         {msg.content}
                       </div>
                     ) : (
-                      <div className="rounded-2xl rounded-bl-md border border-gray-100 bg-gray-50 px-4 py-3">
+                      <div className="rounded-2xl rounded-bl-md border border-gray-100 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] px-4 py-3">
                         {bubbleText ? (
                           <MarkdownMessage content={bubbleText} />
                         ) : streaming ? (
@@ -969,7 +969,7 @@ export function SunnyChatInterface({
             })}
 
             {statusHint && isStreaming && messages[messages.length - 1]?.role !== 'assistant' && (
-              <p className="text-xs text-gray-400 text-center">{statusHint}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 text-center">{statusHint}</p>
             )}
             <div ref={bottomRef} />
           </div>
@@ -978,7 +978,7 @@ export function SunnyChatInterface({
             <button
               type="button"
               onClick={scrollToBottom}
-              className="sticky bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-md hover:bg-gray-50"
+              className="sticky bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1 rounded-full border border-gray-200 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)] px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 shadow-md hover:bg-gray-50 dark:hover:bg-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]"
             >
               <ArrowDown className="h-3.5 w-3.5" />
               Latest
@@ -987,7 +987,7 @@ export function SunnyChatInterface({
         </div>
 
         {/* Composer — fixed bottom */}
-        <div className="border-t border-gray-200 bg-white p-4">
+        <div className="border-t border-gray-200 dark:border-[var(--ud-cloud)] bg-white dark:bg-[var(--ud-mist)] p-4">
           <div className="max-w-3xl mx-auto">
             {mode === 'search' && (
               <div className="flex gap-1.5 mb-3 flex-wrap">
@@ -999,8 +999,8 @@ export function SunnyChatInterface({
                     className={cn(
                       'px-2.5 py-1 text-xs rounded-full border transition-colors',
                       sourceFilter === type
-                        ? 'bg-gray-900 text-white border-gray-900'
-                        : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
+                        ? 'bg-gray-900 text-white border-gray-900 dark:bg-gray-100 dark:text-gray-900 dark:border-gray-100'
+                        : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-400 dark:hover:bg-[var(--ud-cloud)]'
                     )}
                   >
                     {type ? SOURCE_TYPE_LABELS[type as SourceType] ?? type : 'All types'}
@@ -1010,23 +1010,23 @@ export function SunnyChatInterface({
             )}
             {messageQueue.length > 0 && (
               <div className="mb-3 space-y-1.5">
-                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500">
+                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
                   <ListOrdered className="w-3.5 h-3.5" />
                   Queued ({messageQueue.length}/{MAX_QUEUED_MESSAGES})
                 </div>
                 {messageQueue.map((queued, index) => (
                   <div
                     key={`${index}-${queued.slice(0, 24)}`}
-                    className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2"
+                    className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950/30"
                   >
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[10px] font-semibold text-amber-900">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[10px] font-semibold text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
                       {index + 1}
                     </span>
-                    <p className="flex-1 text-xs text-gray-700 line-clamp-2">{queued}</p>
+                    <p className="flex-1 text-xs text-gray-700 dark:text-gray-300 line-clamp-2">{queued}</p>
                     <button
                       type="button"
                       onClick={() => removeAt(index)}
-                      className="shrink-0 rounded-md p-1 text-gray-400 hover:bg-amber-100 hover:text-gray-700"
+                      className="shrink-0 rounded-md p-1 text-gray-400 dark:text-gray-500 hover:bg-amber-100 hover:text-gray-700 dark:hover:text-gray-300 dark:text-gray-300"
                       aria-label={`Remove queued message ${index + 1}`}
                     >
                       <X className="w-3.5 h-3.5" />
@@ -1040,7 +1040,7 @@ export function SunnyChatInterface({
                 e.preventDefault();
                 submitMessage(input);
               }}
-              className="relative flex items-end gap-2 rounded-2xl border border-gray-200 bg-gray-50 p-2 shadow-sm focus-within:border-gray-300 focus-within:ring-2 focus-within:ring-gray-200"
+              className="relative flex items-end gap-2 rounded-2xl border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] p-2 shadow-sm focus-within:border-gray-300 dark:focus-within:border-gray-500 focus-within:ring-2 focus-within:ring-gray-200 dark:focus-within:ring-gray-600"
             >
               <textarea
                 ref={textareaRef}
@@ -1067,7 +1067,7 @@ export function SunnyChatInterface({
                 }
                 rows={1}
                 disabled={isProjectScopedMode(mode) && !projectId}
-                className="flex-1 resize-none bg-transparent px-2 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none max-h-[200px]"
+                className="flex-1 resize-none bg-transparent px-2 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 dark:text-gray-500 focus:outline-none max-h-[200px]"
               />
               <div className="flex shrink-0 items-center gap-1">
                 {isStreaming && (
@@ -1090,7 +1090,7 @@ export function SunnyChatInterface({
                 </Button>
               </div>
             </form>
-            <p className="text-[10px] text-gray-400 text-center mt-2">
+            <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center mt-2">
               Enter to send · Shift+Enter for new line
               {isStreaming ? ` · Queue up to ${MAX_QUEUED_MESSAGES} while Sunny responds` : ' · Conversations saved automatically'}
             </p>

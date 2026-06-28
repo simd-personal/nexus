@@ -31,8 +31,8 @@ export function OrganizationAdminPanel({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
-        <p className="font-medium text-gray-900">{organization.name}</p>
+      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:text-gray-300">
+        <p className="font-medium text-gray-900 dark:text-gray-100">{organization.name}</p>
         <p className="mt-1 capitalize">{organization.industry} tenant</p>
         <p className="mt-1">
           Your role: <span className="font-medium capitalize">{membership.role}</span>
@@ -44,16 +44,16 @@ export function OrganizationAdminPanel({
         )}
       </div>
 
-      {message && <p className="text-sm text-gray-700">{message}</p>}
+      {message && <p className="text-sm text-gray-700 dark:text-gray-300">{message}</p>}
 
       {isAdmin && requests.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Pending access requests</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Pending access requests</h3>
           <div className="space-y-3">
             {requests.map((request) => (
               <div key={request.id} className="rounded-lg border border-gray-200 p-4">
-                <p className="text-sm text-gray-900">User {request.user_id.slice(0, 8)}…</p>
-                {request.message && <p className="text-sm text-gray-600 mt-1">{request.message}</p>}
+                <p className="text-sm text-gray-900 dark:text-gray-100">User {request.user_id.slice(0, 8)}…</p>
+                {request.message && <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{request.message}</p>}
                 <div className="flex gap-2 mt-3">
                   <Button size="sm" onClick={() => handleReview(request.id, true)}>
                     Approve
@@ -70,7 +70,7 @@ export function OrganizationAdminPanel({
 
       {isAdmin && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-900 mb-3">Team members</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Team members</h3>
           <div className="space-y-2">
             {members.map((member) => (
               <div
@@ -78,8 +78,8 @@ export function OrganizationAdminPanel({
                 className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3 text-sm"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{member.user_id.slice(0, 8)}…</p>
-                  <p className="text-gray-500 capitalize">{member.role}</p>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{member.user_id.slice(0, 8)}…</p>
+                  <p className="text-gray-500 dark:text-gray-400 capitalize">{member.role}</p>
                 </div>
                 {member.role !== 'owner' && member.user_id !== membership.user_id && (
                   <select

@@ -76,6 +76,10 @@ body {
   color: #111827;
 }
 
+html.dark .prose h2 {
+  color: var(--ud-graphite);
+}
+
 .prose p {
   margin-bottom: 0.75rem;
 }

@@ -120,9 +120,9 @@ export function ProjectDropZone({
       {dragging && (
         <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-gray-900/40 p-8 backdrop-blur-sm">
           <div className="flex max-w-lg flex-col items-center rounded-2xl border-2 border-dashed border-white/80 bg-white/95 px-10 py-12 text-center shadow-2xl">
-            <Upload className="mb-4 h-10 w-10 text-gray-700" />
-            <p className="text-lg font-semibold text-gray-900">Drop files to upload</p>
-            <p className="mt-2 text-sm text-gray-600">
+            <Upload className="mb-4 h-10 w-10 text-gray-700 dark:text-gray-300" />
+            <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">Drop files to upload</p>
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
               PDF, Markdown, images, transcripts, audio, and more
             </p>
           </div>

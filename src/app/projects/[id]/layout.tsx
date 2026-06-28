@@ -20,11 +20,11 @@ export default async function ProjectLayout({
   return (
     <AppShell>
       <ProjectLayoutClient projectId={id}>
-        <div className="border-b border-gray-200 bg-white px-4 py-4 sm:px-8 sm:py-6">
+        <div className="border-b border-gray-200 bg-white px-4 py-4 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] sm:px-8 sm:py-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-500">{project.client_name}</p>
-              <h1 className="text-xl font-bold text-gray-900">{project.project_name}</h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{project.client_name}</p>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{project.project_name}</h1>
             </div>
             <StatusBadge status={project.status} />
           </div>

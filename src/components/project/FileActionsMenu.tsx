@@ -140,14 +140,14 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
       {mode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-xl">
-            <h3 className="text-base font-semibold text-gray-900">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               {mode === 'rename' && 'Rename file'}
               {mode === 'note' && 'Add note or context'}
               {mode === 'move' && 'Move to another project'}
               {mode === 'share' && 'Share with another project'}
               {mode === 'remove' && 'Remove from this project'}
             </h3>
-            <p className="mt-1 text-sm text-gray-500 truncate">{file.file_name}</p>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 truncate">{file.file_name}</p>
 
             {(mode === 'rename' || mode === 'note') && (
               mode === 'rename' ? (
@@ -170,7 +170,7 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
 
             {(mode === 'move' || mode === 'share') && (
               <div className="mt-4">
-                <label className="text-xs font-medium text-gray-600">Choose project</label>
+                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Choose project</label>
                 <select
                   value={targetProjectId}
                   onChange={(event) => setTargetProjectId(event.target.value)}
@@ -183,7 +183,7 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
                     </option>
                   ))}
                 </select>
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                   {mode === 'move'
                     ? 'Moves the file and keeps source metadata and timeline history.'
                     : 'Creates a linked copy in the other project while keeping the original.'}
@@ -192,7 +192,7 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
             )}
 
             {mode === 'remove' && (
-              <p className="mt-4 text-sm text-gray-600">
+              <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
                 {file.origin_file_id
                   ? 'This removes the shared copy from this project. The original file stays in its source project.'
                   : 'This removes the file from this project workspace and deletes its indexed content here.'}
@@ -232,7 +232,7 @@ function MenuButton({
       type="button"
       onClick={onClick}
       className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50 ${
-        danger ? 'text-red-600' : 'text-gray-700'
+        danger ? 'text-red-600' : 'text-gray-700 dark:text-gray-300'
       }`}
     >
       <Icon className="h-4 w-4" />

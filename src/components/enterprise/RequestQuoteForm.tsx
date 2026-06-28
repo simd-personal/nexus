@@ -34,7 +34,7 @@ export function RequestQuoteForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full name</label>
         <input
           name="full_name"
           type="text"
@@ -43,7 +43,7 @@ export function RequestQuoteForm() {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Work email</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Work email</label>
         <input
           name="email"
           type="email"
@@ -52,7 +52,7 @@ export function RequestQuoteForm() {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
         <input
           name="company_name"
           type="text"
@@ -61,7 +61,7 @@ export function RequestQuoteForm() {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Industry</label>
         <select
           name="industry"
           defaultValue="other"
@@ -73,7 +73,7 @@ export function RequestQuoteForm() {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Team size (optional)</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Team size (optional)</label>
         <input
           name="team_size"
           type="text"
@@ -82,7 +82,7 @@ export function RequestQuoteForm() {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">What are you trying to solve? (optional)</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">What are you trying to solve? (optional)</label>
         <textarea
           name="message"
           rows={4}
@@ -111,13 +111,13 @@ export function RequestQuotePageContent() {
     <div className="min-h-screen bg-gray-50 flex">
       <div className="hidden lg:flex lg:w-1/2 bg-gray-900 text-white p-12 flex-col justify-between">
         <div>
-          <Link href="/login" className="text-sm text-gray-400 hover:text-white">
+          <Link href="/login" className="text-sm text-gray-400 dark:text-gray-500 hover:text-white">
             ← Back to sign in
           </Link>
           <h1 className="text-3xl font-bold leading-tight mt-8 mb-4">
             Organization accounts for teams that need control
           </h1>
-          <p className="text-gray-400 text-lg">
+          <p className="text-gray-400 dark:text-gray-500 text-lg">
             Shared tenants, admin roles, access approvals, and healthcare PHI safeguards, priced for software and health systems rather than free personal signup.
           </p>
         </div>
@@ -134,17 +134,17 @@ export function RequestQuotePageContent() {
 
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <Link href="/login" className="lg:hidden text-sm text-gray-500 hover:text-gray-900">
+          <Link href="/login" className="lg:hidden text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
             ← Back to sign in
           </Link>
-          <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-2">Request a quote</h2>
-          <p className="text-sm text-gray-500 mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-2">Request a quote</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
             Tell us about your organization. We&apos;ll follow up with pricing and setup. Organization accounts are sold by quote, not free online signup.
           </p>
           <RequestQuoteForm />
-          <p className="text-sm text-gray-500 mt-6 text-center">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 text-center">
             Just need a personal workspace?{' '}
-            <Link href="/login" className="text-gray-900 font-medium hover:underline">
+            <Link href="/login" className="text-gray-900 dark:text-gray-100 font-medium hover:underline">
               Sign up free
             </Link>
           </p>

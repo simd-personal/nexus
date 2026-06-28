@@ -43,13 +43,13 @@ export default async function ProjectOverviewPage({
         <Card className="lg:col-span-2">
           <CardHeader title={`${AI_EMPLOYEE_NAME}'s Summary`} />
           {project.last_summary ? (
-            <p className="text-sm text-gray-700">{formatNaturalSummary(project.last_summary)}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{formatNaturalSummary(project.last_summary)}</p>
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               No summary yet. Upload project materials for {AI_EMPLOYEE_NAME} to analyze.
             </p>
           )}
-          <div className="flex items-center gap-4 mt-4 text-xs text-gray-400">
+          <div className="flex items-center gap-4 mt-4 text-xs text-gray-400 dark:text-gray-500">
             <span>Status: <StatusBadge status={project.status} /></span>
             {project.last_activity_at && (
               <span>Last activity: {formatRelativeTime(project.last_activity_at)}</span>
@@ -77,7 +77,7 @@ export default async function ProjectOverviewPage({
 
       {criticalItems.filter(c => c.status === 'open' && c.category !== 'conflict').length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Critical Items</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Critical Items</h2>
           <CriticalItemsList items={criticalItems.filter(c => c.status === 'open' && c.category !== 'conflict')} />
         </div>
       )}
@@ -89,11 +89,11 @@ export default async function ProjectOverviewPage({
             {openActions.map((item) => (
               <div key={item.id} className="flex items-start justify-between py-2 border-b border-gray-100 last:border-0">
                 <div>
-                  <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                  {item.owner && <p className="text-xs text-gray-500">Owner: {item.owner}</p>}
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</p>
+                  {item.owner && <p className="text-xs text-gray-500 dark:text-gray-400">Owner: {item.owner}</p>}
                 </div>
                 {item.due_date && (
-                  <span className="text-xs text-gray-400">Due: {item.due_date}</span>
+                  <span className="text-xs text-gray-400 dark:text-gray-500">Due: {item.due_date}</span>
                 )}
               </div>
             ))}
@@ -108,7 +108,7 @@ export default async function ProjectOverviewPage({
               <CardHeader title="People Mentioned" />
               <div className="flex flex-wrap gap-2">
                 {people.map((p) => (
-                  <span key={p.id} className="px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                  <span key={p.id} className="px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-700 dark:text-gray-300">
                     {p.name}
                   </span>
                 ))}
@@ -120,7 +120,7 @@ export default async function ProjectOverviewPage({
               <CardHeader title="Facilities / Locations" />
               <div className="flex flex-wrap gap-2">
                 {facilities.map((f) => (
-                  <span key={f.id} className="px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-700">
+                  <span key={f.id} className="px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-700 dark:text-gray-300">
                     {f.name}
                   </span>
                 ))}
@@ -137,8 +137,8 @@ export default async function ProjectOverviewPage({
             {recentEvents.map((event) => (
               <div key={event.id} className="flex items-center gap-3 text-sm">
                 <Sun className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span className="text-gray-900">{event.title}</span>
-                <span className="text-gray-400 text-xs ml-auto">{formatRelativeTime(event.created_at)}</span>
+                <span className="text-gray-900 dark:text-gray-100">{event.title}</span>
+                <span className="text-gray-400 dark:text-gray-500 text-xs ml-auto">{formatRelativeTime(event.created_at)}</span>
               </div>
             ))}
           </div>
@@ -167,11 +167,11 @@ function GlanceItem({ icon: Icon, label, value }: {
 }) {
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2 text-sm text-gray-600">
-        <Icon className="w-4 h-4 text-gray-400" />
+      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+        <Icon className="w-4 h-4 text-gray-400 dark:text-gray-500" />
         {label}
       </div>
-      <span className="text-sm font-semibold text-gray-900">{value}</span>
+      <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{value}</span>
     </div>
   );
 }

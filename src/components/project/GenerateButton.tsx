@@ -67,7 +67,7 @@ export function GenerateButton({
                 key={v}
                 onClick={() => setVersion(v)}
                 className={`px-3 py-1 text-xs rounded-full border capitalize ${
-                  version === v ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600'
+                  version === v ? 'bg-gray-900 text-white border-gray-900' : 'border-gray-200 text-gray-600 dark:text-gray-300'
                 }`}
               >
                 {v}
@@ -76,7 +76,7 @@ export function GenerateButton({
           </div>
         )}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Your instructions (optional)
           </label>
           <textarea
@@ -86,7 +86,7 @@ export function GenerateButton({
             placeholder={instructionsPlaceholder}
             className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             Generated with GPT 5 High. Natural prose, ready to copy and paste.
           </p>
         </div>
@@ -100,8 +100,8 @@ export function GenerateButton({
 
       {content && (
         <Card className="mt-6">
-          {title && <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>}
-          <div className="text-sm leading-relaxed text-gray-700 whitespace-pre-wrap font-normal">
+          {title && <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>}
+          <div className="text-sm leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-normal">
             {content}
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100">

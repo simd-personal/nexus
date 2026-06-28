@@ -69,8 +69,8 @@ export function UpgradePageClient() {
   return (
     <AppShell>
       <div className="mx-auto max-w-lg p-4 sm:p-6 lg:p-8">
-        <h1 className="text-2xl font-bold text-gray-900">Upgrade to Pro</h1>
-        <p className="mt-2 text-sm text-gray-600">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Upgrade to Pro</h1>
+        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
           {loading
             ? `Redirecting you to secure checkout for ${tier?.name ?? 'Pro'}…`
             : 'Checkout could not be started.'}

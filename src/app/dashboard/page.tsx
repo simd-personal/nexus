@@ -28,8 +28,8 @@ export default async function DashboardPage() {
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Executive Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500">{TAGLINE}</p>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">Executive Dashboard</h1>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{TAGLINE}</p>
         </div>
 
         <GlobalSearchBar className="mb-6 sm:mb-8" />
@@ -45,7 +45,7 @@ export default async function DashboardPage() {
           </div>
           <div className="min-w-0 lg:col-span-2">
             <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-gray-900">Critical Items</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Critical Items</h2>
               <Link href="/critical-items" className="shrink-0">
                 <Button variant="ghost" size="sm">View all</Button>
               </Link>
@@ -56,7 +56,7 @@ export default async function DashboardPage() {
 
         <div className="mb-6 sm:mb-8">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">Recent Sunny Updates</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Sunny Updates</h2>
             <Link href="/updates" className="shrink-0">
               <Button variant="ghost" size="sm">View all</Button>
             </Link>
@@ -66,14 +66,14 @@ export default async function DashboardPage() {
 
         <div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">Active Projects</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Active Projects</h2>
             <Link href="/projects" className="shrink-0">
               <Button variant="secondary" size="sm" className="w-full sm:w-auto">Manage Projects</Button>
             </Link>
           </div>
           {projects.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-              <p className="text-gray-500 mb-4">No projects yet. Create your first client project to get started.</p>
+            <div className="text-center py-12 bg-white rounded-xl border border-gray-200 dark:bg-[var(--ud-mist)] dark:border-[var(--ud-cloud)]">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">No projects yet. Create your first client project to get started.</p>
               <Link href="/projects">
                 <Button>Create Project</Button>
               </Link>

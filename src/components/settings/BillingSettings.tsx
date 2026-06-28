@@ -61,7 +61,7 @@ export function BillingSettings({
 
   if (isEnterprise) {
     return (
-      <p className="text-sm text-gray-600">
+      <p className="text-sm text-gray-600 dark:text-gray-300">
         Your organization is on an enterprise plan. Billing is managed via your quote agreement.
       </p>
     );
@@ -82,8 +82,8 @@ export function BillingSettings({
 
       <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
         <div>
-          <p className="text-sm font-medium text-gray-900">{planDisplayName(profile?.plan)}</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{planDisplayName(profile?.plan)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
             {isPro
               ? `Status: ${profile?.subscription_status ?? 'active'}`
               : '1 project · 25 Sunny messages / month'}
@@ -126,9 +126,9 @@ export function BillingSettings({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-gray-500 dark:text-gray-400">
         Payments are processed securely by Stripe.{' '}
-        <Link href="/#pricing" className="underline text-gray-700">
+        <Link href="/#pricing" className="underline text-gray-700 dark:text-gray-300">
           Compare plans
         </Link>
       </p>

@@ -84,8 +84,8 @@ export function FileViewerModal({
       <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
           <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold text-gray-900">{file.file_name}</h3>
-            <p className="text-xs text-gray-500 capitalize">{file.status.replaceAll('_', ' ')}</p>
+            <h3 className="truncate text-base font-semibold text-gray-900 dark:text-gray-100">{file.file_name}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{file.status.replaceAll('_', ' ')}</p>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
             <X className="h-4 w-4" />
@@ -114,7 +114,7 @@ export function FileViewerModal({
 
         <div className="min-h-[320px] flex-1 overflow-auto bg-gray-50 p-4">
           {loading && (
-            <div className="flex h-full min-h-[280px] items-center justify-center text-gray-500">
+            <div className="flex h-full min-h-[280px] items-center justify-center text-gray-500 dark:text-gray-400">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
               Loading preview…
             </div>
@@ -122,8 +122,8 @@ export function FileViewerModal({
 
           {!loading && error && (
             <div className="flex h-full min-h-[280px] flex-col items-center justify-center text-center">
-              <FileText className="mb-2 h-8 w-8 text-gray-400" />
-              <p className="text-sm text-gray-600">{error}</p>
+              <FileText className="mb-2 h-8 w-8 text-gray-400 dark:text-gray-500" />
+              <p className="text-sm text-gray-600 dark:text-gray-300">{error}</p>
               <Button variant="secondary" size="sm" className="mt-3" onClick={loadPreview}>
                 Retry
               </Button>
@@ -162,8 +162,8 @@ function TabButton({
       onClick={onClick}
       className={`rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
         active
-          ? 'border-b-2 border-gray-900 text-gray-900'
-          : 'text-gray-500 hover:text-gray-700'
+          ? 'border-b-2 border-gray-900 text-gray-900 dark:text-gray-100'
+          : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
       }`}
     >
       {children}
@@ -174,7 +174,7 @@ function TabButton({
 function OriginalPreview({ payload }: { payload: FileViewPayload }) {
   if (!payload.url) {
     return (
-      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
         No original file available for preview.
       </div>
     );
@@ -204,8 +204,8 @@ function OriginalPreview({ payload }: { payload: FileViewPayload }) {
   }
 
   return (
-    <div className="flex h-full min-h-[280px] flex-col items-center justify-center text-center text-gray-500">
-      <ImageIcon className="mb-2 h-8 w-8 text-gray-400" />
+    <div className="flex h-full min-h-[280px] flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400">
+      <ImageIcon className="mb-2 h-8 w-8 text-gray-400 dark:text-gray-500" />
       <p className="text-sm">Preview is not available for this file type.</p>
       {payload.text && <p className="mt-1 text-xs">Switch to the Text tab to read extracted content.</p>}
     </div>
@@ -215,7 +215,7 @@ function OriginalPreview({ payload }: { payload: FileViewPayload }) {
 function SpreadsheetPreview({ sheets }: { sheets: SpreadsheetSheet[] }) {
   if (!sheets.length) {
     return (
-      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
         <Table2 className="mr-2 h-5 w-5" />
         No spreadsheet data found in this file.
       </div>
@@ -264,7 +264,7 @@ function TextPreview({
 }) {
   if (!text?.trim()) {
     return (
-      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500">
+      <div className="flex h-full min-h-[280px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
         {status === 'processing' || status === 'pending'
           ? 'Text will appear here once Sunny finishes processing this file.'
           : viewType === 'spreadsheet'

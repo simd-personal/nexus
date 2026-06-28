@@ -13,13 +13,13 @@ interface SunnyCardProps {
 
 export function SunnyCard({ criticalCount, newUpdatesCount, actionItemsCount, conflictsCount }: SunnyCardProps) {
   return (
-    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:border-amber-800 dark:from-amber-950/40 dark:to-orange-950/30">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-          <Sun className="h-6 w-6 text-amber-600" />
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50">
+          <Sun className="h-6 w-6 text-amber-600 dark:text-amber-400" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold leading-snug text-gray-900">
+          <h3 className="text-base font-semibold leading-snug text-gray-900 dark:text-gray-100">
             {AI_EMPLOYEE_NAME} has reviewed your active projects
           </h3>
           <div className="mt-4 grid w-full grid-cols-2 gap-4">
@@ -40,8 +40,8 @@ export function SunnyCard({ criticalCount, newUpdatesCount, actionItemsCount, co
 function Metric({ label, value, highlight }: { label: string; value: number; highlight?: boolean }) {
   return (
     <div className="min-w-0">
-      <p className={`text-2xl font-bold ${highlight ? 'text-red-600' : 'text-gray-900'}`}>{value}</p>
-      <p className="text-xs leading-snug text-gray-500">{label}</p>
+      <p className={`text-2xl font-bold ${highlight ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}`}>{value}</p>
+      <p className="text-xs leading-snug text-gray-500 dark:text-gray-400">{label}</p>
     </div>
   );
 }

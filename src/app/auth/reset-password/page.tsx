@@ -54,23 +54,23 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <Link href="/login" className="text-sm text-gray-500 hover:text-gray-900">
+        <Link href="/login" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
           ← Back to sign in
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mt-6 mb-2">Choose a new password</h1>
-        <p className="text-sm text-gray-500 mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-2">Choose a new password</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
           Set a new password for your account. You&apos;ll stay signed in after saving.
         </p>
 
         {!ready ? (
-          <p className="text-sm text-gray-500">Verifying your reset link…</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Verifying your reset link…</p>
         ) : done ? (
           <p className="text-sm text-emerald-600">Password updated. Redirecting…</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New password</label>
               <input
                 type="password"
                 value={password}
@@ -81,7 +81,7 @@ export default function ResetPasswordPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm password</label>
               <input
                 type="password"
                 value={confirmPassword}

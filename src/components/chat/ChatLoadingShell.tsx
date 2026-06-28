@@ -1,19 +1,19 @@
 export function ChatLoadingShell() {
   return (
-    <div className="flex h-[calc(100vh-4rem)] rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm animate-pulse">
-      <div className="w-56 border-r border-gray-200 bg-gray-50 p-3 space-y-2 hidden sm:block">
-        <div className="h-9 bg-gray-200 rounded-lg" />
-        <div className="h-8 bg-gray-200 rounded-lg" />
-        <div className="h-8 bg-gray-200 rounded-lg" />
-        <div className="h-8 bg-gray-200 rounded-lg" />
+    <div className="flex h-[calc(100vh-4rem)] animate-pulse overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
+      <div className="hidden w-56 space-y-2 border-r border-gray-200 bg-gray-50 p-3 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] sm:block">
+        <div className="h-9 rounded-lg bg-gray-200 dark:bg-[var(--ud-cloud)]" />
+        <div className="h-8 rounded-lg bg-gray-200 dark:bg-[var(--ud-cloud)]" />
+        <div className="h-8 rounded-lg bg-gray-200 dark:bg-[var(--ud-cloud)]" />
+        <div className="h-8 rounded-lg bg-gray-200 dark:bg-[var(--ud-cloud)]" />
       </div>
-      <div className="flex-1 flex flex-col">
-        <div className="h-12 border-b border-gray-100 bg-gray-50" />
-        <div className="flex-1 p-6 space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/3 mx-auto" />
-          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto" />
+      <div className="flex flex-1 flex-col">
+        <div className="h-12 border-b border-gray-100 bg-gray-50 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]" />
+        <div className="flex-1 space-y-4 p-6">
+          <div className="mx-auto h-4 w-1/3 rounded bg-gray-200 dark:bg-[var(--ud-cloud)]" />
+          <div className="mx-auto h-4 w-1/2 rounded bg-gray-200 dark:bg-[var(--ud-cloud)]" />
         </div>
-        <div className="h-24 border-t border-gray-200 bg-gray-50 m-4 rounded-2xl" />
+        <div className="m-4 h-24 rounded-2xl border-t border-gray-200 bg-gray-50 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]" />
       </div>
     </div>
   );

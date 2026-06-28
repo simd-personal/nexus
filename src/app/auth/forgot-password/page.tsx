@@ -31,18 +31,18 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
       <div className="w-full max-w-md">
-        <Link href="/login" className="text-sm text-gray-500 hover:text-gray-900">
+        <Link href="/login" className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
           ← Back to sign in
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mt-6 mb-2">Reset your password</h1>
-        <p className="text-sm text-gray-500 mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-2">Reset your password</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
           Enter the email for your {APP_NAME} account. We&apos;ll send a secure link to choose a new password.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
             <input
               type="email"
               value={email}

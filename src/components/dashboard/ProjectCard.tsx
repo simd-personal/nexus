@@ -12,8 +12,8 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
     <Card className="hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-3 gap-2">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold text-gray-900">{project.project_name}</h3>
-          <p className="text-sm text-gray-500">{project.client_name}</p>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{project.project_name}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{project.client_name}</p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <DeleteProjectButton
@@ -34,13 +34,13 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
       </div>
 
       {project.critical_item_count > 0 && (
-        <div className="flex items-center gap-2 text-sm text-red-600 mb-3">
+        <div className="flex items-center gap-2 text-sm text-red-600 mb-3 dark:text-red-400">
           <AlertTriangle className="w-4 h-4" />
           {project.critical_item_count} critical finding{project.critical_item_count !== 1 ? 's' : ''}
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-gray-400 mb-4">
+      <div className="flex items-center justify-between text-xs text-gray-400 mb-4 dark:text-gray-500">
         <span>Last activity: {project.last_activity_at ? formatRelativeTime(project.last_activity_at) : 'None'}</span>
         {project.last_sunny_update && (
           <span>Sunny: {formatRelativeTime(project.last_sunny_update)}</span>
@@ -58,8 +58,8 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
 
 function Stat({ icon: Icon, label, value }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-gray-600">
-      <Icon className="w-3.5 h-3.5 text-gray-400" />
+    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+      <Icon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
       <span>{value} {label}</span>
     </div>
   );

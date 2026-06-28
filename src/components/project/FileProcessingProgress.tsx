@@ -21,10 +21,10 @@ export function FileProcessingProgress({ file }: { file: FileRecord }) {
   return (
     <div className="mt-3 space-y-2">
       <div className="flex items-center justify-between gap-3 text-xs">
-        <span className="font-medium text-amber-800">{label}</span>
-        <span className="tabular-nums text-gray-500">{percent}%</span>
+        <span className="font-medium text-amber-800 dark:text-amber-300">{label}</span>
+        <span className="tabular-nums text-gray-500 dark:text-gray-400">{percent}%</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-amber-100">
+      <div className="h-2 overflow-hidden rounded-full bg-amber-100 dark:bg-amber-950/40">
         <div
           className={cn(
             'h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-500 ease-out'
@@ -37,7 +37,7 @@ export function FileProcessingProgress({ file }: { file: FileRecord }) {
           aria-label={label}
         />
       </div>
-      {detail && <p className="text-xs text-gray-500">{detail}</p>}
+      {detail && <p className="text-xs text-gray-500 dark:text-gray-400">{detail}</p>}
     </div>
   );
 }

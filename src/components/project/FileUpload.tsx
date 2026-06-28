@@ -144,11 +144,11 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
             dragging ? 'border-gray-400 bg-gray-50' : 'border-gray-200'
           )}
         >
-          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-700 mb-1">
+          <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Drag and drop files here
           </p>
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
             Any file type works. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, and .eml.
           </p>
           <label className="inline-block cursor-pointer">
@@ -159,7 +159,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
               onChange={handleFileInput}
               accept={UPLOAD_ACCEPT}
             />
-            <span className="inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm px-3 py-1.5 text-xs">
+            <span className="inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors bg-white text-gray-700 dark:text-gray-300 border border-gray-200 hover:bg-gray-50 shadow-sm px-3 py-1.5 text-xs">
               {uploading ? 'Uploading...' : 'Browse files'}
             </span>
           </label>
@@ -216,7 +216,7 @@ function PasteButton({ icon: Icon, label, active, onClick }: {
       onClick={onClick}
       className={cn(
         'flex flex-col items-center gap-1 rounded-lg border p-2.5 text-xs transition-colors sm:gap-1.5 sm:p-3 sm:text-sm',
-        active ? 'border-gray-900 bg-gray-50 text-gray-900' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+        active ? 'border-gray-900 bg-gray-50 text-gray-900 dark:text-gray-100' : 'border-gray-200 text-gray-600 dark:text-gray-300 hover:bg-gray-50'
       )}
     >
       <Icon className="w-4 h-4" />

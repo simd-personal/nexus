@@ -78,7 +78,7 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
               event.target.value = '';
             }}
           />
-          <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50">
             <Camera className="h-4 w-4" />
             Take Photo
           </span>
@@ -95,7 +95,7 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
               event.target.value = '';
             }}
           />
-          <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+          <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50">
             <Upload className="h-4 w-4" />
             Upload Photo
           </span>
@@ -105,11 +105,11 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
       {pendingFile && previewUrl && (
         <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
           <div className="flex items-start justify-between gap-3">
-            <p className="text-sm font-medium text-gray-900">Review before saving to this project</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Review before saving to this project</p>
             <button
               type="button"
               onClick={clearPreview}
-              className="rounded-md p-1 text-gray-400 hover:bg-white hover:text-gray-700"
+              className="rounded-md p-1 text-gray-400 dark:text-gray-500 hover:bg-white hover:text-gray-700 dark:text-gray-300"
               aria-label="Cancel photo upload"
             >
               <X className="h-4 w-4" />
@@ -120,7 +120,7 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
             alt="Photo preview"
             className="mt-3 max-h-64 w-full rounded-lg border border-gray-200 object-contain bg-white"
           />
-          <label className="mt-4 block text-xs font-medium text-gray-600">
+          <label className="mt-4 block text-xs font-medium text-gray-600 dark:text-gray-300">
             Optional note or context
             <textarea
               value={note}

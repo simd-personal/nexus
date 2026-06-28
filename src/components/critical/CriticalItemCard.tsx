@@ -21,7 +21,7 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
   const isHighPriority = item.severity === 'critical' || item.severity === 'high';
 
   return (
-    <Card className={isHighPriority ? 'border-red-200 bg-red-50/30' : ''}>
+    <Card className={isHighPriority ? 'border-red-200 bg-red-50/30 dark:border-red-800 dark:bg-red-950/20' : ''}>
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -29,30 +29,30 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
             <CategoryBadge category={item.category} />
             <StatusBadge status={item.status} />
           </div>
-          <h4 className="text-base font-semibold text-gray-900">{item.title}</h4>
+          <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100">{item.title}</h4>
           {showProject && item.project && (
-            <Link href={`/projects/${item.project_id}/overview`} className="text-sm text-blue-600 hover:underline">
+            <Link href={`/projects/${item.project_id}/overview`} className="text-sm text-blue-600 hover:underline dark:text-blue-400">
               {item.project.client_name} · {item.project.project_name}
             </Link>
           )}
         </div>
       </div>
 
-      <p className="text-sm text-gray-700 mb-3">{formatNaturalSummary(item.summary)}</p>
+      <p className="text-sm text-gray-700 mb-3 dark:text-gray-300">{formatNaturalSummary(item.summary)}</p>
 
       {item.sunny_reasoning && (
-        <div className="bg-amber-50 rounded-lg p-3 mb-3">
-          <p className="text-xs font-medium text-amber-800 mb-1">Why Sunny flagged this</p>
-          <p className="text-sm text-amber-900">{formatNaturalSummary(item.sunny_reasoning)}</p>
+        <div className="bg-amber-50 rounded-lg p-3 mb-3 dark:bg-amber-950/30">
+          <p className="text-xs font-medium text-amber-800 mb-1 dark:text-amber-300">Why Sunny flagged this</p>
+          <p className="text-sm text-amber-900 dark:text-amber-200">{formatNaturalSummary(item.sunny_reasoning)}</p>
         </div>
       )}
 
       {item.suggested_next_action && (
         <div className="mb-3">
-          <p className="text-xs font-medium text-gray-500 mb-1">Suggested next action</p>
-          <p className="text-sm text-gray-700">{formatNaturalSummary(item.suggested_next_action)}</p>
+          <p className="text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">Suggested next action</p>
+          <p className="text-sm text-gray-700 dark:text-gray-300">{formatNaturalSummary(item.suggested_next_action)}</p>
           {item.suggested_owner && (
-            <p className="text-xs text-gray-500 mt-1">Suggested owner: {item.suggested_owner}</p>
+            <p className="text-xs text-gray-500 mt-1 dark:text-gray-400">Suggested owner: {item.suggested_owner}</p>
           )}
         </div>
       )}
@@ -72,7 +72,7 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
 export function CriticalItemsList({ items, showProject = false }: { items: CriticalItem[]; showProject?: boolean }) {
   if (!items.length) {
     return (
-      <p className="text-sm text-gray-500 py-4">No critical items found. Sunny is monitoring your projects.</p>
+      <p className="text-sm text-gray-500 py-4 dark:text-gray-400">No critical items found. Sunny is monitoring your projects.</p>
     );
   }
 
