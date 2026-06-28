@@ -632,3 +632,84 @@ body {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
+
+.marketing-hero-compact {
+  min-height: auto;
+}
+
+.marketing-seo-content {
+  background: var(--ud-stone);
+}
+
+.marketing-footer-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ud-graphite);
+}
+
+.marketing-footer-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--ud-graphite);
+  transition: color 0.15s ease;
+}
+
+.marketing-footer-link:hover {
+  color: #7c6cf0;
+}
+
+.marketing-inline-link {
+  font-weight: 500;
+  color: #7c6cf0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.marketing-inline-link:hover {
+  color: #6b5ce0;
+}
+
+.marketing-seo-callout {
+  border-radius: 1rem;
+  border: 1px solid var(--ud-cloud);
+  background: white;
+  padding: 1.5rem;
+}
+
+.marketing-prose h2 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ud-graphite);
+}
+
+.marketing-prose h2:first-of-type {
+  margin-top: 1.5rem;
+}
+
+.marketing-prose p {
+  margin-top: 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--ud-slate);
+}
+
+.marketing-prose ul {
+  margin-top: 0.75rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.marketing-prose li {
+  margin-top: 0.5rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  color: var(--ud-slate);
+}
+
+.marketing-prose strong {
+  color: var(--ud-graphite);
+  font-weight: 600;
+}

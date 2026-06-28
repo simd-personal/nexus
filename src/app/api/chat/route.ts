@@ -5,6 +5,10 @@ import { runSunnyAgent } from '@/lib/ai/agent';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
 import { PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
+import {
+  countUserChatMessagesThisMonth,
+  getBillingContextForUser,
+} from '@/lib/billing/limits';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +31,21 @@ export async function POST(request: NextRequest) {
 
     if (!project) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+    }
+
+    const billing = await getBillingContextForUser(user.id);
+    if (!billing.isPro && billing.chatMessageLimit !== null) {
+      const used = await countUserChatMessagesThisMonth(user.id);
+      if (used >= billing.chatMessageLimit) {
+        return NextResponse.json(
+          {
+            error:
+              'Free plan includes 25 Sunny messages per month. Upgrade to Pro for unlimited chat.',
+            upgradeRequired: true,
+          },
+          { status: 402 }
+        );
+      }
     }
 
     const { data: history } = await supabase

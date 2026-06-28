@@ -14,10 +14,9 @@ import {
   Zap,
 } from 'lucide-react';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
-import { MarketingNav } from '@/components/marketing/MarketingNav';
+import { MarketingShell } from '@/components/marketing/MarketingShell';
 import {
   AI_EMPLOYEE_NAME,
-  APP_DOMAIN,
   BRAND_TAGLINE,
   TAGLINE,
 } from '@/lib/constants';
@@ -70,8 +69,7 @@ function SectionTitle({
 
 export function HomePage() {
   return (
-    <div className="marketing-page">
-      <MarketingNav />
+    <MarketingShell>
 
       {/* Hero */}
       <section className="marketing-hero">
@@ -90,9 +88,9 @@ export function HomePage() {
                 Get started free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <a href="#pricing" className="marketing-btn-secondary marketing-btn-lg">
+              <Link href="/pricing" className="marketing-btn-secondary marketing-btn-lg">
                 See pricing
-              </a>
+              </Link>
             </div>
 
             <div className="auth-trust-row mt-10">
@@ -215,6 +213,11 @@ export function HomePage() {
               </div>
             ))}
           </div>
+          <p className="mt-10 text-sm">
+            <Link href="/product" className="marketing-inline-link">
+              Explore the full product →
+            </Link>
+          </p>
         </div>
       </section>
 
@@ -295,10 +298,13 @@ export function HomePage() {
               </div>
             ))}
           </div>
+          <p className="mt-10 text-sm">
+            <Link href="/integrations" className="marketing-inline-link">
+              View all integrations →
+            </Link>
+          </p>
         </div>
       </section>
-
-      {/* B2C Pricing */}
       <section id="pricing" className="marketing-section">
         <div className="marketing-container">
           <SectionEyebrow>Pricing</SectionEyebrow>
@@ -350,7 +356,10 @@ export function HomePage() {
           </div>
 
           <p className="mt-8 text-center text-sm text-[var(--ud-slate)]">
-            Pro trial: 14 days free, no credit card. Cancel anytime.
+            Pro trial: 14 days free, no credit card. Cancel anytime.{' '}
+            <Link href="/pricing" className="marketing-inline-link">
+              Full pricing details
+            </Link>
           </p>
 
           <div className="marketing-org-banner mt-14">
@@ -481,24 +490,6 @@ export function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="marketing-footer">
-        <div className="marketing-container flex flex-col items-center justify-between gap-6 py-10 sm:flex-row">
-          <UpperDeckLogo size="sm" theme="light" />
-          <p className="text-sm text-[var(--ud-slate)]">
-            © {new Date().getFullYear()} UpperDeck · {APP_DOMAIN}
-          </p>
-          <div className="flex gap-6 text-sm">
-            <Link href="/login" className="marketing-nav-link">
-              Sign in
-            </Link>
-            <Link href="/request-quote" className="marketing-nav-link">
-              Organizations
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </MarketingShell>
   );
 }

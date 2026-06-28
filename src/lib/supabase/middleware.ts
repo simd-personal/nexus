@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { isPublicMarketingPath } from '@/lib/marketing/seo';
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -26,14 +27,13 @@ export async function updateSession(request: NextRequest) {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
+  const pathname = request.nextUrl.pathname;
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login');
-  const isHomePage = request.nextUrl.pathname === '/';
+  const isAuthPage = pathname.startsWith('/login');
   const isPublicRoute =
-    isHomePage ||
-    isAuthPage ||
-    request.nextUrl.pathname.startsWith('/auth') ||
-    request.nextUrl.pathname.startsWith('/request-quote');
+    isPublicMarketingPath(pathname) ||
+    pathname.startsWith('/auth') ||
+    pathname === '/api/stripe/webhook';
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
@@ -43,7 +43,13 @@ export async function updateSession(request: NextRequest) {
 
   if (user && isAuthPage) {
     const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
+    const plan = url.searchParams.get('plan');
+    if (plan === 'pro' || plan === 'pro-annual') {
+      url.pathname = '/upgrade';
+    } else {
+      url.pathname = '/dashboard';
+      url.search = '';
+    }
     return NextResponse.redirect(url);
   }
 

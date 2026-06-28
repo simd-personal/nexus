@@ -1,12 +1,6 @@
 import Link from 'next/link';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
-
-const links = [
-  { href: '#product', label: 'Product' },
-  { href: '#integrations', label: 'Integrations' },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '#organizations', label: 'Organizations' },
-];
+import { PRIMARY_NAV_LINKS } from '@/lib/marketing/site-nav';
 
 export function MarketingNav() {
   return (
@@ -17,10 +11,10 @@ export function MarketingNav() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main">
-          {links.map((link) => (
-            <a key={link.href} href={link.href} className="marketing-nav-link">
+          {PRIMARY_NAV_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="marketing-nav-link">
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 

@@ -16,6 +16,7 @@ export async function signUpIndividual(input: {
   email: string;
   password: string;
   fullName: string;
+  checkoutPlan?: 'pro' | 'pro-annual' | null;
 }) {
   const email = input.email.trim().toLowerCase();
   const fullName = input.fullName.trim();
@@ -30,14 +31,19 @@ export async function signUpIndividual(input: {
 
   const supabase = await createClient();
   const emailRedirectTo = await getAuthCallbackUrlFromHeaders();
+  const userMetadata: Record<string, string> = {
+    full_name: fullName,
+    account_type: 'individual',
+  };
+  if (input.checkoutPlan) {
+    userMetadata.pending_checkout_plan = input.checkoutPlan;
+  }
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: {
-        full_name: fullName,
-        account_type: 'individual',
-      },
+      data: userMetadata,
       emailRedirectTo,
     },
   });

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import './globals.css';
-import { APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { getSiteUrl } from '@/lib/marketing/seo';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -15,9 +16,21 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: `${APP_NAME} — ${BRAND_TAGLINE}`,
+  metadataBase: new URL(getSiteUrl()),
+  title: {
+    default: `${APP_NAME} — ${BRAND_TAGLINE}`,
+    template: `%s | ${APP_NAME}`,
+  },
   description: BRAND_TAGLINE,
+  keywords: [
+    'client intelligence',
+    'consultant software',
+    'AI client briefs',
+    'client project management',
+    APP_DOMAIN,
+  ],
   icons: { icon: '/upperdeck-icon.svg', apple: '/upperdeck-icon.svg' },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

@@ -166,11 +166,25 @@ export default function LoginPageClient() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [mode, setMode] = useState<AuthMode>('signin');
+  const [mode, setMode] = useState<AuthMode>(() =>
+    searchParams.get('plan') === 'pro' || searchParams.get('plan') === 'pro-annual'
+      ? 'signup'
+      : 'signin'
+  );
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const authError = searchParams.get('error') === 'auth';
+  const checkoutPlan = searchParams.get('plan');
+  const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
+
+  function postAuthRedirect() {
+    if (hasCheckoutPlan) {
+      window.location.href = `/upgrade?plan=${checkoutPlan}`;
+      return;
+    }
+    window.location.href = '/dashboard';
+  }
 
   function switchMode(next: AuthMode) {
     setMode(next);
@@ -191,11 +205,16 @@ export default function LoginPageClient() {
       }
 
       if (mode === 'signup') {
-        const result = await signUpIndividual({ email, password, fullName });
+        const result = await signUpIndividual({
+          email,
+          password,
+          fullName,
+          checkoutPlan: hasCheckoutPlan ? checkoutPlan : null,
+        });
         if (result.error) {
           setMessage(result.error);
         } else if (result.immediate) {
-          window.location.href = '/dashboard';
+          postAuthRedirect();
         } else if (result.recoveredFromRateLimit) {
           setMode('signin');
           setMessage(result.message ?? 'Account ready. Sign in with your email and password.');
@@ -210,7 +229,7 @@ export default function LoginPageClient() {
         if (result.error) {
           setMessage(result.error);
         } else {
-          window.location.href = '/dashboard';
+          postAuthRedirect();
         }
       }
     } catch {
@@ -319,8 +338,20 @@ export default function LoginPageClient() {
 
               <div key={mode} className="auth-mode-enter mt-7">
                 <h1 className="auth-form-title">{copy.title}</h1>
-                <p className="auth-form-subtitle">{copy.subtitle}</p>
+                <p className="auth-form-subtitle">
+                  {hasCheckoutPlan && mode === 'signup'
+                    ? 'Create your account, then continue to secure checkout.'
+                    : copy.subtitle}
+                </p>
               </div>
+
+              {hasCheckoutPlan && (
+                <div className="auth-alert auth-alert-success mt-5">
+                  You selected{' '}
+                  <strong>{checkoutPlan === 'pro-annual' ? 'Pro Annual' : 'Pro'}</strong>. Sign in or
+                  create an account to continue.
+                </div>
+              )}
 
               {authError && (
                 <div className="auth-alert auth-alert-error mt-5">

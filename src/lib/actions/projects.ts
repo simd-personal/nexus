@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient, requireUser } from '@/lib/supabase/server';
 import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
 import { enrichProjectSetup } from '@/lib/ai/sunny';
+import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
 import type { ProjectStatus } from '@/types/database';
 
 export async function createProject(formData: FormData) {
@@ -23,6 +24,18 @@ export async function createProject(formData: FormData) {
 
   if (!clientName?.trim() || !projectName?.trim()) {
     return { error: 'Client name and project name are required' };
+  }
+
+  const billing = await getBillingContextForUser(user.id);
+  if (!billing.isPro && billing.projectLimit !== null) {
+    const projectCount = await countUserProjects(user.id);
+    if (projectCount >= billing.projectLimit) {
+      return {
+        error:
+          'Free plan includes 1 active project. Upgrade to Pro for unlimited projects.',
+        upgradeRequired: true,
+      };
+    }
   }
 
   let enrichedDescription = description?.trim() || null;

@@ -23,6 +23,11 @@ export async function GET(request: Request) {
         }
       }
 
+      const pendingPlan = user?.user_metadata?.pending_checkout_plan;
+      if (pendingPlan === 'pro' || pendingPlan === 'pro-annual') {
+        return NextResponse.redirect(`${siteUrl}/upgrade?plan=${pendingPlan}`);
+      }
+
       return NextResponse.redirect(`${siteUrl}${next}`);
     }
   }

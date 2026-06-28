@@ -49,6 +49,10 @@ export interface Profile {
   role: string;
   account_type: AccountType;
   default_organization_id: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  plan: 'free' | 'pro' | 'pro_annual';
+  subscription_status: string | null;
   created_at: string;
 }
 

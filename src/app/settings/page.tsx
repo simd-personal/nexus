@@ -7,12 +7,20 @@ import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { SecuritySettings } from '@/components/settings/SecuritySettings';
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
+import { BillingSettings } from '@/components/settings/BillingSettings';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
+import { hasActiveSubscription, planDisplayName } from '@/lib/billing/plans';
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ billing?: string }>;
+}) {
   const data = await getProfile();
   const orgContext = await getOrganizationAdminContext();
+  const params = await searchParams;
   const isEnterprise = orgContext.profile?.account_type === 'enterprise';
+  const isPro = hasActiveSubscription(data?.profile?.plan, data?.profile?.subscription_status);
   const isOrgAdmin =
     orgContext.membership?.role === 'owner' || orgContext.membership?.role === 'admin';
 
@@ -48,7 +56,13 @@ export default async function SettingsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Account type</label>
               <input
                 type="text"
-                value={isEnterprise ? 'Organization (enterprise)' : 'Personal (free)'}
+                value={
+                  isEnterprise
+                    ? 'Organization (enterprise)'
+                    : isPro
+                      ? planDisplayName(data?.profile?.plan)
+                      : 'Personal (free)'
+                }
                 disabled
                 className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500"
               />
@@ -100,6 +114,17 @@ export default async function SettingsPage() {
             )}
           </Card>
         )}
+
+        <Card className="mt-6">
+          <CardHeader
+            title="Billing"
+            description="Manage your UpperDeck subscription"
+          />
+          <BillingSettings
+            profile={data?.profile ?? null}
+            billingNotice={params.billing ?? null}
+          />
+        </Card>
 
         <Card className="mt-6">
           <CardHeader title="Security & Privacy" description="Current safeguards" />
