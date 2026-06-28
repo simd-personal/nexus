@@ -227,13 +227,13 @@ export function HomePage() {
           <div>
             <SectionEyebrow>AI employee</SectionEyebrow>
             <SectionTitle>
-              Meet {AI_EMPLOYEE_NAME} — she&apos;s read everything
+              Meet {AI_EMPLOYEE_NAME} — full context on everything in your project
             </SectionTitle>
             <p className="marketing-section-body mt-4">
-              {AI_EMPLOYEE_NAME} isn&apos;t a chatbot bolted onto a folder. She&apos;s an AI employee
-              with full context on every meeting, email, deck, and note in your project. Ask her
-              what changed, what&apos;s at risk, or what to say in tomorrow&apos;s call — and get
-              answers with citations.
+              {AI_EMPLOYEE_NAME} isn&apos;t a chatbot bolted onto a folder. An AI employee with
+              full context on every meeting, email, deck, and note in your project. Ask what changed,
+              what&apos;s at risk, or what to say in tomorrow&apos;s call — and get answers with
+              citations.
             </p>
             <ul className="mt-8 space-y-3">
               {[
