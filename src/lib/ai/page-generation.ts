@@ -100,7 +100,8 @@ export async function generatePageBrief(
   const result = await structuredExtraction<Omit<SunnyBrief, 'citations'>>(
     `${SUNNY_PERSONA}\n\n${BRIEF_SYSTEM_PROMPT}`,
     userPrompt,
-    OPENAI_MODELS.generationHigh
+    OPENAI_MODELS.generationHigh,
+    { reasoningEffort: 'high' }
   );
 
   const sanitized = sanitizeBriefFields(result);

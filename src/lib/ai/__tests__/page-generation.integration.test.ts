@@ -11,8 +11,8 @@ const mockGenerateLongForm = vi.fn();
 
 vi.mock('@/lib/ai/openai', () => ({
   OPENAI_MODELS: {
-    generation: 'gpt-5.5-high',
-    generationHigh: 'gpt-5.5-high',
+    generation: 'gpt-5.5',
+    generationHigh: 'gpt-5.5',
     summary: 'gpt-5.5',
   },
   chatCompletion: vi.fn(),
@@ -59,7 +59,8 @@ describe('page generation (GPT, outside chat)', () => {
     expect(mockStructuredExtraction).toHaveBeenCalledWith(
       expect.stringContaining('executive brief'),
       expect.any(String),
-      'gpt-5.5-high'
+      'gpt-5.5',
+      { reasoningEffort: 'high' }
     );
     expect(brief.executive_summary).not.toContain('*');
     expect(brief.executive_summary).not.toContain('—');
@@ -96,7 +97,7 @@ describe('page generation (GPT, outside chat)', () => {
     expect(mockGenerateLongForm).toHaveBeenCalledWith(
       expect.stringContaining('operating playbook'),
       expect.stringContaining('Acme Corp'),
-      'gpt-5.5-high'
+      'gpt-5.5'
     );
     expect(content).not.toContain('*');
     expect(content).not.toContain('-');
@@ -111,7 +112,7 @@ describe('page generation (GPT, outside chat)', () => {
     expect(mockGenerateLongForm).toHaveBeenCalledWith(
       expect.stringContaining('follow up email'),
       expect.any(String),
-      'gpt-5.5-high'
+      'gpt-5.5'
     );
   });
 });

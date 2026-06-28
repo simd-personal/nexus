@@ -10,7 +10,7 @@ export function getOpenAI(): OpenAI {
 }
 
 const generationModel =
-  process.env.OPENAI_GENERATION_MODEL?.trim() || 'gpt-5.5-high';
+  process.env.OPENAI_GENERATION_MODEL?.trim() || 'gpt-5.5';
 
 export const OPENAI_MODELS = {
   /** Keep 1536 dims — matches `chunks.embedding vector(1536)` in Supabase */
@@ -20,11 +20,18 @@ export const OPENAI_MODELS = {
   summary: 'gpt-5.5',
   /** Client-facing documents: briefs, playbooks, emails, deck pages */
   generation: generationModel,
+  /** Same model with reasoning_effort: high for executive briefs */
   generationHigh: generationModel,
   criticalDetection: 'gpt-5.5',
   transcription: 'whisper-1',
   vision: 'gpt-5.5',
 } as const;
+
+export type ReasoningEffort = 'low' | 'medium' | 'high';
+
+interface GenerationOptions {
+  reasoningEffort?: ReasoningEffort;
+}
 
 const EMBEDDING_DIMENSIONS = 1536;
 
@@ -79,7 +86,8 @@ export async function chatCompletion(
 export async function generateLongForm(
   systemPrompt: string,
   userPrompt: string,
-  model: string = OPENAI_MODELS.generation
+  model: string = OPENAI_MODELS.generation,
+  options?: GenerationOptions
 ): Promise<string> {
   const openai = getOpenAI();
   const response = await openai.chat.completions.create({
@@ -89,6 +97,7 @@ export async function generateLongForm(
       { role: 'user', content: userPrompt },
     ],
     max_completion_tokens: 8192,
+    ...(options?.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}),
   });
   return response.choices[0]?.message?.content ?? '';
 }
@@ -153,7 +162,8 @@ export async function extractTextFromImage(
 export async function structuredExtraction<T>(
   systemPrompt: string,
   userPrompt: string,
-  model: string = OPENAI_MODELS.extraction
+  model: string = OPENAI_MODELS.extraction,
+  options?: GenerationOptions
 ): Promise<T> {
   const openai = getOpenAI();
   const response = await openai.chat.completions.create({
@@ -163,6 +173,7 @@ export async function structuredExtraction<T>(
       { role: 'user', content: userPrompt },
     ],
     response_format: { type: 'json_object' },
+    ...(options?.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}),
   });
   const content = response.choices[0]?.message?.content ?? '{}';
   return JSON.parse(content) as T;
