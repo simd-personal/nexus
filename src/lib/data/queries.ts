@@ -189,15 +189,37 @@ export async function getPendingInboundEmails(): Promise<InboundEmailEvent[]> {
 
   if (!user) return [];
 
-  const { data } = await supabase
-    .from('inbound_email_events')
-    .select('*')
-    .eq('owner_id', user.id)
-    .eq('status', 'pending_assignment')
-    .order('created_at', { ascending: false })
-    .limit(20);
+  const [owned, unclaimed] = await Promise.all([
+    supabase
+      .from('inbound_email_events')
+      .select('*')
+      .eq('owner_id', user.id)
+      .eq('status', 'pending_assignment')
+      .order('created_at', { ascending: false })
+      .limit(20),
+    supabase
+      .from('inbound_email_events')
+      .select('*')
+      .is('owner_id', null)
+      .in('status', ['pending_assignment', 'unmatched'])
+      .order('created_at', { ascending: false })
+      .limit(20),
+  ]);
 
-  return (data ?? []) as InboundEmailEvent[];
+  const merged = new Map<string, InboundEmailEvent>();
+  for (const row of [...(owned.data ?? []), ...(unclaimed.data ?? [])]) {
+    const event = row as InboundEmailEvent;
+    if (
+      event.status === 'pending_assignment' ||
+      (event.status === 'unmatched' && event.detail?.includes('Could not determine which project'))
+    ) {
+      merged.set(event.id, event);
+    }
+  }
+
+  return Array.from(merged.values()).sort(
+    (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)
+  );
 }
 
 export async function getProjectFiles(projectId: string): Promise<FileRecord[]> {

@@ -5,6 +5,13 @@ import {
   loadPendingInboundPayload,
 } from '@/lib/inbound/pending-payload';
 
+const ACTIONABLE_STATUSES = new Set(['pending_assignment', 'unmatched']);
+
+function canAccessPendingEvent(event: { owner_id: string | null }, ownerId: string): boolean {
+  if (!event.owner_id) return true;
+  return event.owner_id === ownerId;
+}
+
 export async function assignPendingInboundEmail(
   supabase: SupabaseClient,
   params: { eventId: string; projectId: string; ownerId: string }
@@ -19,16 +26,19 @@ export async function assignPendingInboundEmail(
     return { error: 'Inbound email not found' };
   }
 
-  if (event.owner_id !== params.ownerId) {
+  if (!canAccessPendingEvent(event, params.ownerId)) {
     return { error: 'Unauthorized' };
   }
 
-  if (event.status !== 'pending_assignment') {
+  if (!ACTIONABLE_STATUSES.has(event.status)) {
     return { error: 'This email has already been handled' };
   }
 
   if (!event.payload_storage_path) {
-    return { error: 'Email content is no longer available' };
+    return {
+      error:
+        'Email content was not saved for this entry. Forward the message again from Outlook, then assign the new dashboard item.',
+    };
   }
 
   const { data: project, error: projectError } = await supabase
@@ -57,6 +67,7 @@ export async function assignPendingInboundEmail(
       .from('inbound_email_events')
       .update({
         status: 'failed',
+        owner_id: params.ownerId,
         detail: ingested.error,
       })
       .eq('id', params.eventId);
@@ -67,6 +78,7 @@ export async function assignPendingInboundEmail(
     .from('inbound_email_events')
     .update({
       status: 'processed',
+      owner_id: params.ownerId,
       project_id: project.id,
       detail: 'Assigned manually from dashboard',
       file_ids: ingested.fileIds,
@@ -97,11 +109,11 @@ export async function dismissPendingInboundEmail(
     return { error: 'Inbound email not found' };
   }
 
-  if (event.owner_id !== params.ownerId) {
+  if (!canAccessPendingEvent(event, params.ownerId)) {
     return { error: 'Unauthorized' };
   }
 
-  if (event.status !== 'pending_assignment') {
+  if (!ACTIONABLE_STATUSES.has(event.status)) {
     return { error: 'This email has already been handled' };
   }
 
@@ -109,6 +121,7 @@ export async function dismissPendingInboundEmail(
     .from('inbound_email_events')
     .update({
       status: 'dismissed',
+      owner_id: params.ownerId,
       detail: 'Dismissed from dashboard',
     })
     .eq('id', params.eventId);

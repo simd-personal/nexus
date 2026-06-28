@@ -47,6 +47,7 @@ function PendingInboundRow({
   const [error, setError] = useState('');
 
   const flatProjects = flattenProjects(projects);
+  const contentMissing = !email.payload_storage_path;
 
   async function handleAssign() {
     if (!projectId) {
@@ -126,6 +127,13 @@ function PendingInboundRow({
             </p>
           )}
 
+          {contentMissing && (
+            <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+              Message content was not saved for this entry. Forward the email again from Outlook, then assign
+              the new item that appears here.
+            </p>
+          )}
+
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="min-w-0 flex-1">
               <label className="mb-1 block text-xs font-medium text-gray-600 dark:text-gray-300">
@@ -134,8 +142,8 @@ function PendingInboundRow({
               <select
                 value={projectId}
                 onChange={(event) => setProjectId(event.target.value)}
-                disabled={loading || flatProjects.length === 0}
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100"
+                disabled={loading || flatProjects.length === 0 || contentMissing}
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100 disabled:opacity-60"
               >
                 <option value="">Select a project</option>
                 {flatProjects.map((project) => (
@@ -146,7 +154,12 @@ function PendingInboundRow({
               </select>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" onClick={handleAssign} loading={loading} disabled={flatProjects.length === 0}>
+              <Button
+                size="sm"
+                onClick={handleAssign}
+                loading={loading}
+                disabled={flatProjects.length === 0 || contentMissing}
+              >
                 Assign
               </Button>
               <Button size="sm" variant="ghost" onClick={handleDismiss} disabled={loading}>
