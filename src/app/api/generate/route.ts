@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       case 'brief': {
         const brief = await generatePageBrief(context, userInstructions);
         content = formatBriefAsProse(brief);
-        title = `Sunny Brief — ${project.project_name}`;
+        title = `Sunny Brief for ${project.project_name}`;
         docType = 'brief';
 
         await supabase.from('generated_documents').insert({
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       }
       case 'playbook': {
         content = await generatePagePlaybook(project.project_name, project.client_name, context, userInstructions);
-        title = `Operating Playbook — ${project.client_name}`;
+        title = `Operating Playbook for ${project.client_name}`;
         docType = 'playbook';
 
         await supabase.from('generated_documents').insert({
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
           version ?? 'detailed',
           userInstructions
         );
-        title = `Follow-Up Email — ${project.client_name}`;
+        title = `Follow Up Email for ${project.client_name}`;
         docType = 'follow_up_email';
 
         await supabase.from('generated_documents').insert({
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
           context,
           userInstructions
         );
-        title = `Presentation Deck — ${project.client_name}`;
+        title = `Presentation Deck for ${project.client_name}`;
         docType = 'deck';
 
         await supabase.from('generated_documents').insert({

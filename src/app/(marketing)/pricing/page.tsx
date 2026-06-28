@@ -70,8 +70,8 @@ export default function PricingPage() {
         <div className="marketing-container">
           <h2 className="marketing-section-title !text-white">Organizations & enterprise</h2>
           <p className="mt-4 max-w-2xl text-[15px] leading-relaxed text-white/65">
-            Multi-tenant workspaces for agencies, consultancies, and regulated industries. Sold via
-            quote — not self-serve checkout.
+            Multi tenant workspaces for agencies, consultancies, and regulated industries. Sold via
+            quote, not online checkout.
           </p>
           <ul className="mt-8 grid gap-3 sm:grid-cols-2">
             {B2B_CAPABILITIES.map((item) => (

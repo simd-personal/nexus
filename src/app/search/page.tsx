@@ -14,7 +14,7 @@ export default async function SearchPage() {
         <div className="mb-4 px-4">
           <h1 className="text-xl font-bold text-gray-900">Search</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Chat with {AI_EMPLOYEE_NAME} across all your projects — answers stream live and conversations are saved
+            Chat with {AI_EMPLOYEE_NAME} across all your projects. Answers stream live and conversations are saved
           </p>
         </div>
         <Suspense fallback={<LoadingState />}>

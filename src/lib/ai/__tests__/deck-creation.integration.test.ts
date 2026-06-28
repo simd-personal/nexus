@@ -77,7 +77,7 @@ describe('deck creation integration', () => {
     expect(response.model).toBe('claude');
     expect(response.artifact).toBeDefined();
     expect(response.artifact?.type).toBe('deck');
-    expect(response.artifact?.title).toBe('Presentation Deck — Acme Corp');
+    expect(response.artifact?.title).toBe('Presentation Deck for Acme Corp');
     expect(response.actions_taken).toContain('Generated presentation deck');
 
     const format = validateDeckFormat(response.artifact!.content);
@@ -141,7 +141,7 @@ describe('deck creation integration', () => {
       expect.objectContaining({
         project_id: 'proj-acme-q3',
         type: 'memo',
-        title: 'Presentation Deck — Acme Corp',
+        title: 'Presentation Deck for Acme Corp',
         metadata: expect.objectContaining({ doc_kind: 'deck', source: 'chat' }),
       })
     );

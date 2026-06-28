@@ -5,7 +5,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Privacy policy',
   description:
-    'UpperDeck privacy policy — how we collect, use, and protect your account data and client project content.',
+    'UpperDeck privacy policy. How we collect, use, and protect your account data and client project content.',
   path: '/privacy',
 });
 
@@ -29,19 +29,19 @@ export default function PrivacyPage() {
           <h2>Information we collect</h2>
           <ul>
             <li>
-              <strong>Account information</strong> — email address, name, and authentication
+              <strong>Account information:</strong> email address, name, and authentication
               credentials you provide when signing up.
             </li>
             <li>
-              <strong>Project content</strong> — files, text, and metadata you upload or paste
+              <strong>Project content:</strong> files, text, and metadata you upload or paste
               into projects, including meeting notes, emails, decks, and transcripts.
             </li>
             <li>
-              <strong>Usage data</strong> — basic logs such as feature usage, errors, and performance
+              <strong>Usage data:</strong> basic logs such as feature usage, errors, and performance
               metrics to operate and improve the service.
             </li>
             <li>
-              <strong>Billing data</strong> — subscription status and Stripe customer identifiers.
+              <strong>Billing data:</strong> subscription status and Stripe customer identifiers.
               Payment card details are processed by Stripe, not stored on our servers.
             </li>
           </ul>

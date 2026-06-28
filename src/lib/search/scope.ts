@@ -30,7 +30,7 @@ export async function buildProjectSummary(
 
     return {
       summary: project?.last_summary ?? null,
-      label: project ? `${project.client_name} — ${project.project_name}` : null,
+      label: project ? `${project.client_name} · ${project.project_name}` : null,
     };
   }
 
@@ -46,7 +46,7 @@ export async function buildProjectSummary(
   const summary = (projects ?? [])
     .map((p) => {
       if (!p.last_summary) return null;
-      return `### ${p.client_name} — ${p.project_name}\n${p.last_summary}`;
+      return `### ${p.client_name} · ${p.project_name}\n${p.last_summary}`;
     })
     .filter(Boolean)
     .join('\n\n');

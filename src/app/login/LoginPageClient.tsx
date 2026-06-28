@@ -293,7 +293,7 @@ export default function LoginPageClient() {
           </div>
 
           <p className="relative z-10 mt-10 hidden text-xs text-[var(--ud-slate)] lg:block">
-            Meet {AI_EMPLOYEE_NAME} — your AI employee inside UpperDeck.
+            Meet {AI_EMPLOYEE_NAME}, your AI employee inside UpperDeck.
           </p>
         </div>
 

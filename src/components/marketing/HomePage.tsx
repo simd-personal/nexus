@@ -103,9 +103,9 @@ export function HomePage() {
               Hire your first AI employee for client work.
             </h1>
             <p className="marketing-hero-body">
-              Meet {AI_EMPLOYEE_NAME} — your AI employee inside UpperDeck. Upload decks, emails,
-              meetings, and notes; get briefs, risks, and follow-ups with sources cited. Latest
-              GPT and Claude included — no extra subscriptions. And {AI_EMPLOYEE_NAME} keeps getting
+              Meet {AI_EMPLOYEE_NAME}, your AI employee inside UpperDeck. Upload decks, emails,
+              meetings, and notes; get briefs, risks, and follow ups with sources cited. Latest
+              GPT and Claude included with no extra subscriptions. And {AI_EMPLOYEE_NAME} keeps getting
               more capable as we ship new features.
             </p>
 
@@ -124,13 +124,13 @@ export function HomePage() {
                 <span className="marketing-hero-trust-icon">
                   <Check className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
-                Your first AI employee — start free
+                Your first AI employee. Start free
               </li>
               <li className="marketing-hero-trust-item">
                 <span className="marketing-hero-trust-icon">
                   <Cpu className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
-                GPT &amp; Claude included — no extra AI bill
+                GPT &amp; Claude included at no extra cost
               </li>
               <li className="marketing-hero-trust-item">
                 <span className="marketing-hero-trust-icon">
@@ -162,7 +162,7 @@ export function HomePage() {
           </SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             UpperDeck is not a task manager, CRM, or chat tab. It is where you hire an AI employee
-            who knows each client project — and grows more useful as we add integrations and
+            who knows each client project and grows more useful as we add integrations and
             workflows.
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -188,7 +188,7 @@ export function HomePage() {
           <SectionTitle className="mt-3">How your AI employee gets to work</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             Onboard {AI_EMPLOYEE_NAME} on a new client project in minutes. Upload your materials
-            once — your AI employee handles the reading so you walk into every call prepared.
+            once. Your AI employee handles the reading so you walk into every call prepared.
           </p>
 
           <div className="mt-14 grid gap-6 md:grid-cols-3">
@@ -235,18 +235,18 @@ export function HomePage() {
           <div className="min-w-0">
             <SectionEyebrow>AI employee</SectionEyebrow>
             <SectionTitle className="mt-3">
-              Meet {AI_EMPLOYEE_NAME} — your first AI employee
+              Meet {AI_EMPLOYEE_NAME}, your first AI employee
             </SectionTitle>
             <p className="marketing-section-body mt-4">
               {AI_EMPLOYEE_NAME} is not a generic chatbot or a blank ChatGPT window. Your AI employee
               has read every meeting, email, deck, and note in the project. Ask what changed, what is
-              at risk, or what to say tomorrow — every answer links back to your files.
+              at risk, or what to say tomorrow. Every answer links back to your files.
             </p>
             <ul className="mt-8 space-y-3">
               {[
-                'Thinks in projects, not one-off prompts',
-                'Cites your uploads — not invented client facts',
-                'Briefs, timelines, and follow-ups on demand',
+                'Thinks in projects, not one off prompts',
+                'Cites your uploads, not invented client facts',
+                'Briefs, timelines, and follow ups on demand',
                 'Gets more capable as UpperDeck ships new features',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
@@ -266,7 +266,7 @@ export function HomePage() {
               </div>
               <div className="rounded-xl border border-[var(--ud-cloud)] bg-white px-4 py-3 text-sm leading-relaxed text-[var(--ud-slate)]">
                 In the March 12 sync, the client asked to pull launch to Q3 citing budget review
-                (Meeting transcript, p.4). The deck from March 10 still shows Q2 — that&apos;s a
+                (Meeting transcript, p.4). The deck from March 10 still shows Q2. That&apos;s a
                 contradiction worth flagging.
               </div>
             </div>
@@ -284,7 +284,7 @@ export function HomePage() {
             </SectionTitle>
             <p className="marketing-section-body mt-4">
               You are hiring {AI_EMPLOYEE_NAME}, not buying a static tool. UpperDeck routes your
-              work to the latest GPT and Claude models today — and we keep adding integrations,
+              work to the latest GPT and Claude models today, and we keep adding integrations,
               connectors, and skills so your AI employee does more for you with every release.
             </p>
             <ul className="mt-8 space-y-3">
@@ -305,7 +305,7 @@ export function HomePage() {
             </div>
             <ul className="mt-5 space-y-3 text-sm leading-relaxed text-[var(--ud-slate)]">
               <li>Hiring ChatGPT Plus and Claude Pro on the side</li>
-              <li>Copy-pasting context into a blank chat every time</li>
+              <li>Copying and pasting context into a blank chat every time</li>
               <li>Wondering whether the AI invented something about your client</li>
               <li>Rebuilding the same workflows in a tool that never improves</li>
             </ul>
@@ -322,7 +322,7 @@ export function HomePage() {
           <p className="marketing-section-body mt-4 max-w-2xl">
             Most tools store tasks or notes. UpperDeck gives you an AI employee focused on{' '}
             <em className="not-italic font-medium text-[var(--ud-graphite)]">client intelligence</em>
-            — what changed, what conflicts, and what to do before the next conversation.
+            : what changed, what conflicts, and what to do before the next conversation.
           </p>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {HOME_COMPARISONS.map((item) => (
@@ -352,7 +352,7 @@ export function HomePage() {
           <SectionTitle className="mt-3">Connect the tools your clients already live in</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             Start by uploading files today. Email, Slack, calendar, and CRM connectors are on the
-            roadmap — each one makes your AI employee smarter about every client project.
+            roadmap. Each one makes your AI employee smarter about every client project.
           </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -390,7 +390,7 @@ export function HomePage() {
           <SectionTitle className="mt-3">Hire free. Upgrade when you add client number two.</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             Try your first AI employee on one client at no cost. When you are managing multiple
-            engagements, Pro unlocks unlimited projects and unlimited {AI_EMPLOYEE_NAME} — with the
+            engagements, Pro unlocks unlimited projects and unlimited {AI_EMPLOYEE_NAME}, with the
             latest AI models included and new capabilities shipping regularly.
           </p>
 
@@ -449,10 +449,10 @@ export function HomePage() {
                   For teams & organizations
                 </p>
                 <h3 className="mt-2 text-xl font-semibold text-[var(--ud-graphite)]">
-                  Need admin controls, PHI safeguards, or multi-tenant access?
+                  Need admin controls, PHI safeguards, or multi tenant access?
                 </h3>
                 <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--ud-slate)]">
-                  Organization accounts are not self-serve. Tell us about your team and we&apos;ll
+                  Organization accounts are sold by quote, not online checkout. Tell us about your team and we&apos;ll
                   follow up with pricing, security details, and a tailored rollout plan.
                 </p>
               </div>
@@ -479,7 +479,7 @@ export function HomePage() {
               </SectionTitle>
               <p className="mt-4 text-[17px] leading-relaxed text-white/60">
                 UpperDeck Enterprise gives software companies, consultancies, and healthcare
-                organizations a shared command deck — with the admin controls, access governance,
+                organizations a shared workspace with the admin controls, access governance,
                 and compliance safeguards that personal accounts don&apos;t include.
               </p>
               <p className="mt-4 text-[15px] leading-relaxed text-white/50">
@@ -504,7 +504,7 @@ export function HomePage() {
               </div>
 
               <p className="mt-5 text-sm text-white/40">
-                Typical response within 1 business day · 10–500+ seats · Custom SSO available
+                Typical response within 1 business day · 10 to 500+ seats · Custom SSO available
               </p>
             </div>
 
@@ -559,8 +559,8 @@ export function HomePage() {
         <div className="marketing-container text-center">
           <h2 className="marketing-section-title">Hire your first AI employee today</h2>
           <p className="marketing-section-body mx-auto mt-4 max-w-xl">
-            Join consultants and operators who stopped juggling chat tabs and inboxes. Start free —
-            {AI_EMPLOYEE_NAME} included, and getting more capable all the time.
+            Join consultants and operators who stopped juggling chat tabs and inboxes. Start free.
+            {AI_EMPLOYEE_NAME} is included and getting more capable all the time.
           </p>
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Link href="/login" className="marketing-btn-primary marketing-btn-lg group w-full sm:w-auto">

@@ -101,7 +101,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
   const hasMaterial = context.chunks.length > 0 || context.projectSummary;
   if (!hasMaterial && action !== 'action_items') {
     return {
-      answer: "I'd be happy to create that — upload a meeting note, transcript, email, or deck first so I have material to work from.",
+      answer: "I'd be happy to create that. Upload a meeting note, transcript, email, or deck first so I have material to work from.",
       citations: [],
       confidence: 'low',
       model: 'claude',
@@ -115,7 +115,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
         .filter(([key]) => key !== 'citations')
         .map(([key, value]) => `## ${key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}\n\n${value}`)
         .join('\n\n');
-      const title = `Sunny Brief — ${project.project_name}`;
+      const title = `Sunny Brief for ${project.project_name}`;
 
       await supabase.from('generated_documents').insert({
         project_id: project.id,
@@ -127,7 +127,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
       });
 
       return {
-        answer: `Done — I created an executive brief for ${project.client_name} based on your project materials.`,
+        answer: `Done. I created an executive brief for ${project.client_name} based on your project materials.`,
         citations: brief.citations,
         confidence: 'high',
         artifact: { type: 'brief', title, content },
@@ -138,7 +138,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
 
     case 'deck': {
       const content = await generateDeck(project.project_name, project.client_name, context, focus);
-      const title = `Presentation Deck — ${project.client_name}`;
+      const title = `Presentation Deck for ${project.client_name}`;
 
       await supabase.from('generated_documents').insert({
         project_id: project.id,
@@ -149,7 +149,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
       });
 
       return {
-        answer: `Here's your presentation deck for ${project.client_name}. I structured it from the uploaded materials — tell me if you want more slides or a different focus.`,
+        answer: `Here's your presentation deck for ${project.client_name}. I structured it from the uploaded materials. Tell me if you want more slides or a different focus.`,
         citations: [],
         confidence: 'high',
         artifact: { type: 'deck', title, content },
@@ -160,7 +160,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
 
     case 'playbook': {
       const content = await generatePlaybook(project.project_name, project.client_name, context, focus);
-      const title = `Operating Playbook — ${project.client_name}`;
+      const title = `Operating Playbook for ${project.client_name}`;
 
       await supabase.from('generated_documents').insert({
         project_id: project.id,
@@ -195,7 +195,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
         email_version ?? 'detailed',
         focus
       );
-      const title = `Follow-Up Email — ${project.client_name}`;
+      const title = `Follow Up Email for ${project.client_name}`;
 
       await supabase.from('generated_documents').insert({
         project_id: project.id,
@@ -217,8 +217,8 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
 
     case 'vp_summary': {
       const brief = await generateSunnyBrief(context, `VP-ready executive summary. ${focus}`);
-      const content = `# Executive Summary — ${project.client_name}\n\n${brief.executive_summary}\n\n## What Changed\n${brief.what_changed_recently}\n\n## Critical Items\n${brief.critical_items}\n\n## Recommended Next Steps\n${brief.recommended_next_steps}`;
-      const title = `VP Summary — ${project.project_name}`;
+      const content = `# Executive Summary for ${project.client_name}\n\n${brief.executive_summary}\n\n## What Changed\n${brief.what_changed_recently}\n\n## Critical Items\n${brief.critical_items}\n\n## Recommended Next Steps\n${brief.recommended_next_steps}`;
+      const title = `VP Summary for ${project.project_name}`;
 
       return {
         answer: `Here's a VP-ready summary for ${project.client_name}.`,

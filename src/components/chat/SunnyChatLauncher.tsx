@@ -37,7 +37,7 @@ export function SunnyChatLauncher({
         >
           {projects.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.client_name} — {p.project_name}
+              {p.client_name} · {p.project_name}
             </option>
           ))}
         </select>
@@ -46,7 +46,7 @@ export function SunnyChatLauncher({
         key={projectId}
         mode="project"
         projectId={projectId}
-        projectName={selected ? `${selected.client_name} — ${selected.project_name}` : undefined}
+        projectName={selected ? `${selected.client_name} · ${selected.project_name}` : undefined}
         initialMessages={projectId === initialProjectId ? initialMessages : []}
       />
     </div>

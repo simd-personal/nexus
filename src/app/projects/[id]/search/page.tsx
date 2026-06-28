@@ -18,7 +18,7 @@ export default async function ProjectSearchPage({
         <SearchPageClient
           projectId={id}
           projectName={
-            project ? `${project.client_name} — ${project.project_name}` : undefined
+            project ? `${project.client_name} · ${project.project_name}` : undefined
           }
           lockProject
         />

@@ -12,7 +12,7 @@ export const AI_EMPLOYEE_NAME = 'Sunny';
 export const BRAND_TAGLINE = 'Your first AI employee for client work';
 /** Marketing / hero copy */
 export const TAGLINE =
-  'Hire Sunny once — client briefs, risks, and follow-ups from every deck, email, and call.';
+  'Hire Sunny once. Client briefs, risks, and follow ups from every deck, email, and call.';
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   healthy: 'Healthy',
@@ -31,7 +31,7 @@ export const SEVERITY_LABELS: Record<Severity, string> = {
 export const CATEGORY_LABELS: Record<CriticalCategory, string> = {
   conflict: 'Conflict',
   risk: 'Risk',
-  missed_follow_up: 'Missed Follow-Up',
+  missed_follow_up: 'Missed Follow Up',
   client_concern: 'Client Concern',
   ownership_gap: 'Ownership Gap',
   timeline_issue: 'Timeline Issue',

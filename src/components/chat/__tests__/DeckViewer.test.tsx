@@ -6,7 +6,7 @@ import type { SunnyChatArtifact } from '@/types/database';
 
 const deckArtifact: SunnyChatArtifact = {
   type: 'deck',
-  title: 'Presentation Deck — Acme Corp',
+  title: 'Presentation Deck for Acme Corp',
   content: SAMPLE_VALID_DECK,
 };
 

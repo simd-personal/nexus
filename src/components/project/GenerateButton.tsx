@@ -87,7 +87,7 @@ export function GenerateButton({
             className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Generated with GPT 5 High — natural prose, ready to copy and paste.
+            Generated with GPT 5 High. Natural prose, ready to copy and paste.
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>

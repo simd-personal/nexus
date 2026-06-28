@@ -5,7 +5,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'About',
   description:
-    'UpperDeck is where you hire Sunny — your first AI employee for client intelligence. Built for consultants and operators; gets more capable with every release.',
+    'UpperDeck is where you hire Sunny, your first AI employee for client intelligence. Built for consultants and operators. Gets more capable with every release.',
   path: '/about',
   keywords: ['about UpperDeck', 'first AI employee', 'client intelligence company'],
 });
@@ -23,13 +23,13 @@ export default function AboutPage() {
           <p>
             UpperDeck ({APP_DOMAIN}) is where you hire your first AI employee for client work. We
             help consultants, agencies, and operators stop reconstructing context from inboxes and
-            slide decks — and start every engagement with a clear, evidence-backed picture of what
-            matters.
+            slide decks and start every engagement with a clear picture of what matters, backed by
+            evidence.
           </p>
           <p>
             At the center is {AI_EMPLOYEE_NAME}, an AI employee with full project context.{' '}
-            {AI_EMPLOYEE_NAME} reads your meetings, emails, decks, and notes — then surfaces briefs,
-            risks, follow-ups, and answers with citations, not guesses. And {AI_EMPLOYEE_NAME} keeps
+            {AI_EMPLOYEE_NAME} reads your meetings, emails, decks, and notes, then surfaces briefs,
+            risks, follow ups, and answers with citations, not guesses. And {AI_EMPLOYEE_NAME} keeps
             getting more capable as we ship integrations, connectors, and new skills.
           </p>
 
@@ -42,8 +42,8 @@ export default function AboutPage() {
 
           <h2>Our principles</h2>
           <ul>
-            <li>Your first AI employee should think in projects, not one-off prompts</li>
-            <li>AI should cite sources — especially when stakes are high</li>
+            <li>Your first AI employee should think in projects, not one off prompts</li>
+            <li>AI should cite sources, especially when stakes are high</li>
             <li>Your AI employee should get more capable over time, not stay static</li>
             <li>Security and access control should scale from freelancer to enterprise</li>
             <li>Pricing should let you prove value before you pay</li>

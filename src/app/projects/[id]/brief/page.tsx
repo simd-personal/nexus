@@ -16,7 +16,7 @@ export default async function SunnyBriefPage({
     <PageGenerationChat
       projectId={id}
       type="brief"
-      projectName={project ? `${project.client_name} — ${project.project_name}` : undefined}
+      projectName={project ? `${project.client_name} · ${project.project_name}` : undefined}
       initialMessages={latestChat?.messages ?? []}
       initialSessionId={latestChat?.session.id}
     />

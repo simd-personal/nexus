@@ -6,11 +6,11 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'For agencies',
   description:
-    'Give agency delivery teams a shared AI employee — organization workspaces, admin controls, audit trails, and PHI options. Sunny gets more capable as integrations ship.',
+    'Give agency delivery teams a shared AI employee with organization workspaces, admin controls, audit trails, and PHI options. Sunny gets more capable as integrations ship.',
   path: '/for-agencies',
   keywords: [
     'agency client management',
-    'multi-tenant client workspace',
+    'multi tenant client workspace',
     'delivery team intelligence',
     'agency knowledge management',
   ],
@@ -21,7 +21,7 @@ export default function ForAgenciesPage() {
     <MarketingPageLayout
       eyebrow="Solutions"
       title="A shared AI employee for agency delivery teams"
-      description="Principals, PMs, and strategists should not reconstruct context from Slack threads and shared drives. Give every team member the same AI employee with full client context — and more capability with every UpperDeck release."
+      description="Principals, PMs, and strategists should not reconstruct context from Slack threads and shared drives. Give every team member the same AI employee with full client context and more capability with every UpperDeck release."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">
@@ -29,13 +29,13 @@ export default function ForAgenciesPage() {
             <div>
               <h2 className="marketing-section-title">When one client spans a dozen people</h2>
               <p className="marketing-section-body mt-4">
-                Organization tenants add multi-project workspaces, role-based access, access request
-                approvals, and audit-friendly activity — sold via quote for teams from 10 to 500+
+                Organization tenants add multi project workspaces, role based access, access request
+                approvals, and audit friendly activity, sold via quote for teams from 10 to 500+
                 seats.
               </p>
               <ul className="mt-8 space-y-3">
                 {[
-                  'Organization-scoped projects and members',
+                  'Organization scoped projects and members',
                   'Admin roles for owners and team leads',
                   'Healthcare PHI redaction on uploads',
                   'SSO / SAML available on request',
@@ -60,7 +60,7 @@ export default function ForAgenciesPage() {
                 },
                 {
                   title: 'Management consultancies',
-                  body: 'Give partners a live brief across workstreams without status-meeting theater.',
+                  body: 'Give partners a live brief across workstreams without status meeting theater.',
                 },
               ].map((item) => (
                 <div key={item.title} className="marketing-feature-card">

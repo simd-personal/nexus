@@ -10,7 +10,7 @@ export type PricingTier = {
   features: string[];
 };
 
-/** B2C — freemium + Pro. Best model for solo consultants: free trial of value, pay when they have multiple clients. */
+/** B2C freemium + Pro */
 export const B2C_PRICING: PricingTier[] = [
   {
     id: 'free',
@@ -23,7 +23,7 @@ export const B2C_PRICING: PricingTier[] = [
     features: [
       '1 active client project',
       'Upload meetings, decks, emails & notes',
-      'Sunny — your AI employee (25 messages / month)',
+      'Sunny, your AI employee (25 messages / month)',
       'Latest AI models on every plan',
       'Basic brief & timeline views',
       'Email signup & password recovery',
@@ -40,9 +40,9 @@ export const B2C_PRICING: PricingTier[] = [
     highlighted: true,
     features: [
       'Unlimited client projects',
-      'Unlimited Sunny — your AI employee across all projects',
+      'Unlimited Sunny, your AI employee across all projects',
       'Latest GPT & Claude models included',
-      'Critical items & follow-up detection',
+      'Critical items & follow up detection',
       'Semantic search across all files',
       'Audio transcription & PDF processing',
       'Priority processing & email support',
@@ -66,9 +66,9 @@ export const B2C_PRICING: PricingTier[] = [
 ];
 
 export const B2B_CAPABILITIES = [
-  'Multi-tenant organization workspace',
+  'Multi tenant organization workspace',
   'Admin roles & access request approvals',
-  'Organization-scoped projects & audit trail',
+  'Organization scoped projects & audit trail',
   'PHI redaction for healthcare uploads',
   'SSO / SAML (on request)',
   'Slack, email & calendar connectors',

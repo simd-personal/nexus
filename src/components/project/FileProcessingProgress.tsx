@@ -16,7 +16,7 @@ export function FileProcessingProgress({ file }: { file: FileRecord }) {
   const detail =
     progress?.chunks_total != null && progress.chunks_done != null
       ? `${progress.chunks_done} of ${progress.chunks_total} sections indexed${isLarge ? ' · large file' : ''}`
-      : progress?.detail ?? (isLarge ? 'Large file — indexing may take several minutes' : undefined);
+      : progress?.detail ?? (isLarge ? 'Large file. Indexing may take several minutes' : undefined);
 
   return (
     <div className="mt-3 space-y-2">

@@ -21,7 +21,7 @@ export function DeleteProjectButton({
   const [busy, setBusy] = useState(false);
 
   async function handleDelete() {
-    const label = `${clientName} — ${projectName}`;
+    const label = `${clientName} · ${projectName}`;
     const confirmed = window.confirm(
       `Delete "${label}"?\n\nThis permanently removes the project, all uploaded files, chats, and indexed content. This cannot be undone.`
     );

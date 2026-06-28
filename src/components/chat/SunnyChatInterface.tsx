@@ -87,7 +87,7 @@ function ArtifactPanel({ artifact }: { artifact: SunnyChatArtifact }) {
     brief: 'Executive Brief',
     deck: 'Presentation Deck',
     playbook: 'Operating Playbook',
-    follow_up_email: 'Follow-Up Email',
+    follow_up_email: 'Follow Up Email',
     summary: 'VP Summary',
     action_items: 'Action Items',
   };
@@ -187,7 +187,7 @@ function SearchResultsPanel({ results }: { results: SearchResult[] }) {
             <Badge variant="neutral">{r.match_reason}</Badge>
           </div>
           <p className="font-medium text-gray-900">{r.file_name}</p>
-          {r.project_name && <p className="text-gray-500">{r.client_name} — {r.project_name}</p>}
+          {r.project_name && <p className="text-gray-500">{r.client_name} · {r.project_name}</p>}
           <p className="text-gray-600 mt-1 line-clamp-2">{r.text}</p>
         </div>
       ))}
@@ -744,12 +744,12 @@ export function SunnyChatInterface({
         : mode === 'playbook'
           ? [
               'Build an operating playbook from project materials',
-              'Include follow-up cadence and owner actions',
+              'Include follow up cadence and owner actions',
               'Emphasize client concerns and operational risks',
               'Make it shorter for a VP read',
             ]
           : [
-              'Draft a follow-up email about staffing concerns',
+              'Draft a follow up email about staffing concerns',
               'Create a Q3 review deck for the board',
               'What are the critical issues?',
               'Pull out action items and add them',
@@ -858,7 +858,7 @@ export function SunnyChatInterface({
                 <option value="">All projects</option>
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.client_name} — {p.project_name}
+                    {p.client_name} · {p.project_name}
                   </option>
                 ))}
               </select>
@@ -907,9 +907,9 @@ export function SunnyChatInterface({
                 !streaming &&
                 ['deck', 'brief', 'playbook', 'follow_up_email'].includes(artifact.type);
               const bubbleText = isDeck
-                ? `Here's your ${artifact.title} — ${parseDeckForViewer(artifact.content).slides.length} slides. Flip through them below, present fullscreen, or download.`
+                ? `Here's your ${artifact.title}, ${parseDeckForViewer(artifact.content).slides.length} slides. Flip through them below, present fullscreen, or download.`
                 : isGeneratedDoc && artifact
-                  ? `Here's your ${artifact.title}. Review it below — use Copy or Download when you're ready.`
+                  ? `Here's your ${artifact.title}. Review it below. Use Copy or Download when you're ready.`
                   : msg.content;
 
               return (
@@ -1068,7 +1068,7 @@ export function SunnyChatInterface({
                 placeholder={
                   isStreaming
                     ? queueFull
-                      ? 'Queue full — wait for Sunny to finish...'
+                      ? 'Queue full. Wait for Sunny to finish...'
                       : 'Queue your next message...'
                     : isPageGenerationMode(mode)
                       ? mode === 'brief'

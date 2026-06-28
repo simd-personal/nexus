@@ -14,7 +14,7 @@ interface GlobalSearchBarProps {
 export function GlobalSearchBar({
   className,
   projectId,
-  placeholder = 'Ask anything — meetings, decks, people, risks, decisions…',
+  placeholder = 'Ask anything: meetings, decks, people, risks, decisions…',
 }: GlobalSearchBarProps) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);

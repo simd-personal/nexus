@@ -148,9 +148,9 @@ async function fetchSupplementalContent(
       id: `project-${project.id}`,
       project_id: project.id,
       text: combined,
-      metadata: { source_type: 'note', file_name: `${project.client_name} — ${project.project_name}` },
+      metadata: { source_type: 'note', file_name: `${project.client_name} · ${project.project_name}` },
       match_reason: 'Project match',
-      file_name: `${project.client_name} — ${project.project_name}`,
+      file_name: `${project.client_name} · ${project.project_name}`,
       source_type: 'note',
       client_name: project.client_name,
       project_name: project.project_name,
@@ -209,7 +209,7 @@ async function fetchSupplementalContent(
         text: text.slice(0, 4000),
         metadata: { source_type: 'note', file_name: prefix },
         match_reason: `${table.replace('_', ' ')} match`,
-        file_name: project ? `${project.client_name} — ${project.project_name}` : undefined,
+        file_name: project ? `${project.client_name} · ${project.project_name}` : undefined,
         source_type: 'note',
         client_name: project?.client_name,
         project_name: project?.project_name,
@@ -259,7 +259,7 @@ export function toSearchContext(
     const baseName = r.file_name ?? 'Unknown';
     const file_name =
       options?.labelProject && r.client_name && r.project_name
-        ? `[${r.client_name} — ${r.project_name}] ${baseName}`
+        ? `[${r.client_name} · ${r.project_name}] ${baseName}`
         : baseName;
     return {
       text: r.text,

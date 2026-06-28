@@ -14,7 +14,7 @@ const tabs = [
   { href: 'timeline', label: 'Timeline' },
   { href: 'ask-sunny', label: 'Ask Sunny' },
   { href: 'playbook', label: 'Playbook' },
-  { href: 'follow-up', label: 'Follow-Up Email' },
+  { href: 'follow-up', label: 'Follow Up Email' },
 ];
 
 export function ProjectNav({ projectId }: { projectId: string }) {

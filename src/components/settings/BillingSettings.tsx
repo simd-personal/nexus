@@ -110,7 +110,7 @@ export function BillingSettings({
             disabled={loading !== null}
             onClick={() => openCheckout('pro')}
           >
-            {loading === 'checkout' ? 'Starting…' : 'Upgrade — $39/mo'}
+            {loading === 'checkout' ? 'Starting…' : 'Upgrade · $39/mo'}
           </Button>
           <Button
             type="button"
@@ -119,7 +119,7 @@ export function BillingSettings({
             disabled={loading !== null}
             onClick={() => openCheckout('pro-annual')}
           >
-            Annual — $348/yr
+            Annual · $348/yr
           </Button>
         </div>
       )}

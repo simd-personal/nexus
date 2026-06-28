@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
           });
           content = result.content;
           citations = result.citations;
-          title = `Sunny Brief — ${project.project_name}`;
+          title = `Sunny Brief for ${project.project_name}`;
           actions_taken = ['Generated executive brief', 'Saved to project documents'];
 
           await supabase.from('generated_documents').insert({
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
               send({ event: 'token', data: { text: token } });
             }
           );
-          title = `Operating Playbook — ${project.client_name}`;
+          title = `Operating Playbook for ${project.client_name}`;
           actions_taken = ['Generated operating playbook', 'Saved to project documents'];
 
           await supabase.from('generated_documents').insert({

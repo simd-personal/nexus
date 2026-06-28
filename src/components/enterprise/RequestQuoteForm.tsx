@@ -86,7 +86,7 @@ export function RequestQuoteForm() {
         <textarea
           name="message"
           rows={4}
-          placeholder="Multi-tenant access, PHI safeguards, admin controls, etc."
+          placeholder="Multi tenant access, PHI safeguards, admin controls, etc."
           className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
         />
       </div>
@@ -118,14 +118,14 @@ export function RequestQuotePageContent() {
             Organization accounts for teams that need control
           </h1>
           <p className="text-gray-400 text-lg">
-            Shared tenants, admin roles, access approvals, and healthcare PHI safeguards — priced for software and health systems, not self-serve free signup.
+            Shared tenants, admin roles, access approvals, and healthcare PHI safeguards, priced for software and health systems rather than free personal signup.
           </p>
         </div>
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
           <p className="font-medium text-white">{APP_NAME} Enterprise</p>
           <ul className="mt-3 space-y-2 list-disc pl-5">
             <li>Admin-managed team access</li>
-            <li>Organization-scoped projects and audit trail</li>
+            <li>Organization scoped projects and audit trail</li>
             <li>PHI redaction for healthcare uploads</li>
             <li>Custom onboarding and security review</li>
           </ul>
@@ -139,7 +139,7 @@ export function RequestQuotePageContent() {
           </Link>
           <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-2">Request a quote</h2>
           <p className="text-sm text-gray-500 mb-8">
-            Tell us about your organization. We&apos;ll follow up with pricing and setup — organization accounts are not free self-serve signup.
+            Tell us about your organization. We&apos;ll follow up with pricing and setup. Organization accounts are sold by quote, not free online signup.
           </p>
           <RequestQuoteForm />
           <p className="text-sm text-gray-500 mt-6 text-center">

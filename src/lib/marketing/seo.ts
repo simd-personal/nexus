@@ -47,7 +47,7 @@ export function createMarketingMetadata({
 }: PageMetadataInput): Metadata {
   const siteUrl = getSiteUrl();
   const canonical = `${siteUrl}${path}`;
-  const pageTitle = path === '/' ? `${APP_NAME} — ${BRAND_TAGLINE}` : title;
+  const pageTitle = path === '/' ? `${APP_NAME} | ${BRAND_TAGLINE}` : title;
   const socialTitle = path === '/' ? pageTitle : `${title} | ${APP_NAME}`;
 
   return {

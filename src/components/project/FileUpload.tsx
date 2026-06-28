@@ -40,8 +40,8 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
       if (uploaded.length > 0) {
         setMessage(
           uploaded.length === 1
-            ? `${uploaded[0]} uploaded — Sunny is processing...`
-            : `${uploaded.length} files uploaded — Sunny is processing...`
+            ? `${uploaded[0]} uploaded. Sunny is processing...`
+            : `${uploaded.length} files uploaded. Sunny is processing...`
         );
         onUploadComplete?.();
         window.dispatchEvent(new CustomEvent('project-files-uploaded'));
@@ -81,7 +81,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
       if (data.error) {
         setMessage(`Error: ${data.error}`);
       } else {
-        setMessage('Content uploaded — Sunny is processing...');
+        setMessage('Content uploaded. Sunny is processing...');
         setPasteText('');
         setPasteMode(null);
         onUploadComplete?.();

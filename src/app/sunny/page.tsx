@@ -12,7 +12,7 @@ export default async function SunnyChatPage() {
         <div className="mb-4 px-4">
           <h1 className="text-xl font-bold text-gray-900">Chat with {AI_EMPLOYEE_NAME}</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Create decks, emails, and briefs live in chat — just like ChatGPT and Claude
+            Create decks, emails, and briefs live in chat, just like ChatGPT and Claude
           </p>
         </div>
         <SunnyChatLauncher projects={projects} initialProjectId={projects[0]?.id} />

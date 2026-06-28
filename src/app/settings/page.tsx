@@ -130,9 +130,9 @@ export default async function SettingsPage({
           <CardHeader title="Security & Privacy" description="Current safeguards" />
           <ul className="text-sm text-gray-600 space-y-2">
             <li>Free personal accounts include email confirmation and password reset</li>
-            <li>Organization tenants are sold via quote — admin access, audit trail, PHI options</li>
+            <li>Organization tenants are sold via quote for admin access, audit trail, and PHI options</li>
             <li>Healthcare tenants can enable PHI redaction during file processing</li>
-            <li>API keys are server-side only — never exposed to the browser</li>
+            <li>API keys are server side only and never exposed to the browser</li>
             <li>Row Level Security limits data access to authorized users</li>
             <li className="text-amber-700">
               HIPAA compliance for production healthcare use still requires legal review, BAAs, and audit controls beyond this MVP layer.

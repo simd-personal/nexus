@@ -342,7 +342,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         await report({
           stage: 'embedding',
           percent: embeddingPercent(done, textChunks.length),
-          label: 'Large file — continuing indexing…',
+          label: 'Large file. Continuing indexing…',
           chunks_done: done,
           chunks_total: textChunks.length,
           detail: `${done} of ${textChunks.length} sections indexed (resumes automatically)`,

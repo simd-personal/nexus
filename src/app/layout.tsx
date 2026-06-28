@@ -18,10 +18,10 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: `${APP_NAME} — ${BRAND_TAGLINE}`,
+    default: `${APP_NAME} | ${BRAND_TAGLINE}`,
     template: `%s | ${APP_NAME}`,
   },
-  description: 'Your first AI employee for client work — Sunny, briefs, and client intelligence',
+  description: 'Your first AI employee for client work. Sunny delivers briefs and client intelligence.',
   keywords: [
     'first AI employee',
     'AI employee software',

@@ -43,8 +43,8 @@ export function ProjectDropZone({
         if (uploaded.length > 0) {
           showToast(
             uploaded.length === 1
-              ? `${uploaded[0]} uploaded — Sunny is processing…`
-              : `${uploaded.length} files uploaded — Sunny is processing…`
+              ? `${uploaded[0]} uploaded. Sunny is processing…`
+              : `${uploaded.length} files uploaded. Sunny is processing…`
           );
           router.refresh();
           window.dispatchEvent(new CustomEvent('project-files-uploaded'));

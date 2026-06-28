@@ -16,7 +16,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Product',
   description:
-    'Hire Sunny — your first AI employee for client work. Ingest meetings and files, get briefs, decks, and follow-ups with citations. Latest GPT and Claude included; more capable with every release.',
+    'Hire Sunny, your first AI employee for client work. Ingest meetings and files, get briefs, decks, and follow ups with citations. Latest GPT and Claude included. More capable with every release.',
   path: '/product',
   keywords: [
     'first AI employee',
@@ -31,7 +31,7 @@ export default function ProductPage() {
     <MarketingPageLayout
       eyebrow="Product"
       title="Hire your first AI employee for every client project"
-      description="UpperDeck is where you onboard Sunny — an AI employee who reads meetings, emails, decks, PDFs, and notes in each client project, then surfaces what matters before your next call. And Sunny keeps getting more capable as we ship new features."
+      description={`UpperDeck is where you onboard ${AI_EMPLOYEE_NAME}, an AI employee who reads meetings, emails, decks, PDFs, and notes in each client project, then surfaces what matters before your next call. And ${AI_EMPLOYEE_NAME} keeps getting more capable as we ship new features.`}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">
@@ -48,13 +48,13 @@ export default function ProductPage() {
                 icon: Sparkles,
                 step: '02',
                 title: 'Understand',
-                body: `${AI_EMPLOYEE_NAME} reads everything and extracts briefs, risks, contradictions, timeline shifts, and open follow-ups.`,
+                body: `${AI_EMPLOYEE_NAME} reads everything and extracts briefs, risks, contradictions, timeline shifts, and open follow ups.`,
               },
               {
                 icon: Zap,
                 step: '03',
                 title: 'Act',
-                body: 'Ask questions, generate decks, draft emails, and review critical items — with citations back to source material.',
+                body: 'Ask questions, generate decks, draft emails, and review critical items with citations back to source material.',
               },
             ].map(({ icon: Icon, step, title, body }) => (
               <div key={step} className="marketing-feature-card">
@@ -77,8 +77,8 @@ export default function ProductPage() {
           <h2 className="marketing-section-title">Built for client operators</h2>
           <p className="marketing-section-body mt-4 max-w-2xl">
             Whether you run one engagement or twenty, your AI employee keeps context out of inboxes
-            and slide decks — and puts it where you can use it. New integrations and workflows land
-            regularly so Sunny does more for you over time.
+            and slide decks and puts it where you can use it. New integrations and workflows land
+            regularly so {AI_EMPLOYEE_NAME} does more for you over time.
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
             {[
@@ -102,13 +102,13 @@ export default function ProductPage() {
             <h2 className="marketing-section-title">An AI employee that cites your sources</h2>
             <p className="marketing-section-body mt-4">
               {AI_EMPLOYEE_NAME} is not a blank chat window. Your AI employee answers from uploaded
-              sources — meeting transcripts, decks, emails, and notes — with citations so you can
+              sources like meeting transcripts, decks, emails, and notes, with citations so you can
               verify before you share with a client.
             </p>
             <ul className="mt-6 space-y-3">
               {[
                 'Semantic search across all project files',
-                'Timeline and follow-up tracking',
+                'Timeline and follow up tracking',
                 'Audio transcription and PDF processing',
                 'Organization tenants with admin controls',
               ].map((item) => (

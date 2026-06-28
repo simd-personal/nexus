@@ -24,7 +24,7 @@ export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
               href={`/projects/${update.project_id}/overview`}
               className="text-sm text-blue-600 hover:underline"
             >
-              {update.project.client_name} — {update.project.project_name}
+              {update.project.client_name} · {update.project.project_name}
             </Link>
           )}
 

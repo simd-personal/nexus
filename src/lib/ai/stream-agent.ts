@@ -188,7 +188,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
   const filteredContext = { ...context, chunks: substantiveChunks };
   const hasMaterial = substantiveChunks.length > 0 || context.projectSummary;
   if (!hasMaterial && action !== 'action_items') {
-    const msg = "I'd be happy to create that — upload a meeting note, transcript, email, or deck first so I have material to work from.";
+    const msg = "I'd be happy to create that. Upload a meeting note, transcript, email, or deck first so I have material to work from.";
     for (const char of msg) onToken(char);
     return { answer: msg, citations: [], confidence: 'low', model: engine };
   }
@@ -217,7 +217,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
         `Client: ${project.client_name}\nProject: ${project.project_name}\n\nEvidence:\n${ctxText}\n\nInstructions: ${focus}`,
         CLAUDE_MODELS.brief
       );
-      const title = `Sunny Brief — ${project.project_name}`;
+      const title = `Sunny Brief for ${project.project_name}`;
       artifact = { type: 'brief', title, content };
       actions_taken = ['Generated executive brief', 'Saved to project documents'];
       await supabase.from('generated_documents').insert({
@@ -232,7 +232,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
         `Client: ${project.client_name}\nProject: ${project.project_name}\n\nEvidence:\n${ctxText}\n\nInstructions: ${focus}`,
         CLAUDE_MODELS.deck
       );
-      const title = `Presentation Deck — ${project.client_name}`;
+      const title = `Presentation Deck for ${project.client_name}`;
       artifact = { type: 'deck', title, content };
       actions_taken = ['Generated presentation deck', 'Saved to project documents'];
       await supabase.from('generated_documents').insert({
@@ -247,7 +247,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
         `Client: ${project.client_name}\nProject: ${project.project_name}\n\nEvidence:\n${ctxText}\n\nInstructions: ${focus}`,
         CLAUDE_MODELS.playbook
       );
-      const title = `Operating Playbook — ${project.client_name}`;
+      const title = `Operating Playbook for ${project.client_name}`;
       artifact = { type: 'playbook', title, content };
       actions_taken = ['Generated operating playbook', 'Saved to project documents'];
       await supabase.from('generated_documents').insert({
@@ -263,7 +263,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
         `Client: ${project.client_name}\nProject: ${project.project_name}\n\nEvidence:\n${ctxText}\n\nInstructions: ${focus}`,
         CLAUDE_MODELS.memo
       );
-      const title = `Follow-Up Email — ${project.client_name}`;
+      const title = `Follow Up Email for ${project.client_name}`;
       artifact = { type: 'follow_up_email', title, content };
       actions_taken = ['Drafted follow-up email', 'Saved to project documents'];
       await supabase.from('generated_documents').insert({
@@ -278,7 +278,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
         `Client: ${project.client_name}\n\nEvidence:\n${ctxText}\n\nInstructions: ${focus}`,
         CLAUDE_MODELS.brief
       );
-      artifact = { type: 'summary', title: `VP Summary — ${project.project_name}`, content };
+      artifact = { type: 'summary', title: `VP Summary for ${project.project_name}`, content };
       actions_taken = ['Generated VP summary'];
       break;
     }

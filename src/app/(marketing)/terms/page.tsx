@@ -5,7 +5,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Terms of service',
   description:
-    'UpperDeck terms of service — rules for using our AI client intelligence platform, including accounts, content, and subscriptions.',
+    'UpperDeck terms of service. Rules for using our AI client intelligence platform, including accounts, content, and subscriptions.',
   path: '/terms',
 });
 
@@ -43,7 +43,7 @@ export default function TermsPage() {
           <h2>Your content</h2>
           <p>
             You retain ownership of content you upload. You grant UpperDeck a limited license to
-            host, process, and display that content solely to provide the service — including
+            host, process, and display that content solely to provide the service, including
             sending portions to AI subprocessors as needed for features you use.
           </p>
           <p>

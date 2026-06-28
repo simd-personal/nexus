@@ -32,7 +32,7 @@ export function SearchPageClient({
   const projectName =
     initialProjectName ??
     (selectedProject
-      ? `${selectedProject.client_name} — ${selectedProject.project_name}`
+      ? `${selectedProject.client_name} · ${selectedProject.project_name}`
       : undefined);
 
   return (

@@ -29,6 +29,6 @@ export async function submitOrganizationQuoteRequest(formData: FormData) {
 
   return {
     success: true,
-    message: 'Thanks — we received your request. Our team will follow up with pricing and onboarding details.',
+    message: 'Thanks. We received your request. Our team will follow up with pricing and onboarding details.',
   };
 }

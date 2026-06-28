@@ -24,7 +24,7 @@ export const INTEGRATIONS: Integration[] = [
   {
     name: 'Gmail & Outlook',
     category: 'Email',
-    description: 'Sync client threads into projects automatically — no more forwarding.',
+    description: 'Sync client threads into projects automatically. No more forwarding.',
     status: 'coming_soon',
   },
   {
@@ -36,7 +36,7 @@ export const INTEGRATIONS: Integration[] = [
   {
     name: 'Google Drive',
     category: 'Storage',
-    description: 'Connect folders per client. New decks and docs sync into your command deck.',
+    description: 'Connect folders per client. New decks and docs sync into each project.',
     status: 'coming_soon',
   },
   {
@@ -48,7 +48,7 @@ export const INTEGRATIONS: Integration[] = [
   {
     name: 'Zoom',
     category: 'Meetings',
-    description: 'Auto-import cloud recordings and AI summaries per client project.',
+    description: 'Auto import cloud recordings and AI summaries per client project.',
     status: 'coming_soon',
   },
   {
@@ -72,13 +72,13 @@ export const INTEGRATIONS: Integration[] = [
   {
     name: 'Linear & Jira',
     category: 'Delivery',
-    description: 'Connect delivery work to client promises — spot gaps before the client does.',
+    description: 'Connect delivery work to client promises and spot gaps before the client does.',
     status: 'enterprise',
   },
   {
     name: 'Calendar',
     category: 'Scheduling',
-    description: 'Google Calendar & Outlook — prep briefs before every client call.',
+    description: 'Google Calendar and Outlook. Prep briefs before every client call.',
     status: 'beta',
   },
 ];

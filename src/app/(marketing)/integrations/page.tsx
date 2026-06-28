@@ -6,7 +6,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Integrations',
   description:
-    'Connect UpperDeck to Gmail, Outlook, Slack, Google Drive, Teams, Zoom, Notion, HubSpot, Salesforce, and more — each connector makes your AI employee smarter about client work.',
+    'Connect UpperDeck to Gmail, Outlook, Slack, Google Drive, Teams, Zoom, Notion, HubSpot, Salesforce, and more. Each connector makes your AI employee smarter about client work.',
   path: '/integrations',
   keywords: [
     'consultant integrations',
@@ -21,7 +21,7 @@ export default function IntegrationsPage() {
     <MarketingPageLayout
       eyebrow="Integrations"
       title="Connect the tools where client work already lives"
-      description="UpperDeck starts with flexible file upload today. Connectors bring email, chat, storage, meetings, and CRM data into each client project — and make Sunny a more capable AI employee over time."
+      description="UpperDeck starts with flexible file upload today. Connectors bring email, chat, storage, meetings, and CRM data into each client project and make Sunny a more capable AI employee over time."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">

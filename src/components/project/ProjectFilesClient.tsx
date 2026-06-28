@@ -196,7 +196,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                 )}
                 {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
                   <p className="text-xs text-amber-700 mt-2">
-                    Not indexed for search yet — open View to read the spreadsheet, or click Reprocess to index it.
+                    Not indexed for search yet. Open View to read the spreadsheet, or click Reprocess to index it.
                   </p>
                 )}
                 {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (

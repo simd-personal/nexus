@@ -65,7 +65,7 @@ export async function recoverAccountAfterEmailRateLimit(
     return {
       recovered: true,
       message:
-        'Email confirmation is complete. Sign in with your email and password — no confirmation email was needed.',
+        'Email confirmation is complete. Sign in with your email and password. No confirmation email was needed.',
     };
   }
 
@@ -88,6 +88,6 @@ export async function recoverAccountAfterEmailRateLimit(
   return {
     recovered: true,
     message:
-      'Account created. Sign in with your email and password — confirmation email was skipped due to send limits.',
+      'Account created. Sign in with your email and password. Confirmation email was skipped due to send limits.',
   };
 }

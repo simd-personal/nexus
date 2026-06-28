@@ -17,7 +17,7 @@ export default async function AskSunnyPage({
       projectId={id}
       initialMessages={latestChat?.messages ?? []}
       initialSessionId={latestChat?.session.id}
-      projectName={project ? `${project.client_name} — ${project.project_name}` : undefined}
+      projectName={project ? `${project.client_name} · ${project.project_name}` : undefined}
     />
   );
 }

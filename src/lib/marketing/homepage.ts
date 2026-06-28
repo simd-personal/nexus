@@ -3,15 +3,15 @@ import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 export const HOME_AUDIENCES = [
   {
     title: 'Solo consultants',
-    body: 'Your first AI employee on client number one — then hire more capacity as your book of business grows.',
+    body: 'Your first AI employee on client number one, then more capacity as your book of business grows.',
   },
   {
     title: 'Fractional executives',
-    body: 'A chief-of-staff-level AI employee who has read every stakeholder email, deck, and meeting.',
+    body: 'A chief of staff level AI employee who has read every stakeholder email, deck, and meeting.',
   },
   {
     title: 'Small agency leads',
-    body: 'Give every delivery lead an AI employee with shared client context — before you need enterprise software.',
+    body: 'Give every delivery lead an AI employee with shared client context before you need enterprise software.',
   },
 ] as const;
 
@@ -19,12 +19,12 @@ export const HOME_WORKFLOW_STEPS = [
   {
     step: '01',
     title: 'Onboard your AI employee',
-    body: `Create a project per client and upload meetings, decks, emails, and notes — ${AI_EMPLOYEE_NAME}'s workspace.`,
+    body: `Create a project per client and upload meetings, decks, emails, and notes into ${AI_EMPLOYEE_NAME}'s workspace.`,
   },
   {
     step: '02',
     title: `${AI_EMPLOYEE_NAME} does the reading`,
-    body: 'Briefs, risks, contradictions, and follow-ups surface from your real files — not a blank prompt.',
+    body: 'Briefs, risks, contradictions, and follow ups surface from your real files, not a blank prompt.',
   },
   {
     step: '03',
@@ -34,17 +34,17 @@ export const HOME_WORKFLOW_STEPS = [
 ] as const;
 
 export const HOME_AI_POINTS = [
-  'Latest GPT and Claude models — routed automatically, included in your plan',
+  'Latest GPT and Claude models, routed automatically and included in your plan',
   'No separate ChatGPT Plus or Claude Pro subscription',
-  'Your AI employee cites uploads — not invented client facts',
-  'New skills and integrations added over time — your employee gets sharper',
+  'Your AI employee cites uploads, not invented client facts',
+  'New skills and integrations added over time so your employee gets sharper',
 ] as const;
 
 export const HOME_COMPARISONS = [
   {
     label: 'Generic AI chat',
     examples: 'ChatGPT, Claude',
-    body: 'A chat tab has no memory of your client. An AI employee lives inside every project — with citations.',
+    body: 'A chat tab has no memory of your client. An AI employee lives inside every project with citations.',
   },
   {
     label: 'Project management',

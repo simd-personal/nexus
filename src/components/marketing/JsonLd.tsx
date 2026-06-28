@@ -38,7 +38,7 @@ export function SoftwareApplicationJsonLd() {
     },
     featureList: [
       'First AI employee for client work',
-      `${AI_EMPLOYEE_NAME} — AI employee with full project context`,
+      `${AI_EMPLOYEE_NAME}, AI employee with full project context`,
       'Executive briefs and timelines',
       'Critical item detection',
       'Semantic search across client files',

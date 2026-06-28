@@ -7,12 +7,12 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'For consultants',
   description:
-    'Hire Sunny — your first AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow-ups with cited client intelligence.',
+    'Hire Sunny, your first AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow ups with cited client intelligence.',
   path: '/for-consultants',
   keywords: [
     'AI employee for consultants',
     'freelance consultant software',
-    'multi-client project tool',
+    'multi client project tool',
     'consulting AI assistant',
   ],
 });
@@ -22,14 +22,14 @@ export default function ForConsultantsPage() {
     <MarketingPageLayout
       eyebrow="Solutions"
       title="Your first AI employee for consultants juggling multiple clients"
-      description="You cannot afford to miss a timeline shift, a contradictory deck, or a follow-up buried in email. Hire Sunny — an AI employee who keeps every engagement separate and gets more useful as UpperDeck ships new features."
+      description={`You cannot afford to miss a timeline shift, a contradictory deck, or a follow up buried in email. Hire ${AI_EMPLOYEE_NAME}, an AI employee who keeps every engagement separate and gets more useful as UpperDeck ships new features.`}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container grid gap-12 lg:grid-cols-2">
           <div>
             <h2 className="marketing-section-title">From your first AI employee to a full book of business</h2>
             <p className="marketing-section-body mt-4">
-              Start free with one active client project — your AI employee on a single engagement.
+              Start free with one active client project, your AI employee on a single engagement.
               When you land your second and third client, Pro unlocks unlimited projects and
               unlimited {AI_EMPLOYEE_NAME} so context never bleeds between clients.
             </p>
@@ -38,7 +38,7 @@ export default function ForConsultantsPage() {
                 'Upload meeting notes, decks, and email threads per client',
                 'Get executive briefs before every call',
                 'Spot risks and contradictions across documents',
-                'Draft follow-ups and decks with cited sources',
+                'Draft follow ups and decks with cited sources',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />

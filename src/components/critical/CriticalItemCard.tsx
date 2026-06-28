@@ -32,7 +32,7 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
           <h4 className="text-base font-semibold text-gray-900">{item.title}</h4>
           {showProject && item.project && (
             <Link href={`/projects/${item.project_id}/overview`} className="text-sm text-blue-600 hover:underline">
-              {item.project.client_name} — {item.project.project_name}
+              {item.project.client_name} · {item.project.project_name}
             </Link>
           )}
         </div>
