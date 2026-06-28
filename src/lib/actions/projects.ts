@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient, requireUser } from '@/lib/supabase/server';
+import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
 import { enrichProjectSetup } from '@/lib/ai/sunny';
 import type { ProjectStatus } from '@/types/database';
 
@@ -85,12 +86,14 @@ export async function updateCriticalItemStatus(
 }
 
 export async function deleteProject(projectId: string) {
+  const user = await requireUser();
   const supabase = await createClient();
-  const { error } = await supabase.from('projects').delete().eq('id', projectId);
-  if (error) return { error: error.message };
+  const result = await deleteProjectAndFiles(supabase, projectId, user.id);
+  if (result.error) return { error: result.error };
   revalidatePath('/dashboard');
   revalidatePath('/projects');
-  return { success: true };
+  revalidatePath(`/projects/${projectId}`);
+  return { success: true, deletedFiles: result.deletedFiles ?? 0 };
 }
 
 export async function updateProfile(formData: FormData): Promise<void> {

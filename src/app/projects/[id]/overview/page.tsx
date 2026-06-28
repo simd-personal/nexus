@@ -13,6 +13,7 @@ import {
 import { formatRelativeTime } from '@/lib/utils';
 import { Sun, AlertTriangle, Users, MapPin, CheckSquare } from 'lucide-react';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { DeleteProjectButton } from '@/components/project/DeleteProjectButton';
 
 export default async function ProjectOverviewPage({
   params,
@@ -143,6 +144,18 @@ export default async function ProjectOverviewPage({
           </div>
         </Card>
       )}
+
+      <Card className="border-red-200 bg-red-50/20">
+        <CardHeader
+          title="Danger zone"
+          description="Permanently delete this project, all files, chats, and indexed content."
+        />
+        <DeleteProjectButton
+          projectId={id}
+          projectName={project.project_name}
+          clientName={project.client_name}
+        />
+      </Card>
     </div>
   );
 }
