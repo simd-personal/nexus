@@ -1,0 +1,41 @@
+Adventist Health — June Site Visit
+Date: June 15, 2025, 9:00 AM
+Attendees: Sarah Chen (Client VP), Mike Torres (Client Ops), Sim Patel (Our Team Lead)
+
+Meeting Summary:
+Sarah opened by expressing satisfaction with the current rollout progress. She noted that
+three facilities — Portland Medical Center, Salem Community Hospital, and Eugene Regional —
+are now live and operating smoothly.
+
+"The client is comfortable with the current rollout," Sarah stated. "Response times have
+improved 40% since go-live and staff adoption is at 85%."
+
+Mike confirmed staffing levels are adequate at all live sites. No major concerns were raised
+about response delays or coverage gaps.
+
+Next steps discussed:
+- Schedule follow-up visit to remaining 4 facilities in July
+- Share updated deck with Q2 metrics for board presentation
+- Sim to send recap email by end of day
+
+Facilities mentioned: Portland Medical Center, Salem Community Hospital, Eugene Regional,
+Bend Health Campus (planned), Medford Clinic (planned)
+
+Extended discussion notes:
+Sarah reviewed Q2 metrics slide by slide. Adoption charts show Eugene leading, Portland and Salem within five points. Sarah wants board narrative focused on transformation momentum.
+
+Mike Torres agreed publicly with rollout comfort language. Private follow up expected on peak hour coverage per later email thread.
+
+Training completion rates: Eugene 92 percent, Portland 86 percent, Salem 84 percent. Target 90 percent before Bend launch.
+
+Board deck deadline June 20 for Sarah review. September board presentation is executive milestone.
+
+Sim Patel committed to recap email same day and upload of meeting notes to BriefNexus project workspace.
+
+Risk mentions in meeting were soft: monitoring staffing at high volume sites, watching Bend timeline.
+
+People referenced: Sarah Chen VP Transformation, Mike Torres Director Operations, Sim Patel delivery lead, nursing directors not present in morning session.
+
+This document should be read alongside afternoon-email-concerns.txt and portland-escalation-call.vtt where operations concerns appear in sharper detail.
+
+End meeting notes.

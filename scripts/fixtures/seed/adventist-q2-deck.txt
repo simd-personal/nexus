@@ -1,0 +1,51 @@
+Adventist Health — Q2 Rollout Update Deck
+Page 1: Executive Summary
+
+Client: Adventist Health
+Project: Multi-Facility Digital Rollout
+Status: On Track (3 of 7 facilities live)
+
+Key Metrics:
+- 3 facilities live: Portland, Salem, Eugene
+- 85% staff adoption rate
+- 40% improvement in response times
+- 4 remaining facilities targeted for Q3
+
+Page 2: Facility Status
+
+Portland Medical Center — LIVE — Healthy
+Salem Community Hospital — LIVE — Healthy
+Eugene Regional — LIVE — Healthy
+Bend Health Campus — PLANNED — July 2025
+Medford Clinic — PLANNED — August 2025
+Roseburg Medical — PLANNED — September 2025
+Grants Pass Community — PLANNED — October 2025
+
+Page 3: Risks & Mitigations
+
+Risk: Staffing gaps at high-volume sites
+Mitigation: Additional training sessions scheduled
+Status: Monitoring
+
+Risk: Board presentation timeline
+Mitigation: Deck ready for Sarah's review by June 20
+Status: On track
+
+Page 4: Training and Adoption Detail
+
+Eugene Regional training completion 92 percent. Portland 86 percent. Salem 84 percent.
+Float pool pilot proposed for Portland and Salem July cohort.
+
+Page 5: Communications Plan
+
+Weekly status to Sarah Chen. Operations escalations routed to Mike Torres daily standup.
+Board narrative emphasizes transformation momentum and live site count.
+
+Page 6: Upcoming Milestones
+
+June 20 deck review with Sarah. June 30 Bend staffing gate. July 22 Bend go live target.
+September executive board presentation.
+
+Note for internal teams: deck language on Portland and Salem health status may differ from peak hour escalation emails. Align before external distribution.
+
+End deck outline.

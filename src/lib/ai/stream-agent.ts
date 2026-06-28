@@ -9,6 +9,7 @@ import {
   EMAIL_SYSTEM_PROMPT,
   PLAYBOOK_SYSTEM_PROMPT,
   PROSE_STYLE_GUIDE,
+  STYLE_GUIDE,
   filterSubstantiveChunks,
 } from './generation-prompts';
 import type {

@@ -1,0 +1,70 @@
+From: lisa.park@acmecorp.com
+To: sim.patel@acmecorp.com; maria.santos@acmecorp.com
+Date: June 25, 2025, 7:42 AM
+Subject: ROI model inputs needed before June 28 exec prep
+
+Sim and Maria,
+
+Please update the west region ROI model before tomorrow's prep session. Board members will ask sharp questions on Denver payback and Phoenix conditions.
+
+Required updates:
+1. Denver break even month fourteen base case with Apex partial staffing scenario.
+2. Phoenix delay scenario pushing launch one quarter if GM hire slips past July 8 recruiting kickoff.
+3. Vendor migration overrun scenario adding four hundred thousand if August analytics cutover misses window.
+
+Assumptions to document explicitly:
+West division revenue growth twelve percent year over year per David Chen forecast.
+Vendor spend baseline four point two million across fourteen vendors.
+Duplicate capability estimate twenty three percent from Nora PMO inventory June 20.
+
+Sensitivity tabs must be board ready not analyst rough. Charts should match acme-q3-board-pack.pdf executive summary numbers exactly.
+
+Thanks,
+Lisa Park
+CFO, Acme Corp
+
+---
+
+From: sim.patel@acmecorp.com
+To: lisa.park@acmecorp.com
+Cc: maria.santos@acmecorp.com; nora.ali@acmecorp.com
+Date: June 25, 2025, 11:15 AM
+Subject: RE: ROI model inputs needed before June 28 exec prep
+
+Lisa,
+
+Finance team is on it. Draft circulation tomorrow morning as committed on the June 27 executive call.
+
+Denver site visit notes June 18 highlight hiring risk. Kevin Brooks recommends Apex for two senior consultants to protect September 9 Pacific Northwest Health go live. I will reflect that as optional capex in the Apex scenario tab.
+
+Maria, can you confirm July 15 vendor readiness gate owners by end of day?
+
+Sim
+
+---
+
+From: maria.santos@acmecorp.com
+To: sim.patel@acmecorp.com; lisa.park@acmecorp.com
+Date: June 25, 2025, 4:03 PM
+Subject: RE: ROI model inputs needed before June 28 exec prep
+
+Lisa,
+
+July 15 readiness owners assigned: Nora Ali migration runbooks, Kevin Brooks Denver staffing, David Chen client communication approvals.
+
+Reminder: external board narrative must match operations reality. Portland lessons apply. Leadership positive tone in meetings sometimes precedes escalation emails by forty eight hours. We are building facility dashboards to catch that gap.
+
+Maria
+
+---
+
+From: lisa.park@acmecorp.com
+To: maria.santos@acmecorp.com
+Date: June 26, 2025, 8:01 AM
+Subject: RE: ROI model inputs needed before June 28 exec prep
+
+Maria,
+
+Understood on dashboards. Finance still needs a single ROI story June 28. No mixed messages on Denver payback or Phoenix GM dependency.
+
+Lisa

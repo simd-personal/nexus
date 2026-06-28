@@ -1,0 +1,79 @@
+Acme Corp — Denver Site Visit Notes
+Date: June 18, 2025
+Location: LoDo office candidate site, 1800 Wazee Street
+Attendees: Sim Patel (Delivery Lead), Kevin Brooks (West Region GM), Nora Ali (Vendor PMO), Apex Systems team (4), Acme facilities (2)
+
+Visit Summary:
+The Denver expansion timeline approved March 15 remains achievable if hiring begins by July 5. The LoDo facility offers 22,000 square feet with expansion option on floor twelve. Network infrastructure assessment completed June 10 with no blockers.
+
+Facilities walkthrough notes:
+Loading dock access is adequate for equipment deliveries. HVAC upgrade required before September occupancy. Security badge system integrates with Acme corporate SSO. Visitor management matches Phoenix template.
+
+Hiring and staffing:
+Target eighteen FTE by September: six senior implementation consultants, four client success managers, three solution architects, five operations coordinators. Apex Systems proposal dated June 18 offers four senior consultants by August 1 at premium rates. Internal bench could cover two senior roles by September 15 at lower cost but with schedule risk.
+
+Kevin Brooks assessment:
+Denver labor market is tight for healthcare implementation talent. Recommend approving Apex for at least two senior consultants to protect August client commitments. Internal recruiting should parallel Apex onboarding to build long term bench.
+
+Client commitments tied to Denver launch:
+Enterprise client Pacific Northwest Health expects go live support the week of September 9. Client asked for executive sponsor presence on advisory call. Mountain States Insurance requested proof of vendor consolidation stability before contract renewal October 1.
+
+Vendor consolidation implications for Denver:
+Denver team will use consolidated analytics stack after August 30 phase one migration. Training for Denver hires must include cutover runbooks before client facing work. Nora Ali to schedule training week of August 19.
+
+Financial notes from Lisa Park email June 25:
+Denver break even month fourteen in base ROI case. Delaying two senior hires pushes break even to month sixteen. Apex premium adds three hundred thousand year one but reduces delay risk on Pacific Northwest Health go live.
+
+Risks identified on site:
+Construction permit timing for HVAC could slip occupancy one week. Apex bench depth uncertain if second healthcare logo closes in Denver market. Competition for nurses and clinical workflow trainers in Colorado front range.
+
+Mitigations discussed:
+Pre order long lead HVAC components by June 28. Dual track Apex and internal recruiting through July 15 gate. Schedule Pacific Northwest Health readiness review August 26.
+
+Action items:
+Sim Patel to publish hiring decision memo comparing Apex vs internal by July 1.
+Kevin Brooks to finalize Denver org chart and reporting lines by July 3.
+Nora Ali to align Denver training calendar with August 30 analytics cutover.
+Facilities to confirm HVAC permit status weekly until occupancy.
+
+Facilities mentioned: Denver LoDo 1800 Wazee, Phoenix Tempe satellite, Salt Lake feasibility office TBD.
+
+People mentioned: Sim Patel, Kevin Brooks, Nora Ali, Lisa Park, James Wright, Apex Systems account lead Rachel Kim.
+
+Contradiction watch:
+Morning executive prep deck states Denver hiring on track. Site visit notes document tight labor market and potential September slip without Apex approval. Finance stress case assumes month sixteen break even if hiring slips two weeks.
+
+Next visit: July 16 post July 15 vendor readiness review.
+
+Detailed room by room notes:
+Floor 10 open plan supports 120 workstations. Conference rooms A through D have video conferencing kits installed. Server closet meets Acme security baseline. Kitchen and breakout areas adequate for onboarding cohorts of fifteen.
+
+Neighborhood context:
+LoDo access to Union Station supports client visits from out of state. Parking allocation includes 40 reserved spots. Local lunch options adequate for all day workshops.
+
+Training space requirements:
+Room C fits 24 for vendor cutover training. Room D fits 12 for executive briefings. Recommend booking Room C August 19 through August 23 for consolidated onboarding.
+
+Equipment orders:
+Forty laptops on hold pending headcount approval. Two portable AV kits for client demos. Badge printer on order with two week lead time.
+
+Open questions for June 28 executive sync:
+Approve Apex partial staffing? Confirm September 9 client go live? Align board narrative with hiring risk transparency?
+
+Sim Patel closing comment:
+Upload these notes to Q3 Business Review project within 24 hours so Sunny indexing captures Denver details before board pack finalization.
+
+Extended stakeholder quotes:
+Kevin Brooks: We win Denver if we staff senior roles before August client commitments harden.
+Nora Ali: Cutover training is the hidden dependency. Badges and laptops mean nothing if CSMs cannot run migration runbooks.
+Apex Rachel Kim: We can flex a fifth consultant in September if Pacific Northwest Health adds scope.
+
+Reference metrics from onsite dashboard preview:
+Denver target response time under 30 minutes for implementation tickets. Training completion target 95 percent before client go live. Vendor ticket volume expected to drop 18 percent post analytics consolidation.
+
+Cross links to other project files:
+Read alongside acme-q3-executive-sync.vtt for board alignment context.
+Read alongside acme-cfo-email-thread.txt for ROI sensitivity assumptions.
+Read alongside acme-q3-board-pack.pdf for official executive summary numbers.
+
+End of site visit notes.

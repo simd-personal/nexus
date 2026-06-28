@@ -1,0 +1,60 @@
+Acme Corp Vendor Consolidation Operating Memo
+Author: Nora Ali, Vendor PMO
+Date: June 20, 2025
+Distribution: Executive team, Client Success, IT, Legal
+
+Purpose:
+This memo defines the Q3 vendor consolidation program that Maria Santos identified as the top operating priority on the June 27 executive sync. It supports board materials in acme-q3-board-pack.pdf and should be used by Sunny for action item and risk questions.
+
+Current state inventory:
+Acme operates fourteen SaaS vendors across CRM, ticketing, analytics, document workflow, and legacy reporting. Annual run rate approximately four point two million. PMO assessment estimates twenty three percent duplicate capability. Legal completed redlines on primary SaaS agreement June 20.
+
+Target state:
+Six strategic vendors by Q1 next year. Reduced integration surface area. Standardized client success workflows. Predictable cutover windows with rollback plans.
+
+Phase one analytics migration:
+Target date August 30. Weekend cutover windows August 17 and August 24. Training for client success managers week of August 12. Dependencies: data mapping complete July 28, UAT signoff August 10, executive communication template approved July 3.
+
+Phase two customer success tooling:
+Target date October 15. Includes ticketing merge and knowledge base migration. Dependencies: phase one stable for thirty days, staffing plan approved for October training cohort.
+
+July 15 readiness gate:
+Maria Santos will not sign cutover until migration runbooks, rollback tests, and client communication templates are complete. Owners: Nora Ali runbooks due July 10, David Chen client templates due July 3, IT security review due July 12.
+
+Risk register:
+Training slip pushes cutover slip. Enterprise clients sensitive to reporting gaps during weekends. Overtime costs if August window missed estimated four hundred thousand per Lisa Park stress case.
+
+Client communication principles:
+No surprise downtime. Named executive sponsor on advisory calls. Single FAQ maintained by client success. Denver and Phoenix launches must reference consolidated stack readiness.
+
+Staffing interactions:
+Denver hiring plan depends on consultants trained on new analytics stack. Apex Systems can provide cutover experienced consultants if approved July 5. Internal bench requires August training completion before client facing work.
+
+Financial interactions:
+ROI model must capture migration overtime and Apex premium scenarios. Vendor spend reduction realized Q2 next year earliest. Do not promise savings in Q3 board slides.
+
+Action items from this memo:
+Nora Ali publish runbook index June 30.
+Kevin Brooks confirm Denver trainers available August 19 week.
+Sim Patel upload memo to Q3 Business Review project workspace.
+Legal finalize effective dates for two phase two contracts by July 8.
+
+Facilities and regions referenced:
+Denver LoDo, Phoenix Tempe satellite, Portland client reference site, Salem workflow pilot referenced in cross client lessons.
+
+People referenced:
+Maria Santos COO, Nora Ali PMO, Lisa Park CFO, David Chen CRO, James Wright CEO, Sim Patel delivery, Kevin Brooks Denver GM.
+
+Success metrics:
+Cutover with zero Sev1 incidents. Ninety five percent CSM training completion pre cutover. Client NPS stable within two points through migration quarter.
+
+Failure modes:
+Rolling back August cutover would delay Denver client commitments and undermine board narrative on operational discipline.
+
+Escalation path:
+Sev2 during cutover weekend escalates to Maria Santos and on call IT director. Sev1 includes James Wright notification within thirty minutes.
+
+Document control:
+Version 1.0 June 20. Next review July 15 gate. Supersedes May vendor inventory spreadsheet.
+
+End memo.
