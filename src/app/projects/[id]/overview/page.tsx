@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { CriticalItemsList } from '@/components/critical/CriticalItemCard';
 import { StatusBadge } from '@/components/ui/Badge';
@@ -41,7 +42,7 @@ export default async function ProjectOverviewPage({
         <Card className="lg:col-span-2">
           <CardHeader title={`${AI_EMPLOYEE_NAME}'s Summary`} />
           {project.last_summary ? (
-            <p className="text-sm text-gray-700">{project.last_summary}</p>
+            <p className="text-sm text-gray-700">{formatNaturalSummary(project.last_summary)}</p>
           ) : (
             <p className="text-sm text-gray-500">
               No summary yet. Upload project materials for {AI_EMPLOYEE_NAME} to analyze.

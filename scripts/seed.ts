@@ -12,9 +12,12 @@
  * Security: Uses service role key — never run in browser or expose to client.
  */
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+import { resolve } from 'path';
 import { createClient } from '@supabase/supabase-js';
 import { processFile } from '../src/lib/processing/pipeline';
+
+config({ path: resolve(process.cwd(), '.env.local') });
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

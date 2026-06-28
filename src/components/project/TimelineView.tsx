@@ -1,3 +1,4 @@
+import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { formatRelativeTime } from '@/lib/utils';
 import type { TimelineEvent } from '@/types/database';
 import {
@@ -53,7 +54,11 @@ export function TimelineView({ events }: { events: TimelineEvent[] }) {
                 </div>
                 <h4 className="text-sm font-medium text-gray-900 mt-0.5">{event.title}</h4>
                 {event.description && (
-                  <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {event.event_type === 'sunny_summary' || event.event_type === 'contradiction'
+                      ? formatNaturalSummary(event.description)
+                      : event.description}
+                  </p>
                 )}
               </div>
             </div>

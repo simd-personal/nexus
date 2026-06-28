@@ -31,7 +31,7 @@ export async function createProject(formData: FormData) {
     enrichedDescription = enriched.description || enrichedDescription;
     initialSummary = enriched.initial_summary || null;
   } catch {
-    // Claude enrichment is optional — project still creates without it
+    // GPT enrichment is optional — project still creates without it
   }
 
   const { data, error } = await supabase

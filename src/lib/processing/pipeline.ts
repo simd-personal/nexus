@@ -14,6 +14,7 @@ import {
   parseEmailBody,
 } from '@/lib/processing/extract';
 import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constants';
+import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { normalizeEntityName } from '@/lib/utils';
 import type { Citation, SourceType } from '@/types/database';
 
@@ -215,8 +216,8 @@ export async function processFile(options: ProcessFileOptions): Promise<void> {
         project_id: projectId,
         title: `New ${sourceType} processed: ${fileName}`,
         summary,
-        why_it_matters: 'New project material has been added and indexed.',
-        suggested_action: 'Review the uploaded content for any follow-up needed.',
+        why_it_matters: formatNaturalSummary('New project material has been added and indexed.'),
+        suggested_action: formatNaturalSummary('Review the uploaded content for any follow-up needed.'),
         source_citations: [{ file_name: fileName, snippet: summary }] as Citation[],
       });
     }

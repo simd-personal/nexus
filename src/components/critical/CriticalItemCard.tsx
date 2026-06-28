@@ -5,6 +5,7 @@ import { CitationsList } from '@/components/ui/Citations';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { updateCriticalItemStatus } from '@/lib/actions/projects';
+import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import type { CriticalItem } from '@/types/database';
 import Link from 'next/link';
 
@@ -37,19 +38,19 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
         </div>
       </div>
 
-      <p className="text-sm text-gray-700 mb-3">{item.summary}</p>
+      <p className="text-sm text-gray-700 mb-3">{formatNaturalSummary(item.summary)}</p>
 
       {item.sunny_reasoning && (
         <div className="bg-amber-50 rounded-lg p-3 mb-3">
           <p className="text-xs font-medium text-amber-800 mb-1">Why Sunny flagged this</p>
-          <p className="text-sm text-amber-900">{item.sunny_reasoning}</p>
+          <p className="text-sm text-amber-900">{formatNaturalSummary(item.sunny_reasoning)}</p>
         </div>
       )}
 
       {item.suggested_next_action && (
         <div className="mb-3">
           <p className="text-xs font-medium text-gray-500 mb-1">Suggested next action</p>
-          <p className="text-sm text-gray-700">{item.suggested_next_action}</p>
+          <p className="text-sm text-gray-700">{formatNaturalSummary(item.suggested_next_action)}</p>
           {item.suggested_owner && (
             <p className="text-xs text-gray-500 mt-1">Suggested owner: {item.suggested_owner}</p>
           )}

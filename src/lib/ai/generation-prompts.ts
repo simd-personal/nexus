@@ -9,6 +9,14 @@ export const STYLE_GUIDE = `Writing style:
 - Use plain hyphen bullets (-) and markdown headings (##) only where they genuinely help readability.
 - Avoid filler, hedging, and repeated disclaimers.`;
 
+/** Plain prose for summaries, updates, and brief status text — copy-paste ready. */
+export const SUMMARY_STYLE_GUIDE = `Summary writing style:
+- Write in natural, flowing prose paragraphs only. Sound like a sharp colleague briefing an executive.
+- Never use asterisks, markdown, headings, numbered lists, or bullet points.
+- Never use dashes of any kind: no hyphen bullets, no em dashes, no en dashes.
+- Connect ideas with complete sentences and commas or periods instead of lists.
+- Keep it concise and copy-paste ready with no formatting symbols.`;
+
 /** Removes markdown asterisk emphasis so responses read as natural prose. */
 export function stripEmphasis(text: string): string {
   if (!text) return text;
@@ -17,6 +25,35 @@ export function stripEmphasis(text: string): string {
     .replace(/\*\*(.+?)\*\*/g, '$1')
     .replace(/\*(?!\s)([^*\n]+?)(?<!\s)\*/g, '$1')
     .replace(/\*/g, '');
+}
+
+/** Normalize AI summary text to plain, copy-paste-ready prose. */
+export function formatNaturalSummary(text: string): string {
+  if (!text) return text;
+
+  let result = stripEmphasis(text)
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[\-*•]\s+/gm, '')
+    .replace(/^\s*\d+[.)]\s+/gm, '')
+    .replace(/^-{3,}$/gm, '')
+    .replace(/\s*[—–]\s*/g, '. ')
+    .replace(/\s+-\s+(?=[A-Za-z])/g, '. ')
+    .replace(/([a-zA-Z])-(?=[a-zA-Z])/g, '$1 ')
+    .replace(/\*\s+/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\.\s*\./g, '.')
+    .trim();
+
+  if (result.includes('\n')) {
+    result = result
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .join(' ');
+  }
+
+  return result;
 }
 
 const TEST_FILE_PATTERN = /sample[-_.]|test[-_]upload|upload[-_]test|fixture|lorem ipsum/i;

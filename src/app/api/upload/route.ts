@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
         file_type: file?.type ?? 'text/plain',
         source_type: sourceType,
         storage_path: storagePath,
+        extracted_text: pastedText?.trim() || null,
         status: 'pending',
       })
       .select()

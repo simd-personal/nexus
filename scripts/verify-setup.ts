@@ -56,10 +56,11 @@ for (const { key, default: def } of optional) {
   console.log(`✓  ${key} (${value})`);
 }
 
-console.log('\nDatabase (run once in Supabase SQL Editor):');
+console.log('\nDatabase (already applied on Supabase cloud):');
 console.log('  1. supabase/migrations/001_initial_schema.sql');
 console.log('  2. supabase/migrations/002_storage_bucket.sql');
-console.log('  3. Storage → New bucket → name: briefnexus-files → Private');
+console.log('  3. supabase/migrations/003_fix_search.sql');
+console.log('  4. supabase/migrations/004_chat_sessions.sql');
 
 if (!ok) {
   console.log('\n⚠ Edit .env.local with real values, then run this again.');

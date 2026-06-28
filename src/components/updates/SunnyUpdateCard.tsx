@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/Card';
 import { CitationsList } from '@/components/ui/Citations';
+import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { formatRelativeTime } from '@/lib/utils';
 import type { SunnyUpdate } from '@/types/database';
 import { Sun } from 'lucide-react';
@@ -27,19 +28,19 @@ export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
             </Link>
           )}
 
-          <p className="text-sm text-gray-700 mt-2">{update.summary}</p>
+          <p className="text-sm text-gray-700 mt-2">{formatNaturalSummary(update.summary)}</p>
 
           {update.why_it_matters && (
             <div className="mt-3 bg-gray-50 rounded-lg p-3">
               <p className="text-xs font-medium text-gray-500 mb-1">Why it matters</p>
-              <p className="text-sm text-gray-700">{update.why_it_matters}</p>
+              <p className="text-sm text-gray-700">{formatNaturalSummary(update.why_it_matters)}</p>
             </div>
           )}
 
           {update.suggested_action && (
             <div className="mt-3">
               <p className="text-xs font-medium text-gray-500 mb-1">Suggested action</p>
-              <p className="text-sm text-gray-700">{update.suggested_action}</p>
+              <p className="text-sm text-gray-700">{formatNaturalSummary(update.suggested_action)}</p>
             </div>
           )}
 

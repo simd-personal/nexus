@@ -7,6 +7,7 @@ import {
 } from '@/lib/ai/deck-format';
 import {
   filterSubstantiveChunks,
+  formatNaturalSummary,
   isSubstantiveSource,
   stripEmphasis,
 } from '@/lib/ai/generation-prompts';
@@ -133,5 +134,22 @@ describe('natural language sanitizer', () => {
   it('leaves clean prose untouched', () => {
     const clean = 'Board aligned on west region expansion and approved Denver.';
     expect(stripEmphasis(clean)).toBe(clean);
+  });
+
+  it('formats summaries as plain copy-paste prose', () => {
+    const raw = `## Key findings\n- **Revenue** is up 12 percent\n- Client wants follow-up on Denver`;
+    expect(formatNaturalSummary(raw)).toBe(
+      'Key findings Revenue is up 12 percent Client wants follow up on Denver'
+    );
+  });
+
+  it('removes em dashes and bullet dashes from summaries', () => {
+    expect(formatNaturalSummary('Timeline slipped — client expects update')).toBe(
+      'Timeline slipped. client expects update'
+    );
+  });
+
+  it('removes asterisks from summaries', () => {
+    expect(formatNaturalSummary('Priority: **vendor consolidation** this quarter')).not.toContain('*');
   });
 });
