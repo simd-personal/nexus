@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import {
@@ -6,6 +7,7 @@ import {
   type InboundEmailPayload,
 } from '@/lib/inbound/parse-payload';
 import { ingestInboundEmail, resolveInboundTarget } from '@/lib/inbound/ingest';
+import { previewInboundBody, storePendingInboundPayload } from '@/lib/inbound/pending-payload';
 
 export const maxDuration = 60;
 
@@ -49,49 +51,79 @@ export async function POST(request: NextRequest) {
     const supabase = createServiceClient();
     const resolved = await resolveInboundTarget(supabase, payload);
 
-    if ('error' in resolved) {
+    if (resolved.status === 'rejected') {
       await supabase.from('inbound_email_events').insert({
         project_id: null,
         owner_id: null,
         from_address: payload.from,
         subject: payload.subject,
         status: 'unmatched',
-        detail: resolved.error,
+        detail: resolved.detail,
+        body_preview: previewInboundBody(payload),
+        attachment_count: payload.attachments.length,
       });
-      return NextResponse.json({ error: resolved.error }, { status: 422 });
+      return NextResponse.json({ error: resolved.detail }, { status: 422 });
     }
 
-    const ingested = await ingestInboundEmail(supabase, resolved, payload);
+    if (resolved.status === 'pending_assignment') {
+      const eventId = randomUUID();
+      const payloadStoragePath = await storePendingInboundPayload(eventId, payload);
+
+      await supabase.from('inbound_email_events').insert({
+        id: eventId,
+        project_id: null,
+        owner_id: resolved.ownerId,
+        from_address: payload.from,
+        subject: payload.subject,
+        status: 'pending_assignment',
+        detail: resolved.detail,
+        body_preview: previewInboundBody(payload),
+        payload_storage_path: payloadStoragePath,
+        attachment_count: payload.attachments.length,
+      });
+
+      return NextResponse.json({
+        ok: true,
+        pending_assignment: true,
+        event_id: eventId,
+      });
+    }
+
+    const ingested = await ingestInboundEmail(supabase, resolved.target, payload);
     if ('error' in ingested) {
       await supabase.from('inbound_email_events').insert({
-        project_id: resolved.projectId,
-        owner_id: resolved.ownerId,
+        project_id: resolved.target.projectId,
+        owner_id: resolved.target.ownerId,
         from_address: payload.from,
         subject: payload.subject,
         status: 'failed',
         detail: ingested.error,
+        body_preview: previewInboundBody(payload),
+        attachment_count: payload.attachments.length,
       });
       return NextResponse.json({ error: ingested.error }, { status: 500 });
     }
 
     await supabase.from('inbound_email_events').insert({
-      project_id: resolved.projectId,
-      owner_id: resolved.ownerId,
+      project_id: resolved.target.projectId,
+      owner_id: resolved.target.ownerId,
       from_address: payload.from,
       subject: payload.subject,
       status: 'processed',
-      detail: `Routed via ${resolved.routing}`,
+      detail: `Routed via ${resolved.target.routing}`,
       file_ids: ingested.fileIds,
+      body_preview: previewInboundBody(payload),
+      attachment_count: payload.attachments.length,
     });
 
     await supabase
       .from('projects')
       .update({ last_activity_at: new Date().toISOString() })
-      .eq('id', resolved.projectId);
+      .eq('id', resolved.target.projectId);
 
     return NextResponse.json({
       ok: true,
-      project_id: resolved.projectId,
+      project_id: resolved.target.projectId,
       file_ids: ingested.fileIds,
     });
   } catch (error) {

@@ -16,6 +16,7 @@ import type {
   ChatMessage,
   ChatSession,
   GeneratedDocument,
+  InboundEmailEvent,
 } from '@/types/database';
 
 async function enrichProjectStats(
@@ -177,6 +178,25 @@ export async function getSunnyUpdates(limit?: number): Promise<SunnyUpdate[]> {
     .filter((update) => sunnyUpdateStillValid(update, filesByProject));
 
   return limit ? validUpdates.slice(0, limit) : validUpdates;
+}
+
+export async function getPendingInboundEmails(): Promise<InboundEmailEvent[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('inbound_email_events')
+    .select('*')
+    .eq('owner_id', user.id)
+    .eq('status', 'pending_assignment')
+    .order('created_at', { ascending: false })
+    .limit(20);
+
+  return (data ?? []) as InboundEmailEvent[];
 }
 
 export async function getProjectFiles(projectId: string): Promise<FileRecord[]> {

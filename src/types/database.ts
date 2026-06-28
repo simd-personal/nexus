@@ -266,6 +266,28 @@ export interface SunnyChatArtifact {
 
 export type ModelEngine = 'gpt' | 'claude';
 
+export type InboundEmailStatus =
+  | 'processed'
+  | 'failed'
+  | 'unmatched'
+  | 'pending_assignment'
+  | 'dismissed';
+
+export interface InboundEmailEvent {
+  id: string;
+  project_id: string | null;
+  owner_id: string | null;
+  from_address: string | null;
+  subject: string | null;
+  status: InboundEmailStatus;
+  detail: string | null;
+  file_ids: string[];
+  body_preview: string | null;
+  payload_storage_path: string | null;
+  attachment_count: number;
+  created_at: string;
+}
+
 /** User-facing model choice: auto-route, or force one provider. */
 export type ModelPreference = 'auto' | 'gpt' | 'claude';
 

@@ -14,16 +14,24 @@ import { sanitizeUploadFileName } from '@/lib/upload/client';
 export interface ResolvedInboundTarget {
   projectId: string;
   ownerId: string;
-  routing: 'project_address' | 'user_address';
+  routing: 'project_address' | 'user_address' | 'manual_assignment';
 }
+
+export type ResolveInboundResult =
+  | { status: 'matched'; target: ResolvedInboundTarget }
+  | { status: 'pending_assignment'; ownerId: string; detail: string }
+  | { status: 'rejected'; detail: string };
+
+const PENDING_ASSIGNMENT_DETAIL =
+  'Could not determine which project this email belongs to. Assign it from your dashboard or include the client and project name in the subject.';
 
 export async function resolveInboundTarget(
   supabase: SupabaseClient,
   payload: InboundEmailPayload
-): Promise<ResolvedInboundTarget | { error: string }> {
+): Promise<ResolveInboundResult> {
   const recipients = extractInboundRecipients(payload.to);
   if (!recipients.length) {
-    return { error: 'No inbound UpperDeck address found in recipients' };
+    return { status: 'rejected', detail: 'No inbound UpperDeck address found in recipients' };
   }
 
   for (const recipient of recipients) {
@@ -36,9 +44,12 @@ export async function resolveInboundTarget(
 
       if (project) {
         return {
-          projectId: project.id,
-          ownerId: project.owner_id,
-          routing: 'project_address',
+          status: 'matched',
+          target: {
+            projectId: project.id,
+            ownerId: project.owner_id,
+            routing: 'project_address',
+          },
         };
       }
     }
@@ -64,19 +75,23 @@ export async function resolveInboundTarget(
     const match = matchProjectFromSubject(payload.subject, projects ?? []);
     if (!match) {
       return {
-        error:
-          'Could not determine which project this email belongs to. Forward to a project-specific address or include the client/project name in the subject.',
+        status: 'pending_assignment',
+        ownerId: profile.user_id,
+        detail: PENDING_ASSIGNMENT_DETAIL,
       };
     }
 
     return {
-      projectId: match.id,
-      ownerId: profile.user_id,
-      routing: 'user_address',
+      status: 'matched',
+      target: {
+        projectId: match.id,
+        ownerId: profile.user_id,
+        routing: 'user_address',
+      },
     };
   }
 
-  return { error: 'Inbound address not recognized' };
+  return { status: 'rejected', detail: 'Inbound address not recognized' };
 }
 
 export async function ingestInboundEmail(

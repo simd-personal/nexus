@@ -4,11 +4,13 @@ import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { CriticalItemsList } from '@/components/critical/CriticalItemCard';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
+import { PendingInboundInbox } from '@/components/dashboard/PendingInboundInbox';
 import {
   getProjectsWithStats,
   getDashboardStats,
   getCriticalItems,
   getSunnyUpdates,
+  getPendingInboundEmails,
 } from '@/lib/data/queries';
 import { TAGLINE } from '@/lib/constants';
 import Link from 'next/link';
@@ -17,11 +19,12 @@ import { Button } from '@/components/ui/Button';
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const [projects, stats, criticalItems, updates] = await Promise.all([
+  const [projects, stats, criticalItems, updates, pendingInboundEmails] = await Promise.all([
     getProjectsWithStats(),
     getDashboardStats(),
     getCriticalItems(5),
     getSunnyUpdates(5),
+    getPendingInboundEmails(),
   ]);
 
   return (
@@ -33,6 +36,8 @@ export default async function DashboardPage() {
         </div>
 
         <GlobalSearchBar className="mb-6 sm:mb-8" />
+
+        <PendingInboundInbox emails={pendingInboundEmails} projects={projects} />
 
         <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3">
           <div className="lg:col-span-1">

@@ -76,7 +76,8 @@ export function EmailForwardSettings() {
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               For a single project every time, use that project&apos;s address on the Files tab instead. No
-              subject matching required.
+              subject matching required. If the subject does not match a project, the email appears on your
+              dashboard so you can assign it manually.
             </p>
           </div>
         </div>
