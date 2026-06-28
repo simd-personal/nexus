@@ -55,14 +55,7 @@ export function PendingInboundEmailPreview({
     selectedIndex === null ? null : attachments.find((item) => item.index === selectedIndex) ?? null;
 
   useEffect(() => {
-    if (!open) {
-      setSelectedIndex(null);
-      setPreviewError('');
-      setPreviewText(null);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-      return;
-    }
+    if (!open) return;
 
     if (attachments.length > 0) {
       setSelectedIndex(attachments[0].index);
@@ -70,6 +63,19 @@ export function PendingInboundEmailPreview({
       setSelectedIndex(null);
     }
   }, [open, emailId, attachments.length]);
+
+  useEffect(() => {
+    if (open) return;
+
+    setSelectedIndex(null);
+    setPreviewLoading(false);
+    setPreviewError('');
+    setPreviewText(null);
+    setPreviewUrl((current) => {
+      if (current) URL.revokeObjectURL(current);
+      return null;
+    });
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -82,25 +88,19 @@ export function PendingInboundEmailPreview({
 
   useEffect(() => {
     const attachment = selectedAttachment;
-    if (!open || !attachment) {
-      setPreviewLoading(false);
-      setPreviewError('');
-      setPreviewText(null);
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-      return;
-    }
+    if (!open || !attachment) return;
 
     const { previewUrl: attachmentPreviewUrl, viewType } = attachment;
     let cancelled = false;
-    const currentUrl = previewUrl;
 
     async function loadPreview() {
       setPreviewLoading(true);
       setPreviewError('');
       setPreviewText(null);
-      if (currentUrl) URL.revokeObjectURL(currentUrl);
-      setPreviewUrl(null);
+      setPreviewUrl((current) => {
+        if (current) URL.revokeObjectURL(current);
+        return null;
+      });
 
       try {
         const res = await fetch(attachmentPreviewUrl);
@@ -135,7 +135,6 @@ export function PendingInboundEmailPreview({
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, selectedAttachment?.index, selectedAttachment?.previewUrl, selectedAttachment?.viewType]);
 
   useEffect(() => {

@@ -15,6 +15,8 @@ export const DEFAULT_THEME_PREFERENCES: ThemePreferences = {
   warmth: 'off',
 };
 
+let themeSnapshot: ThemePreferences = DEFAULT_THEME_PREFERENCES;
+
 export function parseThemeMode(value: string | null): ThemeMode {
   return value === 'dark' ? 'dark' : 'light';
 }
@@ -23,7 +25,7 @@ export function parseWarmthMode(value: string | null): WarmthMode {
   return value === 'on' ? 'on' : 'off';
 }
 
-export function readThemePreferences(): ThemePreferences {
+function readThemePreferencesFromStorage(): ThemePreferences {
   if (typeof window === 'undefined') {
     return DEFAULT_THEME_PREFERENCES;
   }
@@ -32,6 +34,29 @@ export function readThemePreferences(): ThemePreferences {
     theme: parseThemeMode(localStorage.getItem(THEME_STORAGE_KEY)),
     warmth: parseWarmthMode(localStorage.getItem(WARMTH_STORAGE_KEY)),
   };
+}
+
+function preferencesEqual(a: ThemePreferences, b: ThemePreferences): boolean {
+  return a.theme === b.theme && a.warmth === b.warmth;
+}
+
+/** Stable snapshot for useSyncExternalStore — same object reference until values change. */
+export function getThemePreferencesSnapshot(): ThemePreferences {
+  if (typeof window === 'undefined') {
+    return DEFAULT_THEME_PREFERENCES;
+  }
+
+  const next = readThemePreferencesFromStorage();
+  if (preferencesEqual(next, themeSnapshot)) {
+    return themeSnapshot;
+  }
+
+  themeSnapshot = next;
+  return themeSnapshot;
+}
+
+export function readThemePreferences(): ThemePreferences {
+  return getThemePreferencesSnapshot();
 }
 
 export function applyThemePreferences(preferences: ThemePreferences): void {
@@ -44,21 +69,29 @@ export function applyThemePreferences(preferences: ThemePreferences): void {
   root.dataset.warmth = preferences.warmth;
 }
 
+function notifyThemePreferencesChanged(preferences: ThemePreferences): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: preferences }));
+}
+
 export function saveThemePreferences(preferences: ThemePreferences): void {
   if (typeof window === 'undefined') return;
 
   localStorage.setItem(THEME_STORAGE_KEY, preferences.theme);
   localStorage.setItem(WARMTH_STORAGE_KEY, preferences.warmth);
+
+  const changed = !preferencesEqual(preferences, themeSnapshot);
+  themeSnapshot = preferences;
   applyThemePreferences(preferences);
-  window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: preferences }));
+
+  if (changed) {
+    notifyThemePreferencesChanged(preferences);
+  }
 }
 
 export function syncThemePreferences(): ThemePreferences {
-  const preferences = readThemePreferences();
+  const preferences = getThemePreferencesSnapshot();
   applyThemePreferences(preferences);
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent(THEME_CHANGE_EVENT, { detail: preferences }));
-  }
   return preferences;
 }
 

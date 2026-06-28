@@ -9,9 +9,9 @@ import {
 } from 'react';
 import {
   DEFAULT_THEME_PREFERENCES,
+  getThemePreferencesSnapshot,
   readThemePreferences,
   saveThemePreferences,
-  syncThemePreferences,
   THEME_CHANGE_EVENT,
   THEME_STORAGE_KEY,
   WARMTH_STORAGE_KEY,
@@ -37,7 +37,6 @@ function subscribeToThemePreferences(onStoreChange: () => void) {
 
   function handleStorage(event: StorageEvent) {
     if (event.key === THEME_STORAGE_KEY || event.key === WARMTH_STORAGE_KEY) {
-      syncThemePreferences();
       onStoreChange();
     }
   }
@@ -47,7 +46,6 @@ function subscribeToThemePreferences(onStoreChange: () => void) {
   }
 
   function handlePageShow() {
-    syncThemePreferences();
     onStoreChange();
   }
 
@@ -60,13 +58,6 @@ function subscribeToThemePreferences(onStoreChange: () => void) {
     window.removeEventListener('storage', handleStorage);
     window.removeEventListener('pageshow', handlePageShow);
   };
-}
-
-function getThemePreferencesSnapshot(): ThemePreferences {
-  if (typeof window === 'undefined') {
-    return DEFAULT_THEME_PREFERENCES;
-  }
-  return readThemePreferences();
 }
 
 function getThemePreferencesServerSnapshot(): ThemePreferences {

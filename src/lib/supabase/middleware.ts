@@ -26,7 +26,21 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user: authUser },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  let user = authUser;
+  if (
+    authError &&
+    (authError.code === 'refresh_token_not_found' ||
+      authError.message.toLowerCase().includes('refresh token'))
+  ) {
+    await supabase.auth.signOut();
+    user = null;
+  }
+
   const pathname = request.nextUrl.pathname;
 
   const isAuthPage = pathname.startsWith('/login');
