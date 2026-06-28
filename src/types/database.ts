@@ -101,6 +101,7 @@ export interface Project {
   last_summary: string | null;
   last_activity_at: string | null;
   inbound_token: string | null;
+  parent_project_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -112,6 +113,8 @@ export interface ProjectWithStats extends Project {
   action_item_count: number;
   critical_item_count: number;
   last_sunny_update: string | null;
+  sub_project_count?: number;
+  sub_projects?: ProjectWithStats[];
 }
 
 export interface FileRecord {

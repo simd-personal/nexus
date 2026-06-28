@@ -21,9 +21,27 @@ export async function createProject(formData: FormData) {
   const projectName = formData.get('project_name') as string;
   const description = formData.get('description') as string;
   const sunnyNotes = formData.get('sunny_notes') as string;
+  const parentProjectId = (formData.get('parent_project_id') as string)?.trim() || null;
 
   if (!clientName?.trim() || !projectName?.trim()) {
     return { error: 'Client name and project name are required' };
+  }
+
+  let resolvedParentId: string | null = null;
+  if (parentProjectId) {
+    const { data: parent } = await supabase
+      .from('projects')
+      .select('id, owner_id, parent_project_id, client_name')
+      .eq('id', parentProjectId)
+      .single();
+
+    if (!parent || parent.owner_id !== user.id) {
+      return { error: 'Parent program not found' };
+    }
+    if (parent.parent_project_id) {
+      return { error: 'Workstreams can only be added under a top-level program project' };
+    }
+    resolvedParentId = parent.id;
   }
 
   const billing = await getBillingContextForUser(user.id);
@@ -59,6 +77,7 @@ export async function createProject(formData: FormData) {
     .insert({
       owner_id: user.id,
       organization_id: profile?.default_organization_id ?? null,
+      parent_project_id: resolvedParentId,
       client_name: clientName.trim(),
       project_name: projectName.trim(),
       description: enrichedDescription,
@@ -71,6 +90,7 @@ export async function createProject(formData: FormData) {
 
   revalidatePath('/dashboard');
   revalidatePath('/projects');
+  if (resolvedParentId) revalidatePath(`/projects/${resolvedParentId}/overview`);
   return { data };
 }
 

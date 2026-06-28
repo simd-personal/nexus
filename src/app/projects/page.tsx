@@ -5,6 +5,11 @@ import { getProjectsWithStats } from '@/lib/data/queries';
 
 export default async function ProjectsPage() {
   const projects = await getProjectsWithStats();
+  const programOptions = projects.map((project) => ({
+    id: project.id,
+    client_name: project.client_name,
+    project_name: project.project_name,
+  }));
 
   return (
     <AppShell>
@@ -12,9 +17,9 @@ export default async function ProjectsPage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Projects</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage your client projects</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Programs and workstreams for your clients</p>
           </div>
-          <CreateProjectForm />
+          <CreateProjectForm programOptions={programOptions} />
         </div>
 
         {projects.length === 0 ? (

@@ -1,9 +1,10 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProjectLayoutClient } from '@/components/project/ProjectLayoutClient';
 import { ProjectNav } from '@/components/project/ProjectNav';
 import { StatusBadge } from '@/components/ui/Badge';
-import { getProject } from '@/lib/data/queries';
+import { getProject, getParentProject } from '@/lib/data/queries';
 
 export default async function ProjectLayout({
   children,
@@ -17,13 +18,27 @@ export default async function ProjectLayout({
 
   if (!project) notFound();
 
+  const parentProject = await getParentProject(project);
+
   return (
     <AppShell>
       <ProjectLayoutClient projectId={id}>
         <div className="border-b border-gray-200 bg-white px-4 py-4 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] sm:px-8 sm:py-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{project.client_name}</p>
+              {parentProject ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <Link href={`/projects/${parentProject.id}/overview`} className="hover:underline">
+                    {parentProject.client_name} · {parentProject.project_name}
+                  </Link>
+                  {' · Workstream'}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {project.client_name}
+                  {!project.parent_project_id && ' · Program'}
+                </p>
+              )}
               <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{project.project_name}</h1>
             </div>
             <StatusBadge status={project.status} />

@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { nestProjectsWithStats, getProjectFamilyIds } from '@/lib/projects/hierarchy';
 import {
   ensureFreshAppData,
   recordCitationsStillValid,
@@ -17,6 +18,35 @@ import type {
   GeneratedDocument,
 } from '@/types/database';
 
+async function enrichProjectStats(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  project: Record<string, unknown>
+): Promise<ProjectWithStats> {
+  const projectId = project.id as string;
+  const [files, criticalItems, actionItems, sunnyUpdates] = await Promise.all([
+    supabase.from('files').select('id, source_type').eq('project_id', projectId),
+    supabase.from('critical_items').select('id').eq('project_id', projectId).eq('status', 'open'),
+    supabase.from('action_items').select('id').eq('project_id', projectId).eq('status', 'open'),
+    supabase
+      .from('sunny_updates')
+      .select('created_at')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(1),
+  ]);
+
+  const fileList = files.data ?? [];
+  return {
+    ...(project as ProjectWithStats),
+    file_count: fileList.length,
+    meeting_count: fileList.filter((f) => f.source_type === 'meeting' || f.source_type === 'transcript').length,
+    email_count: fileList.filter((f) => f.source_type === 'email').length,
+    action_item_count: actionItems.data?.length ?? 0,
+    critical_item_count: criticalItems.data?.length ?? 0,
+    last_sunny_update: sunnyUpdates.data?.[0]?.created_at ?? null,
+  };
+}
+
 export async function getProjectsWithStats(): Promise<ProjectWithStats[]> {
   const supabase = await createClient();
 
@@ -27,29 +57,37 @@ export async function getProjectsWithStats(): Promise<ProjectWithStats[]> {
 
   if (!projects) return [];
 
-  const enriched = await Promise.all(
-    projects.map(async (project) => {
-      const [files, criticalItems, actionItems, sunnyUpdates] = await Promise.all([
-        supabase.from('files').select('id, source_type').eq('project_id', project.id),
-        supabase.from('critical_items').select('id').eq('project_id', project.id).eq('status', 'open'),
-        supabase.from('action_items').select('id').eq('project_id', project.id).eq('status', 'open'),
-        supabase.from('sunny_updates').select('created_at').eq('project_id', project.id).order('created_at', { ascending: false }).limit(1),
-      ]);
+  const enriched = await Promise.all(projects.map((project) => enrichProjectStats(supabase, project)));
+  return nestProjectsWithStats(enriched);
+}
 
-      const fileList = files.data ?? [];
-      return {
-        ...project,
-        file_count: fileList.length,
-        meeting_count: fileList.filter((f) => f.source_type === 'meeting' || f.source_type === 'transcript').length,
-        email_count: fileList.filter((f) => f.source_type === 'email').length,
-        action_item_count: actionItems.data?.length ?? 0,
-        critical_item_count: criticalItems.data?.length ?? 0,
-        last_sunny_update: sunnyUpdates.data?.[0]?.created_at ?? null,
-      };
-    })
-  );
+export async function getTopLevelProjects(): Promise<ProjectWithStats[]> {
+  const supabase = await createClient();
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .is('parent_project_id', null)
+    .order('project_name', { ascending: true });
 
-  return enriched;
+  if (!projects) return [];
+  return Promise.all(projects.map((project) => enrichProjectStats(supabase, project)));
+}
+
+export async function getSubProjects(parentProjectId: string): Promise<ProjectWithStats[]> {
+  const supabase = await createClient();
+  const { data: projects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('parent_project_id', parentProjectId)
+    .order('project_name', { ascending: true });
+
+  if (!projects) return [];
+  return Promise.all(projects.map((project) => enrichProjectStats(supabase, project)));
+}
+
+export async function getParentProject(project: { parent_project_id: string | null }) {
+  if (!project.parent_project_id) return null;
+  return getProject(project.parent_project_id);
 }
 
 export async function getProject(projectId: string) {
@@ -151,25 +189,42 @@ export async function getProjectFiles(projectId: string): Promise<FileRecord[]> 
   return data ?? [];
 }
 
-export async function getProjectCriticalItems(projectId: string): Promise<CriticalItem[]> {
+export async function getProjectCriticalItems(
+  projectId: string,
+  options?: { includeSubProjects?: boolean }
+): Promise<CriticalItem[]> {
   const supabase = await createClient();
+  const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
+
   const { data } = await supabase
     .from('critical_items')
-    .select('*')
-    .eq('project_id', projectId)
+    .select(
+      options?.includeSubProjects
+        ? '*, projects(client_name, project_name)'
+        : '*'
+    )
+    .in('project_id', projectIds)
     .order('created_at', { ascending: false });
   return (data ?? []).map((item) => ({
     ...item,
     source_citations: item.source_citations ?? [],
+    project: options?.includeSubProjects
+      ? (item.projects as CriticalItem['project'])
+      : undefined,
   }));
 }
 
-export async function getProjectActionItems(projectId: string): Promise<ActionItem[]> {
+export async function getProjectActionItems(
+  projectId: string,
+  options?: { includeSubProjects?: boolean }
+): Promise<ActionItem[]> {
   const supabase = await createClient();
+  const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
+
   const { data } = await supabase
     .from('action_items')
     .select('*')
-    .eq('project_id', projectId)
+    .in('project_id', projectIds)
     .order('created_at', { ascending: false });
   return (data ?? []).map((item) => ({
     ...item,
@@ -177,14 +232,58 @@ export async function getProjectActionItems(projectId: string): Promise<ActionIt
   }));
 }
 
-export async function getProjectTimeline(projectId: string): Promise<TimelineEvent[]> {
+export async function getProjectTimeline(
+  projectId: string,
+  options?: { includeSubProjects?: boolean }
+): Promise<TimelineEvent[]> {
   const supabase = await createClient();
+  const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
+
   const { data } = await supabase
     .from('timeline_events')
     .select('*')
-    .eq('project_id', projectId)
+    .in('project_id', projectIds)
     .order('created_at', { ascending: false });
   return data ?? [];
+}
+
+export async function getProjectEntities(
+  projectId: string,
+  options?: { includeSubProjects?: boolean }
+) {
+  const supabase = await createClient();
+  const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
+
+  const { data } = await supabase
+    .from('entities')
+    .select('*')
+    .in('project_id', projectIds)
+    .order('name');
+  return data ?? [];
+}
+
+async function resolveProjectScopeIds(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  projectId: string,
+  includeSubProjects?: boolean
+): Promise<string[]> {
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, parent_project_id')
+    .eq('id', projectId)
+    .single();
+
+  if (!project) return [projectId];
+  if (project.parent_project_id || !includeSubProjects) {
+    return [projectId];
+  }
+
+  const { data: children } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('parent_project_id', projectId);
+
+  return getProjectFamilyIds(project, children ?? []);
 }
 
 export async function getProjectChatMessages(projectId: string): Promise<ChatMessage[]> {
@@ -256,16 +355,6 @@ export async function getGeneratedDocuments(
     ...doc,
     citations: doc.citations ?? [],
   }));
-}
-
-export async function getProjectEntities(projectId: string) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from('entities')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('name');
-  return data ?? [];
 }
 
 export async function getProfile() {
