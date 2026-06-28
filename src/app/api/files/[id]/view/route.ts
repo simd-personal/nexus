@@ -14,7 +14,7 @@ function inferViewType(fileName: string, mimeType: string): ViewType {
   }
   if (
     mimeType.startsWith('text/') ||
-    ['.txt', '.md', '.csv', '.vtt', '.srt', '.eml'].includes(getFileExtension(lower))
+    ['.txt', '.md', '.markdown', '.csv', '.vtt', '.srt', '.eml'].includes(getFileExtension(lower))
   ) {
     return 'text';
   }

@@ -47,7 +47,7 @@ export const SOURCE_TYPE_LABELS: Record<SourceType, string> = {
 };
 
 export const SUPPORTED_EXTENSIONS = [
-  '.txt', '.md', '.pdf', '.docx', '.csv',
+  '.txt', '.md', '.markdown', '.pdf', '.docx', '.csv',
   '.mp3', '.m4a', '.wav', '.eml',
   '.png', '.jpg', '.jpeg', '.webp',
   '.vtt', '.srt',
@@ -62,6 +62,7 @@ export const TRANSCRIPT_EXTENSIONS = ['.vtt', '.srt'];
 export const MIME_TO_SOURCE: Record<string, SourceType> = {
   'text/plain': 'note',
   'text/markdown': 'note',
+  'text/x-markdown': 'note',
   'application/pdf': 'pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'pdf',
   'text/csv': 'csv',
@@ -96,7 +97,7 @@ export function inferSourceType(fileName: string, mimeType?: string): SourceType
   if (mimeType && MIME_TO_SOURCE[mimeType]) return MIME_TO_SOURCE[mimeType];
   if (lower.endsWith('.pdf')) return 'pdf';
   if (lower.endsWith('.csv')) return 'csv';
-  if (lower.endsWith('.txt') || lower.endsWith('.md')) return 'note';
+  if (lower.endsWith('.txt') || lower.endsWith('.md') || lower.endsWith('.markdown')) return 'note';
   return 'other';
 }
 

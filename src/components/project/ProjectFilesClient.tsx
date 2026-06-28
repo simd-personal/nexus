@@ -33,6 +33,15 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     return () => clearInterval(interval);
   }, [fetchFiles]);
 
+  useEffect(() => {
+    function onUploaded() {
+      fetchFiles();
+      router.refresh();
+    }
+    window.addEventListener('project-files-uploaded', onUploaded);
+    return () => window.removeEventListener('project-files-uploaded', onUploaded);
+  }, [fetchFiles, router]);
+
   function handleUploadComplete() {
     fetchFiles();
     router.refresh();

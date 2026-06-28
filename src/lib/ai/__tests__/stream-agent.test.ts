@@ -1,0 +1,109 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  isCreateAction,
+  resolveEngine,
+  streamSearchAnswer,
+} from '@/lib/ai/stream-agent';
+
+const mockStreamChat = vi.fn();
+const mockStreamLongForm = vi.fn();
+
+vi.mock('@/lib/ai/openai', () => ({
+  OPENAI_MODELS: { chat: 'gpt-5.5' },
+  streamChatCompletion: (...args: unknown[]) => mockStreamChat(...args),
+}));
+
+vi.mock('@/lib/ai/claude', () => ({
+  CLAUDE_MODELS: { brief: 'claude-opus-4-8' },
+  streamLongForm: (...args: unknown[]) => mockStreamLongForm(...args),
+}));
+
+const baseContext = {
+  chunks: [
+    {
+      file_name: 'notes.md',
+      source_type: 'note',
+      text: 'Denver expansion approved by the board.',
+    },
+  ],
+  criticalItems: [],
+  timelineEvents: [],
+  projectSummary: 'Acme Q3 review in progress.',
+};
+
+describe('streamSearchAnswer', () => {
+  beforeEach(() => {
+    mockStreamChat.mockReset();
+    mockStreamLongForm.mockReset();
+    mockStreamChat.mockImplementation(async (_s: string, _u: string, onToken: (t: string) => void) => {
+      onToken('Denver');
+      onToken(' approved.');
+      return 'Denver approved.';
+    });
+    mockStreamLongForm.mockImplementation(async (_s: string, _u: string, onToken: (t: string) => void) => {
+      onToken('Claude says Denver.');
+      return 'Claude says Denver.';
+    });
+  });
+
+  it('streams GPT answers when engine is gpt', async () => {
+    const tokens: string[] = [];
+    const result = await streamSearchAnswer(
+      'What happened in Denver?',
+      baseContext,
+      (t) => tokens.push(t),
+      { engine: 'gpt' }
+    );
+
+    expect(mockStreamChat).toHaveBeenCalledOnce();
+    expect(mockStreamLongForm).not.toHaveBeenCalled();
+    expect(tokens.join('')).toBe('Denver approved.');
+    expect(result.model).toBe('gpt');
+    expect(result.citations).toHaveLength(1);
+    expect(result.confidence).toBe('high');
+  });
+
+  it('streams Claude answers when engine is claude', async () => {
+    await streamSearchAnswer('Denver?', baseContext, () => {}, { engine: 'claude' });
+    expect(mockStreamLongForm).toHaveBeenCalledOnce();
+    expect(mockStreamChat).not.toHaveBeenCalled();
+  });
+
+  it('returns low confidence when no materials exist', async () => {
+    const tokens: string[] = [];
+    const result = await streamSearchAnswer(
+      'Anything?',
+      { chunks: [], criticalItems: [], timelineEvents: [], projectSummary: null },
+      (t) => tokens.push(t)
+    );
+
+    expect(result.confidence).toBe('low');
+    expect(tokens.join('')).toContain('Not enough evidence');
+    expect(mockStreamChat).not.toHaveBeenCalled();
+  });
+
+  it('includes scope instructions in the GPT system prompt', async () => {
+    await streamSearchAnswer('Denver?', baseContext, () => {}, {
+      engine: 'gpt',
+      scopeInstruction: 'Search scope: ONLY Acme project.',
+    });
+
+    const systemPrompt = mockStreamChat.mock.calls[0][0] as string;
+    expect(systemPrompt).toContain('Search scope: ONLY Acme project.');
+  });
+});
+
+describe('create action routing', () => {
+  it('identifies generation actions', () => {
+    expect(isCreateAction('deck')).toBe(true);
+    expect(isCreateAction('brief')).toBe(true);
+    expect(isCreateAction('answer')).toBe(false);
+  });
+
+  it('respects model preference overrides', () => {
+    expect(resolveEngine('gpt', 'create')).toBe('gpt');
+    expect(resolveEngine('claude', 'answer')).toBe('claude');
+    expect(resolveEngine('auto', 'answer')).toBe('gpt');
+    expect(resolveEngine('auto', 'create')).toBe('claude');
+  });
+});

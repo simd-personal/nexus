@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createEmbedding } from '@/lib/ai/openai';
 import { runSunnyAgent } from '@/lib/ai/agent';
+import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
 
 export async function POST(request: NextRequest) {
@@ -72,10 +73,15 @@ export async function POST(request: NextRequest) {
       supabase,
     });
 
+    const savedAnswer =
+      response.artifact?.type === 'deck'
+        ? response.answer
+        : formatNaturalProse(response.answer);
+
     await supabase.from('chat_messages').insert({
       project_id,
       role: 'assistant',
-      content: response.answer,
+      content: savedAnswer,
       citations: response.citations,
       metadata: {
         confidence: response.confidence,

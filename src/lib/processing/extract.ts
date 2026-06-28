@@ -63,6 +63,7 @@ export async function extractTextFromBuffer(
   switch (ext) {
     case '.txt':
     case '.md':
+    case '.markdown':
     case '.csv':
     case '.eml':
       return { text: buffer.toString('utf-8') };

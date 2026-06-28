@@ -10,12 +10,16 @@ export const STYLE_GUIDE = `Writing style:
 - Avoid filler, hedging, and repeated disclaimers.`;
 
 /** Plain prose for summaries, updates, and brief status text — copy-paste ready. */
-export const SUMMARY_STYLE_GUIDE = `Summary writing style:
-- Write in natural, flowing prose paragraphs only. Sound like a sharp colleague briefing an executive.
+export const PROSE_STYLE_GUIDE = `Writing style:
+- Write in natural, flowing prose. Sound like a sharp colleague briefing an executive.
 - Never use asterisks, markdown, headings, numbered lists, or bullet points.
 - Never use dashes of any kind: no hyphen bullets, no em dashes, no en dashes.
 - Connect ideas with complete sentences and commas or periods instead of lists.
-- Keep it concise and copy-paste ready with no formatting symbols.`;
+- Keep copy paste ready with no formatting symbols.
+- For longer documents, put each section title on its own line, then write prose paragraphs below it. Separate sections with a blank line.`;
+
+/** @deprecated alias */
+export const SUMMARY_STYLE_GUIDE = PROSE_STYLE_GUIDE;
 
 /** Removes markdown asterisk emphasis so responses read as natural prose. */
 export function stripEmphasis(text: string): string {
@@ -56,6 +60,19 @@ export function formatNaturalSummary(text: string): string {
   return result;
 }
 
+/** Sanitize longer generated documents while preserving paragraph breaks. */
+export function formatNaturalProse(text: string): string {
+  if (!text) return text;
+  const paragraphs = text.split(/\n{2,}/);
+  if (paragraphs.length <= 1) {
+    return formatNaturalSummary(text);
+  }
+  return paragraphs
+    .map((paragraph) => formatNaturalSummary(paragraph))
+    .filter(Boolean)
+    .join('\n\n');
+}
+
 const TEST_FILE_PATTERN = /sample[-_.]|test[-_]upload|upload[-_]test|fixture|lorem ipsum/i;
 
 export function isSubstantiveSource(fileName?: string, text?: string): boolean {
@@ -91,18 +108,24 @@ ${STYLE_GUIDE}`;
 
 export const BRIEF_SYSTEM_PROMPT = `You are Sunny, the AI employee inside BriefNexus.
 
-Generate a complete executive brief in markdown. Ground claims in evidence but write for executives — no inline citation numbers, no file names, no internal tooling notes.
+Generate a complete executive brief grounded in the evidence. Write for executives with no inline citation numbers, no file names, and no internal tooling notes.
 
-${STYLE_GUIDE}`;
+${PROSE_STYLE_GUIDE}`;
 
 export const PLAYBOOK_SYSTEM_PROMPT = `You are Sunny, the AI employee inside BriefNexus.
 
-Generate a comprehensive client operating playbook in markdown. Professional tone, no inline citation numbers or internal notes.
+Generate a comprehensive client operating playbook. Use clear section titles followed by prose paragraphs covering client situation, priorities, risks, operating recommendations, follow up cadence, and executive talking points.
 
-${STYLE_GUIDE}`;
+${PROSE_STYLE_GUIDE}`;
 
 export const EMAIL_SYSTEM_PROMPT = `You are Sunny, the AI employee inside BriefNexus.
 
-Draft a professional follow-up email. No citation numbers, no internal notes — ready to send.
+Draft a professional follow up email ready to send. No citation numbers and no internal notes.
 
-${STYLE_GUIDE}`;
+${PROSE_STYLE_GUIDE}`;
+
+export const PAGE_DECK_PROMPT = `You are Sunny, the AI employee inside BriefNexus.
+
+Generate a client ready presentation outline as natural prose. For each slide, write the slide title on its own line, then one or two prose sentences covering the key points. Do not use markdown, bullets, asterisks, or dashes.
+
+${PROSE_STYLE_GUIDE}`;

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/EmptyState';
+import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { Sun } from 'lucide-react';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 
@@ -43,7 +44,7 @@ export function GenerateButton({
       });
       const data = await res.json();
       if (data.data) {
-        setContent(data.data.content);
+        setContent(formatNaturalProse(data.data.content));
         setTitle(data.data.title);
       } else {
         setContent(data.error ?? 'Generation failed. Please try again.');
@@ -86,7 +87,7 @@ export function GenerateButton({
             className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
           />
           <p className="text-xs text-gray-500 mt-1">
-            Generated with Claude — adapts to whatever you ask for.
+            Generated with ChatGPT — natural prose, ready to copy and paste.
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>
@@ -95,7 +96,7 @@ export function GenerateButton({
         </Button>
       </Card>
 
-      {loading && <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with Claude...`} />}
+      {loading && <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with ChatGPT...`} />}
 
       {content && (
         <Card className="mt-6">

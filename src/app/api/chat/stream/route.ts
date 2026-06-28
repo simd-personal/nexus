@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createEmbedding } from '@/lib/ai/openai';
+import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { runSunnyAgentStream } from '@/lib/ai/stream-agent';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
@@ -95,7 +96,11 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const answer = fullText || response.answer;
+        const rawAnswer = fullText || response.answer;
+        const answer =
+          response.artifact?.type === 'deck'
+            ? rawAnswer
+            : formatNaturalProse(rawAnswer);
 
         if (response.artifact) {
           send({ event: 'artifact', data: response.artifact });

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { processFile } from '@/lib/processing/pipeline';
 import { inferSourceType } from '@/lib/constants';
+import { sanitizeUploadFileName } from '@/lib/upload/client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,18 +50,25 @@ export async function POST(request: NextRequest) {
             : `pasted-note-${Date.now()}.txt`;
       sourceType = pastedType === 'email' ? 'email' : pastedType === 'meeting' ? 'meeting' : pastedType === 'transcript' ? 'transcript' : 'note';
     } else if (file) {
-      fileName = file.name;
-      sourceType = inferSourceType(fileName, file.type);
+      fileName = sanitizeUploadFileName(file.name);
+      sourceType = inferSourceType(fileName, file.type || 'application/octet-stream');
       buffer = Buffer.from(await file.arrayBuffer());
       storagePath = `${projectId}/${Date.now()}-${fileName}`;
 
       const admin = createServiceClient();
       const { error: uploadError } = await admin.storage
         .from(bucket)
-        .upload(storagePath, buffer, { contentType: file.type, upsert: false });
+        .upload(storagePath, buffer, {
+          contentType: file.type || 'application/octet-stream',
+          upsert: false,
+        });
 
       if (uploadError) {
-        return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+        console.error('Storage upload error:', uploadError.message);
+        return NextResponse.json(
+          { error: `Upload failed: ${uploadError.message}` },
+          { status: 500 }
+        );
       }
     } else {
       return NextResponse.json({ error: 'No file or text provided' }, { status: 400 });
@@ -82,7 +90,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (insertError || !fileRecord) {
-      return NextResponse.json({ error: 'Failed to create file record' }, { status: 500 });
+      console.error('File record insert error:', insertError?.message);
+      return NextResponse.json(
+        { error: insertError?.message ?? 'Failed to create file record' },
+        { status: 500 }
+      );
     }
 
     // Process asynchronously — don't block the response

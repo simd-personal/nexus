@@ -1,10 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, Mail, StickyNote, Mic } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import {
+  isFileDragEvent,
+  uploadProjectFiles,
+  UPLOAD_ACCEPT,
+} from '@/lib/upload/client';
 
 interface FileUploadProps {
   projectId: string;
@@ -12,27 +17,37 @@ interface FileUploadProps {
 }
 
 export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProps) {
+  const dragDepth = useRef(0);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [pasteMode, setPasteMode] = useState<'email' | 'meeting' | 'transcript' | 'note' | null>(null);
   const [pasteText, setPasteText] = useState('');
   const [message, setMessage] = useState('');
 
-  const uploadFile = useCallback(async (file: File) => {
+  const handleFiles = useCallback(async (files: File[]) => {
+    if (!files.length) {
+      setMessage('Error: No files selected.');
+      return;
+    }
+
     setUploading(true);
     setMessage('');
-    const formData = new FormData();
-    formData.append('project_id', projectId);
-    formData.append('file', file);
 
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (data.error) {
-        setMessage(`Error: ${data.error}`);
-      } else {
-        setMessage(`${file.name} uploaded — Sunny is processing...`);
+      const { uploaded, errors } = await uploadProjectFiles(projectId, files);
+
+      if (uploaded.length > 0) {
+        setMessage(
+          uploaded.length === 1
+            ? `${uploaded[0]} uploaded — Sunny is processing...`
+            : `${uploaded.length} files uploaded — Sunny is processing...`
+        );
         onUploadComplete?.();
+        window.dispatchEvent(new CustomEvent('project-files-uploaded'));
+      }
+
+      if (errors.length > 0) {
+        setMessage(`Error: ${errors[0]}`);
       }
     } catch {
       setMessage('Upload failed');
@@ -52,8 +67,16 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     formData.append('pasted_type', pasteMode);
 
     try {
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        redirect: 'manual',
+      });
+      const contentType = res.headers.get('content-type') ?? '';
+      const data = contentType.includes('application/json')
+        ? await res.json()
+        : { error: res.status === 401 ? 'Please sign in again.' : 'Upload failed' };
       if (data.error) {
         setMessage(`Error: ${data.error}`);
       } else {
@@ -69,16 +92,34 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     }
   }, [projectId, pasteText, pasteMode, onUploadComplete]);
 
-  function handleDrop(e: React.DragEvent) {
+  function handleDragEnter(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
     e.preventDefault();
-    setDragging(false);
-    const files = Array.from(e.dataTransfer.files);
-    files.forEach(uploadFile);
+    e.stopPropagation();
+    dragDepth.current += 1;
+    setDragging(true);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+    setDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) {
+      setDragging(false);
+    }
   }
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    files.forEach(uploadFile);
+    void handleFiles(Array.from(e.target.files ?? []));
     e.target.value = '';
   }
 
@@ -87,13 +128,13 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
       <Card>
         <CardHeader
           title="Upload Center"
-          description="Drop files or paste content for Sunny to process"
+          description="Drop files anywhere on this project or paste content for Sunny to process"
         />
 
         <div
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={handleDrop}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
           className={cn(
             'border-2 border-dashed rounded-xl p-8 text-center transition-colors',
             dragging ? 'border-gray-400 bg-gray-50' : 'border-gray-200'
@@ -104,10 +145,16 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
             Drag and drop files here
           </p>
           <p className="text-xs text-gray-500 mb-4">
-            Supports .txt, .md, .pdf, .docx, .csv, .png, .jpg, .vtt, .srt, .mp3, .m4a, .wav, .eml
+            Any file type works. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, and .eml.
           </p>
           <label className="inline-block cursor-pointer">
-            <input type="file" multiple className="hidden" onChange={handleFileInput} accept=".txt,.md,.pdf,.docx,.csv,.png,.jpg,.jpeg,.webp,.vtt,.srt,.mp3,.m4a,.wav,.eml" />
+            <input
+              type="file"
+              multiple
+              className="hidden"
+              onChange={handleFileInput}
+              accept={UPLOAD_ACCEPT}
+            />
             <span className="inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm px-3 py-1.5 text-xs">
               {uploading ? 'Uploading...' : 'Browse files'}
             </span>

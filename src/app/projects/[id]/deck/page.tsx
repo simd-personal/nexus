@@ -13,7 +13,7 @@ export default async function DeckPage({
       projectId={id}
       type="deck"
       label="Presentation Deck"
-      description={`${AI_EMPLOYEE_NAME} generates a client-ready slide deck from your project materials using Claude.`}
+      description={`${AI_EMPLOYEE_NAME} generates a client-ready presentation outline from your project materials using ChatGPT.`}
       instructionsPlaceholder="e.g. Q3 board review deck, 8 slides, focus on risks and next steps..."
     />
   );

@@ -15,6 +15,7 @@ export const OPENAI_MODELS = {
   extraction: 'gpt-5.5',
   chat: 'gpt-5.5',
   summary: 'gpt-5.5',
+  generation: 'gpt-5.5',
   criticalDetection: 'gpt-5.5',
   transcription: 'whisper-1',
   vision: 'gpt-5.5',
@@ -69,6 +70,24 @@ export async function chatCompletion(
   return response.choices[0]?.message?.content ?? '';
 }
 
+/** Long-form GPT generation for project pages (briefs, playbooks, emails). */
+export async function generateLongForm(
+  systemPrompt: string,
+  userPrompt: string,
+  model: string = OPENAI_MODELS.generation
+): Promise<string> {
+  const openai = getOpenAI();
+  const response = await openai.chat.completions.create({
+    model,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    max_completion_tokens: 8192,
+  });
+  return response.choices[0]?.message?.content ?? '';
+}
+
 export async function streamChatCompletion(
   systemPrompt: string,
   userPrompt: string,
@@ -119,7 +138,7 @@ export async function extractTextFromImage(
         ],
       },
     ],
-    max_tokens: 4096,
+    max_completion_tokens: 4096,
   });
 
   const text = response.choices[0]?.message?.content?.trim() ?? '';

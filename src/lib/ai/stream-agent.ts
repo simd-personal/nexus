@@ -8,7 +8,7 @@ import {
   DECK_SYSTEM_PROMPT,
   EMAIL_SYSTEM_PROMPT,
   PLAYBOOK_SYSTEM_PROMPT,
-  STYLE_GUIDE,
+  PROSE_STYLE_GUIDE,
   filterSubstantiveChunks,
 } from './generation-prompts';
 import type {
@@ -25,7 +25,7 @@ const SEARCH_STREAM_PERSONA = `${SUNNY_PERSONA}
 
 Adapt your response to what the user asked. Be direct and thorough.
 
-${STYLE_GUIDE}`;
+${PROSE_STYLE_GUIDE}`;
 
 /**
  * Picks the engine for a task given the user's preference.

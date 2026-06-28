@@ -3,8 +3,9 @@ import { generateLongForm, generateStructured, CLAUDE_MODELS } from './claude';
 import {
   DECK_SYSTEM_PROMPT,
   STYLE_GUIDE,
-  SUMMARY_STYLE_GUIDE,
+  PROSE_STYLE_GUIDE,
   filterSubstantiveChunks,
+  formatNaturalProse,
   formatNaturalSummary,
 } from './generation-prompts';
 import type { Citation, SunnyBrief, SunnyChatResponse } from '@/types/database';
@@ -13,14 +14,14 @@ const SUNNY_PERSONA = `You are Sunny, the AI employee inside BriefNexus. You act
 
 const SEARCH_PERSONA = `${SUNNY_PERSONA}
 
-You power BriefNexus search (ChatGPT). Adapt every answer to what the user actually asked:
-- "find / where / show me" → lead with location and source file names
-- "tell me everything / summarize" → comprehensive structured summary
-- person, facility, or topic questions → focus on every mention with context
-- comparison or contradiction questions → call out differences explicitly
-- vague or broad queries → cover all relevant projects and materials found
+You power BriefNexus search (ChatGPT). Adapt every answer to what the user actually asked.
+When they say find, where, or show me, lead with location and source file names.
+When they ask for everything or a summary, give a comprehensive answer in prose.
+For person, facility, or topic questions, focus on every mention with context.
+For comparison or contradiction questions, call out differences explicitly.
+For vague or broad queries, cover all relevant projects and materials found.
 
-${STYLE_GUIDE}`;
+${PROSE_STYLE_GUIDE}`;
 
 interface RetrievedContext {
   chunks: Array<{
@@ -120,10 +121,12 @@ async function answerFromContext(
     .filter(Boolean);
 
   return {
-    answer: result.answer,
+    answer: formatNaturalProse(result.answer),
     citations: citations.length ? citations : buildCitations(context).slice(0, 3),
     confidence: result.confidence,
-    suggested_next_step: result.suggested_next_step,
+    suggested_next_step: result.suggested_next_step
+      ? formatNaturalProse(result.suggested_next_step)
+      : undefined,
   };
 }
 
@@ -174,7 +177,7 @@ export async function detectCriticalItems(
     suggested_owner?: string;
     suggested_next_action?: string;
   }> }>(
-    `${SUNNY_PERSONA}\n\nAnalyze the new content against existing project materials. Detect: client risks, contradictions, missed follow-ups, urgent concerns, ownership gaps, timeline conflicts, and broken processes. Only flag items with clear evidence. Return JSON: { "items": [...] } with severity (low/medium/high/critical) and category (conflict/risk/missed_follow_up/client_concern/ownership_gap/timeline_issue/broken_process).\n\nFor summary, sunny_reasoning, and suggested_next_action fields:\n${SUMMARY_STYLE_GUIDE}`,
+    `${SUNNY_PERSONA}\n\nAnalyze the new content against existing project materials. Detect: client risks, contradictions, missed follow-ups, urgent concerns, ownership gaps, timeline conflicts, and broken processes. Only flag items with clear evidence. Return JSON: { "items": [...] } with severity (low/medium/high/critical) and category (conflict/risk/missed_follow_up/client_concern/ownership_gap/timeline_issue/broken_process).\n\nFor summary, sunny_reasoning, and suggested_next_action fields:\n${PROSE_STYLE_GUIDE}`,
     `New content from "${fileName}":\n${newContent.slice(0, 6000)}\n\nExisting project context:\n${existingContent.slice(0, 6000)}`,
     OPENAI_MODELS.criticalDetection
   );
@@ -222,7 +225,7 @@ export async function extractActionItems(text: string, fileName: string): Promis
 
 export async function summarizeContent(text: string, fileName: string): Promise<string> {
   const raw = await chatCompletion(
-    `${SUNNY_PERSONA}\n\nSummarize this content in 2-3 executive-friendly sentences.\n\n${SUMMARY_STYLE_GUIDE}`,
+    `${SUNNY_PERSONA}\n\nSummarize this content in 2-3 executive-friendly sentences.\n\n${PROSE_STYLE_GUIDE}`,
     `File: ${fileName}\n\n${text.slice(0, 6000)}`,
     OPENAI_MODELS.summary
   );
@@ -239,7 +242,7 @@ export async function generateSunnyUpdate(
     why_it_matters: string;
     suggested_action: string;
   }>(
-    `${SUNNY_PERSONA}\n\nGenerate a Sunny update for the VP. Return JSON with title, summary, why_it_matters, suggested_action.\n\nFor summary, why_it_matters, and suggested_action:\n${SUMMARY_STYLE_GUIDE}`,
+    `${SUNNY_PERSONA}\n\nGenerate a Sunny update for the VP. Return JSON with title, summary, why_it_matters, suggested_action.\n\nFor summary, why_it_matters, and suggested_action:\n${PROSE_STYLE_GUIDE}`,
     `Project: ${projectName}\n\nChanges:\n${changes}`,
     OPENAI_MODELS.summary
   );
@@ -270,7 +273,7 @@ export async function enrichProjectSetup(input: {
   ].filter(Boolean).join('\n');
 
   const result = await structuredExtraction<{ description: string; initial_summary: string }>(
-    `${SUNNY_PERSONA}\n\nHelp set up a new client project. Adapt to whatever the user provided — industry, goals, concerns, timeline, stakeholders. If details are sparse, infer sensible defaults without inventing client-specific facts.\n\nFor initial_summary:\n${SUMMARY_STYLE_GUIDE}`,
+    `${SUNNY_PERSONA}\n\nHelp set up a new client project. Adapt to whatever the user provided — industry, goals, concerns, timeline, stakeholders. If details are sparse, infer sensible defaults without inventing client-specific facts.\n\nFor initial_summary:\n${PROSE_STYLE_GUIDE}`,
     userPrompt,
     OPENAI_MODELS.summary
   );

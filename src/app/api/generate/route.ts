@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { generateSunnyBrief, generatePlaybook, generateFollowUpEmail, generateDeck } from '@/lib/ai/sunny';
+import {
+  generatePageBrief,
+  generatePageDeck,
+  generatePageFollowUpEmail,
+  generatePagePlaybook,
+  formatBriefAsProse,
+} from '@/lib/ai/page-generation';
 
 async function getProjectContext(projectId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
   const [
@@ -60,11 +66,8 @@ export async function POST(request: NextRequest) {
 
     switch (type) {
       case 'brief': {
-        const brief = await generateSunnyBrief(context, userInstructions);
-        content = Object.entries(brief)
-          .filter(([key]) => key !== 'citations')
-          .map(([key, value]) => `## ${key.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}\n\n${value}`)
-          .join('\n\n');
+        const brief = await generatePageBrief(context, userInstructions);
+        content = formatBriefAsProse(brief);
         title = `Sunny Brief — ${project.project_name}`;
         docType = 'brief';
 
@@ -79,7 +82,7 @@ export async function POST(request: NextRequest) {
         break;
       }
       case 'playbook': {
-        content = await generatePlaybook(project.project_name, project.client_name, context, userInstructions);
+        content = await generatePagePlaybook(project.project_name, project.client_name, context, userInstructions);
         title = `Operating Playbook — ${project.client_name}`;
         docType = 'playbook';
 
@@ -100,7 +103,7 @@ export async function POST(request: NextRequest) {
         break;
       }
       case 'follow_up_email': {
-        content = await generateFollowUpEmail(
+        content = await generatePageFollowUpEmail(
           project.project_name,
           project.client_name,
           context,
@@ -127,7 +130,7 @@ export async function POST(request: NextRequest) {
         break;
       }
       case 'deck': {
-        content = await generateDeck(
+        content = await generatePageDeck(
           project.project_name,
           project.client_name,
           context,

@@ -9,7 +9,7 @@ import {
   resolveEngine,
 } from '@/lib/ai/stream-agent';
 import { retrieveForQuery } from '@/lib/search/retrieve';
-import { filterSubstantiveChunks } from '@/lib/ai/generation-prompts';
+import { filterSubstantiveChunks, formatNaturalProse } from '@/lib/ai/generation-prompts';
 import {
   normalizeProjectId,
   filterResultsToProject,
@@ -203,11 +203,15 @@ export async function POST(request: NextRequest) {
             },
           });
 
+          const createContent = createText || createResponse.answer;
           await saveChatMessage(supabase, {
             session_id: session.id,
             project_id: targetProjectId,
             role: 'assistant',
-            content: createText || createResponse.answer,
+            content:
+              createResponse.artifact?.type === 'deck'
+                ? createContent
+                : formatNaturalProse(createContent),
             citations: createResponse.citations,
             metadata: {
               confidence: createResponse.confidence,
@@ -254,7 +258,7 @@ export async function POST(request: NextRequest) {
           session_id: session.id,
           project_id: scopedProjectId,
           role: 'assistant',
-          content: fullText,
+          content: formatNaturalProse(fullText),
           citations: meta.citations,
           metadata: {
             confidence: meta.confidence,

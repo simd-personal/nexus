@@ -140,6 +140,7 @@ async function main() {
   let total = 0;
 
   const extractionTests: Array<[string, string, string?]> = [
+    ['Markdown (.md)', 'sample-notes.md', 'text/markdown'],
     ['Transcript (.txt)', 'sample-transcript.txt', 'text/plain'],
     ['Transcript (.vtt)', 'sample-transcript.vtt', 'text/vtt'],
     ['PDF', 'sample-document.pdf', 'application/pdf'],
