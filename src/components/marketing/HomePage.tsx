@@ -3,6 +3,7 @@ import {
   ArrowRight,
   Briefcase,
   Check,
+  Cpu,
   FileText,
   Layers,
   MessageSquare,
@@ -20,6 +21,12 @@ import {
   BRAND_TAGLINE,
 } from '@/lib/constants';
 import { INTEGRATIONS, INTEGRATION_STATUS_LABEL } from '@/lib/marketing/integrations';
+import {
+  HOME_AI_POINTS,
+  HOME_AUDIENCES,
+  HOME_COMPARISONS,
+  HOME_WORKFLOW_STEPS,
+} from '@/lib/marketing/homepage';
 import { B2B_CAPABILITIES, B2C_PRICING } from '@/lib/marketing/pricing';
 
 function HeroStatCard({
@@ -92,11 +99,12 @@ export function HomePage() {
           <div className="marketing-fade-up min-w-0">
             <p className="marketing-hero-eyebrow">{BRAND_TAGLINE}</p>
             <h1 className="marketing-hero-title">
-              One place for every client project, deck, email, and decision.
+              Walk into every client call knowing what changed.
             </h1>
             <p className="marketing-hero-body">
-              Upload everything in one workspace — Sunny surfaces briefs, risks, and follow-ups
-              so you never walk into a client call unprepared.
+              UpperDeck is your client intelligence command center. Upload decks, emails, meetings,
+              and notes — {AI_EMPLOYEE_NAME} reads everything and surfaces briefs, risks, and
+              follow-ups with sources cited. No juggling ChatGPT, Claude, and your inbox.
             </p>
 
             <div className="marketing-hero-actions mt-8">
@@ -114,7 +122,13 @@ export function HomePage() {
                 <span className="marketing-hero-trust-icon">
                   <Check className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
-                No credit card required
+                No credit card to start
+              </li>
+              <li className="marketing-hero-trust-item">
+                <span className="marketing-hero-trust-icon">
+                  <Cpu className="h-3.5 w-3.5" strokeWidth={2} />
+                </span>
+                GPT &amp; Claude included — no extra AI bill
               </li>
               <li className="marketing-hero-trust-item">
                 <span className="marketing-hero-trust-icon">
@@ -137,41 +151,51 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Who it's for */}
+      <section className="marketing-section bg-white">
+        <div className="marketing-container">
+          <SectionEyebrow>Who it&apos;s for</SectionEyebrow>
+          <SectionTitle className="mt-3">
+            Client intelligence for people who live in decks, emails, and calls
+          </SectionTitle>
+          <p className="marketing-section-body mt-4 max-w-2xl">
+            UpperDeck is not a task manager or a CRM. It is the layer between your client files and
+            your next decision — built for anyone who reconstructs context before every meeting.
+          </p>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {HOME_AUDIENCES.map((item) => (
+              <div key={item.title} className="marketing-feature-card">
+                <h3 className="text-lg font-semibold text-[var(--ud-graphite)]">{item.title}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-[var(--ud-slate)]">{item.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-sm">
+            <Link href="/for-consultants" className="marketing-inline-link">
+              See how consultants use UpperDeck →
+            </Link>
+          </p>
+        </div>
+      </section>
+
       {/* Product */}
-      <section id="product" className="marketing-section bg-white">
+      <section id="product" className="marketing-section marketing-section-gradient">
         <div className="marketing-container">
           <SectionEyebrow>How it works</SectionEyebrow>
-          <SectionTitle className="mt-3">Your command deck for client intelligence</SectionTitle>
+          <SectionTitle className="mt-3">From messy files to a clear brief in minutes</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
-            Upload everything — or connect your stack. UpperDeck reads it all so you never walk
-            into a client call unprepared.
+            Upload your client materials once. {AI_EMPLOYEE_NAME} does the reading — you get the
+            signal before your next call, usually in under ten minutes on a new project.
           </p>
 
           <div className="mt-14 grid gap-6 md:grid-cols-3">
-            {[
-              {
-                icon: Upload,
-                step: '01',
-                title: 'Ingest',
-                body: 'Drop in meetings, emails, decks, PDFs, audio, and notes — or sync from Gmail, Slack, and Drive.',
-              },
-              {
-                icon: Sparkles,
-                step: '02',
-                title: 'Understand',
-                body: `${AI_EMPLOYEE_NAME} reads everything and surfaces briefs, risks, contradictions, and follow-ups.`,
-              },
-              {
-                icon: Zap,
-                step: '03',
-                title: 'Act',
-                body: 'Ask questions, generate decks, draft emails, and spot critical items before the client does.',
-              },
-            ].map(({ icon: Icon, step, title, body }) => (
+            {HOME_WORKFLOW_STEPS.map(({ step, title, body }) => (
               <div key={step} className="marketing-feature-card">
                 <div className="flex items-center justify-between">
                   <div className="marketing-feature-icon">
-                    <Icon className="h-5 w-5" strokeWidth={1.75} />
+                    {step === '01' && <Upload className="h-5 w-5" strokeWidth={1.75} />}
+                    {step === '02' && <Sparkles className="h-5 w-5" strokeWidth={1.75} />}
+                    {step === '03' && <Zap className="h-5 w-5" strokeWidth={1.75} />}
                   </div>
                   <span className="text-sm font-medium text-[var(--ud-cloud)]">{step}</span>
                 </div>
@@ -203,24 +227,23 @@ export function HomePage() {
       </section>
 
       {/* Sunny */}
-      <section className="marketing-section marketing-section-gradient">
+      <section className="marketing-section bg-white">
         <div className="marketing-container grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="min-w-0">
             <SectionEyebrow>AI employee</SectionEyebrow>
             <SectionTitle className="mt-3">
-              Meet {AI_EMPLOYEE_NAME} — full context on everything in your project
+              Meet {AI_EMPLOYEE_NAME} — with full context on your client work
             </SectionTitle>
             <p className="marketing-section-body mt-4">
-              {AI_EMPLOYEE_NAME} isn&apos;t a chatbot bolted onto a folder. An AI employee with
-              full context on every meeting, email, deck, and note in your project. Ask what changed,
-              what&apos;s at risk, or what to say in tomorrow&apos;s call — and get answers with
-              citations.
+              {AI_EMPLOYEE_NAME} is not a generic chatbot. It is an AI teammate that has read every
+              meeting, email, deck, and note in the project. Ask what changed, what is at risk, or
+              what to say on tomorrow&apos;s call — every answer links back to your files.
             </p>
             <ul className="mt-8 space-y-3">
               {[
-                'Evidence-backed answers — no hallucinated client facts',
-                'Briefs, timelines, and follow-ups generated on demand',
-                'Critical items flagged before they become fires',
+                'Answers cite your uploads — not invented client facts',
+                'Briefs, timelines, and follow-ups on demand',
+                'Flags contradictions and risks before they become fires',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />
@@ -247,14 +270,88 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* AI models included */}
+      <section className="marketing-section marketing-section-gradient">
+        <div className="marketing-container grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
+          <div className="min-w-0">
+            <SectionEyebrow>AI included</SectionEyebrow>
+            <SectionTitle className="mt-3">
+              Latest GPT and Claude models — one platform, no extra subscriptions
+            </SectionTitle>
+            <p className="marketing-section-body mt-4">
+              You should not need ChatGPT Plus, Claude Pro, and a folder of client files. UpperDeck
+              routes your work to leading models from OpenAI and Anthropic behind the scenes — briefs,
+              search, decks, and chat are all included in your plan.
+            </p>
+            <ul className="mt-8 space-y-3">
+              {HOME_AI_POINTS.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="marketing-seo-callout">
+            <div className="flex items-center gap-3">
+              <div className="marketing-feature-icon">
+                <Cpu className="h-5 w-5" strokeWidth={1.75} />
+              </div>
+              <p className="font-semibold text-[var(--ud-graphite)]">What you skip</p>
+            </div>
+            <ul className="mt-5 space-y-3 text-sm leading-relaxed text-[var(--ud-slate)]">
+              <li>Copy-pasting context into a blank chat window</li>
+              <li>Paying $20/mo for ChatGPT Plus on top of your tools</li>
+              <li>Paying separately for Claude when you need long documents</li>
+              <li>Wondering whether the AI made something up about your client</li>
+            </ul>
+            <p className="mt-6 text-sm text-[var(--ud-slate)]">
+              On Pro, AI is unlimited across projects. On Free, you get 25 {AI_EMPLOYEE_NAME}{' '}
+              messages a month to prove the value on one client.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Positioning */}
+      <section className="marketing-section bg-white">
+        <div className="marketing-container">
+          <SectionEyebrow>Why UpperDeck</SectionEyebrow>
+          <SectionTitle className="mt-3">Not another tool category — a client command center</SectionTitle>
+          <p className="marketing-section-body mt-4 max-w-2xl">
+            Most software organizes tasks or stores notes. UpperDeck organizes{' '}
+            <em className="not-italic font-medium text-[var(--ud-graphite)]">client intelligence</em>
+            — what changed, what conflicts, and what you should do before the next conversation.
+          </p>
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {HOME_COMPARISONS.map((item) => (
+              <div key={item.label} className="marketing-compare-card">
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#7c6cf0]">
+                  {item.label}
+                </p>
+                <p className="mt-1 text-sm text-[var(--ud-slate)]">{item.examples}</p>
+                <p className="mt-4 text-[15px] leading-relaxed text-[var(--ud-graphite)]">
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-10 text-sm">
+            <Link href="/client-intelligence" className="marketing-inline-link">
+              What is client intelligence? →
+            </Link>
+          </p>
+        </div>
+      </section>
+
       {/* Integrations */}
       <section id="integrations" className="marketing-section bg-white">
         <div className="marketing-container">
           <SectionEyebrow>Integrations</SectionEyebrow>
           <SectionTitle className="mt-3">Connect the tools your clients already live in</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
-            Start by uploading files today. Connect email, Slack, calendar, and CRM as you scale —
-            every integration feeds the same command deck.
+            Start by uploading files today. Email, Slack, calendar, and CRM connectors are on the
+            roadmap — everything feeds the same client command center.
           </p>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -289,10 +386,11 @@ export function HomePage() {
       <section id="pricing" className="marketing-section">
         <div className="marketing-container">
           <SectionEyebrow>Pricing</SectionEyebrow>
-          <SectionTitle className="mt-3">Start free. Scale when you have more clients.</SectionTitle>
+          <SectionTitle className="mt-3">Start free. Upgrade when you add client number two.</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
-            The best model for solo operators: prove value on one client for free, then upgrade
-            when UpperDeck becomes your daily command center.
+            Try UpperDeck on one client engagement at no cost. When you are managing multiple
+            clients, Pro unlocks unlimited projects and unlimited {AI_EMPLOYEE_NAME} — including
+            the latest AI models, with no separate ChatGPT or Claude bill.
           </p>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
@@ -337,7 +435,7 @@ export function HomePage() {
           </div>
 
           <p className="mt-8 text-center text-sm text-[var(--ud-slate)]">
-            Pro trial: 14 days free, no credit card. Cancel anytime.{' '}
+            Free plan needs no credit card. Cancel Pro anytime.{' '}
             <Link href="/pricing" className="marketing-inline-link">
               Full pricing details
             </Link>
@@ -458,10 +556,10 @@ export function HomePage() {
       {/* Final CTA */}
       <section className="marketing-section bg-white">
         <div className="marketing-container text-center">
-          <h2 className="marketing-section-title">Ready to see your whole client picture?</h2>
+          <h2 className="marketing-section-title">Stop reconstructing context before every call</h2>
           <p className="marketing-section-body mx-auto mt-4 max-w-xl">
-            Join consultants and operators who refuse to miss the signal. Start free in under a
-            minute.
+            Join consultants and operators who keep every client in one command center. Start free —
+            GPT, Claude, and {AI_EMPLOYEE_NAME} included.
           </p>
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <Link href="/login" className="marketing-btn-primary marketing-btn-lg group w-full sm:w-auto">

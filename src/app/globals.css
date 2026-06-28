@@ -824,6 +824,13 @@ body {
   box-shadow: 0 8px 32px rgba(124, 108, 240, 0.08);
 }
 
+.marketing-compare-card {
+  border-radius: 1.25rem;
+  border: 1px solid var(--ud-mist);
+  background: var(--ud-stone);
+  padding: 1.5rem;
+}
+
 .marketing-feature-icon {
   display: flex;
   height: 2.75rem;

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 export const metadata = createMarketingMetadata({
   title: 'UpperDeck',
   description:
-    'AI command center for client intelligence. Upload meetings, emails, decks, and notes — Sunny surfaces briefs, risks, and follow-ups in one place.',
+    'Client intelligence for consultants. Upload decks, emails, and meetings — Sunny surfaces briefs and risks with citations. Latest GPT and Claude included, no separate AI subscription.',
   path: '/',
   keywords: [
     'client intelligence software',
