@@ -2,8 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { ingestInboundEmail } from '@/lib/inbound/ingest';
 import {
   deletePendingInboundPayload,
-  loadPendingInboundPayload,
 } from '@/lib/inbound/pending-payload';
+import {
+  hasAssignableInboundContent,
+  resolvePendingEmailPayload,
+  type PendingInboundEventRecord,
+} from '@/lib/inbound/pending-content';
 
 const ACTIONABLE_STATUSES = new Set(['pending_assignment', 'unmatched']);
 
@@ -18,7 +22,7 @@ export async function assignPendingInboundEmail(
 ): Promise<{ fileIds: string[] } | { error: string }> {
   const { data: event, error: eventError } = await supabase
     .from('inbound_email_events')
-    .select('id, owner_id, status, payload_storage_path')
+    .select('id, owner_id, status, payload_storage_path, from_address, subject, body_text, body_preview, attachments_meta')
     .eq('id', params.eventId)
     .single();
 
@@ -34,7 +38,7 @@ export async function assignPendingInboundEmail(
     return { error: 'This email has already been handled' };
   }
 
-  if (!event.payload_storage_path) {
+  if (!hasAssignableInboundContent(event as PendingInboundEventRecord)) {
     return {
       error:
         'Email content was not saved for this entry. Forward the message again from Outlook, then assign the new dashboard item.',
@@ -51,7 +55,7 @@ export async function assignPendingInboundEmail(
     return { error: 'Project not found' };
   }
 
-  const payload = await loadPendingInboundPayload(event.payload_storage_path);
+  const payload = await resolvePendingEmailPayload(event as PendingInboundEventRecord);
   if (!payload) {
     return { error: 'Email content could not be loaded' };
   }
@@ -90,7 +94,9 @@ export async function assignPendingInboundEmail(
     .update({ last_activity_at: new Date().toISOString() })
     .eq('id', project.id);
 
-  await deletePendingInboundPayload(event.payload_storage_path);
+  if (event.payload_storage_path) {
+    await deletePendingInboundPayload(event.payload_storage_path);
+  }
 
   return { fileIds: ingested.fileIds };
 }

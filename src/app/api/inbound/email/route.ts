@@ -7,7 +7,8 @@ import {
   type InboundEmailPayload,
 } from '@/lib/inbound/parse-payload';
 import { ingestInboundEmail, resolveInboundTarget } from '@/lib/inbound/ingest';
-import { previewInboundBody, storePendingInboundPayload } from '@/lib/inbound/pending-payload';
+import { inboundEventInsertFields } from '@/lib/inbound/pending-content';
+import { storePendingInboundPayload } from '@/lib/inbound/pending-payload';
 
 export const maxDuration = 60;
 
@@ -59,15 +60,22 @@ export async function POST(request: NextRequest) {
         subject: payload.subject,
         status: 'unmatched',
         detail: resolved.detail,
-        body_preview: previewInboundBody(payload),
-        attachment_count: payload.attachments.length,
+        ...inboundEventInsertFields(payload),
       });
       return NextResponse.json({ error: resolved.detail }, { status: 422 });
     }
 
     if (resolved.status === 'pending_assignment') {
       const eventId = randomUUID();
-      const payloadStoragePath = await storePendingInboundPayload(eventId, payload);
+      let payloadStoragePath: string | null = null;
+      try {
+        payloadStoragePath = await storePendingInboundPayload(eventId, payload);
+      } catch (storageError) {
+        console.error(
+          'Pending inbound payload storage failed:',
+          storageError instanceof Error ? storageError.message : 'Unknown'
+        );
+      }
 
       await supabase.from('inbound_email_events').insert({
         id: eventId,
@@ -77,9 +85,8 @@ export async function POST(request: NextRequest) {
         subject: payload.subject,
         status: 'pending_assignment',
         detail: resolved.detail,
-        body_preview: previewInboundBody(payload),
         payload_storage_path: payloadStoragePath,
-        attachment_count: payload.attachments.length,
+        ...inboundEventInsertFields(payload),
       });
 
       return NextResponse.json({
@@ -98,8 +105,7 @@ export async function POST(request: NextRequest) {
         subject: payload.subject,
         status: 'failed',
         detail: ingested.error,
-        body_preview: previewInboundBody(payload),
-        attachment_count: payload.attachments.length,
+        ...inboundEventInsertFields(payload),
       });
       return NextResponse.json({ error: ingested.error }, { status: 500 });
     }
@@ -112,8 +118,7 @@ export async function POST(request: NextRequest) {
       status: 'processed',
       detail: `Routed via ${resolved.target.routing}`,
       file_ids: ingested.fileIds,
-      body_preview: previewInboundBody(payload),
-      attachment_count: payload.attachments.length,
+      ...inboundEventInsertFields(payload),
     });
 
     await supabase

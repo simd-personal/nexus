@@ -283,8 +283,10 @@ export interface InboundEmailEvent {
   detail: string | null;
   file_ids: string[];
   body_preview: string | null;
+  body_text: string | null;
   payload_storage_path: string | null;
   attachment_count: number;
+  attachments_meta?: Array<{ filename: string; contentType: string; size: number }>;
   created_at: string;
 }
 
