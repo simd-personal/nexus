@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { Inter, Space_Grotesk } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
+import Script from 'next/script';
 import './globals.css';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
 import { getSiteUrl } from '@/lib/marketing/seo';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
+import { THEME_BOOTSTRAP_SCRIPT } from '@/lib/theme/preferences';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -41,9 +44,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
-        {children}
+        <Script id="upperdeck-theme-bootstrap" strategy="beforeInteractive">
+          {THEME_BOOTSTRAP_SCRIPT}
+        </Script>
+        <ThemeProvider>{children}</ThemeProvider>
         <Analytics />
       </body>
     </html>

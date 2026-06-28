@@ -9,7 +9,7 @@ interface CardProps {
 export function Card({ children, className, padding = true }: CardProps) {
   return (
     <div className={cn(
-      'bg-white rounded-xl border border-gray-200 shadow-sm',
+      'rounded-xl border border-gray-200 bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]',
       padding && 'p-6',
       className
     )}>
@@ -26,8 +26,8 @@ export function CardHeader({ title, description, action }: {
   return (
     <div className="flex items-start justify-between mb-4">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+        {description && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{description}</p>}
       </div>
       {action}
     </div>

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #f5f6f8;
   --foreground: #0e1115;
@@ -10,6 +12,29 @@
   --ud-graphite: #0e1115;
   --ud-gradient: linear-gradient(135deg, #5b9cf6 0%, #7c6cf0 52%, #9333ea 100%);
   --ud-gradient-soft: linear-gradient(135deg, rgba(91, 156, 246, 0.18) 0%, rgba(124, 108, 240, 0.22) 50%, rgba(147, 51, 234, 0.16) 100%);
+  --warmth-overlay: rgba(255, 171, 64, 0.1);
+}
+
+html.dark {
+  --background: #0f1115;
+  --foreground: #e8eaed;
+  --ud-stone: #14171c;
+  --ud-mist: #1c2129;
+  --ud-cloud: #2d3544;
+  --ud-slate: #9aa3b5;
+  --ud-graphite: #e8eaed;
+  --warmth-overlay: rgba(255, 149, 64, 0.14);
+  color-scheme: dark;
+}
+
+html.warmth body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: var(--warmth-overlay);
+  mix-blend-mode: multiply;
 }
 
 @theme inline {
