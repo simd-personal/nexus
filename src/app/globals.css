@@ -354,6 +354,8 @@ body {
 .marketing-page {
   background: var(--ud-stone);
   color: var(--ud-graphite);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 .marketing-container {
@@ -361,8 +363,15 @@ body {
   max-width: 72rem;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .marketing-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 .marketing-nav {
@@ -373,6 +382,14 @@ body {
   background: rgba(245, 246, 248, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+@media (max-width: 639px) {
+  .marketing-nav .marketing-container {
+    gap: 0.75rem;
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+  }
 }
 
 .marketing-nav-link {
@@ -442,6 +459,26 @@ body {
   font-size: 0.9375rem;
 }
 
+@media (max-width: 639px) {
+  .marketing-btn-primary,
+  .marketing-btn-secondary {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .marketing-btn-lg {
+    padding: 0.8125rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .marketing-nav .marketing-btn-primary {
+    width: auto;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+}
+
 .marketing-hero {
   position: relative;
   overflow: hidden;
@@ -450,24 +487,40 @@ body {
 
 .marketing-hero-title {
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  font-size: clamp(1.875rem, 5vw, 3.5rem);
   font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.035em;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
   color: var(--ud-graphite);
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .marketing-hero-title {
+    line-height: 1.14;
+    letter-spacing: -0.02em;
+  }
 }
 
 .marketing-hero-body {
   margin-top: 1.25rem;
   max-width: 32rem;
-  font-size: 1.125rem;
-  line-height: 1.65;
+  font-size: 1.0625rem;
+  line-height: 1.7;
   color: var(--ud-slate);
+  text-wrap: pretty;
 }
 
 .marketing-section {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
+  padding-top: 3.5rem;
+  padding-bottom: 3.5rem;
+}
+
+@media (min-width: 768px) {
+  .marketing-section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
 }
 
 .marketing-section-gradient {
@@ -481,23 +534,72 @@ body {
 .marketing-eyebrow {
   font-size: 0.75rem;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #7c6cf0;
 }
 
 .marketing-section-title {
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-size: clamp(1.625rem, 4vw, 2.5rem);
   font-weight: 600;
-  letter-spacing: -0.03em;
+  line-height: 1.22;
+  letter-spacing: -0.015em;
   color: var(--ud-graphite);
+  text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .marketing-section-title {
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+  }
 }
 
 .marketing-section-body {
-  font-size: 1.0625rem;
-  line-height: 1.65;
+  font-size: 1rem;
+  line-height: 1.7;
   color: var(--ud-slate);
+  text-wrap: pretty;
+}
+
+@media (min-width: 640px) {
+  .marketing-section-body {
+    font-size: 1.0625rem;
+  }
+}
+
+.marketing-trust-row {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.875rem;
+}
+
+@media (min-width: 640px) {
+  .marketing-trust-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.25rem 1.75rem;
+  }
+}
+
+.marketing-hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .marketing-hero-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .marketing-hero-actions .marketing-btn-primary,
+  .marketing-hero-actions .marketing-btn-secondary {
+    width: auto;
+  }
 }
 
 .marketing-feature-card {
@@ -621,7 +723,13 @@ body {
   border-radius: 1.25rem;
   border: 1px solid rgba(124, 108, 240, 0.2);
   background: linear-gradient(135deg, rgba(124, 108, 240, 0.06) 0%, rgba(255, 255, 255, 0.9) 100%);
-  padding: 1.75rem 2rem;
+  padding: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .marketing-org-banner {
+    padding: 1.75rem 2rem;
+  }
 }
 
 .marketing-org-card {
@@ -712,4 +820,39 @@ body {
 .marketing-prose strong {
   color: var(--ud-graphite);
   font-weight: 600;
+}
+
+@media (max-width: 639px) {
+  .marketing-hero .marketing-container {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+    gap: 2.5rem;
+  }
+
+  .marketing-integration-card h3 {
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .marketing-status-badge {
+    align-self: flex-start;
+  }
+
+  .marketing-pricing-card {
+    padding: 1.5rem;
+  }
+
+  .marketing-feature-card {
+    padding: 1.375rem;
+  }
+
+  .marketing-pill-card {
+    padding: 0.875rem 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  .auth-glass-form {
+    padding: 1.25rem;
+  }
 }

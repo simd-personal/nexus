@@ -18,7 +18,6 @@ import { MarketingShell } from '@/components/marketing/MarketingShell';
 import {
   AI_EMPLOYEE_NAME,
   BRAND_TAGLINE,
-  TAGLINE,
 } from '@/lib/constants';
 import { INTEGRATIONS, INTEGRATION_STATUS_LABEL } from '@/lib/marketing/integrations';
 import { B2B_CAPABILITIES, B2C_PRICING } from '@/lib/marketing/pricing';
@@ -44,7 +43,7 @@ function HeroGlassCard({
         {label}
       </p>
       <p
-        className={`mt-1 text-2xl font-semibold tracking-tight ${dark ? 'text-white' : 'text-[var(--ud-graphite)]'}`}
+        className={`mt-1 text-2xl font-semibold ${dark ? 'text-white' : 'text-[var(--ud-graphite)]'}`}
       >
         {value}
       </p>
@@ -75,15 +74,18 @@ export function HomePage() {
       <section className="marketing-hero">
         <div className="auth-brand-blob-a" />
         <div className="auth-brand-blob-b" />
-        <div className="marketing-container relative z-10 grid items-center gap-14 py-16 lg:grid-cols-2 lg:py-24">
-          <div className="marketing-fade-up">
+        <div className="marketing-container relative z-10 grid items-center gap-10 py-10 sm:gap-14 sm:py-16 lg:grid-cols-2 lg:py-24">
+          <div className="marketing-fade-up min-w-0">
             <p className="auth-brand-tagline mb-4">{BRAND_TAGLINE}</p>
             <h1 className="marketing-hero-title">
               One place for every client project, deck, email, and decision.
             </h1>
-            <p className="marketing-hero-body">{TAGLINE}</p>
+            <p className="marketing-hero-body">
+              Upload everything in one workspace — Sunny surfaces briefs, risks, and follow-ups
+              so you never walk into a client call unprepared.
+            </p>
 
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="marketing-hero-actions mt-8">
               <Link href="/login" className="marketing-btn-primary marketing-btn-lg group">
                 Get started free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
@@ -93,7 +95,7 @@ export function HomePage() {
               </Link>
             </div>
 
-            <div className="auth-trust-row mt-10">
+            <div className="auth-trust-row marketing-trust-row mt-8 sm:mt-10">
               <div className="auth-trust-item">
                 <span className="auth-trust-icon">
                   <Check className="h-3.5 w-3.5" strokeWidth={2} />
@@ -160,7 +162,7 @@ export function HomePage() {
       <section id="product" className="marketing-section bg-white">
         <div className="marketing-container">
           <SectionEyebrow>How it works</SectionEyebrow>
-          <SectionTitle>Your command deck for client intelligence</SectionTitle>
+          <SectionTitle className="mt-3">Your command deck for client intelligence</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             Upload everything — or connect your stack. UpperDeck reads it all so you never walk
             into a client call unprepared.
@@ -223,10 +225,10 @@ export function HomePage() {
 
       {/* Sunny */}
       <section className="marketing-section marketing-section-gradient">
-        <div className="marketing-container grid items-center gap-12 lg:grid-cols-2">
-          <div>
+        <div className="marketing-container grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
+          <div className="min-w-0">
             <SectionEyebrow>AI employee</SectionEyebrow>
-            <SectionTitle>
+            <SectionTitle className="mt-3">
               Meet {AI_EMPLOYEE_NAME} — full context on everything in your project
             </SectionTitle>
             <p className="marketing-section-body mt-4">
@@ -248,7 +250,7 @@ export function HomePage() {
               ))}
             </ul>
           </div>
-          <div className="auth-glass-form p-8">
+          <div className="auth-glass-form min-w-0 p-5 sm:p-8">
             <p className="text-xs font-medium uppercase tracking-wider text-[var(--ud-slate)]">
               Sunny · Project chat
             </p>
@@ -270,7 +272,7 @@ export function HomePage() {
       <section id="integrations" className="marketing-section bg-white">
         <div className="marketing-container">
           <SectionEyebrow>Integrations</SectionEyebrow>
-          <SectionTitle>Connect the tools your clients already live in</SectionTitle>
+          <SectionTitle className="mt-3">Connect the tools your clients already live in</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             Start by uploading files today. Connect email, Slack, calendar, and CRM as you scale —
             every integration feeds the same command deck.
@@ -279,8 +281,8 @@ export function HomePage() {
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {INTEGRATIONS.map((item) => (
               <div key={item.name} className="marketing-integration-card">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+                  <div className="min-w-0">
                     <p className="text-xs font-medium uppercase tracking-wider text-[var(--ud-slate)]">
                       {item.category}
                     </p>
@@ -308,7 +310,7 @@ export function HomePage() {
       <section id="pricing" className="marketing-section">
         <div className="marketing-container">
           <SectionEyebrow>Pricing</SectionEyebrow>
-          <SectionTitle>Start free. Scale when you have more clients.</SectionTitle>
+          <SectionTitle className="mt-3">Start free. Scale when you have more clients.</SectionTitle>
           <p className="marketing-section-body mt-4 max-w-2xl">
             The best model for solo operators: prove value on one client for free, then upgrade
             when UpperDeck becomes your daily command center.
@@ -326,8 +328,8 @@ export function HomePage() {
                   <p className="marketing-pricing-badge">Most popular</p>
                 )}
                 <h3 className="text-lg font-semibold text-[var(--ud-graphite)]">{tier.name}</h3>
-                <div className="mt-3 flex items-baseline gap-1">
-                  <span className="text-4xl font-semibold tracking-tight text-[var(--ud-graphite)]">
+                <div className="mt-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
+                  <span className="text-4xl font-semibold text-[var(--ud-graphite)]">
                     {tier.price}
                   </span>
                   <span className="text-sm text-[var(--ud-slate)]">{tier.period}</span>
@@ -394,7 +396,7 @@ export function HomePage() {
           <div className="grid items-start gap-12 lg:grid-cols-2">
             <div>
               <SectionEyebrow>Organizations</SectionEyebrow>
-              <SectionTitle className="!text-white">
+              <SectionTitle className="mt-3 !text-white">
                 Built for teams that can&apos;t afford blind spots
               </SectionTitle>
               <p className="mt-4 text-[17px] leading-relaxed text-white/60">
@@ -407,15 +409,18 @@ export function HomePage() {
                 integration needs (Slack, email, CRM), security requirements, and custom pricing.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Link
                   href="/request-quote"
-                  className="marketing-btn-primary marketing-btn-lg inline-flex"
+                  className="marketing-btn-primary marketing-btn-lg inline-flex w-full justify-center sm:w-auto"
                 >
                   Request more information
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <a href="#organizations-form" className="marketing-btn-secondary marketing-btn-lg !border-white/20 !bg-white/10 !text-white hover:!bg-white/15">
+                <a
+                  href="#organizations-form"
+                  className="marketing-btn-secondary marketing-btn-lg inline-flex w-full justify-center !border-white/20 !bg-white/10 !text-white hover:!bg-white/15 sm:w-auto"
+                >
                   See what we cover
                 </a>
               </div>
@@ -425,7 +430,7 @@ export function HomePage() {
               </p>
             </div>
 
-            <div id="organizations-form" className="auth-glass-card-dark p-8">
+            <div id="organizations-form" className="auth-glass-card-dark min-w-0 p-5 sm:p-8">
               <div className="flex items-center gap-3">
                 <Briefcase className="h-5 w-5 text-[#c4b5fd]" strokeWidth={1.75} />
                 <p className="font-semibold text-white">What&apos;s included in Enterprise</p>
@@ -479,12 +484,12 @@ export function HomePage() {
             Join consultants and operators who refuse to miss the signal. Start free in under a
             minute.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/login" className="marketing-btn-primary marketing-btn-lg group">
+          <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <Link href="/login" className="marketing-btn-primary marketing-btn-lg group w-full sm:w-auto">
               Get started free
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/request-quote" className="marketing-btn-secondary marketing-btn-lg">
+            <Link href="/request-quote" className="marketing-btn-secondary marketing-btn-lg w-full sm:w-auto">
               Request organization info
             </Link>
           </div>
