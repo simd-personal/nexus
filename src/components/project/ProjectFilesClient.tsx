@@ -6,6 +6,7 @@ import { FileActionsMenu } from '@/components/project/FileActionsMenu';
 import { FileUploadCenter } from '@/components/project/FileUpload';
 import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { FileProcessingProgress } from '@/components/project/FileProcessingProgress';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -24,7 +25,10 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 }) {
   const [files, setFiles] = useState<FileRecord[]>(initialFiles);
   const [viewingFile, setViewingFile] = useState<FileRecord | null>(null);
+  const [fileToDelete, setFileToDelete] = useState<FileRecord | null>(null);
+  const [deleteError, setDeleteError] = useState('');
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
   const kickingRef = useRef(new Set<string>());
   const router = useRouter();
@@ -85,19 +89,31 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     router.refresh();
   }
 
-  async function handleDelete(file: FileRecord) {
-    const confirmed = window.confirm(`Delete "${file.file_name}"? This removes the file and its indexed content.`);
-    if (!confirmed) return;
+  function openDeleteDialog(file: FileRecord) {
+    setDeleteError('');
+    setFileToDelete(file);
+  }
 
-    setBusyFileId(file.id);
+  function closeDeleteDialog() {
+    if (busyFileId) return;
+    setFileToDelete(null);
+    setDeleteError('');
+  }
+
+  async function confirmDelete() {
+    if (!fileToDelete) return;
+
+    setBusyFileId(fileToDelete.id);
+    setDeleteError('');
     try {
-      const res = await fetch(`/api/files/${file.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/files/${fileToDelete.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        window.alert(data.error ?? 'Failed to delete file');
+        setDeleteError(data.error ?? 'Failed to delete file');
         return;
       }
-      if (viewingFile?.id === file.id) setViewingFile(null);
+      if (viewingFile?.id === fileToDelete.id) setViewingFile(null);
+      setFileToDelete(null);
       await fetchFiles();
       router.refresh();
     } finally {
@@ -107,11 +123,12 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 
   async function handleReprocess(file: FileRecord) {
     setBusyFileId(file.id);
+    setActionError('');
     try {
       const res = await fetch(`/api/files/${file.id}/reprocess`, { method: 'POST' });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        window.alert(data.error ?? 'Failed to reprocess file');
+        setActionError(data.error ?? 'Failed to reprocess file');
         return;
       }
       kickProcessing(file, true);
@@ -154,6 +171,29 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 
       {viewingFile && (
         <FileViewerModal file={viewingFile} onClose={() => setViewingFile(null)} />
+      )}
+
+      <ConfirmDialog
+        open={Boolean(fileToDelete)}
+        title="Delete file?"
+        description={
+          fileToDelete
+            ? `"${fileToDelete.file_name}" will be removed from this project along with its indexed content. This cannot be undone.`
+            : ''
+        }
+        confirmLabel="Delete file"
+        cancelLabel="Cancel"
+        loading={Boolean(fileToDelete && busyFileId === fileToDelete.id)}
+        error={deleteError}
+        tone="danger"
+        onConfirm={confirmDelete}
+        onCancel={closeDeleteDialog}
+      />
+
+      {actionError && (
+        <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+          {actionError}
+        </p>
       )}
 
       <div>
@@ -237,7 +277,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                       variant="secondary"
                       size="sm"
                       disabled={busyFileId === file.id}
-                      onClick={() => handleDelete(file)}
+                      onClick={() => openDeleteDialog(file)}
                       aria-label={`Delete ${file.file_name}`}
                       className="shrink-0 text-red-600 hover:border-red-200 hover:text-red-700"
                     >
