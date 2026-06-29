@@ -1,6 +1,6 @@
-import Image from 'next/image';
-import { AI_EMPLOYEE_NAME, SUNNY_AVATAR_SRC, SUNNY_MASCOT_SRC } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { cn } from '@/lib/utils';
+import { SunnyMark } from '@/components/brand/SunnyMark';
 
 const SIZES = {
   xs: 20,
@@ -31,27 +31,18 @@ type SunnyAvatarProps = {
 export function SunnyAvatar({
   size = 'md',
   className,
-  priority,
   animate = 'none',
 }: SunnyAvatarProps) {
   const px = SIZES[size];
-  const retina = px * 2;
 
   return (
-    <Image
-      src={SUNNY_AVATAR_SRC}
-      alt={`${AI_EMPLOYEE_NAME} mascot`}
-      width={retina}
-      height={retina}
-      priority={priority}
-      sizes={`${px}px`}
-      className={cn(
-        'inline-block shrink-0 object-contain sunny-avatar-img',
-        ANIMATE_CLASS[animate],
-        className
-      )}
-      style={{ width: px, height: px }}
-    />
+    <span
+      role="img"
+      aria-label={`${AI_EMPLOYEE_NAME} mascot`}
+      className={cn('inline-flex shrink-0 leading-none', ANIMATE_CLASS[animate], className)}
+    >
+      <SunnyMark size={px} />
+    </span>
   );
 }
 
@@ -69,25 +60,15 @@ type SunnyMascotProps = {
   animate?: SunnyMascotAnimate;
 };
 
-/** Larger Sunny icon for marketing, auth, and onboarding hero moments. */
-export function SunnyMascot({
-  className,
-  priority,
-  animate = 'float',
-}: SunnyMascotProps) {
+/** Larger Sunny mark for marketing, auth, and onboarding hero moments. */
+export function SunnyMascot({ className, animate = 'float' }: SunnyMascotProps) {
   return (
-    <Image
-      src={SUNNY_MASCOT_SRC}
-      alt={`${AI_EMPLOYEE_NAME}, your AI employee`}
-      width={400}
-      height={400}
-      priority={priority}
-      sizes="200px"
-      className={cn(
-        'h-auto w-full max-w-[200px] object-contain sunny-avatar-img',
-        MASCOT_ANIMATE_CLASS[animate],
-        className
-      )}
-    />
+    <span
+      role="img"
+      aria-label={`${AI_EMPLOYEE_NAME}, your AI employee`}
+      className={cn('inline-flex leading-none', MASCOT_ANIMATE_CLASS[animate], className)}
+    >
+      <SunnyMark size={180} />
+    </span>
   );
 }
