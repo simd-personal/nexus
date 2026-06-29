@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import { APP_DOMAIN } from '@/lib/constants';
+import { BRAND } from '@/lib/brand/colors';
 import { cn } from '@/lib/utils';
 
 type LogoSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -15,9 +16,11 @@ const sizes: Record<LogoSize, { icon: number; word: string; tld: string; gap: st
 export function UpperDeckIcon({
   size = 36,
   className,
+  variant = 'light',
 }: {
   size?: number;
   className?: string;
+  variant?: 'light' | 'dark';
 }) {
   const uid = useId().replace(/:/g, '');
   const r = size * 0.19;
@@ -43,9 +46,9 @@ export function UpperDeckIcon({
     >
       <defs>
         <linearGradient id={`${uid}-g`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop stopColor="#7EB6FF" stopOpacity="0.9" />
-          <stop offset="0.5" stopColor="#A78BFA" stopOpacity="0.75" />
-          <stop offset="1" stopColor="#C4B5FD" stopOpacity="0.55" />
+          <stop stopColor={BRAND.accentLight} />
+          <stop offset="0.5" stopColor={BRAND.accent} />
+          <stop offset="1" stopColor={BRAND.accentDark} />
         </linearGradient>
         <filter id={`${uid}-blur`} x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur stdDeviation="0.6" result="blur" />
@@ -65,9 +68,9 @@ export function UpperDeckIcon({
             cy={cy + r}
             r={r}
             fill="white"
-            fillOpacity={0.12}
-            stroke="white"
-            strokeOpacity={0.45}
+            fillOpacity={0.1}
+            stroke={variant === 'light' ? BRAND.border : BRAND.text}
+            strokeOpacity={variant === 'light' ? 0.5 : 0.35}
             strokeWidth={0.75}
           />
         </g>
@@ -92,16 +95,16 @@ export function UpperDeckLogo({
   const s = sizes[size];
   const nameClass =
     theme === 'dark' || theme === 'glass'
-      ? 'text-white'
-      : 'text-[var(--ud-graphite)]';
+      ? 'text-[var(--brand-text)]'
+      : 'text-[var(--brand-bg-primary)]';
   const tldClass =
     theme === 'dark' || theme === 'glass'
-      ? 'text-white/55'
-      : 'text-[var(--ud-slate)]';
+      ? 'text-[var(--brand-text-secondary)]'
+      : 'text-[var(--brand-text-secondary)]';
 
   return (
     <div className={cn('flex items-center', s.gap, className)}>
-      <UpperDeckIcon size={s.icon} />
+      <UpperDeckIcon size={s.icon} variant={theme === 'light' ? 'light' : 'dark'} />
       {showWordmark && (
         <span className={cn('font-display font-semibold tracking-[-0.03em]', s.word, nameClass)}>
           UpperDeck

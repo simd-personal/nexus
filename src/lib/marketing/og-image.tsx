@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { BRAND } from '@/lib/brand/colors';
 import { OG_IMAGE_ALT } from '@/lib/marketing/seo';
 
 export { OG_IMAGE_ALT };
@@ -28,9 +29,9 @@ function UpperDeckMark({ size }: { size: number }) {
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
       <defs>
         <linearGradient id="og-g" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop stopColor="#7EB6FF" stopOpacity={0.9} />
-          <stop offset="50%" stopColor="#A78BFA" stopOpacity={0.75} />
-          <stop offset="100%" stopColor="#C4B5FD" stopOpacity={0.55} />
+          <stop stopColor={BRAND.accentLight} />
+          <stop offset="50%" stopColor={BRAND.accent} />
+          <stop offset="100%" stopColor={BRAND.accentDark} />
         </linearGradient>
       </defs>
       {circles.map(([cx, cy], i) => (
@@ -41,8 +42,8 @@ function UpperDeckMark({ size }: { size: number }) {
           r={r}
           fill="url(#og-g)"
           fillOpacity={0.35 + i * 0.08}
-          stroke="white"
-          strokeOpacity={0.45}
+          stroke={BRAND.text}
+          strokeOpacity={0.4}
           strokeWidth={0.75}
         />
       ))}
@@ -82,7 +83,7 @@ export async function renderOgImage({
           flexDirection: 'column',
           justifyContent: 'center',
           padding: compact ? '48px' : '72px',
-          background: '#0e1115',
+          background: BRAND.bgPrimary,
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -95,7 +96,7 @@ export async function renderOgImage({
             width: 520,
             height: 520,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(91,156,246,0.35) 0%, rgba(91,156,246,0) 70%)',
+            background: `radial-gradient(circle, rgba(37,99,235,0.35) 0%, rgba(37,99,235,0) 70%)`,
           }}
         />
         <div
@@ -106,15 +107,14 @@ export async function renderOgImage({
             width: 560,
             height: 560,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(147,51,234,0.28) 0%, rgba(147,51,234,0) 70%)',
+            background: `radial-gradient(circle, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0) 70%)`,
           }}
         />
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            background:
-              'linear-gradient(135deg, rgba(91,156,246,0.08) 0%, rgba(124,108,240,0.06) 52%, rgba(147,51,234,0.08) 100%)',
+            background: `linear-gradient(135deg, rgba(37,99,235,0.1) 0%, rgba(26,36,51,0.2) 100%)`,
           }}
         />
 
@@ -134,7 +134,7 @@ export async function renderOgImage({
                   fontFamily: 'Space Grotesk',
                   fontSize: titleSize,
                   fontWeight: 700,
-                  color: '#ffffff',
+                  color: BRAND.text,
                   letterSpacing: '-0.03em',
                 }}
               >
@@ -145,7 +145,7 @@ export async function renderOgImage({
                   fontFamily: 'Space Grotesk',
                   fontSize: titleSize * 0.72,
                   fontWeight: 500,
-                  color: 'rgba(255,255,255,0.55)',
+                  color: BRAND.textSecondary,
                   letterSpacing: '-0.03em',
                 }}
               >
@@ -157,7 +157,7 @@ export async function renderOgImage({
                 fontFamily: 'Space Grotesk',
                 fontSize: taglineSize,
                 fontWeight: 500,
-                color: 'rgba(255,255,255,0.82)',
+                color: BRAND.text,
                 letterSpacing: '-0.02em',
                 maxWidth: compact ? 520 : 760,
                 lineHeight: 1.25,
@@ -176,7 +176,7 @@ export async function renderOgImage({
             fontFamily: 'Space Grotesk',
             fontSize: domainSize,
             fontWeight: 600,
-            color: 'rgba(255,255,255,0.35)',
+            color: BRAND.border,
             letterSpacing: '-0.02em',
           }}
         >

@@ -8,8 +8,8 @@ export function MarketingNav() {
     <header className="marketing-nav">
       <div className="marketing-container flex items-center gap-2 py-4 sm:gap-6 sm:py-5">
         <Link href="/" className="min-w-0 shrink">
-          <UpperDeckLogo size="sm" theme="light" className="sm:hidden" />
-          <UpperDeckLogo size="md" theme="light" className="hidden sm:flex" />
+          <UpperDeckLogo size="sm" theme="dark" className="sm:hidden" />
+          <UpperDeckLogo size="md" theme="dark" className="hidden sm:flex" />
         </Link>
 
         <nav className="hidden items-center gap-8 md:ml-4 md:flex lg:ml-8" aria-label="Main">
@@ -25,7 +25,8 @@ export function MarketingNav() {
             Sign in
           </Link>
           <Link href={loginHref({ mode: 'signup' })} className="marketing-btn-primary whitespace-nowrap">
-            Get started free
+            <span className="sm:hidden">Start free</span>
+            <span className="hidden sm:inline">Get started free</span>
           </Link>
         </div>
       </div>

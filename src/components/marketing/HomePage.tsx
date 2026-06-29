@@ -208,7 +208,7 @@ export function HomePage() {
                   <ul className="mt-6 space-y-3">
                     {tier.features.map((f) => (
                       <li key={f} className="flex items-start gap-2.5 text-sm text-[var(--ud-slate)]">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                         {f}
                       </li>
                     ))}
@@ -239,7 +239,7 @@ export function HomePage() {
             <div className="marketing-org-banner">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-[#7c6cf0]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[var(--brand-accent)]">
                     For teams and organizations
                   </p>
                   <h3 className="mt-2 text-xl font-semibold text-[var(--ud-graphite)]">

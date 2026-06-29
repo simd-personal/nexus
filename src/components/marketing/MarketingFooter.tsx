@@ -26,7 +26,7 @@ function FooterColumn({
               {link.label}
             </Link>
             {link.description && (
-              <p className="mt-0.5 text-xs leading-relaxed text-[var(--ud-slate)]">
+              <p className="mt-0.5 text-xs leading-relaxed text-[var(--brand-text-secondary)]">
                 {link.description}
               </p>
             )}
@@ -43,8 +43,8 @@ export function MarketingFooter() {
       <div className="marketing-container py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <UpperDeckLogo size="sm" theme="light" />
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--ud-slate)]">
+            <UpperDeckLogo size="sm" theme="dark" />
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--brand-text-secondary)]">
               Hire Sunny, your first AI employee for client work. Briefs, risks, and follow ups
               from every deck, email, and call. Getting more capable with every release.
             </p>
@@ -57,8 +57,8 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--ud-cloud)] pt-8 sm:flex-row">
-          <p className="text-sm text-[var(--ud-slate)]">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--brand-border)] pt-8 sm:flex-row">
+          <p className="text-sm text-[var(--brand-text-secondary)]">
             © {new Date().getFullYear()} UpperDeck · {APP_DOMAIN}
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
