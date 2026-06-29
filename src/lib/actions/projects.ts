@@ -152,7 +152,15 @@ export async function deleteProject(projectId: string) {
   return { success: true, deletedFiles: result.deletedFiles ?? 0 };
 }
 
-export async function updateProfile(formData: FormData): Promise<void> {
+export type SettingsFormState = {
+  status: 'idle' | 'success' | 'error';
+  message: string;
+};
+
+export async function updateProfile(
+  _prevState: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
   const user = await requireUser();
   const supabase = await createClient();
   const fullName = formData.get('full_name') as string;
@@ -160,7 +168,7 @@ export async function updateProfile(formData: FormData): Promise<void> {
   const nameAliases = parseKeywordList(formData.get('name_aliases') as string);
   const watchKeywords = parseKeywordList(formData.get('watch_keywords') as string);
 
-  await supabase
+  const { error } = await supabase
     .from('profiles')
     .update({
       full_name: fullName?.trim() || null,
@@ -170,10 +178,19 @@ export async function updateProfile(formData: FormData): Promise<void> {
     })
     .eq('user_id', user.id);
 
+  if (error) {
+    return { status: 'error', message: 'Could not save your profile. Please try again.' };
+  }
+
   revalidatePath('/settings');
+  return { status: 'success', message: 'Profile saved.' };
 }
 
-export async function updateProjectRelevance(projectId: string, formData: FormData): Promise<void> {
+export async function updateProjectRelevance(
+  projectId: string,
+  _prevState: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
   await requireUser();
   const supabase = await createClient();
   const watchKeywords = parseKeywordList(formData.get('watch_keywords') as string);
@@ -187,6 +204,10 @@ export async function updateProjectRelevance(projectId: string, formData: FormDa
     })
     .eq('id', projectId);
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    return { status: 'error', message: 'Could not save relevance settings. Please try again.' };
+  }
+
   revalidatePath(`/projects/${projectId}/overview`);
+  return { status: 'success', message: 'Relevance settings saved.' };
 }

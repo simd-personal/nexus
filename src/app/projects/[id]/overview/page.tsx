@@ -41,8 +41,8 @@ export default async function ProjectOverviewPage({
     getProjectTimeline(id, { includeSubProjects }),
   ]);
 
-  const people = entities.filter((e) => e.type === 'person');
-  const facilities = entities.filter((e) => e.type === 'facility');
+  const people = dedupeEntities(entities.filter((e) => e.type === 'person'));
+  const facilities = dedupeEntities(entities.filter((e) => e.type === 'facility'));
   const conflicts = criticalItems.filter((c) => c.category === 'conflict');
   const openActions = actionItems.filter((a) => a.status === 'open');
   const recentEvents = timeline.slice(0, 5);
@@ -159,24 +159,20 @@ export default async function ProjectOverviewPage({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {people.length > 0 && (
             <Card>
-              <CardHeader title="People Mentioned" />
+              <CardHeader title="People Mentioned" description="Click a name to find where they're mentioned" />
               <div className="flex flex-wrap gap-2">
                 {people.map((p) => (
-                  <span key={p.id} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700 dark:bg-[var(--ud-cloud)] dark:text-gray-300">
-                    {p.name}
-                  </span>
+                  <EntityChip key={p.id} projectId={project.id} name={p.name} />
                 ))}
               </div>
             </Card>
           )}
           {facilities.length > 0 && (
             <Card>
-              <CardHeader title="Facilities / Locations" />
+              <CardHeader title="Facilities / Locations" description="Click a place to find where it's mentioned" />
               <div className="flex flex-wrap gap-2">
                 {facilities.map((f) => (
-                  <span key={f.id} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700 dark:bg-[var(--ud-cloud)] dark:text-gray-300">
-                    {f.name}
-                  </span>
+                  <EntityChip key={f.id} projectId={project.id} name={f.name} />
                 ))}
               </div>
             </Card>
@@ -211,6 +207,31 @@ export default async function ProjectOverviewPage({
         />
       </Card>
     </div>
+  );
+}
+
+type EntityRow = { id: string; name: string; normalized_name?: string | null };
+
+function dedupeEntities<T extends EntityRow>(rows: T[]): T[] {
+  const seen = new Set<string>();
+  const unique: T[] = [];
+  for (const row of rows) {
+    const key = (row.normalized_name ?? row.name ?? '').trim().toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    unique.push(row);
+  }
+  return unique;
+}
+
+function EntityChip({ projectId, name }: { projectId: string; name: string }) {
+  return (
+    <Link
+      href={`/projects/${projectId}/search?q=${encodeURIComponent(name)}`}
+      className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700 transition-colors hover:bg-gray-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 dark:bg-[var(--ud-cloud)] dark:text-gray-300 dark:hover:bg-amber-500 dark:hover:text-gray-900 dark:focus:ring-offset-[var(--ud-mist)]"
+    >
+      {name}
+    </Link>
   );
 }
 

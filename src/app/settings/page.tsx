@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { AppShell } from '@/components/layout/AppShell';
 import { getProfile } from '@/lib/data/queries';
-import { updateProfile } from '@/lib/actions/projects';
 import { updateOrganizationSettings } from '@/lib/actions/organizations';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +10,7 @@ import { EmailForwardSettings } from '@/components/settings/EmailForwardSettings
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
 import { BillingSettings } from '@/components/settings/BillingSettings';
 import { SignOutButton } from '@/components/auth/SignOutButton';
-import { RelevanceProfileFields } from '@/components/settings/RelevanceProfileFields';
+import { ProfileForm } from '@/components/settings/ProfileForm';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
 import { planDisplayName } from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
@@ -60,46 +59,20 @@ export default async function SettingsPage({
 
         <Card className="mt-6">
           <CardHeader title="Profile" />
-          <form action={updateProfile} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-              <input
-                type="email"
-                value={data?.user.email ?? ''}
-                disabled
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-400"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-              <input
-                name="full_name"
-                defaultValue={data?.profile?.full_name ?? ''}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100 dark:focus:ring-gray-500"
-              />
-            </div>
-            <RelevanceProfileFields
-              companyName={data?.profile?.company_name ?? null}
-              nameAliases={data?.profile?.name_aliases ?? []}
-              watchKeywords={data?.profile?.watch_keywords ?? []}
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Account type</label>
-              <input
-                type="text"
-                value={
-                  isEnterprise
-                    ? 'Organization (enterprise)'
-                    : isPro
-                      ? planDisplayName(data?.profile?.plan)
-                      : 'Personal (free)'
-                }
-                disabled
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-400"
-              />
-            </div>
-            <Button type="submit" size="sm">Save Changes</Button>
-          </form>
+          <ProfileForm
+            email={data?.user.email ?? ''}
+            fullName={data?.profile?.full_name ?? ''}
+            accountTypeLabel={
+              isEnterprise
+                ? 'Organization (enterprise)'
+                : isPro
+                  ? planDisplayName(data?.profile?.plan)
+                  : 'Personal (free)'
+            }
+            companyName={data?.profile?.company_name ?? null}
+            nameAliases={data?.profile?.name_aliases ?? []}
+            watchKeywords={data?.profile?.watch_keywords ?? []}
+          />
         </Card>
 
         <Card className="mt-6">
