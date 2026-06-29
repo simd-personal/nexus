@@ -1,5 +1,5 @@
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
-import { APP_DOMAIN } from '@/lib/constants';
+import { APP_DOMAIN, SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/constants';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
@@ -118,8 +118,11 @@ export default function TermsPage() {
 
           <h2>Account deletion</h2>
           <p>
-            You may delete your account at any time from Settings or by contacting us at
-            privacy@{APP_DOMAIN}. When your account is deleted, we permanently remove your profile,
+            You may delete your account at any time from Settings or by contacting us at{' '}
+            <a href={SUPPORT_MAILTO} className="marketing-inline-link">
+              {SUPPORT_EMAIL}
+            </a>
+            . When your account is deleted, we permanently remove your profile,
             projects, uploaded files, and associated data from our systems. We do not retain backups
             or archives of deleted account data—it is as if the account never existed, except where
             payment processors such as Stripe must retain minimal transaction records under their
@@ -173,7 +176,12 @@ export default function TermsPage() {
           </p>
 
           <h2>Contact</h2>
-          <p>Questions about these terms: legal@{APP_DOMAIN}</p>
+          <p>
+            Questions about these terms:{' '}
+            <a href={SUPPORT_MAILTO} className="marketing-inline-link">
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
         </div>
       </section>
     </MarketingPageLayout>

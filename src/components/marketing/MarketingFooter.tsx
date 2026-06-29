@@ -53,7 +53,7 @@ export function MarketingFooter() {
           <FooterColumn title="Solutions" links={SOLUTION_LINKS} />
           <div className="space-y-10">
             <FooterColumn title="Company" links={COMPANY_LINKS} />
-            <FooterColumn title="Legal" links={LEGAL_LINKS} />
+            <FooterColumn title="Support" links={LEGAL_LINKS} />
           </div>
         </div>
 
@@ -67,12 +67,6 @@ export function MarketingFooter() {
             </Link>
             <Link href="/pricing" className="marketing-nav-link">
               Pricing
-            </Link>
-            <Link href="/privacy" className="marketing-nav-link">
-              Privacy
-            </Link>
-            <Link href="/terms" className="marketing-nav-link">
-              Terms
             </Link>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
-import { APP_DOMAIN } from '@/lib/constants';
+import { APP_DOMAIN, SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/constants';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
@@ -125,12 +125,19 @@ export default function PrivacyPage() {
           <h2>Your rights</h2>
           <p>
             Depending on your location, you may have rights to access, correct, delete, or export
-            your personal data. Contact us at privacy@{APP_DOMAIN} for requests.
+            your personal data. Contact us at{' '}
+            <a href={SUPPORT_MAILTO} className="marketing-inline-link">
+              {SUPPORT_EMAIL}
+            </a>{' '}
+            for requests.
           </p>
 
           <h2>Contact</h2>
           <p>
-            Questions about this policy: privacy@{APP_DOMAIN}
+            Questions about this policy:{' '}
+            <a href={SUPPORT_MAILTO} className="marketing-inline-link">
+              {SUPPORT_EMAIL}
+            </a>
           </p>
         </div>
       </section>

@@ -1,3 +1,5 @@
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/constants';
+
 export type SiteNavLink = {
   href: string;
   label: string;
@@ -52,8 +54,7 @@ export const COMPANY_LINKS: SiteNavLink[] = [
 ];
 
 export const LEGAL_LINKS: SiteNavLink[] = [
-  { href: '/privacy', label: 'Privacy policy' },
-  { href: '/terms', label: 'Terms of service' },
+  { href: SUPPORT_MAILTO, label: 'Contact support', description: SUPPORT_EMAIL },
 ];
 
 export const PRIMARY_NAV_LINKS: SiteNavLink[] = [
