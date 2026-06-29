@@ -9,8 +9,9 @@ import {
   signInIndividual,
   signUpIndividual,
 } from '@/lib/actions/auth';
-import { APP_NAME, BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
-import { UpperDeckLogo, UpperDeckIcon } from '@/components/brand/UpperDeckLogo';
+import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
+import { AuthEntryTransition } from '@/components/auth/AuthEntrySplash';
 import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
 import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
@@ -173,19 +174,23 @@ export default function LoginPageClient() {
       : 'signin'
   );
   const [loading, setLoading] = useState(false);
-  const [onboarding, setOnboarding] = useState(false);
+  const [entry, setEntry] = useState<{ mode: 'signin' | 'signup'; href: string } | null>(null);
   const [message, setMessage] = useState('');
   const authError = searchParams.get('error') === 'auth';
   const checkoutPlan = searchParams.get('plan');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
 
-  function postAuthRedirect(isNewSignup = false) {
-    if (hasCheckoutPlan) {
-      window.location.href = `/upgrade?plan=${checkoutPlan}`;
-      return;
-    }
-    window.location.href = isNewSignup ? '/getting-started' : '/dashboard';
+  function resolvePostAuthHref(isNewSignup: boolean) {
+    if (hasCheckoutPlan) return `/upgrade?plan=${checkoutPlan}`;
+    return isNewSignup ? '/getting-started' : '/dashboard';
+  }
+
+  function beginAuthEntry(isNewSignup: boolean) {
+    setEntry({
+      mode: isNewSignup ? 'signup' : 'signin',
+      href: resolvePostAuthHref(isNewSignup),
+    });
   }
 
   function switchMode(next: AuthMode) {
@@ -216,8 +221,7 @@ export default function LoginPageClient() {
         if (result.error) {
           setMessage(result.error);
         } else if (result.immediate) {
-          setOnboarding(true);
-          window.setTimeout(() => postAuthRedirect(true), 2600);
+          beginAuthEntry(true);
           return;
         } else if (result.recoveredFromRateLimit) {
           setMode('signin');
@@ -233,7 +237,8 @@ export default function LoginPageClient() {
         if (result.error) {
           setMessage(result.error);
         } else {
-          postAuthRedirect();
+          beginAuthEntry(false);
+          return;
         }
       }
     } catch {
@@ -257,28 +262,8 @@ export default function LoginPageClient() {
     setLoading(false);
   }
 
-  if (onboarding) {
-    return (
-      <div className="auth-onboarding" role="status" aria-live="polite">
-        <div className="auth-onboarding-blob-a" />
-        <div className="auth-onboarding-blob-b" />
-        <div className="auth-onboarding-card">
-          <div className="auth-onboarding-mark">
-            <span className="auth-onboarding-ring" />
-            <UpperDeckIcon size={56} className="auth-onboarding-icon" />
-          </div>
-          <h1 className="auth-onboarding-title">Welcome to {APP_NAME}</h1>
-          <p className="auth-onboarding-sub">
-            You can confirm your email with us later. Let’s get you started.
-          </p>
-          <div className="auth-onboarding-dots" aria-hidden>
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      </div>
-    );
+  if (entry) {
+    return <AuthEntryTransition mode={entry.mode} href={entry.href} />;
   }
 
   return (
@@ -329,26 +314,33 @@ export default function LoginPageClient() {
         <div className="auth-visual-panel relative flex flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:min-h-screen">
           <div className="auth-visual-ribbon" />
 
-          {/* Decorative glass cards — desktop only */}
-          <div className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block">
+          {/* Decorative glass cards — fanned on the left, form stays centered */}
+          <div className="auth-visual-fan hidden xl:block" aria-hidden>
             <GlassStatCard
               label="Projects"
               value="24"
               sub="Active projects"
               dark
-              className="absolute right-[12%] top-[14%] w-44"
+              className="auth-fan-card"
             />
             <GlassStatCard
               label="Decks"
               value="18"
               sub="Updated this week"
-              className="absolute right-[6%] top-[38%] w-40"
+              className="auth-fan-card"
             />
             <GlassStatCard
               label="Signals"
               value="9"
               sub="Waiting on you"
-              className="absolute bottom-[22%] right-[18%] w-40"
+              dark
+              className="auth-fan-card"
+            />
+            <GlassStatCard
+              label="Briefs"
+              value="12"
+              sub="Ready today"
+              className="auth-fan-card"
             />
           </div>
 

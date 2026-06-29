@@ -5,8 +5,14 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-[var(--ud-stone)]">
-          <span className="auth-spinner h-5 w-5 rounded-full border-2 border-[var(--ud-cloud)] border-t-[#7c6cf0]" />
+        <div className="auth-onboarding" aria-hidden>
+          <div className="auth-onboarding-blob-a" />
+          <div className="auth-onboarding-blob-b" />
+          <div className="auth-onboarding-card">
+            <div className="auth-onboarding-mark">
+              <span className="auth-onboarding-ring" />
+            </div>
+          </div>
         </div>
       }
     >

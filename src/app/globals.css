@@ -214,6 +214,85 @@ html.dark .docx-preview td {
     0 1px 0 rgba(255, 255, 255, 0.9) inset;
 }
 
+/* Decorative stat cards — fanned stack, clear of the login form */
+.auth-visual-fan {
+  position: absolute;
+  left: clamp(1.25rem, 5vw, 3.5rem);
+  top: 50%;
+  z-index: 0;
+  width: 11.5rem;
+  height: 22rem;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.auth-fan-card {
+  position: absolute;
+  width: 11.5rem;
+  transform-origin: center bottom;
+  box-shadow: 0 12px 36px rgba(14, 17, 21, 0.14);
+  animation: auth-fan-enter 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-fan-card:nth-child(1) {
+  top: 0;
+  left: 0;
+  transform: rotate(-14deg);
+  z-index: 1;
+  animation-delay: 0.08s;
+}
+
+.auth-fan-card:nth-child(2) {
+  top: 4.75rem;
+  left: 1.35rem;
+  transform: rotate(-5deg);
+  z-index: 2;
+  animation-delay: 0.16s;
+}
+
+.auth-fan-card:nth-child(3) {
+  top: 9.5rem;
+  left: 0.35rem;
+  transform: rotate(4deg);
+  z-index: 3;
+  animation-delay: 0.24s;
+}
+
+.auth-fan-card:nth-child(4) {
+  top: 14.25rem;
+  left: 1.5rem;
+  transform: rotate(12deg);
+  z-index: 4;
+  animation-delay: 0.32s;
+}
+
+.auth-fan-card.auth-glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.auth-fan-card.auth-glass-card-dark {
+  background: rgba(30, 27, 75, 0.82);
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+@keyframes auth-fan-enter {
+  from {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@media (max-width: 1279px) {
+  .auth-visual-fan {
+    display: none;
+  }
+}
+
 .auth-trust-row {
   display: flex;
   flex-wrap: wrap;
@@ -425,11 +504,11 @@ html.dark .docx-preview td {
   to { transform: rotate(360deg); }
 }
 
-/* Post-signup onboarding splash */
+/* Post-signup / post-sign-in entry splash */
 .auth-onboarding {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -507,6 +586,40 @@ html.dark .docx-preview td {
   line-height: 1.55;
   color: var(--ud-slate);
   max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.auth-onboarding-status {
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #7c6cf0;
+  animation: auth-fade-up 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.auth-onboarding-progress {
+  width: min(220px, 70vw);
+  height: 3px;
+  margin: 20px auto 0;
+  border-radius: 9999px;
+  background: rgba(124, 108, 240, 0.15);
+  overflow: hidden;
+}
+
+.auth-onboarding-progress-bar {
+  display: block;
+  height: 100%;
+  width: 35%;
+  border-radius: 9999px;
+  background: var(--ud-gradient);
+  animation: auth-onboarding-progress 1.8s ease-in-out infinite;
+}
+
+@keyframes auth-onboarding-progress {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(320%); }
 }
 
 .auth-onboarding-dots {
