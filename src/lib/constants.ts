@@ -12,6 +12,9 @@ export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
 export const AI_EMPLOYEE_NAME = 'Sunny';
 /** Primary brand tagline */
 export const BRAND_TAGLINE = 'Deliver more with AI employees.';
+/** Sunny hero pitch on marketing pages */
+export const SUNNY_HERO_LINE =
+  "Sunny is the world's best AI employee, designed meticulously to deliver client facing work.";
 /** Hero and product subline */
 export const TAGLINE =
   'Give your business a teammate that plans, executes, and delivers work from start to finish.';

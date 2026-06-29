@@ -12,7 +12,7 @@ import { HeroTransform } from '@/components/marketing/fun/HeroTransform';
 import { LogoMarquee } from '@/components/marketing/fun/LogoMarquee';
 import { Reveal } from '@/components/marketing/fun/Reveal';
 import { Testimonials } from '@/components/marketing/fun/Testimonials';
-import { AI_EMPLOYEE_NAME, BRAND_TAGLINE, TAGLINE } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME, BRAND_TAGLINE, SUNNY_HERO_LINE, TAGLINE } from '@/lib/constants';
 import { loginHref } from '@/lib/auth/login-url';
 import { HOME_WOW_POINTS, HOME_WORKFLOW_STEPS } from '@/lib/marketing/homepage';
 import { B2C_PRICING } from '@/lib/marketing/pricing';
@@ -47,7 +47,8 @@ export function HomePage() {
               Stop reading the pile.{' '}
               <span className="fun-gradient-text">Hire {AI_EMPLOYEE_NAME}.</span>
             </h1>
-            <p className="marketing-hero-body">{TAGLINE}</p>
+            <p className="marketing-hero-body">{SUNNY_HERO_LINE}</p>
+            <p className="marketing-hero-body mt-4">{TAGLINE}</p>
 
             <ul className="marketing-hero-highlights" aria-label="Key benefits">
               {HOME_WOW_POINTS.map((point) => (

@@ -1,4 +1,4 @@
-import { APP_NAME, APP_DOMAIN, AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { APP_NAME, APP_DOMAIN, AI_EMPLOYEE_NAME, SUNNY_HERO_LINE } from '@/lib/constants';
 
 /**
  * Branded transactional email templates.
@@ -118,7 +118,7 @@ export function renderWelcomeEmail(input: WelcomeEmailInput): {
       Welcome aboard, ${firstName}.
     </h1>
     <p style="margin:0 0 18px;${font}font-size:15px;line-height:1.65;color:${BRAND.body};">
-      Your ${APP_NAME} account is ready to go, with no waiting around. Meet ${AI_EMPLOYEE_NAME}, your AI employee for client work. Upload decks, emails, meetings, and notes, then get briefs, risks, and follow ups with every source cited.
+      Your ${APP_NAME} account is ready to go, with no waiting around. ${SUNNY_HERO_LINE} Upload decks, emails, meetings, and notes, then get briefs, risks, and follow ups with every source cited.
     </p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0;">
       <tr><td align="center">${ctaButton(input.appUrl, `Open ${APP_NAME}`)}</td></tr>
@@ -138,7 +138,7 @@ export function renderWelcomeEmail(input: WelcomeEmailInput): {
   const text = [
     `Welcome aboard, ${firstName}.`,
     '',
-    `Your ${APP_NAME} account is ready to go, with no waiting around. Meet ${AI_EMPLOYEE_NAME}, your AI employee for client work. Upload decks, emails, meetings, and notes, then get briefs, risks, and follow ups with every source cited.`,
+    `Your ${APP_NAME} account is ready to go, with no waiting around. ${SUNNY_HERO_LINE} Upload decks, emails, meetings, and notes, then get briefs, risks, and follow ups with every source cited.`,
     '',
     `Open ${APP_NAME}: ${input.appUrl}`,
     '',
