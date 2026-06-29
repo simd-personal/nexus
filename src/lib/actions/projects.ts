@@ -5,7 +5,7 @@ import { createClient, requireUser } from '@/lib/supabase/server';
 import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
 import { enrichProjectSetup } from '@/lib/ai/sunny';
 import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
-import type { ProjectStatus } from '@/types/database';
+import type { ActionItemStatus, ProjectStatus } from '@/types/database';
 import { parseKeywordList } from '@/lib/relevance/watchlist';
 import { recomputeProjectStatus } from '@/lib/projects/health';
 
@@ -144,6 +144,32 @@ export async function updateCriticalItemStatus(
   revalidatePath('/dashboard');
   revalidatePath('/projects');
   if (data?.project_id) revalidatePath(`/projects/${data.project_id}`);
+  return { success: true };
+}
+
+export async function updateActionItemStatus(
+  itemId: string,
+  status: ActionItemStatus,
+  options?: { applies_to_me?: boolean }
+) {
+  const supabase = await createClient();
+  const updates: { status: ActionItemStatus; applies_to_me?: boolean } = { status };
+  if (options?.applies_to_me !== undefined) {
+    updates.applies_to_me = options.applies_to_me;
+  }
+
+  const { data, error } = await supabase
+    .from('action_items')
+    .update(updates)
+    .eq('id', itemId)
+    .select('project_id')
+    .single();
+
+  if (error) return { error: error.message };
+  revalidatePath('/action-items');
+  revalidatePath('/dashboard');
+  revalidatePath('/projects');
+  if (data?.project_id) revalidatePath(`/projects/${data.project_id}/overview`);
   return { success: true };
 }
 

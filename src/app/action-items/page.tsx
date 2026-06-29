@@ -1,11 +1,16 @@
 import { AppShell } from '@/components/layout/AppShell';
-import { ActionItemsList } from '@/components/actions/ActionItemCard';
-import { getOpenActionItems } from '@/lib/data/queries';
+import { ActionItemsPageClient } from '@/components/actions/ActionItemsPageClient';
+import { getActionItemsByStatus, getOpenActionItems } from '@/lib/data/queries';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ActionItemsPage() {
-  const items = await getOpenActionItems();
+  const [openItems, inProgressItems, doneItems, dismissedItems] = await Promise.all([
+    getOpenActionItems(),
+    getActionItemsByStatus('in_progress'),
+    getActionItemsByStatus('done'),
+    getActionItemsByStatus('cancelled'),
+  ]);
 
   return (
     <AppShell>
@@ -17,7 +22,12 @@ export default async function ActionItemsPage() {
           </p>
         </div>
 
-        <ActionItemsList items={items} showProject />
+        <ActionItemsPageClient
+          openItems={openItems}
+          inProgressItems={inProgressItems}
+          doneItems={doneItems}
+          dismissedItems={dismissedItems}
+        />
       </div>
     </AppShell>
   );

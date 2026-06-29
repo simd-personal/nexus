@@ -209,6 +209,35 @@ export async function getOpenActionItems(limit?: number): Promise<ActionItem[]> 
   return limit ? items.slice(0, limit) : items;
 }
 
+export async function getActionItemsByStatus(
+  status: Exclude<ActionItem['status'], 'open'>,
+  limit = 50
+): Promise<ActionItem[]> {
+  await ensureFreshAppData();
+  const supabase = await createClient();
+
+  let query = supabase
+    .from('action_items')
+    .select('*, projects(client_name, project_name)')
+    .eq('status', status)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (status === 'cancelled') {
+    query = query.eq('applies_to_me', false);
+  } else {
+    query = query.eq('applies_to_me', true);
+  }
+
+  const { data } = await query;
+  return (data ?? []).map((item) => ({
+    ...item,
+    source_citations: item.source_citations ?? [],
+    matched_terms: item.matched_terms ?? [],
+    project: item.projects as ActionItem['project'],
+  }));
+}
+
 export async function getSunnyUpdates(limit?: number): Promise<SunnyUpdate[]> {
   await ensureFreshAppData();
   const supabase = await createClient();

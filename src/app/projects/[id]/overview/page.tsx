@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { CriticalItemsList } from '@/components/critical/CriticalItemCard';
+import { ActionItemsList } from '@/components/actions/ActionItemCard';
 import { StatusBadge } from '@/components/ui/Badge';
 import { SubProjectsPanel } from '@/components/project/SubProjectsPanel';
 import {
@@ -140,19 +141,7 @@ export default async function ProjectOverviewPage({
             title="Open Action Items"
             description="Filtered to follow-ups relevant to you. Adjust keywords above to tune what Sunny surfaces."
           />
-          <div className="space-y-3">
-            {openActions.map((item) => (
-              <div key={item.id} className="flex items-start justify-between py-2 border-b border-gray-100 last:border-0 dark:border-[var(--ud-cloud)]">
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{item.title}</p>
-                  {item.owner && <p className="text-xs text-gray-500 dark:text-gray-400">Owner: {item.owner}</p>}
-                </div>
-                {item.due_date && (
-                  <span className="text-xs text-gray-400 dark:text-gray-500">Due: {item.due_date}</span>
-                )}
-              </div>
-            ))}
-          </div>
+          <ActionItemsList items={openActions} embedded />
         </Card>
       )}
 
