@@ -1,6 +1,7 @@
 import type { createServiceClient } from '@/lib/supabase/admin';
 import type { SourceType } from '@/types/database';
 import type { NormalizedActionItem } from '@/lib/ai/sunny';
+import { isNoiseActionTitle } from '@/lib/relevance/action-items';
 
 export type ActionItemKind = 'commitment' | 'decision' | 'informational' | 'risk';
 export type ActionItemConfidence = 'high' | 'medium' | 'low';
@@ -41,8 +42,6 @@ export function collectWatchTerms(ctx: WatchlistContext): string[] {
   add(ctx.userName);
   add(ctx.userEmailLocal);
   add(ctx.companyName);
-  add(ctx.projectClientName);
-  add(ctx.projectName);
   add(ctx.projectRole);
   for (const alias of ctx.nameAliases) add(alias);
   for (const keyword of ctx.accountKeywords) add(keyword);
@@ -84,6 +83,7 @@ export function shouldSurfaceActionItem(
   >,
   ctx: WatchlistContext
 ): boolean {
+  if (isNoiseActionTitle(item.title)) return false;
   if (item.item_kind === 'informational') return false;
   if (item.confidence === 'low') return false;
 
@@ -94,18 +94,26 @@ export function shouldSurfaceActionItem(
       ? item.matched_terms.map((term) => term.toLowerCase())
       : findMatchedTerms(searchable, terms);
 
-  const hasRelevance = matched.length > 0 || ownerMatchesUser(item.owner ?? '', ctx);
+  const ownerMatch = ownerMatchesUser(item.owner ?? '', ctx);
+  const hasRelevance = matched.length > 0 || ownerMatch;
 
   if (!hasRelevance) return false;
 
-  if (item.item_kind === 'commitment' || item.item_kind === 'risk') return true;
-  if (item.item_kind === 'decision') return true;
-
-  if (item.applies_to_me === true && (item.item_kind === 'commitment' || item.item_kind === 'decision')) {
-    return true;
+  if (ownerMatch) {
+    return item.item_kind === 'commitment' || item.item_kind === 'decision' || item.item_kind === 'risk';
   }
 
-  if (!item.item_kind && hasRelevance) return true;
+  if (item.applies_to_me === true && (item.item_kind === 'commitment' || item.item_kind === 'decision')) {
+    return matched.length > 0;
+  }
+
+  if (item.item_kind === 'commitment' || item.item_kind === 'decision') {
+    return matched.length > 0;
+  }
+
+  if (item.item_kind === 'risk') {
+    return ownerMatch;
+  }
 
   return false;
 }

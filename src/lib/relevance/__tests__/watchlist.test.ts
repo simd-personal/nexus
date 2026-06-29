@@ -34,12 +34,14 @@ describe('parseKeywordList', () => {
 });
 
 describe('collectWatchTerms', () => {
-  it('includes profile, project, and alias terms', () => {
+  it('includes profile and configured keywords but not whole project titles', () => {
     const terms = collectWatchTerms(baseContext);
     expect(terms).toContain('sim patel');
     expect(terms).toContain('sim');
     expect(terms).toContain('epic');
     expect(terms).toContain('upperdeck');
+    expect(terms).not.toContain('epic transition');
+    expect(terms).not.toContain('epic health');
   });
 });
 
@@ -108,6 +110,21 @@ describe('shouldSurfaceActionItem', () => {
         baseContext
       )
     ).toBe(true);
+  });
+
+  it('does not surface risk items owned by someone else', () => {
+    expect(
+      shouldSurfaceActionItem(
+        {
+          title: 'Escalate clearinghouse readiness to Orlando Health',
+          owner: 'Operational Director',
+          item_kind: 'risk',
+          matched_terms: ['Ellie'],
+          confidence: 'high',
+        },
+        baseContext
+      )
+    ).toBe(false);
   });
 });
 

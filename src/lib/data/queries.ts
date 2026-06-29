@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { nestProjectsWithStats, getProjectFamilyIds } from '@/lib/projects/hierarchy';
+import { computeProjectStatus, resolveProjectStatus } from '@/lib/projects/health';
+import { filterRelevantOpenActionItems } from '@/lib/relevance/action-items';
 import {
   ensureFreshAppData,
   recordCitationsStillValid,
@@ -25,12 +27,12 @@ async function enrichProjectStats(
   project: Project
 ): Promise<ProjectWithStats> {
   const projectId = project.id;
-  const [files, criticalItems, actionItems, sunnyUpdates] = await Promise.all([
+  const [files, criticalItems, actionItems, sunnyUpdates, failedFiles] = await Promise.all([
     supabase.from('files').select('id, source_type').eq('project_id', projectId),
-    supabase.from('critical_items').select('id').eq('project_id', projectId).eq('status', 'open'),
+    supabase.from('critical_items').select('severity').eq('project_id', projectId).eq('status', 'open'),
     supabase
       .from('action_items')
-      .select('id')
+      .select('title, owner, item_kind, applies_to_me, matched_terms, status')
       .eq('project_id', projectId)
       .eq('status', 'open')
       .eq('applies_to_me', true),
@@ -40,16 +42,28 @@ async function enrichProjectStats(
       .eq('project_id', projectId)
       .order('created_at', { ascending: false })
       .limit(1),
+    supabase.from('files').select('id').eq('project_id', projectId).eq('status', 'failed').limit(1),
   ]);
+
+  const openCritical = criticalItems.data ?? [];
+  const relevantActions = filterRelevantOpenActionItems(actionItems.data ?? []);
+  const computedStatus = computeProjectStatus(openCritical, {
+    hasFailedFiles: (failedFiles.data?.length ?? 0) > 0,
+  });
+
+  if (computedStatus !== project.status) {
+    await supabase.from('projects').update({ status: computedStatus }).eq('id', projectId);
+  }
 
   const fileList = files.data ?? [];
   return {
     ...project,
+    status: computedStatus,
     file_count: fileList.length,
     meeting_count: fileList.filter((f) => f.source_type === 'meeting' || f.source_type === 'transcript').length,
     email_count: fileList.filter((f) => f.source_type === 'email').length,
-    action_item_count: actionItems.data?.length ?? 0,
-    critical_item_count: criticalItems.data?.length ?? 0,
+    action_item_count: relevantActions.length,
+    critical_item_count: openCritical.length,
     last_sunny_update: sunnyUpdates.data?.[0]?.created_at ?? null,
   };
 }
@@ -104,7 +118,9 @@ export async function getProject(projectId: string) {
     .select('*')
     .eq('id', projectId)
     .single();
-  return data;
+  if (!data) return null;
+  const status = await resolveProjectStatus(supabase, projectId);
+  return { ...data, status };
 }
 
 export async function getDashboardStats() {
@@ -123,7 +139,7 @@ export async function getDashboardStats() {
       .order('created_at', { ascending: false }),
     supabase
       .from('action_items')
-      .select('id', { count: 'exact' })
+      .select('title, owner, item_kind, applies_to_me, matched_terms, status')
       .eq('status', 'open')
       .eq('applies_to_me', true),
     supabase.from('critical_items').select('id', { count: 'exact' }).eq('category', 'conflict').eq('status', 'open'),
@@ -132,11 +148,12 @@ export async function getDashboardStats() {
   const validRecentUpdates = (recentUpdates.data ?? []).filter((update) =>
     sunnyUpdateStillValid(update, filesByProject)
   );
+  const relevantActionCount = filterRelevantOpenActionItems(actionItems.data ?? []).length;
 
   return {
     criticalCount: criticalItems.count ?? 0,
     newUpdatesCount: validRecentUpdates.length,
-    actionItemsCount: actionItems.count ?? 0,
+    actionItemsCount: relevantActionCount,
     conflictsCount: conflicts.count ?? 0,
   };
 }
@@ -291,11 +308,14 @@ export async function getProjectActionItems(
   }
 
   const { data } = await query.order('created_at', { ascending: false });
-  return (data ?? []).map((item) => ({
+  const items = (data ?? []).map((item) => ({
     ...item,
     source_citations: item.source_citations ?? [],
     matched_terms: item.matched_terms ?? [],
   }));
+
+  if (options?.forMe === false) return items;
+  return filterRelevantOpenActionItems(items);
 }
 
 export async function getProjectTimeline(

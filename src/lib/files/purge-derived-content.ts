@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Citation } from '@/types/database';
+import { recomputeProjectStatuses, recomputeProjectStatus } from '@/lib/projects/health';
 
 export function buildFilesByProject(
   files: Array<{ project_id: string; file_name: string }>
@@ -59,32 +60,39 @@ export async function pruneOrphanedDerivedRecords(
     )
     .map((row) => row.id);
 
+  const staleCriticalRows = (criticalItems ?? []).filter(
+    (row) =>
+      (row.source_citations as Citation[] | null)?.length &&
+      !recordCitationsStillValid(row, filesByProject)
+  );
+  const staleCriticalItemIds = staleCriticalRows.map((row) => row.id);
+
+  const staleActionRows = (actionItems ?? []).filter(
+    (row) =>
+      (row.source_citations as Citation[] | null)?.length &&
+      !recordCitationsStillValid(row, filesByProject)
+  );
+  const staleActionItemIds = staleActionRows.map((row) => row.id);
+
+  const affectedProjectIds = new Set<string>([
+    ...staleCriticalRows.map((row) => row.project_id),
+    ...staleActionRows.map((row) => row.project_id),
+  ]);
+
   if (staleSunnyUpdateIds.length > 0) {
     await supabase.from('sunny_updates').delete().in('id', staleSunnyUpdateIds);
   }
-
-  const staleCriticalItemIds = (criticalItems ?? [])
-    .filter(
-      (row) =>
-        (row.source_citations as Citation[] | null)?.length &&
-        !recordCitationsStillValid(row, filesByProject)
-    )
-    .map((row) => row.id);
 
   if (staleCriticalItemIds.length > 0) {
     await supabase.from('critical_items').delete().in('id', staleCriticalItemIds);
   }
 
-  const staleActionItemIds = (actionItems ?? [])
-    .filter(
-      (row) =>
-        (row.source_citations as Citation[] | null)?.length &&
-        !recordCitationsStillValid(row, filesByProject)
-    )
-    .map((row) => row.id);
-
   if (staleActionItemIds.length > 0) {
     await supabase.from('action_items').delete().in('id', staleActionItemIds);
+  }
+
+  if (affectedProjectIds.size > 0) {
+    await recomputeProjectStatuses(supabase, affectedProjectIds);
   }
 }
 
@@ -123,6 +131,7 @@ export async function purgeFileDerivedContent(
 
   if (criticalItemIds.length > 0) {
     await supabase.from('critical_items').delete().in('id', criticalItemIds);
+    await recomputeProjectStatus(supabase, projectId);
   }
 
   const actionItemIds = (actionItems ?? [])

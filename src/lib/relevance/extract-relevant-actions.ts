@@ -1,4 +1,5 @@
 import { extractActionItems, type NormalizedActionItem } from '@/lib/ai/sunny';
+import { resolveAppliesToMe } from '@/lib/relevance/action-items';
 import { createServiceClient } from '@/lib/supabase/admin';
 import type { SourceType } from '@/types/database';
 import {
@@ -21,5 +22,9 @@ export async function extractRelevantActionItems(
     watchlistPrompt: formatWatchlistForPrompt(watchlist),
     sourceType,
   });
-  return capActionItems(filterActionItemsForWatchlist(extracted, watchlist), sourceType);
+  const filtered = filterActionItemsForWatchlist(extracted, watchlist).map((item) => ({
+    ...item,
+    applies_to_me: resolveAppliesToMe(item, watchlist),
+  }));
+  return capActionItems(filtered, sourceType);
 }

@@ -29,6 +29,7 @@ import {
   type ProcessFileResult,
 } from '@/lib/processing/large-file';
 import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
+import { recomputeProjectStatus } from '@/lib/projects/health';
 import type { Citation, SourceType } from '@/types/database';
 
 interface ProcessFileOptions {
@@ -409,7 +410,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         description: item.description,
         owner: item.owner,
         due_date: item.due_date,
-        applies_to_me: item.applies_to_me ?? true,
+        applies_to_me: item.applies_to_me === true,
         item_kind: item.item_kind ?? null,
         matched_terms: item.matched_terms ?? [],
         source_citations: [{ file_name: fileName, snippet: item.title }] as Citation[],
@@ -522,13 +523,8 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
       last_activity_at: new Date().toISOString(),
     };
 
-    if (criticalItems.some((c) => c.severity === 'critical' || c.severity === 'high')) {
-      updateFields.status = 'critical';
-    } else if (criticalItems.length > 0) {
-      updateFields.status = 'watch';
-    }
-
     await supabase.from('projects').update(updateFields).eq('id', projectId);
+    await recomputeProjectStatus(supabase, projectId);
 
     const finalMetadata = {
       ...metadata,

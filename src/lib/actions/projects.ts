@@ -7,6 +7,7 @@ import { enrichProjectSetup } from '@/lib/ai/sunny';
 import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
 import type { ProjectStatus } from '@/types/database';
 import { parseKeywordList } from '@/lib/relevance/watchlist';
+import { recomputeProjectStatus } from '@/lib/projects/health';
 
 export async function createProject(formData: FormData) {
   const user = await requireUser();
@@ -136,7 +137,12 @@ export async function updateCriticalItemStatus(
     .single();
 
   if (error) return { error: error.message };
+  if (data?.project_id) {
+    await recomputeProjectStatus(supabase, data.project_id);
+  }
   revalidatePath('/critical-items');
+  revalidatePath('/dashboard');
+  revalidatePath('/projects');
   if (data?.project_id) revalidatePath(`/projects/${data.project_id}`);
   return { success: true };
 }

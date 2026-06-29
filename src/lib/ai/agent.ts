@@ -260,7 +260,7 @@ export async function runSunnyAgent(params: RunSunnyAgentParams): Promise<SunnyC
           description: item.description,
           owner: item.owner,
           due_date: item.due_date,
-          applies_to_me: item.applies_to_me ?? true,
+          applies_to_me: item.applies_to_me === true,
           item_kind: item.item_kind ?? null,
           matched_terms: item.matched_terms ?? [],
           source_citations: [citation],

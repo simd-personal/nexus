@@ -325,7 +325,7 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
           description: item.description,
           owner: item.owner,
           due_date: item.due_date,
-          applies_to_me: item.applies_to_me ?? true,
+          applies_to_me: item.applies_to_me === true,
           item_kind: item.item_kind ?? null,
           matched_terms: item.matched_terms ?? [],
           source_citations: [{ file_name: 'Project materials', snippet: item.title }],
