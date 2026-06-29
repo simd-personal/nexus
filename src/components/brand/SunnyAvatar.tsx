@@ -24,7 +24,7 @@ export function SunnyAvatar({ size = 'md', className, priority }: SunnyAvatarPro
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0B1220] shadow-[0_0_10px_rgba(251,191,36,0.18)] ring-1 ring-amber-400/20',
+        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-amber-200/80 dark:bg-[var(--ud-mist)] dark:ring-amber-700/40',
         className
       )}
       style={{ width: px, height: px }}
@@ -55,7 +55,7 @@ export function SunnyMascot({ className, priority }: SunnyMascotProps) {
       width={512}
       height={512}
       priority={priority}
-      className={cn('h-auto w-full max-w-[220px] object-contain drop-shadow-[0_0_24px_rgba(251,191,36,0.28)]', className)}
+      className={cn('h-auto w-full max-w-[200px] object-contain', className)}
     />
   );
 }
