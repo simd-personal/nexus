@@ -2,9 +2,27 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ArrowRight, Briefcase, Check } from 'lucide-react';
+import { MarketingShell } from '@/components/marketing/MarketingShell';
+import { Reveal } from '@/components/marketing/fun/Reveal';
 import { submitOrganizationQuoteRequest } from '@/lib/actions/quote';
 import { APP_NAME } from '@/lib/constants';
-import type { OrganizationIndustry } from '@/types/database';
+import { B2B_CAPABILITIES } from '@/lib/marketing/pricing';
+
+function FormField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="auth-label">{label}</label>
+      {children}
+    </div>
+  );
+}
 
 export function RequestQuoteForm() {
   const [loading, setLoading] = useState(false);
@@ -33,74 +51,56 @@ export function RequestQuoteForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full name</label>
-        <input
-          name="full_name"
-          type="text"
-          required
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Work email</label>
-        <input
-          name="email"
-          type="email"
-          required
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Company</label>
-        <input
-          name="company_name"
-          type="text"
-          required
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Industry</label>
-        <select
-          name="industry"
-          defaultValue="other"
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
-        >
+      <FormField label="Full name">
+        <input name="full_name" type="text" required className="auth-input" />
+      </FormField>
+
+      <FormField label="Work email">
+        <input name="email" type="email" required autoComplete="email" className="auth-input" />
+      </FormField>
+
+      <FormField label="Company">
+        <input name="company_name" type="text" required className="auth-input" />
+      </FormField>
+
+      <FormField label="Industry">
+        <select name="industry" defaultValue="other" className="auth-input">
           <option value="software">Software company</option>
           <option value="healthcare">Healthcare</option>
           <option value="other">Other</option>
         </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Team size (optional)</label>
+      </FormField>
+
+      <FormField label="Team size (optional)">
         <input
           name="team_size"
           type="text"
           placeholder="e.g. 25 consultants, 3 departments"
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+          className="auth-input"
         />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">What are you trying to solve? (optional)</label>
+      </FormField>
+
+      <FormField label="What are you trying to solve? (optional)">
         <textarea
           name="message"
           rows={4}
-          placeholder="Multi tenant access, PHI safeguards, admin controls, etc."
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-300"
+          placeholder="Multi-tenant access, PHI safeguards, admin controls, etc."
+          className="auth-input min-h-[7rem] resize-y"
         />
-      </div>
+      </FormField>
 
       {message && (
-        <p className={`text-sm ${isSuccess ? 'text-emerald-600' : 'text-red-600'}`}>{message}</p>
+        <p
+          className={`auth-alert ${isSuccess ? 'auth-alert-success' : 'auth-alert-error'}`}
+          role="status"
+        >
+          {message}
+        </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2.5 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
-      >
+      <button type="submit" disabled={loading} className="auth-submit">
         {loading ? 'Submitting…' : 'Request a quote'}
+        {!loading && <ArrowRight className="h-4 w-4" />}
       </button>
     </form>
   );
@@ -108,48 +108,97 @@ export function RequestQuoteForm() {
 
 export function RequestQuotePageContent() {
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gray-900 text-white p-12 flex-col justify-between">
-        <div>
-          <Link href="/login" className="text-sm text-gray-400 dark:text-gray-500 hover:text-white">
-            ← Back to sign in
-          </Link>
-          <h1 className="text-3xl font-bold leading-tight mt-8 mb-4">
-            Organization accounts for teams that need control
-          </h1>
-          <p className="text-gray-400 dark:text-gray-500 text-lg">
-            Shared tenants, admin roles, access approvals, and healthcare PHI safeguards, priced for software and health systems rather than free personal signup.
-          </p>
+    <MarketingShell>
+      <section className="marketing-hero fun-hero marketing-hero-compact">
+        <div className="fun-mesh" aria-hidden />
+        <div className="auth-brand-blob-a" />
+        <div className="auth-brand-blob-b" />
+        <div className="marketing-container relative z-10 py-14 lg:py-20">
+          <Reveal>
+            <p className="marketing-hero-eyebrow">Organizations</p>
+            <h1 className="marketing-hero-title fun-hero-title mt-3 max-w-3xl">
+              Request a quote for your team
+            </h1>
+            <p className="marketing-hero-body mt-4 max-w-2xl">
+              Tell us about your organization. We&apos;ll follow up with pricing, security details,
+              and a tailored rollout plan. Organization accounts are sold by quote — not free online
+              signup.
+            </p>
+          </Reveal>
         </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
-          <p className="font-medium text-white">{APP_NAME} Enterprise</p>
-          <ul className="mt-3 space-y-2 list-disc pl-5">
-            <li>Admin-managed team access</li>
-            <li>Organization scoped projects and audit trail</li>
-            <li>PHI redaction for healthcare uploads</li>
-            <li>Custom onboarding and security review</li>
-          </ul>
-        </div>
-      </div>
+      </section>
 
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
-          <Link href="/login" className="lg:hidden text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100">
-            ← Back to sign in
-          </Link>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-2">Request a quote</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
-            Tell us about your organization. We&apos;ll follow up with pricing and setup. Organization accounts are sold by quote, not free online signup.
-          </p>
-          <RequestQuoteForm />
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-6 text-center">
-            Just need a personal workspace?{' '}
-            <Link href="/login" className="text-gray-900 dark:text-gray-100 font-medium hover:underline">
-              Sign up free
-            </Link>
-          </p>
+      <section className="marketing-section bg-white">
+        <div className="marketing-container grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+          <Reveal className="min-w-0">
+            <div className="marketing-org-banner fun-lift">
+              <div className="flex items-center gap-3">
+                <div className="marketing-feature-icon fun-icon-pop">
+                  <Briefcase className="h-5 w-5" strokeWidth={1.75} />
+                </div>
+                <p className="font-semibold text-[var(--ud-graphite)]">{APP_NAME} Enterprise</p>
+              </div>
+              <p className="mt-4 text-[15px] leading-relaxed text-[var(--ud-slate)]">
+                Shared tenants, admin roles, access approvals, and healthcare PHI safeguards — built
+                for software companies, consultancies, and regulated industries.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {B2B_CAPABILITIES.map((item) => (
+                  <li key={item} className="flex items-start gap-3 text-sm text-[var(--ud-slate)]">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-6 text-sm text-[var(--ud-slate)]">
+                Typical response within 1 business day · 10 to 500+ seats · Custom SSO available
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal delay={120} className="min-w-0">
+            <div className="auth-glass-form fun-lift p-5 sm:p-8">
+              <h2 className="auth-form-title">Tell us about your team</h2>
+              <p className="auth-form-subtitle">
+                We&apos;ll reach out with pricing and setup options.
+              </p>
+              <div className="mt-6">
+                <RequestQuoteForm />
+              </div>
+              <p className="mt-6 text-center text-sm text-[var(--ud-slate)]">
+                Just need a personal workspace?{' '}
+                <Link href="/login" className="auth-link">
+                  Sign up free
+                </Link>
+              </p>
+            </div>
+          </Reveal>
         </div>
-      </div>
-    </div>
+      </section>
+
+      <section className="marketing-section fun-cta">
+        <div className="fun-cta-glow" aria-hidden />
+        <div className="marketing-container relative z-10 text-center">
+          <Reveal>
+            <h2 className="marketing-section-title">Ready to see your whole client picture?</h2>
+            <p className="marketing-section-body mx-auto mt-4 max-w-xl">
+              Start free in under a minute. No credit card required.
+            </p>
+            <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link
+                href="/login"
+                className="marketing-btn-primary marketing-btn-lg fun-btn-glow group w-full sm:w-auto"
+              >
+                Get started free
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link href="/pricing" className="marketing-btn-secondary marketing-btn-lg w-full sm:w-auto">
+                View pricing
+              </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+    </MarketingShell>
   );
 }
