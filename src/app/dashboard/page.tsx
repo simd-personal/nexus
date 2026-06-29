@@ -2,13 +2,14 @@ import { AppShell } from '@/components/layout/AppShell';
 import { GlobalSearchBar } from '@/components/ui/GlobalSearchBar';
 import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
-import { CriticalItemsList } from '@/components/critical/CriticalItemCard';
+import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
 import { PendingInboundInbox } from '@/components/dashboard/PendingInboundInbox';
 import {
   getProjectsWithStats,
   getDashboardStats,
   getCriticalItems,
+  getOpenActionItems,
   getSunnyUpdates,
   getPendingInboundEmails,
 } from '@/lib/data/queries';
@@ -26,9 +27,14 @@ export default async function DashboardPage() {
     redirect('/getting-started');
   }
 
-  const [stats, criticalItems, updates, pendingInboundEmails] = await Promise.all([
-    getDashboardStats(),
-    getCriticalItems(5),
+  const stats = await getDashboardStats();
+  const showBoth = stats.criticalCount > 0 && stats.actionItemsCount > 0;
+  const criticalLimit = showBoth ? 3 : 5;
+  const actionLimit = showBoth ? 4 : 5;
+
+  const [criticalItems, actionItems, updates, pendingInboundEmails] = await Promise.all([
+    stats.criticalCount > 0 ? getCriticalItems(criticalLimit) : Promise.resolve([]),
+    stats.actionItemsCount > 0 ? getOpenActionItems(actionLimit) : Promise.resolve([]),
     getSunnyUpdates(5),
     getPendingInboundEmails(),
   ]);
@@ -55,13 +61,12 @@ export default async function DashboardPage() {
             />
           </div>
           <div className="min-w-0 lg:col-span-2">
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Critical Items</h2>
-              <Link href="/critical-items" className="shrink-0">
-                <Button variant="ghost" size="sm">View all</Button>
-              </Link>
-            </div>
-            <CriticalItemsList items={criticalItems} showProject />
+            <DashboardAttentionPanel
+              criticalItems={criticalItems}
+              actionItems={actionItems}
+              criticalTotal={stats.criticalCount}
+              actionTotal={stats.actionItemsCount}
+            />
           </div>
         </div>
 

@@ -183,6 +183,32 @@ export async function getCriticalItems(limit?: number): Promise<CriticalItem[]> 
   return limit ? items.slice(0, limit) : items;
 }
 
+export async function getOpenActionItems(limit?: number): Promise<ActionItem[]> {
+  await ensureFreshAppData();
+  const supabase = await createClient();
+
+  let query = supabase
+    .from('action_items')
+    .select('*, projects(client_name, project_name)')
+    .eq('status', 'open')
+    .eq('applies_to_me', true)
+    .order('created_at', { ascending: false });
+
+  if (limit) query = query.limit(limit * 3);
+
+  const { data } = await query;
+  const items = filterRelevantOpenActionItems(
+    (data ?? []).map((item) => ({
+      ...item,
+      source_citations: item.source_citations ?? [],
+      matched_terms: item.matched_terms ?? [],
+      project: item.projects as ActionItem['project'],
+    }))
+  );
+
+  return limit ? items.slice(0, limit) : items;
+}
+
 export async function getSunnyUpdates(limit?: number): Promise<SunnyUpdate[]> {
   await ensureFreshAppData();
   const supabase = await createClient();

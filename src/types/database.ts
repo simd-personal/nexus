@@ -190,6 +190,7 @@ export interface ActionItem {
   matched_terms: string[];
   source_citations: Citation[];
   created_at: string;
+  project?: Pick<Project, 'client_name' | 'project_name'>;
 }
 
 export interface TimelineEvent {
