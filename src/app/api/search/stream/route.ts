@@ -14,8 +14,8 @@ import { retrieveForQuery } from '@/lib/search/retrieve';
 import { toSearchContext } from '@/lib/search/retrieve';
 import { filterSubstantiveChunks, formatNaturalProse } from '@/lib/ai/generation-prompts';
 import {
-  normalizeProjectId,
-  filterResultsToProject,
+  normalizeProjectIds,
+  filterResultsToProjects,
   buildProjectSummary,
   buildScopeInstruction,
   chunksForAnswer,
@@ -34,7 +34,18 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const { query, project_id, source_type, session_id, model_preference, regenerate, honeypot, limit = SEARCH_RETRIEVAL_LIMIT } = await request.json();
+  const {
+    query,
+    project_id,
+    project_ids,
+    scope_labels,
+    source_type,
+    session_id,
+    model_preference,
+    regenerate,
+    honeypot,
+    limit = SEARCH_RETRIEVAL_LIMIT,
+  } = await request.json();
   if (!query?.trim()) {
     return new Response(JSON.stringify({ error: 'Query required' }), { status: 400 });
   }
@@ -58,7 +69,8 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const scopedProjectId = normalizeProjectId(project_id);
+  const scopedProjectIds = normalizeProjectIds(project_ids, project_id);
+  const sessionProjectId = scopedProjectIds?.length === 1 ? scopedProjectIds[0] : null;
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -70,39 +82,53 @@ export async function POST(request: NextRequest) {
         const session = await getOrCreateSession(supabase, user.id, {
           sessionId: session_id,
           sessionType: 'search',
-          projectId: scopedProjectId,
+          projectId: sessionProjectId,
           title: query.slice(0, 80),
         });
 
         send({ event: 'session', data: { session_id: session.id, title: session.title ?? undefined } });
+
+        const scopeMetadata =
+          scopedProjectIds && scopedProjectIds.length > 0
+            ? {
+                scope: {
+                  project_ids: scopedProjectIds,
+                  labels: Array.isArray(scope_labels) ? scope_labels : [],
+                },
+              }
+            : {};
 
         if (regenerate) {
           await deleteLastAssistantMessage(supabase, session.id);
         } else {
           await saveChatMessage(supabase, {
             session_id: session.id,
-            project_id: scopedProjectId,
+            project_id: sessionProjectId,
             role: 'user',
             content: query,
+            metadata: scopeMetadata,
           });
         }
 
         send({
           event: 'status',
           data: {
-            message: scopedProjectId
-              ? 'Searching this project...'
-              : 'Searching across your projects...',
+            message:
+              scopedProjectIds && scopedProjectIds.length === 1
+                ? 'Searching this project...'
+                : scopedProjectIds && scopedProjectIds.length > 1
+                  ? 'Searching selected projects...'
+                  : 'Searching across your projects...',
           },
         });
 
         const embedding = await createEmbeddingOrNull(query);
-        const retrieved = filterResultsToProject(
+        const retrieved = filterResultsToProjects(
           await retrieveForQuery(supabase, query, embedding, {
-            projectId: scopedProjectId,
+            projectIds: scopedProjectIds,
             limit,
           }),
-          scopedProjectId
+          scopedProjectIds
         );
 
         let results = retrieved.map((r) => ({
@@ -128,12 +154,17 @@ export async function POST(request: NextRequest) {
         send({ event: 'results', data: { results: results.slice(0, limit) } });
 
         const projectIds = [...new Set(results.map((r) => r.project_id))];
-        const { summary: projectSummary, label: projectLabel } = await buildProjectSummary(
+        const { summary: projectSummary, labels: projectLabels } = await buildProjectSummary(
           supabase,
-          scopedProjectId,
+          scopedProjectIds,
           projectIds
         );
-        const scopeInstruction = buildScopeInstruction(scopedProjectId, projectLabel);
+        const scopeInstruction = buildScopeInstruction(
+          scopedProjectIds,
+          scopedProjectIds && scopedProjectIds.length > 0 && Array.isArray(scope_labels) && scope_labels.length > 0
+            ? scope_labels
+            : projectLabels
+        );
 
         const history = await loadSessionHistory(supabase, session.id);
         const historyNote = buildHistoryNote(history.slice(0, -1));
@@ -158,7 +189,7 @@ export async function POST(request: NextRequest) {
         // resolve a project and actually build it — even from the global search chat.
         if (isCreateAction(intent.action)) {
           const createEngine = resolveEngine(model_preference, 'create');
-          const targetProjectId = scopedProjectId ?? results[0]?.project_id ?? null;
+          const targetProjectId = sessionProjectId ?? results[0]?.project_id ?? null;
 
           if (!targetProjectId) {
             const msg = "Tell me which project this is for (or open a project) and I'll create it. I couldn't find matching materials to build from.";
@@ -256,7 +287,7 @@ export async function POST(request: NextRequest) {
         const meta = await streamSearchAnswer(
           `${query}${historyNote}`,
           {
-            chunks: chunksForAnswer(results, scopedProjectId),
+            chunks: chunksForAnswer(results, scopedProjectIds),
             criticalItems: [],
             timelineEvents: [],
             projectSummary,
@@ -280,7 +311,7 @@ export async function POST(request: NextRequest) {
 
         await saveChatMessage(supabase, {
           session_id: session.id,
-          project_id: scopedProjectId,
+          project_id: sessionProjectId,
           role: 'assistant',
           content: formatNaturalProse(fullText),
           citations: meta.citations,

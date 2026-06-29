@@ -28,6 +28,12 @@ import {
   sessionsCacheFresh,
 } from '@/lib/chat/cache';
 import { consumeInitialQuery } from '@/lib/chat/initial-query';
+import {
+  ALL_PROJECTS_SCOPE,
+  resolveScopeProjectIds,
+  type ChatScope,
+} from '@/lib/chat/scope';
+import { ChatScopeChips, ChatScopePicker } from '@/components/chat/ChatScopePicker';
 import type {
   ChatMessage,
   ChatSession,
@@ -50,7 +56,7 @@ function isPageGenerationMode(mode: ChatMode): boolean {
 }
 
 function chatTitle(mode: ChatMode): string {
-  if (mode === 'search') return 'Search with Sunny';
+  if (mode === 'search') return `Chat with ${AI_EMPLOYEE_NAME}`;
   if (mode === 'brief') return 'Sunny Brief';
   if (mode === 'playbook') return 'Operating Playbook';
   return `Chat with ${AI_EMPLOYEE_NAME}`;
@@ -64,9 +70,14 @@ function chatDescription(mode: ChatMode): string {
     return 'Build and refine client operating playbooks from your project evidence. Conversations are saved automatically.';
   }
   if (mode === 'search') {
-    return 'Ask anything across your projects. Sunny searches your materials and saves the conversation automatically.';
+    return 'Ask anything, create decks and emails, or search your materials. Pick programs and workstreams to narrow scope.';
   }
   return 'Ask anything or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.';
+}
+
+function cacheScopeKey(mode: ChatMode, projectId?: string, lockScope?: boolean): string {
+  if (mode === 'search' && !lockScope) return 'global';
+  return projectId ?? 'all';
 }
 
 export interface SunnyChatInterfaceProps {
@@ -75,7 +86,12 @@ export interface SunnyChatInterfaceProps {
   projectId?: string;
   projectName?: string;
   projects?: ProjectWithStats[];
+  chatScope?: ChatScope;
+  onScopeChange?: (scope: ChatScope) => void;
+  lockScope?: boolean;
+  /** @deprecated Use lockScope */
   onProjectChange?: (projectId: string) => void;
+  /** @deprecated Use lockScope */
   lockProject?: boolean;
   embedded?: boolean;
   initialSessionId?: string;
@@ -223,14 +239,18 @@ export function SunnyChatInterface({
   projectId,
   projectName,
   projects,
-  onProjectChange,
+  chatScope: chatScopeProp,
+  onScopeChange,
+  lockScope: lockScopeProp,
   lockProject = false,
   embedded = false,
   initialSessionId,
   initialMessages = [],
   initialQuery,
 }: SunnyChatInterfaceProps) {
-  const scopeKey = chatCacheKey(userId, mode, projectId);
+  const lockScope = lockScopeProp ?? lockProject;
+  const chatScope = chatScopeProp ?? ALL_PROJECTS_SCOPE;
+  const scopeKey = chatCacheKey(userId, mode, cacheScopeKey(mode, projectId, lockScope));
   purgeLegacyUnscopedChatCaches();
   hydrateChatScopeFromStorage(scopeKey);
   const cachedScope = getOrInitChatScopeState(scopeKey);
@@ -261,6 +281,7 @@ export function SunnyChatInterface({
   const honeypotRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef<string | undefined>(initialSessionId ?? cachedScope.activeSessionId);
   const projectIdRef = useRef<string | undefined>(projectId);
+  const chatScopeRef = useRef<ChatScope>(chatScope);
   const scopeKeyRef = useRef(scopeKey);
   const { stream, stop, isStreaming } = useSunnyStream();
   const { queue: messageQueue, enqueue, dequeue, removeAt, clear: clearQueue, isFull: queueFull } = useMessageQueue();
@@ -273,6 +294,10 @@ export function SunnyChatInterface({
   useEffect(() => {
     projectIdRef.current = projectId;
   }, [projectId]);
+
+  useEffect(() => {
+    chatScopeRef.current = chatScope;
+  }, [chatScope]);
 
   const persistScope = useCallback(() => {
     const key = scopeKeyRef.current;
@@ -564,7 +589,18 @@ export function SunnyChatInterface({
         role: 'user',
         content: text.trim(),
         citations: [],
-        metadata: {},
+        metadata:
+          mode === 'search'
+            ? {
+                scope:
+                  chatScopeRef.current.kind === 'selected'
+                    ? {
+                        project_ids: chatScopeRef.current.projectIds,
+                        labels: chatScopeRef.current.labels,
+                      }
+                    : { project_ids: [], labels: [] },
+              }
+            : {},
         created_at: new Date().toISOString(),
         session_id: activeSessionId,
       };
@@ -591,7 +627,8 @@ export function SunnyChatInterface({
       : mode === 'search'
         ? {
             query: text.trim(),
-            project_id: projectIdRef.current ?? null,
+            project_ids: resolveScopeProjectIds(chatScopeRef.current),
+            scope_labels: chatScopeRef.current.kind === 'selected' ? chatScopeRef.current.labels : [],
             source_type: sourceFilter || undefined,
             session_id: activeSessionId,
             model_preference: modelPreference,
@@ -857,8 +894,18 @@ export function SunnyChatInterface({
           </button>
           <Sun className="w-4 h-4 text-amber-500" />
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME}</span>
-          {projectName && <span className="text-xs text-gray-400 dark:text-gray-500 truncate">· {projectName}</span>}
+          {mode !== 'search' && projectName && (
+            <span className="text-xs text-gray-400 dark:text-gray-500 truncate">· {projectName}</span>
+          )}
           <div className="ml-auto flex items-center gap-2">
+            {mode === 'search' && projects && projects.length > 0 && (
+              <ChatScopePicker
+                projects={projects}
+                scope={chatScope}
+                onScopeChange={onScopeChange ?? (() => {})}
+                lockScope={lockScope || !onScopeChange}
+              />
+            )}
             {!isPageGenerationMode(mode) && (
             <div
               className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] px-2.5 py-1.5 shadow-sm"
@@ -881,22 +928,22 @@ export function SunnyChatInterface({
               </select>
             </div>
             )}
-            {mode === 'search' && !lockProject && projects && projects.length > 0 && (
-              <select
-                value={projectId ?? ''}
-                onChange={(e) => onProjectChange?.(e.target.value)}
-                className="text-xs border border-gray-200 dark:border-[var(--ud-cloud)] rounded-lg px-2 py-1 bg-white dark:bg-[var(--ud-mist)] max-w-[220px]"
-              >
-                <option value="">All projects</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.client_name} · {p.project_name}
-                  </option>
-                ))}
-              </select>
-            )}
           </div>
         </div>
+
+        {mode === 'search' && projects && projects.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/80 px-4 py-2 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]/60">
+            <span className="text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Scope
+            </span>
+            <ChatScopeChips
+              scope={chatScope}
+              projects={projects}
+              onScopeChange={lockScope ? undefined : onScopeChange}
+              lockScope={lockScope || !onScopeChange}
+            />
+          </div>
+        )}
 
         {/* Messages */}
         <div ref={scrollRef} onScroll={handleScroll} className="relative flex-1 overflow-y-auto">
@@ -958,6 +1005,10 @@ export function SunnyChatInterface({
                     : [];
               const sourceProjectId = projectId ?? results?.[0]?.project_id;
 
+              const messageScope = msg.metadata?.scope as
+                | { project_ids?: string[]; labels?: string[] }
+                | undefined;
+
               return (
                 <div key={msg.id} className={cn('group flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {msg.role === 'assistant' && (
@@ -975,8 +1026,22 @@ export function SunnyChatInterface({
                       </div>
                     )}
                     {msg.role === 'user' ? (
-                      <div className="rounded-2xl rounded-br-md bg-gray-900 px-4 py-3 text-sm leading-relaxed text-white whitespace-pre-wrap">
-                        {msg.content}
+                      <div className="space-y-1.5">
+                        {messageScope?.labels && messageScope.labels.length > 0 && (
+                          <div className="flex flex-wrap justify-end gap-1">
+                            {messageScope.labels.map((label) => (
+                              <span
+                                key={label}
+                                className="rounded-full border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] text-white/80"
+                              >
+                                {label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div className="rounded-2xl rounded-br-md bg-gray-900 px-4 py-3 text-sm leading-relaxed text-white whitespace-pre-wrap">
+                          {msg.content}
+                        </div>
                       </div>
                     ) : (
                       <div className="rounded-2xl rounded-bl-md border border-gray-100 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] px-4 py-3">

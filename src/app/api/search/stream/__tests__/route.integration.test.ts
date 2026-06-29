@@ -98,7 +98,7 @@ describe('POST /api/search/stream tenant isolation', () => {
     mockSaveChatMessage.mockResolvedValue(undefined);
     mockLoadSessionHistory.mockResolvedValue([]);
     mockClassifyChatIntent.mockResolvedValue({ action: 'answer' });
-    mockBuildProjectSummary.mockResolvedValue({ summary: null, label: null });
+    mockBuildProjectSummary.mockResolvedValue({ summary: null, labels: [] });
     mockStreamSearchAnswer.mockResolvedValue({
       citations: [],
       confidence: 'low',
@@ -150,5 +150,114 @@ describe('POST /api/search/stream tenant isolation', () => {
     expect(results.some((r: { project_id: string }) => r.project_id === 'project-foreign')).toBe(
       false
     );
+  });
+});
+
+describe('POST /api/search/stream multi-project scope', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-1', email: 'user@example.com' } },
+    });
+    mockGuardAiRequest.mockResolvedValue(null);
+    mockCheckChatQuota.mockResolvedValue({ exceeded: false });
+    mockGetBillingContext.mockResolvedValue({ isPro: true });
+    mockCreateEmbedding.mockResolvedValue([0.1, 0.2]);
+    mockGetOrCreateSession.mockResolvedValue({ id: 'session-multi', title: 'Scoped search' });
+    mockSaveChatMessage.mockResolvedValue(undefined);
+    mockLoadSessionHistory.mockResolvedValue([]);
+    mockClassifyChatIntent.mockResolvedValue({ action: 'answer' });
+    mockBuildProjectSummary.mockResolvedValue({ summary: 'Combined summary', labels: ['Acme · A', 'Beta · B'] });
+    mockStreamSearchAnswer.mockResolvedValue({
+      citations: [],
+      confidence: 'high',
+      model: 'auto',
+    });
+    mockRetrieveForQuery.mockResolvedValue([
+      {
+        id: 'chunk-a',
+        project_id: 'proj-a',
+        text: 'Notes from A',
+        metadata: {},
+        match_reason: 'Keyword match',
+        chunk_index: 0,
+      },
+    ]);
+  });
+
+  it('passes project_ids to retrieval and persists scope on the user message', async () => {
+    const res = await POST(
+      new NextRequest('http://localhost:3000/api/search/stream', {
+        method: 'POST',
+        body: JSON.stringify({
+          query: 'staffing concerns',
+          project_ids: ['proj-a', 'proj-b'],
+          scope_labels: ['Acme · Site rollout', 'Beta · Strategy'],
+        }),
+      })
+    );
+
+    expect(res.status).toBe(200);
+    const events = await readSseEvents(res);
+
+    expect(mockRetrieveForQuery).toHaveBeenCalledWith(
+      expect.anything(),
+      'staffing concerns',
+      [0.1, 0.2],
+      expect.objectContaining({ projectIds: ['proj-a', 'proj-b'] })
+    );
+
+    expect(mockSaveChatMessage).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        role: 'user',
+        metadata: {
+          scope: {
+            project_ids: ['proj-a', 'proj-b'],
+            labels: ['Acme · Site rollout', 'Beta · Strategy'],
+          },
+        },
+      })
+    );
+
+    expect(events.some((e) => e.event === 'done')).toBe(true);
+  });
+
+  it('falls back to legacy project_id when project_ids is empty', async () => {
+    const res = await POST(
+      new NextRequest('http://localhost:3000/api/search/stream', {
+        method: 'POST',
+        body: JSON.stringify({
+          query: 'timeline risks',
+          project_id: 'proj-legacy',
+        }),
+      })
+    );
+
+    await readSseEvents(res);
+
+    expect(mockRetrieveForQuery).toHaveBeenCalledWith(
+      expect.anything(),
+      'timeline risks',
+      [0.1, 0.2],
+      expect.objectContaining({ projectIds: ['proj-legacy'] })
+    );
+  });
+
+  it('emits a multi-project status message when several projects are scoped', async () => {
+    const res = await POST(
+      new NextRequest('http://localhost:3000/api/search/stream', {
+        method: 'POST',
+        body: JSON.stringify({
+          query: 'compare risks',
+          project_ids: ['proj-a', 'proj-b'],
+        }),
+      })
+    );
+
+    const events = await readSseEvents(res);
+    const statusEvents = events.filter((e) => e.event === 'status');
+    expect(statusEvents.some((e) => String(e.data?.message).includes('selected projects'))).toBe(true);
   });
 });

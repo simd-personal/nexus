@@ -17,6 +17,11 @@ describe('chatCacheKey', () => {
     const userB = chatCacheKey('user-b', 'search');
     expect(userA).not.toBe(userB);
   });
+
+  it('supports a fixed global search cache bucket', () => {
+    expect(chatCacheKey('user-a', 'search', 'global')).toBe('user-a:search:global');
+    expect(chatCacheKey('user-a', 'search', 'global')).not.toBe(chatCacheKey('user-a', 'search', 'proj-1'));
+  });
 });
 
 describe('normalizeChatMessages', () => {

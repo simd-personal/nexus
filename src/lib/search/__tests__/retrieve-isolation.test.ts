@@ -44,13 +44,22 @@ describe('filterResultsToAccessibleProjects', () => {
 
 function buildSupabaseMock(accessibleProjectIds: string[]) {
   const empty = Promise.resolve({ data: [] as unknown[] });
+  const awaitable = {
+    eq: () => awaitable,
+    in: () => awaitable,
+    limit: () => awaitable,
+    then: (
+      resolve: (value: { data: unknown[] }) => void,
+      reject?: (reason?: unknown) => void
+    ) => empty.then(resolve, reject),
+  };
 
   const chain = () => ({
     select: () => chain(),
     not: () => chain(),
-    eq: () => chain(),
-    in: () => empty,
-    limit: () => empty,
+    eq: () => awaitable,
+    in: () => awaitable,
+    limit: () => awaitable,
     then: (
       resolve: (value: { data: unknown[] }) => void,
       reject?: (reason?: unknown) => void
@@ -109,4 +118,21 @@ describe('retrieveForQuery tenant isolation', () => {
 
     expect(results).toEqual([]);
   });
+
+  it('restricts results to an explicit multi-project scope', async () => {
+    const supabase = buildSupabaseMock(['project-own', 'project-other']);
+
+    const results = await retrieveForQuery(supabase as never, 'notes', [0.1], {
+      projectIds: ['project-own', 'project-other'],
+      limit: 10,
+    });
+
+    expect(results.some((r) => r.project_id === 'project-foreign')).toBe(false);
+    expect(mockRpcNotCalledWithForeignOnly(supabase)).toBe(true);
+  });
 });
+
+function mockRpcNotCalledWithForeignOnly(supabase: ReturnType<typeof buildSupabaseMock>): boolean {
+  const rpcCalls = supabase.rpc.mock.calls as Array<[string, { filter_project_id?: string | null }]>;
+  return rpcCalls.every(([, args]) => args?.filter_project_id !== 'project-foreign');
+}

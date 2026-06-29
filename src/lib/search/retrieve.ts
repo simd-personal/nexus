@@ -38,12 +38,21 @@ type RpcChunk = {
 
 async function getAccessibleProjectIds(
   supabase: SupabaseClient,
-  scopedProjectId: string | null
+  scopedProjectIds: string[] | null
 ): Promise<Set<string>> {
   let query = supabase.from('projects').select('id');
-  if (scopedProjectId) query = query.eq('id', scopedProjectId);
+  if (scopedProjectIds?.length === 1) {
+    query = query.eq('id', scopedProjectIds[0]);
+  } else if (scopedProjectIds && scopedProjectIds.length > 1) {
+    query = query.in('id', scopedProjectIds);
+  }
   const { data } = await query;
   return new Set((data ?? []).map((row) => row.id));
+}
+
+function rpcProjectFilter(scopedProjectIds: string[] | null): string | null {
+  if (scopedProjectIds?.length === 1) return scopedProjectIds[0];
+  return null;
 }
 
 export function filterResultsToAccessibleProjects<T extends { project_id: string }>(
@@ -58,11 +67,14 @@ export async function retrieveForQuery(
   supabase: SupabaseClient,
   query: string,
   embedding: number[] | null,
-  options: { projectId?: string | null; limit?: number } = {}
+  options: { projectId?: string | null; projectIds?: string[] | null; limit?: number } = {}
 ): Promise<RetrievedChunk[]> {
   const limit = options.limit ?? 24;
-  const projectId = options.projectId ?? null;
-  const accessibleProjectIds = await getAccessibleProjectIds(supabase, projectId);
+  const scopedProjectIds =
+    options.projectIds ??
+    (options.projectId ? [options.projectId] : null);
+  const accessibleProjectIds = await getAccessibleProjectIds(supabase, scopedProjectIds);
+  const rpcProjectId = rpcProjectFilter(scopedProjectIds);
 
   const [{ data: vectorResults }, { data: keywordResults }, { data: fuzzyResults }] =
     await Promise.all([
@@ -71,17 +83,17 @@ export async function retrieveForQuery(
             query_embedding: embedding,
             match_threshold: 0.2,
             match_count: limit,
-            filter_project_id: projectId,
+            filter_project_id: rpcProjectId,
           })
         : Promise.resolve({ data: [] as RpcChunk[] | null }),
       supabase.rpc('search_chunks_keyword', {
         search_query: query,
-        filter_project_id: projectId,
+        filter_project_id: rpcProjectId,
         match_count: limit,
       }),
       supabase.rpc('search_chunks_fuzzy', {
         search_query: query,
-        filter_project_id: projectId,
+        filter_project_id: rpcProjectId,
         match_count: limit,
       }),
     ]);
@@ -99,7 +111,7 @@ export async function retrieveForQuery(
   for (const row of keywordResults ?? []) push(row, 'Keyword match');
   for (const row of fuzzyResults ?? []) push(row, 'Related match');
 
-  const supplemental = await fetchSupplementalContent(supabase, query, projectId, seen);
+  const supplemental = await fetchSupplementalContent(supabase, query, scopedProjectIds, seen);
   merged.push(...supplemental);
 
   const scoped = filterResultsToAccessibleProjects(merged, accessibleProjectIds);
@@ -117,7 +129,7 @@ export async function retrieveForQuery(
 async function fetchSupplementalContent(
   supabase: SupabaseClient,
   query: string,
-  projectId: string | null,
+  scopedProjectIds: string[] | null,
   seen: Set<string>
 ): Promise<RetrievedChunk[]> {
   const terms = extractSearchTerms(query);
@@ -134,7 +146,11 @@ async function fetchSupplementalContent(
     .from('files')
     .select('id, project_id, file_name, source_type, extracted_text, projects(client_name, project_name)')
     .not('extracted_text', 'is', null);
-  if (projectId) filesQuery = filesQuery.eq('project_id', projectId);
+  if (scopedProjectIds?.length === 1) {
+    filesQuery = filesQuery.eq('project_id', scopedProjectIds[0]);
+  } else if (scopedProjectIds && scopedProjectIds.length > 1) {
+    filesQuery = filesQuery.in('project_id', scopedProjectIds);
+  }
   const { data: files } = await filesQuery.limit(40);
 
   for (const file of files ?? []) {
@@ -159,7 +175,11 @@ async function fetchSupplementalContent(
   let projectsQuery = supabase
     .from('projects')
     .select('id, client_name, project_name, description, last_summary');
-  if (projectId) projectsQuery = projectsQuery.eq('id', projectId);
+  if (scopedProjectIds?.length === 1) {
+    projectsQuery = projectsQuery.eq('id', scopedProjectIds[0]);
+  } else if (scopedProjectIds && scopedProjectIds.length > 1) {
+    projectsQuery = projectsQuery.in('id', scopedProjectIds);
+  }
   const { data: projects } = await projectsQuery;
 
   for (const project of projects ?? []) {
@@ -218,7 +238,11 @@ async function fetchSupplementalContent(
 
   for (const { table, select, prefix, textFn } of tableQueries) {
     let q = supabase.from(table).select(select).limit(30);
-    if (projectId) q = q.eq('project_id', projectId);
+    if (scopedProjectIds?.length === 1) {
+      q = q.eq('project_id', scopedProjectIds[0]);
+    } else if (scopedProjectIds && scopedProjectIds.length > 1) {
+      q = q.in('project_id', scopedProjectIds);
+    }
     const { data: rows } = await q;
 
     for (const row of rows ?? []) {

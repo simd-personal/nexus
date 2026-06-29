@@ -3,7 +3,9 @@ import {
   buildScopeInstruction,
   chunksForAnswer,
   filterResultsToProject,
+  filterResultsToProjects,
   normalizeProjectId,
+  normalizeProjectIds,
 } from '@/lib/search/scope';
 import type { RetrievedChunk } from '@/lib/search/retrieve';
 
@@ -38,6 +40,9 @@ describe('search scope helpers', () => {
     expect(normalizeProjectId(undefined)).toBeNull();
     expect(normalizeProjectId('  ')).toBeNull();
     expect(normalizeProjectId('abc-123')).toBe('abc-123');
+    expect(normalizeProjectIds(undefined, undefined)).toBeNull();
+    expect(normalizeProjectIds(['a', 'b'], null)).toEqual(['a', 'b']);
+    expect(normalizeProjectIds([], 'legacy')).toEqual(['legacy']);
   });
 
   it('filters retrieval results to one project', () => {
@@ -51,9 +56,10 @@ describe('search scope helpers', () => {
   });
 
   it('builds scoped search instructions', () => {
-    expect(buildScopeInstruction('proj-a', 'Acme — Q3 Review')).toContain('ONLY the project');
-    expect(buildScopeInstruction(null, null)).toContain('ALL projects');
-    expect(buildScopeInstruction('proj-a', null)).toBeNull();
+    expect(buildScopeInstruction(['proj-a'], ['Acme — Q3 Review'])).toContain('ONLY the project');
+    expect(buildScopeInstruction(null, [])).toContain('ALL projects');
+    expect(buildScopeInstruction(['proj-a', 'proj-b'], ['Acme', 'Beta'])).toContain('ONLY these projects');
+    expect(buildScopeInstruction(['proj-a'], [])).toBeNull();
   });
 
   it('labels chunks with project names in global search', () => {
@@ -67,6 +73,17 @@ describe('search scope helpers', () => {
       id: String(i),
       chunk_index: i,
     }));
-    expect(chunksForAnswer(many, 'proj-a')).toHaveLength(22);
+    expect(chunksForAnswer(many, ['proj-a'])).toHaveLength(22);
+  });
+
+  it('filters retrieval results to multiple projects', () => {
+    const filtered = filterResultsToProjects(sampleChunks, ['proj-a', 'proj-b']);
+    expect(filtered).toHaveLength(2);
+  });
+
+  it('excludes projects outside a multi-project scope', () => {
+    const filtered = filterResultsToProjects(sampleChunks, ['proj-a']);
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].project_id).toBe('proj-a');
   });
 });

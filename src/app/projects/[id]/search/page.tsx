@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import { SearchPageClient } from '@/components/search/SearchPageClient';
+import { GlobalChatPageClient } from '@/components/search/SearchPageClient';
 import { LoadingState } from '@/components/ui/EmptyState';
-import { getProject } from '@/lib/data/queries';
+import { getProject, getProjectsWithStats } from '@/lib/data/queries';
 import { requireUser } from '@/lib/supabase/server';
 
 export default async function ProjectSearchPage({
@@ -10,19 +10,21 @@ export default async function ProjectSearchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [user, project] = await Promise.all([requireUser(), getProject(id)]);
+  const [user, project, projects] = await Promise.all([
+    requireUser(),
+    getProject(id),
+    getProjectsWithStats(),
+  ]);
 
   return (
-    <div>
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Search Project Materials</h2>
+    <div className="flex min-h-0 flex-1 flex-col">
       <Suspense fallback={<LoadingState />}>
-        <SearchPageClient
+        <GlobalChatPageClient
           userId={user.id}
+          projects={projects}
           projectId={id}
-          projectName={
-            project ? `${project.client_name} · ${project.project_name}` : undefined
-          }
-          lockProject
+          projectName={project ? `${project.client_name} · ${project.project_name}` : undefined}
+          lockScope
         />
       </Suspense>
     </div>

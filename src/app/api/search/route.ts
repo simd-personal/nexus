@@ -85,12 +85,12 @@ export async function POST(request: NextRequest) {
     const projectIds = [...new Set(results.map((r) => r.project_id))];
     const { summary: projectSummary } = await buildProjectSummary(
       supabase,
-      scopedProjectId,
+      scopedProjectId ? [scopedProjectId] : null,
       projectIds
     );
 
     const sunnyAnswer = await searchAnswer(query, {
-      chunks: chunksForAnswer(results, scopedProjectId),
+      chunks: chunksForAnswer(results, scopedProjectId ? [scopedProjectId] : null),
       criticalItems: [],
       timelineEvents: [],
       projectSummary,
