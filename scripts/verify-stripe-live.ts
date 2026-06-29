@@ -63,9 +63,9 @@ if (secret) {
 }
 
 const siteUrl = process.env.AUTH_SITE_URL ?? process.env.NEXT_PUBLIC_SITE_URL;
-console.log(`\nSite URL for checkout redirects: ${siteUrl ?? '(not set — set AUTH_SITE_URL in production)'}`);
-if (!siteUrl || siteUrl.includes('localhost')) {
-  console.log('⚠  Production checkout should use your public domain (e.g. https://upperdeck.dev)');
+console.log(`\nSite URL for checkout redirects: ${siteUrl ?? '(not set — set AUTH_SITE_URL=https://upperdeck.dev in production)'}`);
+if (!siteUrl || siteUrl.includes('localhost') || siteUrl.includes('.vercel.app')) {
+  console.log('⚠  Production auth and checkout should use https://upperdeck.dev (set AUTH_SITE_URL in Vercel)');
 }
 
 async function verifyStripeConnectivity() {

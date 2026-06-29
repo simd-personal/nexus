@@ -1,12 +1,17 @@
+import { APP_DOMAIN } from '@/lib/constants';
+
 /**
- * Canonical app URL for Supabase auth email links (signup confirm, password reset).
+ * Canonical app URL for Supabase auth email links (signup confirm, password reset)
+ * and transactional email footers.
  *
- * On Vercel, runtime env (VERCEL_*) wins over NEXT_PUBLIC_SITE_URL so a localhost
- * value baked in at build time cannot leak into production confirmation emails.
+ * Production always resolves to https://upperdeck.dev unless AUTH_SITE_URL is set.
+ * Preview deployments keep *.vercel.app URLs for branch testing.
  */
 function normalizeUrl(url: string): string {
   return url.replace(/\/$/, '');
 }
+
+const CANONICAL_PRODUCTION_URL = `https://${APP_DOMAIN}`;
 
 function isLocalhostHost(host: string): boolean {
   const hostname = host.split(':')[0]?.toLowerCase() ?? '';
@@ -20,6 +25,15 @@ function isLocalhostUrl(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+function isVercelAppHost(host: string): boolean {
+  const hostname = host.split(':')[0]?.toLowerCase() ?? '';
+  return hostname.endsWith('.vercel.app');
+}
+
+function isProductionDeploy(): boolean {
+  return process.env.VERCEL_ENV === 'production';
 }
 
 type SiteUrlOptions = {
@@ -39,7 +53,19 @@ export function getSiteUrl(options?: SiteUrlOptions): string {
   const requestHost = options?.requestHost?.trim();
   if (requestHost && !isLocalhostHost(requestHost)) {
     const proto = options?.requestProto?.trim() || 'https';
+    if (isProductionDeploy() && isVercelAppHost(requestHost)) {
+      return CANONICAL_PRODUCTION_URL;
+    }
     return normalizeUrl(`${proto}://${requestHost}`);
+  }
+
+  if (isProductionDeploy()) {
+    return CANONICAL_PRODUCTION_URL;
+  }
+
+  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configured && !isLocalhostUrl(configured)) {
+    return normalizeUrl(configured);
   }
 
   const productionUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
@@ -55,7 +81,6 @@ export function getSiteUrl(options?: SiteUrlOptions): string {
     return normalizeUrl(`https://${vercelHost}`);
   }
 
-  const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (configured) {
     return normalizeUrl(configured);
   }
@@ -77,6 +102,9 @@ export async function getSiteUrlFromHeaders(): Promise<string> {
 export function getSiteUrlFromRequest(request: Request): string {
   const { origin, hostname } = new URL(request.url);
   if (!isLocalhostHost(hostname)) {
+    if (isProductionDeploy() && isVercelAppHost(hostname)) {
+      return CANONICAL_PRODUCTION_URL;
+    }
     return origin;
   }
   return getSiteUrl();
