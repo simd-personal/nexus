@@ -2,16 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import {
-  resendSignupConfirmation,
-  requestPasswordReset,
-  signInIndividual,
-  signUpIndividual,
-} from '@/lib/actions/auth';
+import { resendSignupConfirmation, requestPasswordReset } from '@/lib/actions/auth';
 import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { loginHref, type LoginMode } from '@/lib/auth/login-url';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
-import { AuthEntryTransition } from '@/components/auth/AuthEntrySplash';
 import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
 import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
@@ -60,24 +54,26 @@ const MODE_COPY: Record<
   },
 };
 
-function AuthInput({
+function FormField({
   id,
+  name,
   label,
   type = 'text',
-  value,
-  onChange,
   required,
   minLength,
   autoComplete,
+  value,
+  onChange,
 }: {
   id: string;
+  name?: string;
   label: string;
   type?: string;
-  value: string;
-  onChange: (value: string) => void;
   required?: boolean;
   minLength?: number;
   autoComplete?: string;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <div>
@@ -86,9 +82,10 @@ function AuthInput({
       </label>
       <input
         id={id}
+        name={name}
         type={type}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         required={required}
         minLength={minLength}
         autoComplete={autoComplete}
@@ -161,83 +158,78 @@ function GlassStatCard({
   );
 }
 
+function AuthMessage({
+  message,
+  mode,
+  checkoutPlan,
+  onResendConfirmation,
+}: {
+  message: string;
+  mode: AuthMode;
+  checkoutPlan: 'pro' | 'pro-annual' | null;
+  onResendConfirmation?: () => void;
+}) {
+  return (
+    <div
+      className={`auth-alert ${
+        isSuccessMessage(message)
+          ? 'auth-alert-success'
+          : isRateLimitMessage(message)
+            ? 'auth-alert-warn'
+            : 'auth-alert-error'
+      }`}
+    >
+      <p>{message}</p>
+      {mode === 'signup' && message.includes('already exists') && (
+        <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link mt-2">
+          Go to sign in
+        </Link>
+      )}
+      {isRateLimitMessage(message) && (
+        <p className="mt-2 text-[13px] opacity-90">
+          If you already created an account, try signing in. Otherwise wait about an hour and try
+          again.
+        </p>
+      )}
+      {mode === 'signin' &&
+        onResendConfirmation &&
+        (message.toLowerCase().includes('confirm') ||
+          message.includes('Incorrect email or password')) && (
+          <button type="button" onClick={onResendConfirmation} className="auth-link mt-2">
+            Resend confirmation email
+          </button>
+        )}
+    </div>
+  );
+}
+
 export default function LoginPageClient({
   mode,
   authError = false,
   checkoutPlan = null,
+  initialMessage,
 }: {
   mode: AuthMode;
   authError?: boolean;
   checkoutPlan?: 'pro' | 'pro-annual' | null;
+  initialMessage?: string;
 }) {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [entry, setEntry] = useState<{ mode: 'signin' | 'signup'; href: string } | null>(null);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(initialMessage ?? '');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
 
-  function goToSignIn() {
-    window.location.assign(loginHref({ mode: 'signin', plan: checkoutPlan }));
-  }
+  const signInRedirect = hasCheckoutPlan ? `/upgrade?plan=${checkoutPlan}` : '/dashboard';
 
-  function resolvePostAuthHref(isNewSignup: boolean) {
-    if (hasCheckoutPlan) return `/upgrade?plan=${checkoutPlan}`;
-    return isNewSignup ? '/getting-started' : '/dashboard';
-  }
-
-  function beginAuthEntry(isNewSignup: boolean) {
-    setEntry({
-      mode: isNewSignup ? 'signup' : 'signin',
-      href: resolvePostAuthHref(isNewSignup),
-    });
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleForgotSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMessage('');
 
     try {
-      if (mode === 'forgot') {
-        const result = await requestPasswordReset(email);
-        setMessage(result.error ?? result.message ?? 'Password reset email sent.');
-        setLoading(false);
-        return;
-      }
-
-      if (mode === 'signup') {
-        const result = await signUpIndividual({
-          email,
-          password,
-          fullName,
-          checkoutPlan: hasCheckoutPlan ? checkoutPlan : null,
-        });
-        if (result.error) {
-          setMessage(result.error);
-        } else if (result.immediate) {
-          beginAuthEntry(true);
-          return;
-        } else if (result.recoveredFromRateLimit) {
-          goToSignIn();
-          return;
-        } else {
-          setMessage(
-            result.message ??
-              'Account created. Check your email to confirm your address, then sign in.'
-          );
-        }
-      } else {
-        const result = await signInIndividual({ email, password });
-        if (result.error) {
-          setMessage(result.error);
-        } else {
-          beginAuthEntry(false);
-          return;
-        }
-      }
+      const result = await requestPasswordReset(email);
+      setMessage(result.error ?? result.message ?? 'Password reset email sent.');
     } catch {
       setMessage('Something went wrong. Please try again.');
     }
@@ -252,22 +244,13 @@ export default function LoginPageClient({
     }
     setLoading(true);
     const result = await resendSignupConfirmation(email);
-    if (result.recoveredFromRateLimit) {
-      goToSignIn();
-      return;
-    }
     setMessage(result.error ?? result.message ?? 'Confirmation email sent.');
     setLoading(false);
-  }
-
-  if (entry) {
-    return <AuthEntryTransition mode={entry.mode} href={entry.href} />;
   }
 
   return (
     <div className="auth-page min-h-screen">
       <div className="flex min-h-screen flex-col lg:flex-row">
-        {/* Brand panel */}
         <div className="auth-brand-panel flex flex-1 flex-col justify-between px-8 py-10 sm:px-12 lg:max-w-[48%] lg:px-14 lg:py-14 xl:px-16">
           <div className="auth-brand-blob-a" />
           <div className="auth-brand-blob-b" />
@@ -308,38 +291,14 @@ export default function LoginPageClient({
           </p>
         </div>
 
-        {/* Visual + form panel */}
         <div className="auth-visual-panel relative flex flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:min-h-screen">
           <div className="auth-visual-ribbon" />
 
-          {/* Decorative glass cards — fanned on the left, form stays centered */}
           <div className="auth-visual-fan hidden xl:block" aria-hidden>
-            <GlassStatCard
-              label="Projects"
-              value="24"
-              sub="Active projects"
-              dark
-              className="auth-fan-card"
-            />
-            <GlassStatCard
-              label="Decks"
-              value="18"
-              sub="Updated this week"
-              className="auth-fan-card"
-            />
-            <GlassStatCard
-              label="Signals"
-              value="9"
-              sub="Waiting on you"
-              dark
-              className="auth-fan-card"
-            />
-            <GlassStatCard
-              label="Briefs"
-              value="12"
-              sub="Ready today"
-              className="auth-fan-card"
-            />
+            <GlassStatCard label="Projects" value="24" sub="Active projects" dark className="auth-fan-card" />
+            <GlassStatCard label="Decks" value="18" sub="Updated this week" className="auth-fan-card" />
+            <GlassStatCard label="Signals" value="9" sub="Waiting on you" dark className="auth-fan-card" />
+            <GlassStatCard label="Briefs" value="12" sub="Ready today" className="auth-fan-card" />
           </div>
 
           <div className="auth-form-enter relative z-10 w-full max-w-[400px]">
@@ -374,105 +333,112 @@ export default function LoginPageClient({
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-                {mode === 'signup' && (
-                  <AuthInput
-                    id="fullName"
-                    label="Full name"
-                    value={fullName}
-                    onChange={setFullName}
+              {mode === 'signin' && (
+                <form action="/api/auth/sign-in" method="POST" className="mt-6 space-y-4">
+                  <input type="hidden" name="redirect" value={signInRedirect} />
+                  {checkoutPlan && <input type="hidden" name="plan" value={checkoutPlan} />}
+                  <FormField
+                    id="email"
+                    name="email"
+                    label="Email"
+                    type="email"
                     required
-                    autoComplete="name"
+                    autoComplete="email"
                   />
-                )}
-
-                <AuthInput
-                  id="email"
-                  label="Email"
-                  type="email"
-                  value={email}
-                  onChange={setEmail}
-                  required
-                  autoComplete="email"
-                />
-
-                {mode !== 'forgot' && (
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <label htmlFor="password" className="auth-label mb-0">
                         Password
                       </label>
-                      {mode === 'signin' && (
-                        <Link href={loginHref({ mode: 'forgot', plan: checkoutPlan })} className="auth-link text-[13px]">
-                          Forgot password?
-                        </Link>
-                      )}
+                      <Link
+                        href={loginHref({ mode: 'forgot', plan: checkoutPlan })}
+                        className="auth-link text-[13px]"
+                      >
+                        Forgot password?
+                      </Link>
                     </div>
                     <input
                       id="password"
+                      name="password"
                       type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
                       required
                       minLength={8}
-                      autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+                      autoComplete="current-password"
                       className="auth-input"
                     />
                   </div>
-                )}
-
-                {message && (
-                  <div
-                    className={`auth-alert ${
-                      isSuccessMessage(message)
-                        ? 'auth-alert-success'
-                        : isRateLimitMessage(message)
-                          ? 'auth-alert-warn'
-                          : 'auth-alert-error'
-                    }`}
-                  >
-                    <p>{message}</p>
-                    {mode === 'signup' && message.includes('already exists') && (
-                      <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link mt-2">
-                        Go to sign in
-                      </Link>
-                    )}
-                    {isRateLimitMessage(message) && (
-                      <p className="mt-2 text-[13px] opacity-90">
-                        If you already created an account, try signing in. Otherwise wait about an
-                        hour and try again.
-                      </p>
-                    )}
-                    {mode === 'signin' &&
-                      (message.toLowerCase().includes('confirm') ||
-                        message.includes('Incorrect email or password')) && (
-                        <button
-                          type="button"
-                          onClick={handleResendConfirmation}
-                          className="auth-link mt-2"
-                        >
-                          Resend confirmation email
-                        </button>
-                      )}
-                  </div>
-                )}
-
-                <button type="submit" disabled={loading} className="auth-submit group mt-2">
-                  {loading ? (
-                    <>
-                      <span className="auth-spinner h-4 w-4 rounded-full border-2 border-white/25 border-t-white" />
-                      {copy.loading}
-                    </>
-                  ) : (
-                    <>
-                      {copy.cta}
-                      <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-                    </>
+                  {message && (
+                    <AuthMessage
+                      message={message}
+                      mode={mode}
+                      checkoutPlan={checkoutPlan}
+                      onResendConfirmation={handleResendConfirmation}
+                    />
                   )}
-                </button>
+                  <button type="submit" className="auth-submit group mt-2">
+                    {copy.cta}
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </button>
+                </form>
+              )}
 
-                {mode === 'signup' && <SignUpLegalNotice className="mt-4" />}
-              </form>
+              {mode === 'signup' && (
+                <form action="/api/auth/sign-up" method="POST" className="mt-6 space-y-4">
+                  {checkoutPlan && <input type="hidden" name="plan" value={checkoutPlan} />}
+                  <FormField id="fullName" name="fullName" label="Full name" required autoComplete="name" />
+                  <FormField
+                    id="email"
+                    name="email"
+                    label="Email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                  />
+                  <FormField
+                    id="password"
+                    name="password"
+                    label="Password"
+                    type="password"
+                    required
+                    minLength={8}
+                    autoComplete="new-password"
+                  />
+                  {message && <AuthMessage message={message} mode={mode} checkoutPlan={checkoutPlan} />}
+                  <button type="submit" className="auth-submit group mt-2">
+                    {copy.cta}
+                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </button>
+                  <SignUpLegalNotice className="mt-4" />
+                </form>
+              )}
+
+              {mode === 'forgot' && (
+                <form onSubmit={handleForgotSubmit} className="mt-6 space-y-4">
+                  <FormField
+                    id="email"
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    required
+                    autoComplete="email"
+                  />
+                  {message && <AuthMessage message={message} mode={mode} checkoutPlan={checkoutPlan} />}
+                  <button type="submit" disabled={loading} className="auth-submit group mt-2">
+                    {loading ? (
+                      <>
+                        <span className="auth-spinner h-4 w-4 rounded-full border-2 border-white/25 border-t-white" />
+                        {copy.loading}
+                      </>
+                    ) : (
+                      <>
+                        {copy.cta}
+                        <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
 
               {mode === 'forgot' && (
                 <p className="mt-6 text-center text-[14px] text-[var(--ud-slate)]">

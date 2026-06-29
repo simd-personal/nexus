@@ -7,6 +7,7 @@ type LoginSearchParams = {
   mode?: string;
   plan?: string;
   error?: string;
+  message?: string;
 };
 
 export default async function LoginPage({
@@ -18,12 +19,16 @@ export default async function LoginPage({
   const checkoutPlan = params.plan;
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const mode = resolveLoginMode(params);
+  const initialMessage =
+    params.message ??
+    (params.error === 'credentials' ? 'Incorrect email or password.' : undefined);
 
   return (
     <LoginPageClient
       mode={mode}
       authError={params.error === 'auth'}
       checkoutPlan={hasCheckoutPlan ? checkoutPlan : null}
+      initialMessage={initialMessage}
     />
   );
 }

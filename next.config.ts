@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
       { source: '/login', headers: noStore },
       { source: '/login/:path*', headers: noStore },
       { source: '/auth/:path*', headers: noStore },
+      { source: '/api/auth/:path*', headers: noStore },
     ];
   },
 };

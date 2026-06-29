@@ -1,0 +1,28 @@
+import { createServerClient } from '@supabase/ssr';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+
+/** Supabase client that writes session cookies onto a redirect/JSON response. */
+export function createRouteHandlerClient(request: NextRequest, response: NextResponse) {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+}
+
+export function redirectPost(request: NextRequest, pathname: string): NextResponse {
+  return NextResponse.redirect(new URL(pathname, request.url), { status: 303 });
+}

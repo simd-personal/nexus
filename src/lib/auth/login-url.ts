@@ -8,12 +8,14 @@ export function parseLoginMode(value: string | undefined): LoginMode {
 export function loginHref(opts?: {
   mode?: LoginMode;
   plan?: string | null;
-  error?: 'auth';
+  error?: 'auth' | 'credentials' | 'confirm';
+  message?: string;
 }): string {
   const params = new URLSearchParams();
   if (opts?.mode && opts.mode !== 'signin') params.set('mode', opts.mode);
   if (opts?.plan) params.set('plan', opts.plan);
-  if (opts?.error === 'auth') params.set('error', 'auth');
+  if (opts?.error) params.set('error', opts.error);
+  if (opts?.message) params.set('message', opts.message);
   const qs = params.toString();
   return qs ? `/login?${qs}` : '/login';
 }
