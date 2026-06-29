@@ -70,6 +70,9 @@ export function MarketingFooter() {
             <Link href="/privacy" className="marketing-nav-link">
               Privacy
             </Link>
+            <Link href="/terms" className="marketing-nav-link">
+              Terms
+            </Link>
           </div>
         </div>
       </div>

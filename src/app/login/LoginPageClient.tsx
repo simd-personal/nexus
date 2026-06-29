@@ -11,6 +11,7 @@ import {
 } from '@/lib/actions/auth';
 import { APP_NAME, BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { UpperDeckLogo, UpperDeckIcon } from '@/components/brand/UpperDeckLogo';
+import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
 import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
 type AuthMode = 'signin' | 'signup' | 'forgot';
@@ -487,6 +488,8 @@ export default function LoginPageClient() {
                     </>
                   )}
                 </button>
+
+                {mode === 'signup' && <SignUpLegalNotice className="mt-4" />}
               </form>
 
               {mode === 'forgot' && (

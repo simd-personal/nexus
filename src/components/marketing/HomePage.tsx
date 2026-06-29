@@ -13,6 +13,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { MarketingShell } from '@/components/marketing/MarketingShell';
+import { LegalPolicyLinks } from '@/components/marketing/LegalPolicyLinks';
 import { AnnouncementBar } from '@/components/marketing/fun/AnnouncementBar';
 import { AudienceTabs } from '@/components/marketing/fun/AudienceTabs';
 import { HeroTransform } from '@/components/marketing/fun/HeroTransform';
@@ -81,6 +82,11 @@ export function HomePage() {
                 <span>Cancel anytime</span>
               </span>
             </div>
+
+            <LegalPolicyLinks
+              className="mt-4 text-xs text-[var(--ud-slate)]"
+              linkClassName="marketing-inline-link text-xs"
+            />
           </div>
 
           <div className="marketing-hero-visual-wrap">
@@ -428,11 +434,13 @@ export function HomePage() {
           </div>
 
           <p className="mt-8 text-center text-sm text-[var(--ud-slate)]">
-            Free plan needs no credit card. Cancel Pro anytime.{' '}
+            Free plan needs no credit card. Paid plans cancel the same day with no refunds.{' '}
             <Link href="/pricing" className="marketing-inline-link">
               Full pricing details
             </Link>
           </p>
+
+          <LegalPolicyLinks className="mt-3 text-center text-xs text-[var(--ud-slate)]" />
 
           <Reveal className="mt-14">
             <div className="marketing-org-banner">
@@ -566,6 +574,7 @@ export function HomePage() {
                 Request organization info
               </Link>
             </div>
+            <LegalPolicyLinks className="mt-6 text-xs text-[var(--ud-slate)]" />
           </Reveal>
         </div>
       </section>

@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
 
+export const DEFAULT_OG_IMAGE_PATH = '/opengraph-image';
+export const OG_IMAGE_ALT = `${APP_NAME} — ${BRAND_TAGLINE}`;
+
 export const MARKETING_PATHS = [
   '/',
   '/product',
@@ -49,6 +52,12 @@ export function createMarketingMetadata({
   const canonical = `${siteUrl}${path}`;
   const pageTitle = path === '/' ? `${APP_NAME} | ${BRAND_TAGLINE}` : title;
   const socialTitle = path === '/' ? pageTitle : `${title} | ${APP_NAME}`;
+  const socialImage = {
+    url: DEFAULT_OG_IMAGE_PATH,
+    width: 1200,
+    height: 630,
+    alt: OG_IMAGE_ALT,
+  };
 
   return {
     title: pageTitle,
@@ -62,11 +71,13 @@ export function createMarketingMetadata({
       siteName: APP_NAME,
       title: socialTitle,
       description,
+      images: [socialImage],
     },
     twitter: {
       card: 'summary_large_image',
       title: socialTitle,
       description,
+      images: [DEFAULT_OG_IMAGE_PATH],
     },
     robots: {
       index: true,

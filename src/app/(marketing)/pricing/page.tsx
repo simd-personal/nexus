@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
+import { LegalPolicyLinks } from '@/components/marketing/LegalPolicyLinks';
 import { B2B_CAPABILITIES, B2C_PRICING } from '@/lib/marketing/pricing';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
@@ -63,6 +64,8 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
+
+          <LegalPolicyLinks className="mt-8 text-center text-xs text-[var(--ud-slate)]" />
         </div>
       </section>
 

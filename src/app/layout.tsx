@@ -4,7 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
 import './globals.css';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
-import { getSiteUrl } from '@/lib/marketing/seo';
+import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, OG_IMAGE_ALT } from '@/lib/marketing/seo';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeRouteSync } from '@/components/theme/ThemeRouteSync';
 import { THEME_BOOTSTRAP_SCRIPT } from '@/lib/theme/preferences';
@@ -35,7 +35,31 @@ export const metadata: Metadata = {
     'AI client briefs',
     APP_DOMAIN,
   ],
-  icons: { icon: '/upperdeck-icon.svg', apple: '/upperdeck-icon.svg' },
+  icons: {
+    icon: [{ url: '/upperdeck-icon.svg', type: 'image/svg+xml' }],
+    apple: [{ url: '/apple-icon', type: 'image/png' }],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: APP_NAME,
+    title: `${APP_NAME} | ${BRAND_TAGLINE}`,
+    description: 'Your first AI employee for client work. Sunny delivers briefs and client intelligence.',
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE_PATH,
+        width: 1200,
+        height: 630,
+        alt: OG_IMAGE_ALT,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${APP_NAME} | ${BRAND_TAGLINE}`,
+    description: 'Your first AI employee for client work. Sunny delivers briefs and client intelligence.',
+    images: [DEFAULT_OG_IMAGE_PATH],
+  },
   robots: { index: true, follow: true },
 };
 
