@@ -8,14 +8,14 @@ import { APP_NAME, APP_DOMAIN, AI_EMPLOYEE_NAME } from '@/lib/constants';
  */
 
 const BRAND = {
-  gradient: 'linear-gradient(135deg, #5b9cf6 0%, #7c6cf0 52%, #9333ea 100%)',
-  gradientFallback: '#7c6cf0',
-  ink: '#0e1115',
-  body: '#3f4654',
-  muted: '#8a93a5',
-  hairline: '#e8ebef',
+  gradient: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
+  gradientFallback: '#2563EB',
+  ink: '#0B1220',
+  body: '#334155',
+  muted: '#94A3B8',
+  hairline: '#334155',
   surface: '#ffffff',
-  canvas: '#f5f6f8',
+  canvas: '#F8FAFC',
 };
 
 /** 2x2 rounded-dot logo mark rendered with nested tables (no SVG). */
@@ -132,7 +132,7 @@ export function renderWelcomeEmail(input: WelcomeEmailInput): {
     </table>
     <p style="margin:24px 0 0;${font}font-size:13px;line-height:1.6;color:${BRAND.muted};">
       If the button doesn't work, copy and paste this link:<br>
-      <a href="${input.appUrl}" target="_blank" style="color:#7c6cf0;text-decoration:none;word-break:break-all;">${input.appUrl}</a>
+      <a href="${input.appUrl}" target="_blank" style="color:#2563EB;text-decoration:none;word-break:break-all;">${input.appUrl}</a>
     </p>`;
 
   const text = [

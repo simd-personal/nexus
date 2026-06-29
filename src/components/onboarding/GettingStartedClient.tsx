@@ -307,7 +307,7 @@ export function GettingStartedClient({
       <div className="mb-8 flex items-center gap-3">
         <UpperDeckIcon size={40} />
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#7c6cf0]">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[var(--brand-accent)]">
             Getting started
           </p>
           <h1 className="app-page-title text-2xl">
@@ -325,7 +325,7 @@ export function GettingStartedClient({
               key={item.id}
               className={`rounded-lg border px-3 py-2 text-center text-xs font-medium ${
                 active
-                  ? 'border-[#7c6cf0] bg-[#f5f3fe] text-[#5b4de0] dark:border-[#7c6cf0] dark:bg-[#2a2540]'
+                  ? 'border-[var(--brand-accent)] bg-[rgba(37,99,235,0.08)] text-[var(--brand-accent-dark)] dark:border-[var(--brand-accent)] dark:bg-[rgba(37,99,235,0.15)]'
                   : done
                     ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300'
                     : 'border-gray-200 text-gray-500 dark:border-[var(--ud-cloud)] dark:text-gray-400'
@@ -382,7 +382,7 @@ export function GettingStartedClient({
 
       {step === 'upload' && projectState && (
         <Card>
-          <p className="text-xs font-medium uppercase tracking-wider text-[#7c6cf0]">{projectLabel}</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-[var(--brand-accent)]">{projectLabel}</p>
           <h2 className="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
             Step 2 · Add files for {AI_EMPLOYEE_NAME} to read
           </h2>
@@ -398,7 +398,7 @@ export function GettingStartedClient({
             onDrop={handleDrop}
             className={`mt-6 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
               dragging
-                ? 'border-[#7c6cf0] bg-[#faf9ff] dark:bg-[#2a2540]/40'
+                ? 'border-[var(--brand-accent)] bg-[rgba(37,99,235,0.05)] dark:bg-[rgba(37,99,235,0.12)]'
                 : 'border-gray-200 dark:border-[var(--ud-cloud)]'
             }`}
           >
@@ -473,7 +473,7 @@ export function GettingStartedClient({
 
       {step === 'processing' && (
         <Card className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#5b9cf6] to-[#7c6cf0] text-white">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[image:var(--ud-gradient)] text-white">
             <Sparkles className="h-7 w-7 animate-pulse" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -496,7 +496,7 @@ export function GettingStartedClient({
 
           <div className="mx-auto mt-6 h-2 max-w-md overflow-hidden rounded-full bg-gray-100 dark:bg-[var(--ud-cloud)]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-[#5b9cf6] to-[#7c6cf0] transition-all duration-500"
+              className="h-full rounded-full bg-[image:var(--ud-gradient)] transition-all duration-500"
               style={{ width: `${Math.max(progressPercent, 8)}%` }}
             />
           </div>
@@ -546,8 +546,8 @@ export function GettingStartedClient({
           </div>
 
           {summary && (
-            <div className="mt-6 rounded-lg border border-[#e9e2fd] bg-[#faf9ff] p-4 dark:border-[#7c6cf0]/30 dark:bg-[#2a2540]/40">
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#7c6cf0]">
+            <div className="mt-6 rounded-lg border border-[rgba(37,99,235,0.2)] bg-[rgba(37,99,235,0.05)] p-4 dark:border-[rgba(37,99,235,0.3)] dark:bg-[rgba(37,99,235,0.12)]">
+              <p className="text-xs font-semibold uppercase tracking-wider text-[var(--brand-accent)]">
                 First brief excerpt
               </p>
               <p className="mt-2 text-sm leading-relaxed text-gray-800 dark:text-gray-200">
@@ -601,7 +601,7 @@ function Field({
   multiline?: boolean;
 }) {
   const className =
-    'w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7c6cf0]/40 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100';
+    'w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]/40 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100';
 
   return (
     <div>

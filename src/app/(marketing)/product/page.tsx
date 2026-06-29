@@ -88,7 +88,7 @@ export default function ProductPage() {
               { icon: Layers, label: 'Deck and playbook generation' },
             ].map(({ icon: Icon, label }) => (
               <div key={label} className="marketing-pill-card">
-                <Icon className="h-4 w-4 text-[#7c6cf0]" strokeWidth={1.75} />
+                <Icon className="h-4 w-4 text-[var(--brand-accent)]" strokeWidth={1.75} />
                 <span>{label}</span>
               </div>
             ))}
@@ -113,7 +113,7 @@ export default function ProductPage() {
                 'Organization tenants with admin controls',
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                   {item}
                 </li>
               ))}

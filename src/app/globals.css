@@ -25,13 +25,13 @@
 }
 
 html.dark {
-  --background: #0f1115;
-  --foreground: #e8eaed;
-  --ud-stone: #14171c;
-  --ud-mist: #1c2129;
-  --ud-cloud: #2d3544;
-  --ud-slate: #9aa3b5;
-  --ud-graphite: #e8eaed;
+  --background: #0b1220;
+  --foreground: #f8fafc;
+  --ud-stone: #0b1220;
+  --ud-mist: #1a2433;
+  --ud-cloud: #334155;
+  --ud-slate: #94a3b8;
+  --ud-graphite: #f8fafc;
   --warmth-overlay: rgba(255, 149, 64, 0.14);
   color-scheme: dark;
 }
@@ -139,7 +139,7 @@ html.dark .docx-preview td {
   font-weight: 600;
 }
 
-/* Auth page — UpperDeck brand (glass + blue/purple) */
+/* Auth page — UpperDeck brand (navy + electric blue) */
 .auth-page {
   background: var(--ud-stone);
 }
@@ -157,7 +157,7 @@ html.dark .docx-preview td {
   width: 55%;
   height: 45%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(91, 156, 246, 0.22) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
   filter: blur(40px);
   pointer-events: none;
 }
@@ -169,14 +169,14 @@ html.dark .docx-preview td {
   width: 50%;
   height: 40%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
   filter: blur(48px);
   pointer-events: none;
 }
 
 .auth-visual-panel {
   position: relative;
-  background: linear-gradient(145deg, #eef2ff 0%, #ddd6fe 35%, #5b21b6 100%);
+  background: linear-gradient(145deg, #1a2433 0%, #0b1220 52%, #1d4ed8 100%);
   overflow: hidden;
 }
 
@@ -184,9 +184,9 @@ html.dark .docx-preview td {
   position: absolute;
   inset: -20% -30% -10% -10%;
   background:
-    radial-gradient(ellipse 55% 45% at 70% 40%, rgba(255, 255, 255, 0.35), transparent 60%),
-    radial-gradient(ellipse 40% 35% at 45% 65%, rgba(167, 139, 250, 0.45), transparent 55%),
-    linear-gradient(125deg, rgba(255, 255, 255, 0.15) 0%, rgba(37, 99, 235, 0.25) 45%, rgba(91, 33, 182, 0.5) 100%);
+    radial-gradient(ellipse 55% 45% at 70% 40%, rgba(255, 255, 255, 0.12), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 45% 65%, rgba(37, 99, 235, 0.35), transparent 55%),
+    linear-gradient(125deg, rgba(255, 255, 255, 0.08) 0%, rgba(37, 99, 235, 0.22) 45%, rgba(11, 18, 32, 0.65) 100%);
   filter: blur(0px);
   pointer-events: none;
   animation: auth-ribbon-shift 18s ease-in-out infinite alternate;
@@ -281,7 +281,7 @@ html.dark .docx-preview td {
 }
 
 .auth-fan-card.auth-glass-card-dark {
-  background: rgba(30, 27, 75, 0.82);
+  background: rgba(11, 18, 32, 0.82);
   border-color: rgba(255, 255, 255, 0.22);
 }
 
@@ -430,7 +430,7 @@ html.dark .docx-preview td {
 }
 
 .auth-link:hover {
-  color: #5b21b6;
+  color: var(--brand-accent-dark);
 }
 
 .auth-submit {
@@ -521,9 +521,9 @@ html.dark .docx-preview td {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
   overflow: hidden;
-  background: linear-gradient(160deg, #eef2ff 0%, #e7e3ff 38%, #ddd6fe 100%);
+  background: linear-gradient(160deg, #f8fafc 0%, #e8eef8 38%, #dbeafe 100%);
 }
 
 .auth-onboarding-blob-a,
@@ -540,7 +540,7 @@ html.dark .docx-preview td {
   left: -8%;
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, rgba(91, 156, 246, 0.45) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.35) 0%, transparent 70%);
 }
 
 .auth-onboarding-blob-b {
@@ -548,7 +548,7 @@ html.dark .docx-preview td {
   right: -8%;
   width: 55%;
   height: 55%;
-  background: radial-gradient(circle, rgba(147, 51, 234, 0.32) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
   animation-delay: -3s;
 }
 
@@ -665,7 +665,16 @@ html.dark .docx-preview td {
   to { transform: translate(4%, 6%); }
 }
 
-/* Marketing / homepage */
+@media (max-width: 1023px) {
+  .auth-visual-panel {
+    padding-top: max(3rem, env(safe-area-inset-top));
+    padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  }
+
+  .auth-brand-panel {
+    padding-top: max(2.5rem, env(safe-area-inset-top));
+  }
+}
 .marketing-page {
   background: var(--ud-stone);
   color: var(--ud-graphite);
@@ -2146,8 +2155,8 @@ html.dark .docx-preview td {
   inset: -30% -10% auto -10%;
   height: 120%;
   background:
-    radial-gradient(40% 60% at 30% 20%, rgba(91, 156, 246, 0.18), transparent 60%),
-    radial-gradient(40% 60% at 70% 30%, rgba(147, 51, 234, 0.16), transparent 60%);
+    radial-gradient(40% 60% at 30% 20%, rgba(37, 99, 235, 0.18), transparent 60%),
+    radial-gradient(40% 60% at 70% 30%, rgba(16, 185, 129, 0.12), transparent 60%);
   filter: blur(20px);
   pointer-events: none;
   animation: fun-mesh-drift 16s ease-in-out infinite alternate;
@@ -2162,14 +2171,14 @@ html.dark .docx-preview td {
   isolation: isolate;
   background:
     radial-gradient(900px 500px at 100% -5%, rgba(37, 99, 235, 0.08), transparent 55%),
-    radial-gradient(700px 420px at -5% 15%, rgba(91, 156, 246, 0.07), transparent 50%),
+    radial-gradient(700px 420px at -5% 15%, rgba(37, 99, 235, 0.07), transparent 50%),
     var(--ud-stone);
 }
 
 html.dark .app-main {
   background:
     radial-gradient(900px 500px at 100% -5%, rgba(37, 99, 235, 0.12), transparent 55%),
-    radial-gradient(700px 420px at -5% 15%, rgba(91, 156, 246, 0.08), transparent 50%),
+    radial-gradient(700px 420px at -5% 15%, rgba(37, 99, 235, 0.08), transparent 50%),
     var(--ud-stone);
 }
 
@@ -2182,12 +2191,12 @@ html.dark .app-main {
 
 .app-nav-active {
   background: rgba(37, 99, 235, 0.1);
-  color: var(--ud-graphite);
+  color: var(--brand-accent);
 }
 
 html.dark .app-nav-active {
   background: rgba(37, 99, 235, 0.18);
-  color: var(--ud-graphite);
+  color: var(--brand-accent-light);
 }
 
 .app-nav-link:hover {

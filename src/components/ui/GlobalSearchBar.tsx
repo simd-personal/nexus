@@ -39,7 +39,7 @@ export function GlobalSearchBar({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-[var(--ud-cloud)] bg-white py-3 pl-12 pr-4 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[#7c6cf0] focus:outline-none focus:ring-2 focus:ring-[rgba(124,108,240,0.15)] dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-[#7c6cf0] dark:focus:ring-[rgba(124,108,240,0.25)]"
+        className="w-full rounded-xl border border-[var(--ud-cloud)] bg-white py-3 pl-12 pr-4 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-[var(--brand-accent)] focus:outline-none focus:ring-2 focus:ring-[rgba(37,99,235,0.15)] dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-[var(--brand-accent)] dark:focus:ring-[rgba(37,99,235,0.25)]"
       />
       {loading && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2">

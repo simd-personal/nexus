@@ -42,7 +42,7 @@ export default function ForAgenciesPage() {
                   'Slack, email, and calendar connectors (roadmap)',
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#7c6cf0]" strokeWidth={2.5} />
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                     {item}
                   </li>
                 ))}

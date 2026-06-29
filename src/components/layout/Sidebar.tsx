@@ -39,7 +39,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-[var(--ud-cloud)] bg-white transition-transform duration-200 ease-in-out dark:bg-[var(--ud-mist)]',
+        'fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-[var(--ud-cloud)] bg-white transition-transform duration-200 ease-in-out dark:border-[var(--brand-border)] dark:bg-[var(--brand-bg-secondary)]',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0'
       )}
