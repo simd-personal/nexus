@@ -1,28 +1,40 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
   Check,
   FileText,
+  FolderOpen,
   Sparkles,
   Upload,
 } from 'lucide-react';
 import { createProject } from '@/lib/actions/projects';
 import { AI_EMPLOYEE_NAME, APP_NAME } from '@/lib/constants';
+import {
+  PROJECT_SUBJECT_HINT,
+  PROJECT_SUBJECT_LABEL,
+  PROJECT_SUBJECT_PLACEHOLDER,
+} from '@/lib/onboarding/copy';
 import { ONBOARDING_SAMPLE_MEETING_NOTES } from '@/lib/onboarding/sample-content';
 import type { OnboardingStep } from '@/lib/onboarding/status';
-import { kickFileProcessing, uploadProjectFile } from '@/lib/upload/client';
+import {
+  getFilesFromDataTransfer,
+  isFileDragEvent,
+  kickFileProcessing,
+  uploadProjectFiles,
+  UPLOAD_ACCEPT,
+} from '@/lib/upload/client';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { UpperDeckIcon } from '@/components/brand/UpperDeckLogo';
 import type { ProjectWithStats } from '@/types/database';
 
 const STEPS: Array<{ id: OnboardingStep; label: string }> = [
-  { id: 'project', label: 'Client project' },
-  { id: 'upload', label: 'First upload' },
+  { id: 'project', label: 'Your project' },
+  { id: 'upload', label: 'Add files' },
   { id: 'processing', label: 'Sunny reads' },
   { id: 'complete', label: 'Ready' },
 ];
@@ -41,11 +53,17 @@ export function GettingStartedClient({
   initialSummary,
 }: GettingStartedClientProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const dragDepth = useRef(0);
+
   const [step, setStep] = useState<OnboardingStep>(initialStep);
   const [projectState, setProjectState] = useState(project);
   const [fileId, setFileId] = useState<string | null>(activeFileId);
+  const [uploadedNames, setUploadedNames] = useState<string[]>([]);
   const [summary, setSummary] = useState(initialSummary);
   const [loading, setLoading] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
   const [progressLabel, setProgressLabel] = useState('Queued for processing…');
   const [progressPercent, setProgressPercent] = useState(0);
@@ -66,14 +84,14 @@ export function GettingStartedClient({
     return data.last_summary ?? null;
   }, []);
 
+  /** Optional background poll — never blocks the user from continuing. */
   useEffect(() => {
-    if (step !== 'processing' || !fileId || !projectState) return;
+    if ((step !== 'processing' && step !== 'complete') || !fileId || !projectState) return;
 
     let cancelled = false;
-    kickFileProcessing(fileId);
 
     async function poll() {
-      for (let attempt = 0; attempt < 90; attempt++) {
+      for (let attempt = 0; attempt < 45; attempt++) {
         if (cancelled) return;
 
         const response = await fetch(`/api/files/${fileId}/process`, { cache: 'no-store' });
@@ -83,24 +101,22 @@ export function GettingStartedClient({
             progress?: { label?: string; percent?: number };
           };
 
-          setProgressLabel(data.progress?.label ?? 'Sunny is reading…');
-          setProgressPercent(data.progress?.percent ?? Math.min(95, attempt * 3));
+          if (step === 'processing') {
+            setProgressLabel(data.progress?.label ?? 'Sunny is reading…');
+            setProgressPercent(data.progress?.percent ?? Math.min(90, 10 + attempt * 2));
+          }
 
           if (['processed', 'watch', 'critical'].includes(data.status)) {
-            const projectId = projectState?.id;
-            const nextSummary = projectId ? await pollProjectSummary(projectId) : null;
-            if (!cancelled) {
+            const nextSummary = await pollProjectSummary(projectState!.id);
+            if (!cancelled && nextSummary) {
               setSummary(nextSummary);
-              setStep('complete');
-              router.refresh();
             }
             return;
           }
 
-          if (data.status === 'failed') {
+          if (data.status === 'failed' && step === 'processing' && uploadedNames.length <= 1) {
             if (!cancelled) {
-              setError('Processing failed. Try uploading again or use the sample notes.');
-              setStep('upload');
+              setError('One of your files failed to process. You can continue and retry from the project Files tab.');
             }
             return;
           }
@@ -108,18 +124,13 @@ export function GettingStartedClient({
 
         await new Promise((resolve) => setTimeout(resolve, 2000));
       }
-
-      if (!cancelled) {
-        setError('Processing is taking longer than expected. You can continue to your project and check back shortly.');
-        setStep('complete');
-      }
     }
 
     void poll();
     return () => {
       cancelled = true;
     };
-  }, [step, fileId, projectState, pollProjectSummary, router]);
+  }, [step, fileId, projectState, pollProjectSummary, uploadedNames.length]);
 
   async function handleCreateProject(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -177,6 +188,8 @@ export function GettingStartedClient({
 
       const uploadedId = data.data?.id as string | undefined;
       if (uploadedId) {
+        kickFileProcessing(uploadedId);
+        setUploadedNames(['Sample meeting notes']);
         setFileId(uploadedId);
         setStep('processing');
       }
@@ -187,23 +200,74 @@ export function GettingStartedClient({
     }
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !projectState) return;
+  async function handleFilesSelected(files: File[]) {
+    if (!files.length || !projectState) return;
 
     setLoading(true);
     setError('');
-    const result = await uploadProjectFile(projectState.id, file);
-    if (!result.ok || !result.fileId) {
-      setError(result.error ?? 'Upload failed');
+
+    const { uploaded, fileIds, errors } = await uploadProjectFiles(projectState.id, files);
+
+    if (uploaded.length === 0) {
+      setError(errors[0] ?? 'Upload failed');
       setLoading(false);
       return;
     }
 
-    setFileId(result.fileId);
+    setUploadedNames(uploaded);
+    setFileId(fileIds[0] ?? null);
     setStep('processing');
+    setProgressLabel(
+      uploaded.length === 1
+        ? 'Sunny is reading your file…'
+        : `Sunny is reading ${uploaded.length} files…`
+    );
+    setProgressPercent(8);
     setLoading(false);
+    router.refresh();
+  }
+
+  function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
+    void handleFilesSelected(Array.from(e.target.files ?? []));
     e.target.value = '';
+  }
+
+  function handleDragEnter(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth.current += 1;
+    setDragging(true);
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
+    e.preventDefault();
+    setDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    if (!isFileDragEvent(e)) return;
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDragging(false);
+    void handleFilesSelected(getFilesFromDataTransfer(e.dataTransfer));
+  }
+
+  function continueToProject() {
+    setStep('complete');
+    setError('');
+    if (projectState) {
+      void pollProjectSummary(projectState.id).then((next) => {
+        if (next) setSummary(next);
+      });
+    }
   }
 
   const projectLabel = useMemo(() => {
@@ -258,23 +322,25 @@ export function GettingStartedClient({
       {step === 'project' && (
         <Card>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Step 1 · Name your first client project
+            Step 1 · Set up your first project
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            {AI_EMPLOYEE_NAME} keeps context per client. Start with one engagement — you can add more
-            after you see the brief.
-          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{PROJECT_SUBJECT_HINT}</p>
 
           <form onSubmit={handleCreateProject} className="mt-6 space-y-4">
-            <Field label="Client name" name="client_name" placeholder="e.g. Acme Health" required />
             <Field
-              label="Project name"
-              name="project_name"
-              placeholder="e.g. Q3 board prep"
+              label={PROJECT_SUBJECT_LABEL}
+              name="client_name"
+              placeholder={PROJECT_SUBJECT_PLACEHOLDER}
               required
             />
             <Field
-              label="What should Sunny watch for? (optional)"
+              label="What are you working on?"
+              name="project_name"
+              placeholder="e.g. Q3 board prep, discovery phase, v2 launch"
+              required
+            />
+            <Field
+              label={`What should ${AI_EMPLOYEE_NAME} watch for? (optional)`}
               name="sunny_notes"
               placeholder="e.g. timeline risks, budget conflicts, staffing gaps…"
               multiline
@@ -291,34 +357,88 @@ export function GettingStartedClient({
         <Card>
           <p className="text-xs font-medium uppercase tracking-wider text-[#7c6cf0]">{projectLabel}</p>
           <h2 className="mt-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Step 2 · Give {AI_EMPLOYEE_NAME} something to read
+            Step 2 · Add files for {AI_EMPLOYEE_NAME} to read
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Drop a deck, PDF, or notes — or try our sample meeting notes to see a brief in under a
-            minute.
+            Upload one file, many files, or a whole folder. Large uploads keep processing in the
+            background — you won&apos;t need to wait on this screen.
           </p>
 
-          <label className="mt-6 flex cursor-pointer flex-col items-center rounded-xl border-2 border-dashed border-gray-200 px-6 py-10 text-center transition-colors hover:border-[#7c6cf0] hover:bg-[#faf9ff] dark:border-[var(--ud-cloud)] dark:hover:border-[#7c6cf0] dark:hover:bg-[#2a2540]/40">
-            <Upload className="mb-3 h-8 w-8 text-gray-400" />
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-              Drag a file here or click to browse
-            </span>
-            <span className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              PDF, DOCX, TXT, email, transcript, image, audio
-            </span>
-            <input type="file" className="hidden" onChange={handleFileUpload} disabled={loading} />
-          </label>
+          <div
+            onDragEnter={handleDragEnter}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`mt-6 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors ${
+              dragging
+                ? 'border-[#7c6cf0] bg-[#faf9ff] dark:bg-[#2a2540]/40'
+                : 'border-gray-200 dark:border-[var(--ud-cloud)]'
+            }`}
+          >
+            <Upload className="mx-auto mb-3 h-8 w-8 text-gray-400" />
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              Drag files or a folder here
+            </p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              PDF, DOCX, TXT, email, transcript, image, audio, spreadsheets
+            </p>
+            <div className="mt-4 flex flex-col items-center justify-center gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={loading}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                Choose files
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={loading}
+                onClick={() => folderInputRef.current?.click()}
+              >
+                <FolderOpen className="h-4 w-4" />
+                Choose folder
+              </Button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              className="hidden"
+              accept={UPLOAD_ACCEPT}
+              onChange={handleFileInput}
+              disabled={loading}
+            />
+            <input
+              ref={folderInputRef}
+              type="file"
+              className="hidden"
+              multiple
+              {...({ webkitdirectory: 'true', directory: 'true' } as React.InputHTMLAttributes<HTMLInputElement>)}
+              onChange={handleFileInput}
+              disabled={loading}
+            />
+          </div>
+
+          {loading && (
+            <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">
+              Uploading…
+            </p>
+          )}
 
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <Button
               type="button"
-              variant="secondary"
+              variant="ghost"
               loading={loading}
               onClick={() => uploadContent(ONBOARDING_SAMPLE_MEETING_NOTES, 'meeting')}
               className="flex-1 justify-center"
             >
               <FileText className="h-4 w-4" />
-              Try sample meeting notes
+              Try sample meeting notes instead
             </Button>
           </div>
         </Card>
@@ -330,17 +450,42 @@ export function GettingStartedClient({
             <Sparkles className="h-7 w-7 animate-pulse" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Step 3 · {AI_EMPLOYEE_NAME} is reading your project
+            Step 3 · {AI_EMPLOYEE_NAME} is on it
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{progressLabel}</p>
+
+          {uploadedNames.length > 0 && (
+            <ul className="mx-auto mt-4 max-w-md space-y-1 text-left text-xs text-gray-600 dark:text-gray-300">
+              {uploadedNames.slice(0, 6).map((name) => (
+                <li key={name} className="truncate rounded-md bg-gray-50 px-3 py-1.5 dark:bg-[var(--ud-cloud)]">
+                  {name}
+                </li>
+              ))}
+              {uploadedNames.length > 6 && (
+                <li className="px-3 py-1 text-gray-500">+ {uploadedNames.length - 6} more</li>
+              )}
+            </ul>
+          )}
+
           <div className="mx-auto mt-6 h-2 max-w-md overflow-hidden rounded-full bg-gray-100 dark:bg-[var(--ud-cloud)]">
             <div
               className="h-full rounded-full bg-gradient-to-r from-[#5b9cf6] to-[#7c6cf0] transition-all duration-500"
               style={{ width: `${Math.max(progressPercent, 8)}%` }}
             />
           </div>
-          <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-            Extracting text, indexing for search, and drafting your first brief…
+
+          <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
+            {uploadedNames.length > 1
+              ? 'Large batches can take several minutes. Sunny keeps working in the background.'
+              : 'Extracting text, indexing for search, and drafting your first brief…'}
+          </p>
+
+          <Button type="button" className="mt-6" onClick={continueToProject}>
+            Continue — processing runs in background
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            You can explore your project now. Check the Overview for Sunny&apos;s brief when it&apos;s ready.
           </p>
         </Card>
       )}
@@ -356,8 +501,9 @@ export function GettingStartedClient({
                 {AI_EMPLOYEE_NAME} is on the job
               </h2>
               <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                {projectLabel} is ready in {APP_NAME}. Ask questions, search materials, or review
-                critical items — every answer cites your files.
+                {uploadedNames.length > 1
+                  ? `${uploadedNames.length} files are queued for ${projectState.project_name}. Sunny will keep indexing in the background.`
+                  : `${projectLabel} is ready in ${APP_NAME}. Ask questions, search materials, or review critical items — every answer cites your files.`}
               </p>
             </div>
           </div>
@@ -373,6 +519,13 @@ export function GettingStartedClient({
             </div>
           )}
 
+          {!summary && uploadedNames.length > 0 && (
+            <p className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+              Sunny is still reading your files. Your brief will appear on the project Overview when
+              the first batch finishes.
+            </p>
+          )}
+
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             <Link href={`/projects/${projectState.id}/overview`} className="sm:flex-1">
               <Button className="w-full justify-center">
@@ -380,14 +533,14 @@ export function GettingStartedClient({
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href={`/projects/${projectState.id}/ask-sunny`} className="sm:flex-1">
+            <Link href={`/projects/${projectState.id}/files`} className="sm:flex-1">
               <Button variant="secondary" className="w-full justify-center">
-                Ask {AI_EMPLOYEE_NAME}
+                See upload progress
               </Button>
             </Link>
-            <Link href="/dashboard">
+            <Link href={`/projects/${projectState.id}/ask-sunny`}>
               <Button variant="ghost" className="w-full justify-center sm:w-auto">
-                Go to dashboard
+                Ask {AI_EMPLOYEE_NAME}
               </Button>
             </Link>
           </div>

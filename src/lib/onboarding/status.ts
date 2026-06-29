@@ -10,8 +10,6 @@ export interface OnboardingState {
   fileCount: number;
 }
 
-const TERMINAL_FILE_STATUSES = new Set(['processed', 'watch', 'critical']);
-
 export function resolveOnboardingStep(input: {
   projects: ProjectWithStats[];
   recentFile?: { id: string; status: string } | null;
@@ -27,12 +25,13 @@ export function resolveOnboardingStep(input: {
     return { step: 'upload', project, activeFileId: null, fileCount: 0 };
   }
 
-  const file = input.recentFile;
-  if (file && !TERMINAL_FILE_STATUSES.has(file.status)) {
-    return { step: 'processing', project, activeFileId: file.id, fileCount };
-  }
-
-  return { step: 'complete', project, activeFileId: file?.id ?? null, fileCount };
+  // Files exist — onboarding is done; processing continues in the background.
+  return {
+    step: 'complete',
+    project,
+    activeFileId: input.recentFile?.id ?? null,
+    fileCount,
+  };
 }
 
 export function needsOnboarding(projects: ProjectWithStats[]): boolean {

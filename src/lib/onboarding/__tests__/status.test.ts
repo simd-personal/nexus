@@ -39,12 +39,12 @@ describe('resolveOnboardingStep', () => {
     expect(state.project?.id).toBe('p1');
   });
 
-  it('shows processing while file is pending', () => {
+  it('marks complete once files exist, even while processing', () => {
     const state = resolveOnboardingStep({
       projects: [project({ file_count: 1 })],
       recentFile: { id: 'f1', status: 'processing' },
     });
-    expect(state.step).toBe('processing');
+    expect(state.step).toBe('complete');
     expect(state.activeFileId).toBe('f1');
   });
 

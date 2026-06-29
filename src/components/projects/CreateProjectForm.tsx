@@ -7,6 +7,11 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Plus } from 'lucide-react';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import {
+  PROJECT_SUBJECT_HINT,
+  PROJECT_SUBJECT_LABEL,
+  PROJECT_SUBJECT_PLACEHOLDER,
+} from '@/lib/onboarding/copy';
 
 const INPUT_CLASS =
   'w-full rounded-lg border border-gray-200 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100 dark:focus:ring-gray-600';
@@ -121,19 +126,22 @@ export function CreateProjectForm({
       )}
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Client Name</label>
+        <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+          {PROJECT_SUBJECT_LABEL}
+        </label>
+        <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">{PROJECT_SUBJECT_HINT}</p>
         <input
           name="client_name"
           required
           defaultValue={activeParent?.client_name ?? ''}
           readOnly={Boolean(activeParent)}
-          placeholder="e.g. Adventist Health"
+          placeholder={PROJECT_SUBJECT_PLACEHOLDER}
           className={`${INPUT_CLASS}${activeParent ? ' bg-gray-50 dark:bg-[var(--ud-mist)]' : ''}`}
         />
       </div>
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
-          {lockedParent || selectedParentId ? 'Workstream name' : 'Project Name'}
+          {lockedParent || selectedParentId ? 'Workstream name' : 'What are you working on?'}
         </label>
         <input
           name="project_name"

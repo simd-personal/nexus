@@ -87,21 +87,25 @@ export async function uploadProjectFiles(
   projectId: string,
   files: File[],
   options?: { userNote?: string }
-): Promise<{ uploaded: string[]; errors: string[] }> {
+): Promise<{ uploaded: string[]; fileIds: string[]; errors: string[] }> {
   const uploaded: string[] = [];
+  const fileIds: string[] = [];
   const errors: string[] = [];
 
   for (const file of files) {
     const result = await uploadProjectFile(projectId, file, options);
     if (result.ok) {
       uploaded.push(file.name);
-      if (result.fileId) kickFileProcessing(result.fileId);
+      if (result.fileId) {
+        fileIds.push(result.fileId);
+        kickFileProcessing(result.fileId);
+      }
     } else {
       errors.push(`${file.name}: ${result.error ?? 'Upload failed'}`);
     }
   }
 
-  return { uploaded, errors };
+  return { uploaded, fileIds, errors };
 }
 
 /** Extensions shown in the upload UI — drops accept any file type. */
