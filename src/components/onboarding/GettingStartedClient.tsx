@@ -8,9 +8,9 @@ import {
   Check,
   FileText,
   FolderOpen,
-  Sparkles,
   Upload,
 } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { createProject } from '@/lib/actions/projects';
 import { AI_EMPLOYEE_NAME, APP_NAME } from '@/lib/constants';
 import {
@@ -473,8 +473,8 @@ export function GettingStartedClient({
 
       {step === 'processing' && (
         <Card className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[image:var(--ud-gradient)] text-white">
-            <Sparkles className="h-7 w-7 animate-pulse" />
+          <div className="mx-auto mb-4 flex justify-center">
+            <SunnyAvatar size="xl" className="animate-pulse" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Step 3 · {AI_EMPLOYEE_NAME} is on it

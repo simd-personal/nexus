@@ -1926,8 +1926,9 @@ html.dark .docx-preview td {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 9999px;
-  background: var(--ud-gradient);
-  color: #fff;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  overflow: hidden;
 }
 
 .hx-bridge-active .hx-bridge-orb {

@@ -3,15 +3,15 @@ import { CitationsList } from '@/components/ui/Citations';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { formatRelativeTime } from '@/lib/utils';
 import type { SunnyUpdate } from '@/types/database';
-import { Sun } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import Link from 'next/link';
 
 export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
   return (
     <Card>
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
-          <Sun className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <div className="mt-0.5 shrink-0">
+          <SunnyAvatar size="sm" />
         </div>
         <div className="flex-1">
           <div className="flex items-start justify-between gap-4">

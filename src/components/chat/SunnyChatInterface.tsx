@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
-  Sun, Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, Download, Trash2, Cpu, ArrowDown, RefreshCw, X, ListOrdered,
+  Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, Download, Trash2, Cpu, ArrowDown, RefreshCw, X, ListOrdered,
 } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { CitationsList, searchResultsToCitations } from '@/components/ui/Citations';
@@ -910,7 +911,7 @@ export function SunnyChatInterface({
           >
             {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
-          <Sun className="w-4 h-4 text-amber-500" />
+          <SunnyAvatar size="sm" />
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME}</span>
           {mode !== 'search' && projectName && (
             <span className="text-xs text-gray-400 dark:text-gray-500 truncate">· {projectName}</span>
@@ -968,8 +969,8 @@ export function SunnyChatInterface({
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
             {messages.length === 0 && (
               <div className="text-center py-12">
-                <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                  <Sun className="w-6 h-6 text-amber-600" />
+                <div className="mx-auto mb-4 flex justify-center">
+                  <SunnyAvatar size="xl" />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {chatTitle(mode)}
@@ -1030,8 +1031,8 @@ export function SunnyChatInterface({
               return (
                 <div key={msg.id} className={cn('group flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {msg.role === 'assistant' && (
-                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                      <Sun className="w-4 h-4 text-amber-600" />
+                    <div className="shrink-0 mt-0.5">
+                      <SunnyAvatar size="sm" />
                     </div>
                   )}
                   <div className={cn('max-w-[85%]', msg.role === 'user' && 'order-first')}>

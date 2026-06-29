@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/EmptyState';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
-import { Sun } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 
 interface GenerateButtonProps {
@@ -91,7 +91,7 @@ export function GenerateButton({
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>
-          <Sun className="w-4 h-4" />
+          <SunnyAvatar size="xs" className="ring-0" />
           Generate with {AI_EMPLOYEE_NAME}
         </Button>
       </Card>

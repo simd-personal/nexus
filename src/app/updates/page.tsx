@@ -1,8 +1,8 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
 import { getSunnyUpdates } from '@/lib/data/queries';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
-import { Sun } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,9 +13,7 @@ export default async function SunnyUpdatesPage() {
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-            <Sun className="w-5 h-5 text-amber-600" />
-          </div>
+          <SunnyAvatar size="md" />
           <div>
             <h1 className="app-page-title text-2xl">{AI_EMPLOYEE_NAME} Updates</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">

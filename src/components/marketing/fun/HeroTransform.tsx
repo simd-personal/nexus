@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, FileText, Mail, Sparkles } from 'lucide-react';
+import { ArrowRight, FileText, Mail } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 
 const MESSY = `ok so on the call sarah said launch maybe slips to Q3?? budget review thing. but the march timeline plan still says Q2 launch. also someone needs to own the data migration nobody confirmed. follow up w/ finance before fri. they were kinda annoyed about the last invoice too lol`;
 
@@ -102,7 +103,7 @@ export function HeroTransform() {
           {/* Sunny working */}
           <div className={`hx-bridge ${phase === 'thinking' ? 'hx-bridge-active' : ''}`}>
             <span className="hx-bridge-orb">
-              <Sparkles className="h-4 w-4" />
+              <SunnyAvatar size="sm" className="ring-0" />
             </span>
             <span className="hx-bridge-label">
               {phase === 'thinking' ? 'Sunny is reading…' : 'Sunny'}

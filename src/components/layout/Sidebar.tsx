@@ -5,24 +5,28 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   FolderKanban,
-  Sun,
   AlertTriangle,
   Search,
   Settings,
   X,
+  type LucideIcon,
 } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { cn } from '@/lib/utils';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { SidebarAccountFooter } from '@/components/layout/SidebarAccountFooter';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
 import { scopedAppHref } from '@/lib/projects/path-context';
 
-const navItems = [
+const navItems: Array<
+  | { href: string; label: string; icon: LucideIcon }
+  | { href: string; label: string; sunnyIcon: true }
+> = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/updates', label: 'Sunny Updates', icon: Sun },
+  { href: '/updates', label: 'Sunny Updates', sunnyIcon: true },
   { href: '/critical-items', label: 'Critical Items', icon: AlertTriangle },
-  { href: '/sunny', label: 'Sunny Chat', icon: Sun },
+  { href: '/sunny', label: 'Sunny Chat', sunnyIcon: true },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
@@ -63,7 +67,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         {navItems.map((item) => {
           const href = scopedAppHref(pathname, item.href);
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          const Icon = item.icon;
+          const Icon = 'icon' in item ? item.icon : null;
           return (
             <Link
               key={item.href}
@@ -76,7 +80,11 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
                   : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'
               )}
             >
-              <Icon className="h-4 w-4 shrink-0" />
+              {'sunnyIcon' in item ? (
+                <SunnyAvatar size="xs" className="ring-0" />
+              ) : (
+                Icon && <Icon className="h-4 w-4 shrink-0" />
+              )}
               {item.label}
             </Link>
           );

@@ -6,6 +6,7 @@ import { resendSignupConfirmation, requestPasswordReset } from '@/lib/actions/au
 import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { loginHref, type LoginMode } from '@/lib/auth/login-url';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
+import { SunnyMascot } from '@/components/brand/SunnyAvatar';
 import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
 import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
@@ -286,9 +287,12 @@ export default function LoginPageClient({
             </div>
           </div>
 
-          <p className="relative z-10 mt-10 hidden text-xs marketing-text-muted lg:block">
-            Meet {AI_EMPLOYEE_NAME}, your AI employee inside UpperDeck.
-          </p>
+          <div className="relative z-10 mt-10 hidden lg:block">
+            <p className="text-xs marketing-text-muted">
+              Meet {AI_EMPLOYEE_NAME}, your AI employee inside UpperDeck.
+            </p>
+            <SunnyMascot className="mt-4 max-w-xs opacity-95" priority />
+          </div>
         </div>
 
         <div className="auth-visual-panel relative flex flex-1 items-center justify-center px-6 py-12 sm:px-10 lg:min-h-screen">
