@@ -101,7 +101,7 @@ export function AuthEntryTransition({
     startedRef.current = true;
 
     router.prefetch(href);
-    void fetch(href, { credentials: 'include' }).catch(() => {});
+    void fetch(href, { credentials: 'include', cache: 'no-store' }).catch(() => {});
 
     const minMs = MIN_DISPLAY_MS[mode];
     const shownAt = performance.now();
@@ -110,17 +110,23 @@ export function AuthEntryTransition({
       window.location.assign(href);
     };
 
+    const maxTimer = window.setTimeout(navigate, 8000);
+
     // Wait for paint, then hold the splash for the full minimum duration.
     let timer: number | undefined;
     const raf = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         const elapsed = performance.now() - shownAt;
         const remaining = Math.max(0, minMs - elapsed);
-        timer = window.setTimeout(navigate, remaining);
+        timer = window.setTimeout(() => {
+          window.clearTimeout(maxTimer);
+          navigate();
+        }, remaining);
       });
     });
 
     return () => {
+      window.clearTimeout(maxTimer);
       if (timer !== undefined) window.clearTimeout(timer);
       cancelAnimationFrame(raf);
     };

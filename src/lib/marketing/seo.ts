@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { isAuthPath } from '@/lib/auth/cache-control';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
 
 export const DEFAULT_OG_IMAGE_PATH = '/opengraph-image';
@@ -16,8 +17,13 @@ export const MARKETING_PATHS = [
   '/privacy',
   '/terms',
   '/request-quote',
-  '/login',
 ] as const;
+
+export { isAuthPath };
+
+export function isPublicUnauthenticatedPath(pathname: string): boolean {
+  return isPublicMarketingPath(pathname) || isAuthPath(pathname);
+}
 
 export function getSiteUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();

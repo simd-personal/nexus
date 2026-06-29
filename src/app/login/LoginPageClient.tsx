@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import {
   resendSignupConfirmation,
   requestPasswordReset,
@@ -163,21 +162,22 @@ function GlassStatCard({
   );
 }
 
-export default function LoginPageClient() {
-  const searchParams = useSearchParams();
+export default function LoginPageClient({
+  initialMode = 'signin',
+  authError = false,
+  checkoutPlan = null,
+}: {
+  initialMode?: 'signin' | 'signup';
+  authError?: boolean;
+  checkoutPlan?: 'pro' | 'pro-annual' | null;
+}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [mode, setMode] = useState<AuthMode>(() =>
-    searchParams.get('plan') === 'pro' || searchParams.get('plan') === 'pro-annual'
-      ? 'signup'
-      : 'signin'
-  );
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<{ mode: 'signin' | 'signup'; href: string } | null>(null);
   const [message, setMessage] = useState('');
-  const authError = searchParams.get('error') === 'auth';
-  const checkoutPlan = searchParams.get('plan');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
 

@@ -19,7 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
   const lastModified = new Date();
 
-  return MARKETING_PATHS.filter((path) => path !== '/login').map((path) => ({
+  return MARKETING_PATHS.map((path) => ({
     url: `${siteUrl}${path}`,
     lastModified,
     changeFrequency: path === '/' || path === '/pricing' ? 'weekly' : 'monthly',

@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import { isPublicMarketingPath } from '@/lib/marketing/seo';
+import { applyNoStoreHeaders, isAuthPath, withNoStoreIfAuthPath } from '@/lib/auth/cache-control';
+import { isPublicUnauthenticatedPath } from '@/lib/marketing/seo';
 
 export async function updateSession(request: NextRequest) {
   // Supabase auth links (email confirm) carry a `?code=` to exchange for a
@@ -54,16 +55,15 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  const isAuthPage = pathname.startsWith('/login');
+  const isAuthPage = isAuthPath(pathname);
   const isPublicRoute =
-    isPublicMarketingPath(pathname) ||
-    pathname.startsWith('/auth') ||
+    isPublicUnauthenticatedPath(pathname) ||
     pathname === '/api/stripe/webhook';
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
-    return NextResponse.redirect(url);
+    return applyNoStoreHeaders(NextResponse.redirect(url));
   }
 
   if (user && isAuthPage) {
@@ -75,8 +75,8 @@ export async function updateSession(request: NextRequest) {
       url.pathname = '/dashboard';
       url.search = '';
     }
-    return NextResponse.redirect(url);
+    return applyNoStoreHeaders(NextResponse.redirect(url));
   }
 
-  return supabaseResponse;
+  return withNoStoreIfAuthPath(pathname, supabaseResponse);
 }

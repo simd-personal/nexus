@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { applyNoStoreHeaders } from '@/lib/auth/cache-control';
 import { createClient } from '@/lib/supabase/server';
 import { provisionEnterpriseOrganization } from '@/lib/organizations/provision';
 import { getSiteUrlFromRequest, safeAuthNextPath } from '@/lib/auth/site-url';
@@ -25,12 +26,14 @@ export async function GET(request: Request) {
 
       const pendingPlan = user?.user_metadata?.pending_checkout_plan;
       if (pendingPlan === 'pro' || pendingPlan === 'pro-annual') {
-        return NextResponse.redirect(`${siteUrl}/upgrade?plan=${pendingPlan}`);
+        return applyNoStoreHeaders(
+          NextResponse.redirect(`${siteUrl}/upgrade?plan=${pendingPlan}`)
+        );
       }
 
-      return NextResponse.redirect(`${siteUrl}${next}`);
+      return applyNoStoreHeaders(NextResponse.redirect(`${siteUrl}${next}`));
     }
   }
 
-  return NextResponse.redirect(`${siteUrl}/login?error=auth`);
+  return applyNoStoreHeaders(NextResponse.redirect(`${siteUrl}/login?error=auth`));
 }
