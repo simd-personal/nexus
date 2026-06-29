@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { updateActionItemStatus } from '@/lib/actions/projects';
+import { dashboardInsetPanelClassName } from '@/components/dashboard/dashboard-panel-styles';
 import { formatRelativeTime } from '@/lib/utils';
 import type { ActionItem, ActionItemStatus, Project } from '@/types/database';
 
@@ -39,6 +40,7 @@ type ActionItemCardProps = {
   embedded?: boolean;
   block?: boolean;
   showActions?: boolean;
+  syncOnUpdate?: boolean;
   onStatusChange?: (undo: ActionItemUndoState) => void;
 };
 
@@ -49,6 +51,7 @@ export function ActionItemCard({
   embedded = false,
   block = false,
   showActions = true,
+  syncOnUpdate = true,
   onStatusChange,
 }: ActionItemCardProps) {
   const router = useRouter();
@@ -123,7 +126,7 @@ export function ActionItemCard({
     if (result.error) return;
 
     onStatusChange?.(undo);
-    router.refresh();
+    if (syncOnUpdate) router.refresh();
   }
 
   const kindLabel = item.item_kind ? KIND_LABELS[item.item_kind] ?? item.item_kind : null;
@@ -266,22 +269,30 @@ export function ActionItemsList({
   compact = false,
   embedded = false,
   block = false,
+  inset = false,
   previewCount = 2,
   totalCount,
   viewAllHref = '/action-items',
   showActions = true,
+  syncOnUpdate = true,
   emptyMessage = 'No open action items for you right now.',
+  onCountChange,
+  onListEmpty,
 }: {
   items: ActionItemWithProject[];
   showProject?: boolean;
   compact?: boolean;
   embedded?: boolean;
   block?: boolean;
+  inset?: boolean;
   previewCount?: number;
   totalCount?: number;
   viewAllHref?: string;
   showActions?: boolean;
+  syncOnUpdate?: boolean;
   emptyMessage?: string;
+  onCountChange?: (delta: number) => void;
+  onListEmpty?: () => void;
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
@@ -300,7 +311,14 @@ export function ActionItemsList({
   }, []);
 
   function handleStatusChange(undo: ActionItemUndoState) {
-    setItems((current) => current.filter((entry) => entry.id !== undo.itemId));
+    let willBeEmpty = false;
+    setItems((current) => {
+      const next = current.filter((entry) => entry.id !== undo.itemId);
+      willBeEmpty = next.length === 0;
+      return next;
+    });
+    onCountChange?.(-1);
+    if (willBeEmpty) onListEmpty?.();
     setToast(undo);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToast(null), 5000);
@@ -318,7 +336,8 @@ export function ActionItemsList({
     if (result.error) return;
 
     setItems((current) => [pending.item, ...current]);
-    router.refresh();
+    onCountChange?.(1);
+    if (syncOnUpdate) router.refresh();
   }
 
   if (!items.length) {
@@ -329,11 +348,10 @@ export function ActionItemsList({
 
   const visibleItems = block && !expanded ? items.slice(0, previewCount) : items;
   const localHiddenCount = Math.max(0, items.length - previewCount);
-  const remoteHiddenCount =
-    totalCount !== undefined ? Math.max(0, totalCount - items.length) : 0;
   const showExpand = block && !expanded && localHiddenCount > 0;
   const showCollapse = block && expanded && items.length > previewCount;
-  const showViewAll = block && totalCount !== undefined && totalCount > items.length;
+  const showViewAll =
+    block && !inset && totalCount !== undefined && totalCount > items.length;
 
   const listBody = (
     <>
@@ -349,6 +367,7 @@ export function ActionItemsList({
             embedded={embedded}
             block={block}
             showActions={showActions}
+            syncOnUpdate={syncOnUpdate}
             onStatusChange={handleStatusChange}
           />
         </div>
@@ -392,8 +411,8 @@ export function ActionItemsList({
   return (
     <>
       {block ? (
-        embedded ? (
-          <div>{listBody}</div>
+        embedded || inset ? (
+          <div className={inset ? dashboardInsetPanelClassName : undefined}>{listBody}</div>
         ) : (
           <Card padding={false} className="overflow-hidden">
             {listBody}
@@ -409,6 +428,7 @@ export function ActionItemsList({
               compact={compact}
               embedded={embedded}
               showActions={showActions}
+              syncOnUpdate={syncOnUpdate}
               onStatusChange={handleStatusChange}
             />
           ))}

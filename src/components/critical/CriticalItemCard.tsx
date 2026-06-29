@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { SeverityBadge, CategoryBadge, StatusBadge } from '@/components/ui/Badge';
 import { CitationsList } from '@/components/ui/Citations';
 import { Button } from '@/components/ui/Button';
@@ -9,13 +11,28 @@ import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import type { CriticalItem } from '@/types/database';
 import Link from 'next/link';
 
-export function CriticalItemCard({ item, showProject = false }: { item: CriticalItem; showProject?: boolean }) {
-  async function handleAcknowledge() {
-    await updateCriticalItemStatus(item.id, 'acknowledged');
-  }
+export function CriticalItemCard({
+  item,
+  showProject = false,
+  syncOnUpdate = true,
+  onRemoved,
+}: {
+  item: CriticalItem;
+  showProject?: boolean;
+  syncOnUpdate?: boolean;
+  onRemoved?: (itemId: string) => void;
+}) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
 
-  async function handleResolve() {
-    await updateCriticalItemStatus(item.id, 'resolved');
+  async function handleStatus(next: 'acknowledged' | 'resolved') {
+    if (busy) return;
+    setBusy(true);
+    const result = await updateCriticalItemStatus(item.id, next);
+    setBusy(false);
+    if (result.error) return;
+    onRemoved?.(item.id);
+    if (syncOnUpdate) router.refresh();
   }
 
   const isHighPriority = item.severity === 'critical' || item.severity === 'high';
@@ -61,15 +78,46 @@ export function CriticalItemCard({ item, showProject = false }: { item: Critical
 
       {item.status === 'open' && (
         <div className="flex gap-2 mt-4">
-          <Button variant="secondary" size="sm" onClick={handleAcknowledge}>Acknowledge</Button>
-          <Button variant="ghost" size="sm" onClick={handleResolve}>Resolve</Button>
+          <Button variant="secondary" size="sm" disabled={busy} onClick={() => void handleStatus('acknowledged')}>
+            Acknowledge
+          </Button>
+          <Button variant="ghost" size="sm" disabled={busy} onClick={() => void handleStatus('resolved')}>
+            Resolve
+          </Button>
         </div>
       )}
     </Card>
   );
 }
 
-export function CriticalItemsList({ items, showProject = false }: { items: CriticalItem[]; showProject?: boolean }) {
+export function CriticalItemsList({
+  items: initialItems,
+  showProject = false,
+  syncOnUpdate = true,
+  onCountChange,
+  onListEmpty,
+}: {
+  items: CriticalItem[];
+  showProject?: boolean;
+  syncOnUpdate?: boolean;
+  onCountChange?: (delta: number) => void;
+  onListEmpty?: () => void;
+}) {
+  const [items, setItems] = useState(initialItems);
+
+  useEffect(() => {
+    setItems(initialItems);
+  }, [initialItems]);
+
+  function handleRemoved(itemId: string) {
+    setItems((current) => {
+      const next = current.filter((entry) => entry.id !== itemId);
+      if (next.length === 0) onListEmpty?.();
+      return next;
+    });
+    onCountChange?.(-1);
+  }
+
   if (!items.length) {
     return (
       <p className="text-sm text-gray-500 py-4 dark:text-gray-400">No critical items found. Sunny is monitoring your projects.</p>
@@ -79,7 +127,13 @@ export function CriticalItemsList({ items, showProject = false }: { items: Criti
   return (
     <div className="space-y-4">
       {items.map((item) => (
-        <CriticalItemCard key={item.id} item={item} showProject={showProject} />
+        <CriticalItemCard
+          key={item.id}
+          item={item}
+          showProject={showProject}
+          syncOnUpdate={syncOnUpdate}
+          onRemoved={handleRemoved}
+        />
       ))}
     </div>
   );

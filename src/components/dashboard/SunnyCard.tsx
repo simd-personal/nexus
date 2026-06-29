@@ -3,6 +3,7 @@ import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { dashboardPanelClassName } from '@/components/dashboard/dashboard-panel-styles';
 
 interface SunnyCardProps {
   criticalCount: number;
@@ -13,7 +14,7 @@ interface SunnyCardProps {
 
 export function SunnyCard({ criticalCount, newUpdatesCount, actionItemsCount, conflictsCount }: SunnyCardProps) {
   return (
-    <Card className="border-[rgba(124,108,240,0.22)] bg-gradient-to-br from-amber-50 via-white to-[#f3f0ff] dark:border-[rgba(167,139,250,0.35)] dark:from-amber-950/40 dark:via-[var(--ud-mist)] dark:to-indigo-950/30">
+    <Card className={`h-full w-full ${dashboardPanelClassName}`}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center">
           <SunnyAvatar size="lg" animate="idle" />

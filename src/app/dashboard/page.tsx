@@ -52,8 +52,8 @@ export default async function DashboardPage() {
 
         <PendingInboundInbox emails={pendingInboundEmails} projects={projects} />
 
-        <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3">
-          <div className="lg:col-span-1">
+        <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3 lg:items-stretch">
+          <div className="flex lg:col-span-1">
             <SunnyCard
               criticalCount={stats.criticalCount}
               newUpdatesCount={stats.newUpdatesCount}
@@ -61,7 +61,7 @@ export default async function DashboardPage() {
               conflictsCount={stats.conflictsCount}
             />
           </div>
-          <div className="min-w-0 lg:col-span-2">
+          <div className="flex min-w-0 lg:col-span-2">
             <DashboardAttentionPanel
               criticalItems={criticalItems}
               actionItems={actionItems}
