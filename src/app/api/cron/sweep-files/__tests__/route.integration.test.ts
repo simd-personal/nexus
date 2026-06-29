@@ -28,6 +28,17 @@ describe('GET /api/cron/sweep-files', () => {
     return expect(res).resolves.toMatchObject({ status: 401 });
   });
 
+  it('accepts Vercel cron schedule header in production', async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    const res = await GET(
+      new NextRequest('http://localhost:3000/api/cron/sweep-files', {
+        headers: { 'x-vercel-cron-schedule': '*/5 * * * *' },
+      })
+    );
+    expect(res.status).toBe(200);
+    expect(mockSweep).toHaveBeenCalled();
+  });
+
   it('runs the stale-file sweep with cron auth', async () => {
     vi.stubEnv('NODE_ENV', 'production');
     const res = await GET(
