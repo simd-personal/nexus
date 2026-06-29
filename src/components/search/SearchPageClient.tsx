@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
+import { loadChatScope, persistChatScope } from '@/lib/chat/cache';
 import {
-  ALL_PROJECTS_SCOPE,
-  initialScopeForProject,
   parseProjectIdsFromSearchParams,
+  resolveInitialChatScope,
   scopeFromUrlProjects,
+  scopesEqual,
   type ChatScope,
 } from '@/lib/chat/scope';
 import type { ChatMessage, ProjectWithStats } from '@/types/database';
@@ -38,25 +39,36 @@ export function GlobalChatPageClient({
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') ?? undefined;
   const urlProjectIds = useMemo(() => parseProjectIdsFromSearchParams(searchParams), [searchParams]);
+  const urlScopeKey = useMemo(() => [...urlProjectIds].sort().join(','), [urlProjectIds]);
 
-  const [chatScope, setChatScope] = useState<ChatScope>(() => {
-    if (lockScope && projectId) {
-      return initialScopeForProject(projects, projectId, projectName);
-    }
-    if (urlProjectIds.length > 0) {
-      return scopeFromUrlProjects(projects, urlProjectIds);
-    }
-    return ALL_PROJECTS_SCOPE;
-  });
+  const [chatScope, setChatScope] = useState<ChatScope>(() =>
+    resolveInitialChatScope({
+      lockScope,
+      projectId,
+      projectName,
+      projects,
+      urlProjectIds,
+      persistedScope: loadChatScope(userId),
+    })
+  );
+
+  const handleScopeChange = useCallback(
+    (scope: ChatScope) => {
+      setChatScope(scope);
+      persistChatScope(userId, scope);
+    },
+    [userId]
+  );
 
   useEffect(() => {
-    if (lockScope) return;
-    setChatScope(
-      urlProjectIds.length > 0
-        ? scopeFromUrlProjects(projects, urlProjectIds)
-        : ALL_PROJECTS_SCOPE
-    );
-  }, [lockScope, projects, urlProjectIds]);
+    void import('@/components/chat/SunnyChatInterface');
+  }, []);
+
+  useEffect(() => {
+    if (lockScope || urlProjectIds.length === 0) return;
+    const next = scopeFromUrlProjects(projects, urlProjectIds);
+    setChatScope((prev) => (scopesEqual(prev, next) ? prev : next));
+  }, [lockScope, projects, urlScopeKey, urlProjectIds]);
 
   return (
     <SunnyChatInterface
@@ -64,7 +76,7 @@ export function GlobalChatPageClient({
       mode="search"
       projects={projects}
       chatScope={chatScope}
-      onScopeChange={lockScope ? undefined : setChatScope}
+      onScopeChange={lockScope ? undefined : handleScopeChange}
       lockScope={lockScope}
       projectId={projectId}
       projectName={projectName}
@@ -74,34 +86,4 @@ export function GlobalChatPageClient({
       embedded={lockScope}
     />
   );
-}
-
-/** @deprecated Use GlobalChatPageClient */
-export function SearchPageClient(props: {
-  userId: string;
-  projectId?: string;
-  projectName?: string;
-  projects?: ProjectWithStats[];
-  lockProject?: boolean;
-}) {
-  return (
-    <GlobalChatPageClient
-      userId={props.userId}
-      projects={props.projects ?? []}
-      projectId={props.projectId}
-      projectName={props.projectName}
-      lockScope={props.lockProject}
-    />
-  );
-}
-
-/** @deprecated Use GlobalChatPageClient */
-export function GlobalSearchPageClient({
-  userId,
-  projects,
-}: {
-  userId: string;
-  projects: ProjectWithStats[];
-}) {
-  return <GlobalChatPageClient userId={userId} projects={projects} />;
 }

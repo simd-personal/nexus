@@ -22,7 +22,8 @@ import {
   loadPersistedActiveSession,
   patchChatScopeState,
   persistActiveSession,
-  persistMessageCache,
+  schedulePersistMessageCache,
+  flushPersistMessageCache,
   normalizeChatMessages,
   purgeLegacyUnscopedChatCaches,
   sessionsCacheFresh,
@@ -43,6 +44,7 @@ import type {
   SunnyChatArtifact,
   ProjectWithStats,
 } from '@/types/database';
+import { chatShellClassName } from '@/lib/chat/shell';
 import { cn } from '@/lib/utils';
 
 type ChatMode = 'project' | 'search' | 'brief' | 'playbook';
@@ -251,24 +253,29 @@ export function SunnyChatInterface({
   const lockScope = lockScopeProp ?? lockProject;
   const chatScope = chatScopeProp ?? ALL_PROJECTS_SCOPE;
   const scopeKey = chatCacheKey(userId, mode, cacheScopeKey(mode, projectId, lockScope));
-  purgeLegacyUnscopedChatCaches();
-  hydrateChatScopeFromStorage(scopeKey);
-  const cachedScope = getOrInitChatScopeState(scopeKey);
 
-  const [sessions, setSessions] = useState<ChatSession[]>(cachedScope.sessions);
-  const [sessionId, setSessionId] = useState<string | undefined>(
-    initialSessionId ?? cachedScope.activeSessionId
-  );
-  const [messages, setMessages] = useState<ChatMessage[]>(
-    initialMessages.length
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    hydrateChatScopeFromStorage(scopeKey);
+    return getOrInitChatScopeState(scopeKey).sessions;
+  });
+  const [sessionId, setSessionId] = useState<string | undefined>(() => {
+    hydrateChatScopeFromStorage(scopeKey);
+    return initialSessionId ?? getOrInitChatScopeState(scopeKey).activeSessionId;
+  });
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    hydrateChatScopeFromStorage(scopeKey);
+    const cached = getOrInitChatScopeState(scopeKey);
+    return initialMessages.length
       ? normalizeChatMessages(initialMessages)
-      : normalizeChatMessages(cachedScope.messages)
-  );
+      : normalizeChatMessages(cached.messages);
+  });
   const [input, setInput] = useState('');
   const [statusHint, setStatusHint] = useState('');
-  const [sidebarOpen, setSidebarOpen] = useState(cachedScope.sidebarOpen);
-  const [sourceFilter, setSourceFilter] = useState(cachedScope.sourceFilter);
-  const [modelPreference, setModelPreference] = useState<ModelPreference>(cachedScope.modelPreference);
+  const [sidebarOpen, setSidebarOpen] = useState(() => getOrInitChatScopeState(scopeKey).sidebarOpen);
+  const [sourceFilter, setSourceFilter] = useState(() => getOrInitChatScopeState(scopeKey).sourceFilter);
+  const [modelPreference, setModelPreference] = useState<ModelPreference>(
+    () => getOrInitChatScopeState(scopeKey).modelPreference
+  );
   const [atBottom, setAtBottom] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -279,13 +286,17 @@ export function SunnyChatInterface({
   const restoredRef = useRef(false);
   // Hidden honeypot input — real users never fill it; bots scraping the DOM often do.
   const honeypotRef = useRef<HTMLInputElement>(null);
-  const sessionIdRef = useRef<string | undefined>(initialSessionId ?? cachedScope.activeSessionId);
+  const sessionIdRef = useRef<string | undefined>(sessionId);
   const projectIdRef = useRef<string | undefined>(projectId);
   const chatScopeRef = useRef<ChatScope>(chatScope);
   const scopeKeyRef = useRef(scopeKey);
   const { stream, stop, isStreaming } = useSunnyStream();
   const { queue: messageQueue, enqueue, dequeue, removeAt, clear: clearQueue, isFull: queueFull } = useMessageQueue();
   const sendMessageRef = useRef<(text: string, opts?: { regenerate?: boolean }) => Promise<void>>(async () => {});
+
+  useEffect(() => {
+    purgeLegacyUnscopedChatCaches();
+  }, []);
 
   useEffect(() => {
     sessionIdRef.current = sessionId;
@@ -315,7 +326,7 @@ export function SunnyChatInterface({
       modelPreference,
       sessionsFetchedAt: sessionsLoadedRef.current ? state.sessionsFetchedAt ?? Date.now() : undefined,
     });
-    persistMessageCache(key, messageCache);
+    schedulePersistMessageCache(key, messageCache);
     if (sessionId) persistActiveSession(key, sessionId);
   }, [sessions, sessionId, messages, sidebarOpen, sourceFilter, modelPreference]);
 
@@ -338,6 +349,7 @@ export function SunnyChatInterface({
 
   useEffect(() => {
     if (scopeKeyRef.current === scopeKey) return;
+    flushPersistMessageCache(scopeKeyRef.current);
     persistScope();
     scopeKeyRef.current = scopeKey;
     restoredRef.current = false;
@@ -818,12 +830,7 @@ export function SunnyChatInterface({
             ];
 
   return (
-    <div
-      className={cn(
-        'relative flex w-full min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]',
-        embedded ? 'min-h-[360px] flex-1 -mx-4 sm:mx-0' : 'h-[calc(100dvh-3.5rem)]'
-      )}
-    >
+    <div className={chatShellClassName(embedded)}>
       {sidebarOpen && (
         <button
           type="button"

@@ -1,3 +1,4 @@
+import { ALL_PROJECTS_SCOPE, type ChatScope } from '@/lib/chat/scope';
 import type { ChatMessage, ChatSession, ModelPreference } from '@/types/database';
 
 export interface ChatScopeState {
@@ -20,7 +21,10 @@ export function chatCacheKey(userId: string, mode: string, projectId?: string) {
 
 const STORAGE_PREFIX = 'briefnexus-chat:';
 const MESSAGE_CACHE_PREFIX = 'briefnexus-chat-msgs:';
+const CHAT_SCOPE_PREFIX = 'briefnexus-chat-scope:';
 const LEGACY_SCOPE_PATTERN = /^(search|project|brief|playbook):/;
+const persistTimers = new Map<string, ReturnType<typeof setTimeout>>();
+const pendingMessageCaches = new Map<string, Record<string, ChatMessage[]>>();
 
 /** Remove pre-user-scoping chat keys so another account on the same browser cannot see them. */
 export function purgeLegacyUnscopedChatCaches() {
@@ -50,7 +54,11 @@ export function purgeAllChatCaches() {
     for (let i = 0; i < window.localStorage.length; i++) {
       const key = window.localStorage.key(i);
       if (!key) continue;
-      if (key.startsWith(STORAGE_PREFIX) || key.startsWith(MESSAGE_CACHE_PREFIX)) {
+      if (
+        key.startsWith(STORAGE_PREFIX) ||
+        key.startsWith(MESSAGE_CACHE_PREFIX) ||
+        key.startsWith(CHAT_SCOPE_PREFIX)
+      ) {
         keysToRemove.push(key);
       }
     }
@@ -212,6 +220,70 @@ export function persistMessageCache(scopeKey: string, cache: Record<string, Chat
     window.localStorage.setItem(`${MESSAGE_CACHE_PREFIX}${scopeKey}`, payload);
   } catch {
     // quota exceeded or private browsing
+  }
+}
+
+export function schedulePersistMessageCache(
+  scopeKey: string,
+  cache: Record<string, ChatMessage[]>,
+  delayMs = 300
+) {
+  if (typeof window === 'undefined') return;
+  pendingMessageCaches.set(scopeKey, cache);
+  const existing = persistTimers.get(scopeKey);
+  if (existing) clearTimeout(existing);
+  persistTimers.set(
+    scopeKey,
+    setTimeout(() => {
+      persistMessageCache(scopeKey, cache);
+      persistTimers.delete(scopeKey);
+      pendingMessageCaches.delete(scopeKey);
+    }, delayMs)
+  );
+}
+
+export function flushPersistMessageCache(scopeKey: string) {
+  const existing = persistTimers.get(scopeKey);
+  if (existing) {
+    clearTimeout(existing);
+    persistTimers.delete(scopeKey);
+  }
+  const pending = pendingMessageCaches.get(scopeKey);
+  if (pending) {
+    persistMessageCache(scopeKey, pending);
+    pendingMessageCaches.delete(scopeKey);
+    return;
+  }
+  const state = getOrInitChatScopeState(scopeKey);
+  persistMessageCache(scopeKey, state.messageCache);
+}
+
+export function persistChatScope(userId: string, scope: ChatScope) {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(`${CHAT_SCOPE_PREFIX}${userId}`, JSON.stringify(scope));
+  } catch {
+    // private browsing / storage disabled
+  }
+}
+
+export function loadChatScope(userId: string): ChatScope | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(`${CHAT_SCOPE_PREFIX}${userId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as ChatScope;
+    if (parsed.kind === 'all') return ALL_PROJECTS_SCOPE;
+    if (parsed.kind === 'selected' && Array.isArray(parsed.projectIds)) {
+      return {
+        kind: 'selected',
+        projectIds: parsed.projectIds,
+        labels: Array.isArray(parsed.labels) ? parsed.labels : parsed.projectIds,
+      };
+    }
+    return null;
+  } catch {
+    return null;
   }
 }
 

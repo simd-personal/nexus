@@ -9,9 +9,11 @@ import {
   parseProjectIdsFromSearchParams,
   projectLabel,
   removeScopeLabel,
+  resolveInitialChatScope,
   resolveScopeProjectIds,
   scopeCacheKeySuffix,
   scopeFromUrlProjects,
+  scopesEqual,
   toggleNodeChecked,
 } from '@/lib/chat/scope';
 import type { ProjectWithStats } from '@/types/database';
@@ -137,5 +139,52 @@ describe('chat scope', () => {
     const scope = initialScopeForProject(tree, 'ws-a');
     expect(resolveScopeProjectIds(scope)).toEqual(['ws-a']);
     expect(scope.kind === 'selected' && scope.labels).toEqual(['Acme · Site rollout']);
+  });
+
+  it('compares scopes without order sensitivity', () => {
+    const a = buildChatScope(tree, new Set(['ws-a', 'solo']));
+    const b = buildChatScope(tree, new Set(['solo', 'ws-a']));
+    expect(scopesEqual(a, b)).toBe(true);
+    expect(scopesEqual(a, ALL_PROJECTS_SCOPE)).toBe(false);
+  });
+
+  it('resolves initial scope with URL, lock, and persisted priority', () => {
+    const persisted = buildChatScope(tree, new Set(['solo']));
+    expect(
+      resolveInitialChatScope({
+        lockScope: true,
+        projectId: 'ws-a',
+        projects: tree,
+        urlProjectIds: ['solo'],
+        persistedScope: persisted,
+      }).kind
+    ).toBe('selected');
+
+    expect(
+      resolveInitialChatScope({
+        lockScope: false,
+        projects: tree,
+        urlProjectIds: ['ws-a'],
+        persistedScope: persisted,
+      })
+    ).toEqual(initialScopeForProject(tree, 'ws-a'));
+
+    expect(
+      resolveInitialChatScope({
+        lockScope: false,
+        projects: tree,
+        urlProjectIds: [],
+        persistedScope: persisted,
+      })
+    ).toEqual(persisted);
+
+    expect(
+      resolveInitialChatScope({
+        lockScope: false,
+        projects: tree,
+        urlProjectIds: [],
+        persistedScope: null,
+      })
+    ).toEqual(ALL_PROJECTS_SCOPE);
   });
 });

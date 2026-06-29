@@ -1,10 +1,10 @@
+import { Suspense } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { GlobalChatPageClient } from '@/components/search/SearchPageClient';
+import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
 import { getProjectsWithStats } from '@/lib/data/queries';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { requireUser } from '@/lib/supabase/server';
-import { Suspense } from 'react';
-import { LoadingState } from '@/components/ui/EmptyState';
 
 export default async function SunnyChatPage() {
   const [user, projects] = await Promise.all([requireUser(), getProjectsWithStats()]);
@@ -20,7 +20,7 @@ export default async function SunnyChatPage() {
           </p>
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
-          <Suspense fallback={<LoadingState />}>
+          <Suspense fallback={<ChatLoadingShell />}>
             <GlobalChatPageClient userId={user.id} projects={projects} />
           </Suspense>
         </div>

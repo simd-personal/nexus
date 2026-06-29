@@ -56,6 +56,36 @@ export function initialScopeForProject(
   };
 }
 
+export function scopesEqual(a: ChatScope, b: ChatScope): boolean {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'all') return true;
+  if (b.kind !== 'selected') return false;
+  const aIds = [...a.projectIds].sort().join(',');
+  const bIds = [...b.projectIds].sort().join(',');
+  if (aIds !== bIds) return false;
+  return a.labels.join('\0') === b.labels.join('\0');
+}
+
+export function resolveInitialChatScope(opts: {
+  lockScope: boolean;
+  projectId?: string;
+  projectName?: string;
+  projects: ProjectWithStats[];
+  urlProjectIds: string[];
+  persistedScope?: ChatScope | null;
+}): ChatScope {
+  if (opts.lockScope && opts.projectId) {
+    return initialScopeForProject(opts.projects, opts.projectId, opts.projectName);
+  }
+  if (opts.urlProjectIds.length > 0) {
+    return scopeFromUrlProjects(opts.projects, opts.urlProjectIds);
+  }
+  if (opts.persistedScope) {
+    return opts.persistedScope;
+  }
+  return ALL_PROJECTS_SCOPE;
+}
+
 export function scopeFromUrlProjects(
   projects: ProjectWithStats[],
   projectIds: string[]
