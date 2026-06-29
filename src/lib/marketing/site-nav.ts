@@ -49,7 +49,6 @@ export const SOLUTION_LINKS: SiteNavLink[] = [
 
 export const COMPANY_LINKS: SiteNavLink[] = [
   { href: '/about', label: 'About' },
-  { href: '/login', label: 'Sign in' },
   { href: '/request-quote', label: 'Contact sales' },
 ];
 
