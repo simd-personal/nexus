@@ -1,5 +1,6 @@
 'use server';
 
+import { sendQuoteRequestToSupport } from '@/lib/email/send-support-notification';
 import { createServiceClient } from '@/lib/supabase/admin';
 import type { OrganizationIndustry } from '@/types/database';
 
@@ -26,6 +27,19 @@ export async function submitOrganizationQuoteRequest(formData: FormData) {
   });
 
   if (error) return { error: error.message };
+
+  const emailResult = await sendQuoteRequestToSupport({
+    fullName,
+    email,
+    companyName,
+    industry,
+    teamSize,
+    message,
+  });
+
+  if (!emailResult.sent && !emailResult.skipped) {
+    console.error('[quote] Support notification failed:', emailResult.error);
+  }
 
   return {
     success: true,

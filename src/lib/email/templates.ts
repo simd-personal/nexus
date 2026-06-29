@@ -149,3 +149,70 @@ export function renderWelcomeEmail(input: WelcomeEmailInput): {
 
   return { subject, html: shell(inner, preheader), text };
 }
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+export type QuoteRequestEmailInput = {
+  fullName: string;
+  email: string;
+  companyName: string;
+  industry: string;
+  teamSize?: string | null;
+  message?: string | null;
+};
+
+export function renderQuoteRequestEmail(input: QuoteRequestEmailInput): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const subject = `[${APP_NAME}] New quote request — ${input.companyName}`;
+  const font =
+    "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
+
+  const rows = [
+    ['Name', input.fullName],
+    ['Email', input.email],
+    ['Company', input.companyName],
+    ['Industry', input.industry],
+    ['Team size', input.teamSize || '—'],
+    ['Message', input.message || '—'],
+  ] as const;
+
+  const tableRows = rows
+    .map(
+      ([label, value]) => `
+      <tr>
+        <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.hairline};${font}font-size:13px;font-weight:600;color:${BRAND.muted};width:120px;vertical-align:top;">${escapeHtml(label)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.hairline};${font}font-size:14px;line-height:1.55;color:${BRAND.ink};white-space:pre-wrap;">${escapeHtml(value)}</td>
+      </tr>`
+    )
+    .join('');
+
+  const inner = `
+    <h1 style="margin:0 0 8px;${font}font-size:20px;line-height:1.3;font-weight:700;color:${BRAND.ink};">
+      New organization quote request
+    </h1>
+    <p style="margin:0 0 20px;${font}font-size:14px;line-height:1.6;color:${BRAND.body};">
+      Someone submitted the request-quote form on ${APP_DOMAIN}. Reply to this email to reach them directly.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid ${BRAND.hairline};border-radius:12px;overflow:hidden;">
+      ${tableRows}
+    </table>`;
+
+  const text = [
+    'New organization quote request',
+    '',
+    ...rows.map(([label, value]) => `${label}: ${value}`),
+    '',
+    `Reply to ${input.email} to follow up.`,
+  ].join('\n');
+
+  return { subject, html: shell(inner, subject), text };
+}

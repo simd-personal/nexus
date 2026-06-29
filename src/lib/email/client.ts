@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { APP_NAME, APP_DOMAIN } from '@/lib/constants';
+import { APP_NAME, APP_DOMAIN, SUPPORT_EMAIL } from '@/lib/constants';
 
 /**
  * Transactional email via Resend.
@@ -30,9 +30,18 @@ export function getFromAddress(): string {
   return `${APP_NAME} <noreply@${APP_DOMAIN}>`;
 }
 
+/** Inbox for website form submissions (quote requests, etc.). */
+export function getSupportInboxAddress(): string {
+  return (
+    process.env.SUPPORT_EMAIL?.trim() ||
+    process.env.EMAIL_SUPPORT_TO?.trim() ||
+    SUPPORT_EMAIL
+  );
+}
+
 /** Reply-to support address. */
 export function getReplyToAddress(): string {
-  return process.env.EMAIL_REPLY_TO?.trim() || `support@${APP_DOMAIN}`;
+  return process.env.EMAIL_REPLY_TO?.trim() || SUPPORT_EMAIL;
 }
 
 export type SendEmailInput = {
@@ -40,6 +49,8 @@ export type SendEmailInput = {
   subject: string;
   html: string;
   text: string;
+  /** When set, replies from the recipient go to this address (e.g. form submitter). */
+  replyTo?: string;
 };
 
 export async function sendEmail(
@@ -57,7 +68,7 @@ export async function sendEmail(
     const { error } = await client.emails.send({
       from: getFromAddress(),
       to: input.to,
-      replyTo: getReplyToAddress(),
+      replyTo: input.replyTo ?? getReplyToAddress(),
       subject: input.subject,
       html: input.html,
       text: input.text,

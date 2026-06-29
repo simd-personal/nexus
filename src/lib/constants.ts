@@ -7,6 +7,7 @@ import type {
 
 export const APP_NAME = 'UpperDeck';
 export const APP_DOMAIN = 'upperdeck.dev';
+export const SUPPORT_EMAIL = `support@${APP_DOMAIN}`;
 export const AI_EMPLOYEE_NAME = 'Sunny';
 /** Brand guide tagline */
 export const BRAND_TAGLINE = 'Your first AI employee for client work';
