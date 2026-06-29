@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { B2C_PRICING } from '@/lib/marketing/pricing';
+import { openBillingPortal } from '@/lib/billing/client-poll';
 
 const VALID_PLANS = new Set(['pro', 'pro-annual']);
 
@@ -13,9 +14,12 @@ export function UpgradePageClient() {
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan') ?? 'pro';
   const [error, setError] = useState('');
+  const [usePortal, setUsePortal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const tier = B2C_PRICING.find((item) => item.id === plan || (plan === 'pro-annual' && item.id === 'pro-annual'));
+  const tier = B2C_PRICING.find(
+    (item) => item.id === plan || (plan === 'pro-annual' && item.id === 'pro-annual')
+  );
 
   useEffect(() => {
     if (!VALID_PLANS.has(plan)) {
@@ -38,6 +42,7 @@ export function UpgradePageClient() {
         if (!response.ok) {
           if (!cancelled) {
             setError(data.error ?? 'Could not start checkout.');
+            setUsePortal(Boolean(data.usePortal));
             setLoading(false);
           }
           return;
@@ -66,6 +71,15 @@ export function UpgradePageClient() {
     };
   }, [plan]);
 
+  async function handleOpenPortal() {
+    setLoading(true);
+    const result = await openBillingPortal();
+    if (!result.ok) {
+      setError(result.error);
+      setLoading(false);
+    }
+  }
+
   return (
     <AppShell>
       <div className="mx-auto max-w-lg p-4 sm:p-6 lg:p-8">
@@ -82,11 +96,16 @@ export function UpgradePageClient() {
           </div>
         )}
 
-        <div className="mt-8 flex gap-3">
+        <div className="mt-8 flex flex-wrap gap-3">
           <Button type="button" variant="secondary" onClick={() => router.push('/settings')}>
             Back to settings
           </Button>
-          {!loading && (
+          {usePortal && !loading && (
+            <Button type="button" onClick={handleOpenPortal}>
+              Manage billing
+            </Button>
+          )}
+          {!loading && !usePortal && (
             <Button type="button" onClick={() => window.location.reload()}>
               Try again
             </Button>

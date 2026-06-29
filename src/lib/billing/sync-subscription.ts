@@ -1,15 +1,22 @@
 import type Stripe from 'stripe';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { billingPlanFromPriceId } from '@/lib/stripe/prices';
-import type { BillingPlan } from '@/lib/billing/plans';
+import {
+  subscriptionStatusGrantsProAccess,
+  type BillingPlan,
+} from '@/lib/billing/plans';
 
-function planFromSubscription(subscription: Stripe.Subscription): BillingPlan {
+export function planFromSubscription(subscription: Stripe.Subscription): BillingPlan {
   const priceId = subscription.items.data[0]?.price?.id;
   const fromEnv = billingPlanFromPriceId(priceId);
   if (fromEnv) return fromEnv;
 
   const interval = subscription.items.data[0]?.price?.recurring?.interval;
   return interval === 'year' ? 'pro_annual' : 'pro';
+}
+
+export function subscriptionRetainsPaidPlan(status: Stripe.Subscription.Status): boolean {
+  return subscriptionStatusGrantsProAccess(status);
 }
 
 export async function syncSubscriptionToProfile(subscription: Stripe.Subscription) {
@@ -27,16 +34,13 @@ export async function syncSubscriptionToProfile(subscription: Stripe.Subscriptio
 
   if (!profile) return;
 
-  const isActive =
-    subscription.status === 'active' ||
-    subscription.status === 'trialing' ||
-    subscription.status === 'past_due';
+  const retainsPaid = subscriptionRetainsPaidPlan(subscription.status);
 
   await supabase
     .from('profiles')
     .update({
-      stripe_subscription_id: isActive ? subscription.id : null,
-      plan: isActive ? planFromSubscription(subscription) : 'free',
+      stripe_subscription_id: retainsPaid ? subscription.id : null,
+      plan: retainsPaid ? planFromSubscription(subscription) : 'free',
       subscription_status: subscription.status,
     })
     .eq('user_id', profile.user_id);

@@ -4,7 +4,8 @@ import { redirect } from 'next/navigation';
 import { createClient, requireUser } from '@/lib/supabase/server';
 import { getSiteUrlFromHeaders } from '@/lib/auth/site-url';
 import { getOrCreateStripeCustomer } from '@/lib/billing/customer';
-import { checkoutPlanToBillingPlan, type CheckoutPlanId } from '@/lib/billing/plans';
+import { validateCheckoutEligibility } from '@/lib/billing/checkout-guard';
+import { type CheckoutPlanId } from '@/lib/billing/plans';
 import { getStripe } from '@/lib/stripe/client';
 import { resolveStripePriceId } from '@/lib/stripe/prices';
 
@@ -32,11 +33,9 @@ export async function createCheckoutSession(planInput: string) {
     return { error: 'Organization accounts are billed via quote. Contact us for enterprise pricing.' };
   }
 
-  if (
-    profile?.plan === checkoutPlanToBillingPlan(plan) &&
-    (profile.subscription_status === 'active' || profile.subscription_status === 'trialing')
-  ) {
-    return { error: 'You already have an active subscription on this plan.' };
+  const guard = validateCheckoutEligibility(profile, plan);
+  if (!guard.allowed) {
+    return { error: guard.error };
   }
 
   const siteUrl = await getSiteUrlFromHeaders();

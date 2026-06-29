@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getSiteUrlFromRequest } from '@/lib/auth/site-url';
 import { getOrCreateStripeCustomer } from '@/lib/billing/customer';
-import { checkoutPlanToBillingPlan } from '@/lib/billing/plans';
+import { validateCheckoutEligibility } from '@/lib/billing/checkout-guard';
 import type { CheckoutPlanId } from '@/lib/billing/plans';
 import { getStripe } from '@/lib/stripe/client';
 import { resolveStripePriceId } from '@/lib/stripe/prices';
@@ -35,18 +35,12 @@ export async function POST(request: NextRequest) {
       .eq('user_id', user.id)
       .single();
 
-    if (profile?.account_type === 'enterprise') {
+    const guard = validateCheckoutEligibility(profile, plan);
+    if (!guard.allowed) {
       return NextResponse.json(
-        { error: 'Organization accounts are billed via quote.' },
+        { error: guard.error, usePortal: guard.usePortal },
         { status: 400 }
       );
-    }
-
-    if (
-      profile?.plan === checkoutPlanToBillingPlan(plan) &&
-      (profile.subscription_status === 'active' || profile.subscription_status === 'trialing')
-    ) {
-      return NextResponse.json({ error: 'Already subscribed to this plan.' }, { status: 400 });
     }
 
     const siteUrl = getSiteUrlFromRequest(request);

@@ -9,8 +9,11 @@ const PREMIUM_TEST_EMAILS = new Set(
   PREMIUM_TEST_ACCOUNTS.map((account) => account.email.toLowerCase())
 );
 
-/** Shared demo / QA accounts that always receive Pro limits in non-production and production. */
+/** Shared demo / QA accounts that receive Pro limits outside production. */
 export function isPremiumTestEmail(email: string | null | undefined): boolean {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_PREMIUM_TEST_ACCOUNTS !== 'true') {
+    return false;
+  }
   if (!email) return false;
   return PREMIUM_TEST_EMAILS.has(email.toLowerCase());
 }

@@ -5,6 +5,18 @@ export type CheckoutPlanId = 'pro' | 'pro-annual';
 export const FREE_PROJECT_LIMIT = 1;
 export const FREE_CHAT_MESSAGES_PER_MONTH = 25;
 
+/** Stripe statuses that keep Pro access (including payment grace period). */
+export const PAID_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const;
+
+export type PaidSubscriptionStatus = (typeof PAID_SUBSCRIPTION_STATUSES)[number];
+
+export function subscriptionStatusGrantsProAccess(
+  subscriptionStatus: string | null | undefined
+): boolean {
+  if (!subscriptionStatus) return false;
+  return (PAID_SUBSCRIPTION_STATUSES as readonly string[]).includes(subscriptionStatus);
+}
+
 export function checkoutPlanToBillingPlan(plan: CheckoutPlanId): BillingPlan {
   return plan === 'pro-annual' ? 'pro_annual' : 'pro';
 }
@@ -18,7 +30,7 @@ export function hasActiveSubscription(
   subscriptionStatus: string | null | undefined
 ): boolean {
   if (!isPaidPlan(plan)) return false;
-  return subscriptionStatus === 'active' || subscriptionStatus === 'trialing';
+  return subscriptionStatusGrantsProAccess(subscriptionStatus);
 }
 
 export function planDisplayName(plan: string | null | undefined): string {
