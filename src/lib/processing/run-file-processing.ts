@@ -6,6 +6,7 @@ import {
 } from '@/lib/processing/progress';
 import { loadFileContent } from '@/lib/processing/load-content';
 import { processFile } from '@/lib/processing/pipeline';
+import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 import type { SourceType } from '@/types/database';
 import type { EnqueueFileProcessingOptions } from '@/lib/processing/enqueue';
 
@@ -114,6 +115,7 @@ export async function runFileProcessing(
     });
 
     if (!result.completed && result.stage === 'embedding') {
+      enqueueFileProcessing(fileId, { resume: true });
       return;
     }
   } catch (processingError) {

@@ -5,10 +5,17 @@ import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 import { ingestProjectFileUpload } from '@/lib/upload/ingest-file';
 import { buildUploadSizeMetadata } from '@/lib/upload/size-hints';
 import {
+  uploadRateLimitForPro,
+  validateUploadByteSize,
+} from '@/lib/upload/limits';
+import {
   extractZipArchive,
   guessMimeType,
   isZipFile,
 } from '@/lib/upload/zip-extract';
+import { getBillingContextForUser } from '@/lib/billing/limits';
+import { rateLimit } from '@/lib/security/rate-limit';
+import { tooManyRequestsResponse } from '@/lib/security/messages';
 
 export const maxDuration = 300;
 
@@ -44,8 +51,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
+    const billing = await getBillingContextForUser(user.id);
+    const uploadLimits = uploadRateLimitForPro(billing.isPro);
+    const uploadRl = await rateLimit({
+      key: `upload:user:${user.id}`,
+      max: uploadLimits.max,
+      windowSec: uploadLimits.windowSec,
+    });
+    if (!uploadRl.allowed) {
+      return tooManyRequestsResponse(uploadRl.retryAfter);
+    }
+
     if (pastedText) {
       const trimmed = pastedText.trim();
+      const pasteSize = Buffer.byteLength(trimmed, 'utf8');
+      const pasteLimit = validateUploadByteSize(pasteSize, 'paste');
+      if (!pasteLimit.ok) {
+        return NextResponse.json({ error: pasteLimit.error }, { status: 413 });
+      }
       const fileName =
         pastedType === 'email'
           ? `pasted-email-${Date.now()}.txt`
@@ -107,7 +130,18 @@ export async function POST(request: NextRequest) {
 
     const fileName = sanitizeUploadFileName(file.name);
     const mimeType = file.type || 'application/octet-stream';
+
+    const uploadKind = isZipFile(fileName, mimeType) ? 'zip' : 'file';
+    const sizeCheck = validateUploadByteSize(file.size, uploadKind);
+    if (!sizeCheck.ok) {
+      return NextResponse.json({ error: sizeCheck.error }, { status: 413 });
+    }
+
     const buffer = Buffer.from(await file.arrayBuffer());
+    const bufferCheck = validateUploadByteSize(buffer.length, uploadKind);
+    if (!bufferCheck.ok) {
+      return NextResponse.json({ error: bufferCheck.error }, { status: 413 });
+    }
 
     if (isZipFile(fileName, mimeType)) {
       const { entries, skipped } = await extractZipArchive(buffer);

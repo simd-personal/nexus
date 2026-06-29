@@ -2,6 +2,11 @@ import {
   maxUploadSizeTier,
   uploadSizeHint,
 } from '@/lib/upload/size-hints';
+import {
+  formatMaxUploadSize,
+  maxBytesForUploadKind,
+  validateUploadByteSize,
+} from '@/lib/upload/limits';
 
 export function isFileDragEvent(event: DragEvent | React.DragEvent): boolean {
   const dataTransfer = 'dataTransfer' in event ? event.dataTransfer : null;
@@ -34,6 +39,15 @@ export function sanitizeUploadFileName(fileName: string): string {
   const base = fileName.split(/[/\\]/).pop()?.trim() || 'upload';
   return base.replace(/[^\w.\-()+\s]/g, '_') || 'upload';
 }
+
+/** Client-side guard before hitting /api/upload (server enforces the same limits). */
+export function validateClientUploadFile(file: File): { ok: true } | { ok: false; error: string } {
+  const kind = file.name.toLowerCase().endsWith('.zip') ? 'zip' : 'file';
+  return validateUploadByteSize(file.size, kind);
+}
+
+export const MAX_UPLOAD_SIZE_LABEL = formatMaxUploadSize('file');
+export const MAX_CLIENT_UPLOAD_BYTES = maxBytesForUploadKind('file');
 
 async function parseUploadResponse(res: Response): Promise<{
   error?: string;
@@ -73,6 +87,11 @@ export async function uploadProjectFile(
   file: File,
   options?: { userNote?: string }
 ): Promise<UploadFileResult> {
+  const sizeGuard = validateClientUploadFile(file);
+  if (!sizeGuard.ok) {
+    return { ok: false, error: sizeGuard.error };
+  }
+
   const formData = new FormData();
   formData.append('project_id', projectId);
   formData.append('file', file, sanitizeUploadFileName(file.name));

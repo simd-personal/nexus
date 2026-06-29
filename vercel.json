@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/sweep-files",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/purge-rate-limits",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

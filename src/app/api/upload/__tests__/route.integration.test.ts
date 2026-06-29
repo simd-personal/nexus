@@ -31,7 +31,17 @@ vi.mock('@/lib/supabase/admin', () => ({
   })),
 }));
 
+vi.mock('@/lib/billing/limits', () => ({
+  getBillingContextForUser: vi.fn(async () => ({ isPro: false, isEnterprise: false })),
+}));
+
+vi.mock('@/lib/security/rate-limit', () => ({
+  rateLimit: vi.fn(async () => ({ allowed: true, count: 1, limit: 30, retryAfter: 0 })),
+}));
+
+import { rateLimit } from '@/lib/security/rate-limit';
 import { POST } from '@/app/api/upload/route';
+import { MAX_PASTED_TEXT_BYTES } from '@/lib/upload/limits';
 
 function buildFileRequest(options: {
   projectId: string;
@@ -247,6 +257,49 @@ describe('POST /api/upload integration', () => {
         user_note: 'Kickoff whiteboard photo',
       })
     );
+  });
+
+  it('returns 413 when pasted text exceeds the size limit', async () => {
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'projects') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { id: 'proj-1' } }),
+        };
+      }
+      return {};
+    });
+
+    const oversized = 'x'.repeat(MAX_PASTED_TEXT_BYTES + 1);
+    const res = await POST(
+      buildFileRequest({ projectId: 'proj-1', pastedText: oversized, pastedType: 'note' })
+    );
+    expect(res.status).toBe(413);
+  });
+
+  it('returns 429 when upload rate limit is exceeded', async () => {
+    vi.mocked(rateLimit).mockResolvedValueOnce({
+      allowed: false,
+      count: 31,
+      limit: 30,
+      retryAfter: 120,
+    });
+    mockFrom.mockImplementation((table: string) => {
+      if (table === 'projects') {
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: { id: 'proj-1' } }),
+        };
+      }
+      return {};
+    });
+
+    const res = await POST(
+      buildFileRequest({ projectId: 'proj-1', fileName: 'a.md', fileContent: 'x' })
+    );
+    expect(res.status).toBe(429);
   });
 
   it('returns storage error details when upload fails', async () => {

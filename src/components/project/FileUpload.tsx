@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import {
   isFileDragEvent,
+  MAX_UPLOAD_SIZE_LABEL,
   uploadProjectFiles,
   kickFileProcessing,
   UPLOAD_ACCEPT,
@@ -157,7 +158,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
             Drag and drop files here
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Any file type works. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, .eml, and .zip archives.
+            Any file type works. Max {MAX_UPLOAD_SIZE_LABEL} per file. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, .eml, and .zip archives.
           </p>
           <label className="inline-block cursor-pointer">
             <input
