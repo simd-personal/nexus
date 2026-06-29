@@ -67,7 +67,7 @@ export default function ClientIntelligencePage() {
             ].map((item) => (
               <div key={item.title} className="marketing-feature-card">
                 <h3 className="text-lg font-semibold text-[var(--ud-graphite)]">{item.title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-[var(--ud-slate)]">{item.body}</p>
+                <p className="mt-2 text-[15px] leading-relaxed marketing-text">{item.body}</p>
               </div>
             ))}
           </div>
@@ -84,13 +84,13 @@ export default function ClientIntelligencePage() {
               'Operators and chiefs of staff supporting executive client relationships',
               'Healthcare and regulated consultancies with stricter data controls',
             ].map((item) => (
-              <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
+              <li key={item} className="flex items-start gap-3 text-[15px] marketing-text">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                 {item}
               </li>
             ))}
           </ul>
-          <p className="mt-8 text-sm text-[var(--ud-slate)]">
+          <p className="mt-8 text-sm marketing-text">
             Learn how UpperDeck applies client intelligence in practice on the{' '}
             <Link href="/product" className="marketing-inline-link">
               product page

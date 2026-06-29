@@ -41,7 +41,7 @@ export default function ForAgenciesPage() {
                   'SSO / SAML available on request',
                   'Slack, email, and calendar connectors (roadmap)',
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
+                  <li key={item} className="flex items-start gap-3 text-[15px] marketing-text">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                     {item}
                   </li>
@@ -65,7 +65,7 @@ export default function ForAgenciesPage() {
               ].map((item) => (
                 <div key={item.title} className="marketing-feature-card">
                   <h3 className="font-semibold text-[var(--ud-graphite)]">{item.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-[var(--ud-slate)]">{item.body}</p>
+                  <p className="mt-2 text-sm leading-relaxed marketing-text">{item.body}</p>
                 </div>
               ))}
               <Link href="/request-quote" className="marketing-inline-link text-sm">

@@ -37,16 +37,16 @@ export default function PricingPage() {
               >
                 {tier.highlighted && <span className="marketing-pricing-badge">Most popular</span>}
                 <h2 className="text-lg font-semibold text-[var(--ud-graphite)]">{tier.name}</h2>
-                <p className="mt-2 text-sm text-[var(--ud-slate)]">{tier.description}</p>
+                <p className="mt-2 text-sm marketing-text">{tier.description}</p>
                 <p className="mt-6">
                   <span className="text-4xl font-semibold tracking-tight text-[var(--ud-graphite)]">
                     {tier.price}
                   </span>
-                  <span className="text-sm text-[var(--ud-slate)]">{tier.period}</span>
+                  <span className="text-sm marketing-text">{tier.period}</span>
                 </p>
                 <ul className="mt-6 space-y-3">
                   {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm text-[var(--ud-slate)]">
+                    <li key={feature} className="flex items-start gap-2.5 text-sm marketing-text">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                       {feature}
                     </li>
@@ -65,7 +65,7 @@ export default function PricingPage() {
             ))}
           </div>
 
-          <LegalPolicyLinks className="mt-8 text-center text-xs text-[var(--ud-slate)]" />
+          <LegalPolicyLinks className="mt-8 text-center text-xs marketing-text" />
         </div>
       </section>
 

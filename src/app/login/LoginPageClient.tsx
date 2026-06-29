@@ -145,14 +145,14 @@ function GlassStatCard({
     <div
       className={`${dark ? 'auth-glass-card-dark' : 'auth-glass-card'} px-4 py-3.5 ${className}`}
     >
-      <p className={`text-[11px] font-medium uppercase tracking-wider ${dark ? 'text-white/55' : 'text-[var(--ud-slate)]'}`}>
+      <p className={`text-[11px] font-medium uppercase tracking-wider ${dark ? 'text-white/55' : 'marketing-text-muted'}`}>
         {label}
       </p>
       <p className={`mt-1 text-xl font-semibold tracking-tight ${dark ? 'text-white' : 'text-[var(--ud-graphite)]'}`}>
         {value}
       </p>
       {sub && (
-        <p className={`mt-0.5 text-xs ${dark ? 'text-white/45' : 'text-[var(--ud-slate)]'}`}>{sub}</p>
+        <p className={`mt-0.5 text-xs ${dark ? 'text-white/45' : 'marketing-text-muted'}`}>{sub}</p>
       )}
     </div>
   );
@@ -286,7 +286,7 @@ export default function LoginPageClient({
             </div>
           </div>
 
-          <p className="relative z-10 mt-10 hidden text-xs text-[var(--ud-slate)] lg:block">
+          <p className="relative z-10 mt-10 hidden text-xs marketing-text-muted lg:block">
             Meet {AI_EMPLOYEE_NAME}, your AI employee inside UpperDeck.
           </p>
         </div>
@@ -441,7 +441,7 @@ export default function LoginPageClient({
               )}
 
               {mode === 'forgot' && (
-                <p className="mt-6 text-center text-[14px] text-[var(--ud-slate)]">
+                <p className="mt-6 text-center text-[14px] marketing-text">
                   Remember your password?{' '}
                   <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link">
                     Back to sign in
@@ -450,7 +450,7 @@ export default function LoginPageClient({
               )}
 
               {(mode === 'signin' || mode === 'signup') && (
-                <p className="mt-6 text-center text-[13px] text-[var(--ud-slate)]">
+                <p className="mt-6 text-center text-[13px] marketing-text-muted">
                   Need organization access?{' '}
                   <Link href="/request-quote" className="auth-link">
                     Request a quote

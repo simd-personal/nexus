@@ -24,7 +24,7 @@ export function LegalPolicyLinks({
 
 export function SignUpLegalNotice({ className = '' }: { className?: string }) {
   return (
-    <p className={`text-center text-[11px] leading-relaxed text-[var(--ud-slate)] ${className}`}>
+    <p className={`text-center text-[11px] leading-relaxed marketing-text-muted ${className}`}>
       By creating an account, you agree to our{' '}
       <Link href="/privacy" className="auth-link">
         Privacy policy

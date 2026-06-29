@@ -139,19 +139,19 @@ export function RequestQuotePageContent() {
                 </div>
                 <p className="font-semibold text-[var(--ud-graphite)]">{APP_NAME} Enterprise</p>
               </div>
-              <p className="mt-4 text-[15px] leading-relaxed text-[var(--ud-slate)]">
+              <p className="mt-4 text-[15px] leading-relaxed marketing-text">
                 Shared tenants, admin roles, access approvals, and healthcare PHI safeguards, built
                 for software companies, consultancies, and regulated industries.
               </p>
               <ul className="mt-6 space-y-3">
                 {B2B_CAPABILITIES.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-[var(--ud-slate)]">
+                  <li key={item} className="flex items-start gap-3 text-sm marketing-text">
                     <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                     {item}
                   </li>
                 ))}
               </ul>
-              <p className="mt-6 text-sm text-[var(--ud-slate)]">
+              <p className="mt-6 text-sm marketing-text">
                 Typical response within 1 business day · 10 to 500+ seats · Custom SSO available
               </p>
             </div>
@@ -166,7 +166,7 @@ export function RequestQuotePageContent() {
               <div className="mt-6">
                 <RequestQuoteForm />
               </div>
-              <p className="mt-6 text-center text-sm text-[var(--ud-slate)]">
+              <p className="mt-6 text-center text-sm marketing-text">
                 Just need a personal workspace?{' '}
                 <Link href={loginHref({ mode: 'signup' })} className="auth-link">
                   Sign up free

@@ -18,7 +18,7 @@ export default function TermsPage() {
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container max-w-3xl marketing-prose">
-          <p className="text-sm text-[var(--ud-slate)]">Last updated: June 28, 2026</p>
+          <p className="text-sm marketing-text-muted">Last updated: June 28, 2026</p>
 
           <h2>Agreement</h2>
           <p>

@@ -30,7 +30,7 @@ export default function IntegrationsPage() {
               <div key={integration.name} className="marketing-integration-card">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-[var(--ud-slate)]">
+                    <p className="text-xs font-medium uppercase tracking-wider marketing-text">
                       {integration.category}
                     </p>
                     <h2 className="mt-1 text-lg font-semibold text-[var(--ud-graphite)]">
@@ -43,7 +43,7 @@ export default function IntegrationsPage() {
                     {INTEGRATION_STATUS_LABEL[integration.status]}
                   </span>
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-[var(--ud-slate)]">
+                <p className="mt-3 text-sm leading-relaxed marketing-text">
                   {integration.description}
                 </p>
               </div>
@@ -51,7 +51,7 @@ export default function IntegrationsPage() {
           </div>
 
           <div className="marketing-seo-callout mt-12">
-            <p className="text-sm text-[var(--ud-slate)]">
+            <p className="text-sm marketing-text">
               Need SSO, CRM sync, or a custom connector for your organization?{' '}
               <Link href="/request-quote" className="marketing-inline-link">
                 Request an enterprise quote

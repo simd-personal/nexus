@@ -113,7 +113,7 @@ export function HomePage() {
                     <span className="fun-step-num">{step}</span>
                   </div>
                   <h3 className="mt-5 text-lg font-semibold text-[var(--ud-graphite)]">{title}</h3>
-                  <p className="mt-2 text-[15px] leading-relaxed text-[var(--ud-slate)]">{body}</p>
+                  <p className="mt-2 text-[15px] leading-relaxed marketing-text">{body}</p>
                 </div>
               </Reveal>
             ))}
@@ -140,14 +140,14 @@ export function HomePage() {
           </Reveal>
           <Reveal delay={120} className="min-w-0">
             <div className="auth-glass-form min-w-0 p-5 sm:p-8 fun-lift">
-              <p className="text-xs font-medium uppercase tracking-wider text-[var(--ud-slate)]">
+              <p className="text-xs font-medium uppercase tracking-wider marketing-text">
                 {AI_EMPLOYEE_NAME} · Project chat
               </p>
               <div className="mt-5 space-y-4">
                 <div className="rounded-xl bg-[var(--ud-mist)] px-4 py-3 text-sm text-[var(--ud-graphite)]">
                   What did the client say about the timeline in last week&apos;s call?
                 </div>
-                <div className="rounded-xl border border-[var(--ud-cloud)] bg-white px-4 py-3 text-sm leading-relaxed text-[var(--ud-slate)]">
+                <div className="rounded-xl border border-[var(--ud-cloud)] bg-white px-4 py-3 text-sm leading-relaxed marketing-text">
                   In the March 12 sync, the client asked to pull launch to Q3 citing budget review
                   (Meeting transcript, p.4). The deck from March 10 still shows Q2. That&apos;s a
                   contradiction worth flagging.
@@ -199,12 +199,12 @@ export function HomePage() {
                     <span className="text-4xl font-semibold text-[var(--ud-graphite)]">
                       {tier.price}
                     </span>
-                    <span className="text-sm text-[var(--ud-slate)]">{tier.period}</span>
+                    <span className="text-sm marketing-text">{tier.period}</span>
                   </div>
-                  <p className="mt-3 text-sm text-[var(--ud-slate)]">{tier.description}</p>
+                  <p className="mt-3 text-sm marketing-text">{tier.description}</p>
                   <ul className="mt-6 space-y-3">
                     {tier.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-sm text-[var(--ud-slate)]">
+                      <li key={f} className="flex items-start gap-2.5 text-sm marketing-text">
                         <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                         {f}
                       </li>
@@ -225,7 +225,7 @@ export function HomePage() {
             ))}
           </div>
 
-          <p className="mt-8 text-center text-sm text-[var(--ud-slate)]">
+          <p className="mt-8 text-center text-sm marketing-text">
             Free plan needs no credit card. Paid plans cancel the same day with no refunds.{' '}
             <Link href="/pricing" className="marketing-inline-link">
               Full pricing details
@@ -242,7 +242,7 @@ export function HomePage() {
                   <h3 className="mt-2 text-xl font-semibold text-[var(--ud-graphite)]">
                     Need admin controls, PHI safeguards, or multi tenant access?
                   </h3>
-                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--ud-slate)]">
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed marketing-text">
                     Organization accounts are sold by quote. Tell us about your team and we will
                     follow up with pricing, security details, and a rollout plan.
                   </p>

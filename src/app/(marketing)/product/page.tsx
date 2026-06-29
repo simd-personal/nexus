@@ -65,7 +65,7 @@ export default function ProductPage() {
                   <span className="text-sm font-medium text-[var(--ud-cloud)]">{step}</span>
                 </div>
                 <h3 className="mt-5 text-lg font-semibold text-[var(--ud-graphite)]">{title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-[var(--ud-slate)]">{body}</p>
+                <p className="mt-2 text-[15px] leading-relaxed marketing-text">{body}</p>
               </div>
             ))}
           </div>
@@ -112,7 +112,7 @@ export default function ProductPage() {
                 'Audio transcription and PDF processing',
                 'Organization tenants with admin controls',
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
+                <li key={item} className="flex items-start gap-3 text-[15px] marketing-text">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                   {item}
                 </li>

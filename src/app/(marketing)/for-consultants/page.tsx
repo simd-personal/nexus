@@ -40,7 +40,7 @@ export default function ForConsultantsPage() {
                 'Spot risks and contradictions across documents',
                 'Draft follow ups and decks with cited sources',
               ].map((item) => (
-                <li key={item} className="flex items-start gap-3 text-[15px] text-[var(--ud-slate)]">
+                <li key={item} className="flex items-start gap-3 text-[15px] marketing-text">
                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
                   {item}
                 </li>
@@ -49,7 +49,7 @@ export default function ForConsultantsPage() {
           </div>
           <div className="marketing-seo-callout">
             <h3 className="font-semibold text-[var(--ud-graphite)]">Typical consultant workflow</h3>
-            <ol className="mt-4 space-y-4 text-sm leading-relaxed text-[var(--ud-slate)]">
+            <ol className="mt-4 space-y-4 text-sm leading-relaxed marketing-text">
               <li>1. Create a project per client engagement</li>
               <li>2. Drop in kickoff decks, discovery calls, and stakeholder emails</li>
               <li>3. Ask {AI_EMPLOYEE_NAME} what changed since last week</li>
