@@ -1,5 +1,20 @@
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 
+export const HOME_WOW_POINTS = [
+  {
+    title: 'Afternoons of reading done in minutes',
+    body: `${AI_EMPLOYEE_NAME} reads every deck, email, and transcript in the project and hands you the brief before your next call.`,
+  },
+  {
+    title: 'Every answer cites your files',
+    body: 'Not a blank chat window. Ask what changed, what is at risk, or what to say next. Every reply links back to the source.',
+  },
+  {
+    title: 'Latest GPT and Claude included',
+    body: 'Top models routed for you automatically. No second subscription and no copy pasting context every time.',
+  },
+] as const;
+
 export const HOME_AUDIENCES = [
   {
     title: 'Solo consultants',
