@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
+import { loginHref } from '@/lib/auth/login-url';
 import { PRIMARY_NAV_LINKS } from '@/lib/marketing/site-nav';
 
 export function MarketingNav() {
@@ -19,10 +20,10 @@ export function MarketingNav() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="/login" className="marketing-btn-ghost hidden sm:inline-flex">
+          <Link href={loginHref()} className="marketing-btn-ghost hidden sm:inline-flex">
             Sign in
           </Link>
-          <Link href="/login" className="marketing-btn-primary">
+          <Link href={loginHref({ mode: 'signup' })} className="marketing-btn-primary">
             Get started free
           </Link>
         </div>

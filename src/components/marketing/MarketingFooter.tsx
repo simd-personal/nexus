@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
+import { loginHref } from '@/lib/auth/login-url';
 import { APP_DOMAIN } from '@/lib/constants';
 import {
   COMPANY_LINKS,
@@ -61,7 +62,7 @@ export function MarketingFooter() {
             © {new Date().getFullYear()} UpperDeck · {APP_DOMAIN}
           </p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-            <Link href="/login" className="marketing-nav-link">
+            <Link href={loginHref({ mode: 'signup' })} className="marketing-nav-link">
               Get started free
             </Link>
             <Link href="/pricing" className="marketing-nav-link">

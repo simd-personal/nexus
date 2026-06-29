@@ -6,6 +6,7 @@ import { ArrowRight, Briefcase, Check } from 'lucide-react';
 import { MarketingShell } from '@/components/marketing/MarketingShell';
 import { Reveal } from '@/components/marketing/fun/Reveal';
 import { submitOrganizationQuoteRequest } from '@/lib/actions/quote';
+import { loginHref } from '@/lib/auth/login-url';
 import { APP_NAME } from '@/lib/constants';
 import { B2B_CAPABILITIES } from '@/lib/marketing/pricing';
 
@@ -167,7 +168,7 @@ export function RequestQuotePageContent() {
               </div>
               <p className="mt-6 text-center text-sm text-[var(--ud-slate)]">
                 Just need a personal workspace?{' '}
-                <Link href="/login" className="auth-link">
+                <Link href={loginHref({ mode: 'signup' })} className="auth-link">
                   Sign up free
                 </Link>
               </p>
@@ -186,7 +187,7 @@ export function RequestQuotePageContent() {
             </p>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <Link
-                href="/login"
+                href={loginHref({ mode: 'signup' })}
                 className="marketing-btn-primary marketing-btn-lg fun-btn-glow group w-full sm:w-auto"
               >
                 Get started free

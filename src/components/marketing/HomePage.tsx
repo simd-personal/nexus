@@ -22,6 +22,7 @@ import { Reveal } from '@/components/marketing/fun/Reveal';
 import { SpeedShowcase } from '@/components/marketing/fun/SpeedShowcase';
 import { Testimonials } from '@/components/marketing/fun/Testimonials';
 import { AI_EMPLOYEE_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { loginHref } from '@/lib/auth/login-url';
 import { INTEGRATIONS, INTEGRATION_STATUS_LABEL } from '@/lib/marketing/integrations';
 import { HOME_AI_POINTS, HOME_COMPARISONS, HOME_WORKFLOW_STEPS } from '@/lib/marketing/homepage';
 import { B2B_CAPABILITIES, B2C_PRICING } from '@/lib/marketing/pricing';
@@ -65,7 +66,7 @@ export function HomePage() {
             </p>
 
             <div className="marketing-hero-actions mt-8">
-              <Link href="/login" className="marketing-btn-primary marketing-btn-lg fun-btn-glow group">
+              <Link href={loginHref({ mode: 'signup' })} className="marketing-btn-primary marketing-btn-lg fun-btn-glow group">
                 Get started free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
@@ -566,7 +567,7 @@ export function HomePage() {
               {AI_EMPLOYEE_NAME} is included and getting more capable all the time.
             </p>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-              <Link href="/login" className="marketing-btn-primary marketing-btn-lg fun-btn-glow group w-full sm:w-auto">
+              <Link href={loginHref({ mode: 'signup' })} className="marketing-btn-primary marketing-btn-lg fun-btn-glow group w-full sm:w-auto">
                 Get started free
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>

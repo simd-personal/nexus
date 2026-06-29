@@ -1,3 +1,5 @@
+import { loginHref } from '@/lib/auth/login-url';
+
 export type PricingTier = {
   id: string;
   name: string;
@@ -19,7 +21,7 @@ export const B2C_PRICING: PricingTier[] = [
     period: 'forever',
     description: 'For freelancers hiring their first AI employee on a single client.',
     cta: 'Start free',
-    ctaHref: '/login',
+    ctaHref: loginHref({ mode: 'signup' }),
     features: [
       '1 active client project',
       'Upload meetings, decks, emails & notes',
@@ -36,7 +38,7 @@ export const B2C_PRICING: PricingTier[] = [
     period: '/ month',
     description: 'For consultants and operators with multiple AI employees worth of client work.',
     cta: 'Upgrade to Pro',
-    ctaHref: '/login?plan=pro',
+    ctaHref: loginHref({ mode: 'signup', plan: 'pro' }),
     highlighted: true,
     features: [
       'Unlimited client projects',
@@ -55,7 +57,7 @@ export const B2C_PRICING: PricingTier[] = [
     period: '/ year',
     description: 'Save 25% when you commit for the year.',
     cta: 'Start annual',
-    ctaHref: '/login?plan=pro-annual',
+    ctaHref: loginHref({ mode: 'signup', plan: 'pro-annual' }),
     features: [
       'Everything in Pro',
       '2 months free vs monthly',

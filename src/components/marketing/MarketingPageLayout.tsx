@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { MarketingShell } from '@/components/marketing/MarketingShell';
+import { loginHref } from '@/lib/auth/login-url';
 
 export function MarketingPageLayout({
   eyebrow,
@@ -36,7 +37,7 @@ export function MarketingPageLayout({
             Start free in under a minute. No credit card required.
           </p>
           <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <Link href="/login" className="marketing-btn-primary marketing-btn-lg fun-btn-glow group w-full sm:w-auto">
+            <Link href={loginHref({ mode: 'signup' })} className="marketing-btn-primary marketing-btn-lg fun-btn-glow group w-full sm:w-auto">
               Get started free
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>

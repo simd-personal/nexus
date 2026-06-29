@@ -9,12 +9,13 @@ import {
   signUpIndividual,
 } from '@/lib/actions/auth';
 import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { loginHref, type LoginMode } from '@/lib/auth/login-url';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { AuthEntryTransition } from '@/components/auth/AuthEntrySplash';
 import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
 import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
-type AuthMode = 'signin' | 'signup' | 'forgot';
+type AuthMode = LoginMode;
 
 function isSuccessMessage(message: string): boolean {
   const lower = message.toLowerCase();
@@ -99,35 +100,33 @@ function AuthInput({
 
 function ModeTabs({
   mode,
-  onSignIn,
-  onSignUp,
+  checkoutPlan,
 }: {
   mode: AuthMode;
-  onSignIn: () => void;
-  onSignUp: () => void;
+  checkoutPlan: 'pro' | 'pro-annual' | null;
 }) {
   if (mode === 'forgot') return null;
 
+  const plan = checkoutPlan ?? undefined;
+
   return (
     <div className="auth-mode-tabs" role="tablist" aria-label="Authentication mode">
-      <button
-        type="button"
+      <Link
+        href={loginHref({ mode: 'signin', plan })}
         role="tab"
         aria-selected={mode === 'signin'}
-        onClick={onSignIn}
         className={mode === 'signin' ? 'auth-mode-tab auth-mode-tab-active' : 'auth-mode-tab'}
       >
         Sign in
-      </button>
-      <button
-        type="button"
+      </Link>
+      <Link
+        href={loginHref({ mode: 'signup', plan })}
         role="tab"
         aria-selected={mode === 'signup'}
-        onClick={onSignUp}
         className={mode === 'signup' ? 'auth-mode-tab auth-mode-tab-active' : 'auth-mode-tab'}
       >
         Sign up
-      </button>
+      </Link>
     </div>
   );
 }
@@ -163,23 +162,26 @@ function GlassStatCard({
 }
 
 export default function LoginPageClient({
-  initialMode = 'signin',
+  mode,
   authError = false,
   checkoutPlan = null,
 }: {
-  initialMode?: 'signin' | 'signup';
+  mode: AuthMode;
   authError?: boolean;
   checkoutPlan?: 'pro' | 'pro-annual' | null;
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [loading, setLoading] = useState(false);
   const [entry, setEntry] = useState<{ mode: 'signin' | 'signup'; href: string } | null>(null);
   const [message, setMessage] = useState('');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
+
+  function goToSignIn() {
+    window.location.assign(loginHref({ mode: 'signin', plan: checkoutPlan }));
+  }
 
   function resolvePostAuthHref(isNewSignup: boolean) {
     if (hasCheckoutPlan) return `/upgrade?plan=${checkoutPlan}`;
@@ -191,11 +193,6 @@ export default function LoginPageClient({
       mode: isNewSignup ? 'signup' : 'signin',
       href: resolvePostAuthHref(isNewSignup),
     });
-  }
-
-  function switchMode(next: AuthMode) {
-    setMode(next);
-    setMessage('');
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -224,8 +221,8 @@ export default function LoginPageClient({
           beginAuthEntry(true);
           return;
         } else if (result.recoveredFromRateLimit) {
-          setMode('signin');
-          setMessage(result.message ?? 'Account ready. Sign in with your email and password.');
+          goToSignIn();
+          return;
         } else {
           setMessage(
             result.message ??
@@ -256,7 +253,8 @@ export default function LoginPageClient({
     setLoading(true);
     const result = await resendSignupConfirmation(email);
     if (result.recoveredFromRateLimit) {
-      setMode('signin');
+      goToSignIn();
+      return;
     }
     setMessage(result.error ?? result.message ?? 'Confirmation email sent.');
     setLoading(false);
@@ -350,11 +348,7 @@ export default function LoginPageClient({
                 <UpperDeckLogo size="md" theme="light" />
               </div>
 
-              <ModeTabs
-                mode={mode}
-                onSignIn={() => switchMode('signin')}
-                onSignUp={() => switchMode('signup')}
-              />
+              <ModeTabs mode={mode} checkoutPlan={checkoutPlan} />
 
               <div key={mode} className="auth-mode-enter mt-7">
                 <h1 className="auth-form-title">{copy.title}</h1>
@@ -409,13 +403,9 @@ export default function LoginPageClient({
                         Password
                       </label>
                       {mode === 'signin' && (
-                        <button
-                          type="button"
-                          onClick={() => switchMode('forgot')}
-                          className="auth-link text-[13px]"
-                        >
+                        <Link href={loginHref({ mode: 'forgot', plan: checkoutPlan })} className="auth-link text-[13px]">
                           Forgot password?
-                        </button>
+                        </Link>
                       )}
                     </div>
                     <input
@@ -443,9 +433,9 @@ export default function LoginPageClient({
                   >
                     <p>{message}</p>
                     {mode === 'signup' && message.includes('already exists') && (
-                      <button type="button" onClick={() => switchMode('signin')} className="auth-link mt-2">
+                      <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link mt-2">
                         Go to sign in
-                      </button>
+                      </Link>
                     )}
                     {isRateLimitMessage(message) && (
                       <p className="mt-2 text-[13px] opacity-90">
@@ -487,9 +477,9 @@ export default function LoginPageClient({
               {mode === 'forgot' && (
                 <p className="mt-6 text-center text-[14px] text-[var(--ud-slate)]">
                   Remember your password?{' '}
-                  <button type="button" onClick={() => switchMode('signin')} className="auth-link">
+                  <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link">
                     Back to sign in
-                  </button>
+                  </Link>
                 </p>
               )}
 
