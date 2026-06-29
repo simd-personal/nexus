@@ -37,6 +37,7 @@ type ActionItemCardProps = {
   showProject?: boolean;
   compact?: boolean;
   embedded?: boolean;
+  block?: boolean;
   showActions?: boolean;
   onStatusChange?: (undo: ActionItemUndoState) => void;
 };
@@ -46,6 +47,7 @@ export function ActionItemCard({
   showProject = false,
   compact = false,
   embedded = false,
+  block = false,
   showActions = true,
   onStatusChange,
 }: ActionItemCardProps) {
@@ -153,35 +155,41 @@ export function ActionItemCard({
       : null;
 
   return (
-    <CardWrapper embedded={embedded} compact={compact}>
-      <div className="flex items-start justify-between gap-3">
+    <CardWrapper embedded={embedded || block} compact={compact || block}>
+      <div className={block ? 'flex items-center justify-between gap-3 py-3 px-4 sm:px-5' : 'flex items-start justify-between gap-3'}>
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex flex-wrap items-center gap-2">
-            {kindLabel && <Badge variant="neutral">{kindLabel}</Badge>}
-            {item.status !== 'open' && (
-              <Badge variant="neutral">{formatStatusLabel(item.status)}</Badge>
-            )}
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              {formatRelativeTime(item.created_at)}
-            </span>
-          </div>
+          {!block && (
+            <div className="mb-1 flex flex-wrap items-center gap-2">
+              {kindLabel && <Badge variant="neutral">{kindLabel}</Badge>}
+              {item.status !== 'open' && (
+                <Badge variant="neutral">{formatStatusLabel(item.status)}</Badge>
+              )}
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {formatRelativeTime(item.created_at)}
+              </span>
+            </div>
+          )}
           <Link
             href={`/projects/${item.project_id}/overview`}
-            className="text-sm font-medium text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400"
+            className={
+              block
+                ? 'line-clamp-2 text-sm font-medium text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400'
+                : 'text-sm font-medium text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400'
+            }
           >
             {item.title}
           </Link>
           {showProject && item.project && (
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
               {item.project.client_name} · {item.project.project_name}
             </p>
           )}
-          {item.owner && (
+          {!block && item.owner && (
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Owner: {item.owner}</p>
           )}
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-2">
-          {item.due_date && (
+        <div className={block ? 'flex shrink-0 items-center gap-1' : 'flex shrink-0 flex-col items-end gap-2'}>
+          {!block && item.due_date && (
             <span className="text-xs text-gray-400 dark:text-gray-500">Due {item.due_date}</span>
           )}
           {canAct && (
@@ -192,7 +200,7 @@ export function ActionItemCard({
                 disabled={busy}
                 onClick={() => void applyStatus('done', undefined, 'Marked done')}
               >
-                Mark done
+                {block ? 'Done' : 'Mark done'}
               </Button>
               <div className="relative" data-action-item-menu-root ref={anchorRef}>
                 <Button
@@ -227,11 +235,7 @@ function CardWrapper({
   children: React.ReactNode;
 }) {
   if (embedded) {
-    return (
-      <div className="border-b border-gray-100 py-3 last:border-0 dark:border-[var(--ud-cloud)]">
-        {children}
-      </div>
-    );
+    return <div>{children}</div>;
   }
   return <Card className={compact ? 'p-4' : undefined}>{children}</Card>;
 }
@@ -261,6 +265,10 @@ export function ActionItemsList({
   showProject = false,
   compact = false,
   embedded = false,
+  block = false,
+  previewCount = 2,
+  totalCount,
+  viewAllHref = '/action-items',
   showActions = true,
   emptyMessage = 'No open action items for you right now.',
 }: {
@@ -268,11 +276,16 @@ export function ActionItemsList({
   showProject?: boolean;
   compact?: boolean;
   embedded?: boolean;
+  block?: boolean;
+  previewCount?: number;
+  totalCount?: number;
+  viewAllHref?: string;
   showActions?: boolean;
   emptyMessage?: string;
 }) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
+  const [expanded, setExpanded] = useState(false);
   const [toast, setToast] = useState<ActionItemUndoState | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -314,21 +327,93 @@ export function ActionItemsList({
     );
   }
 
-  return (
+  const visibleItems = block && !expanded ? items.slice(0, previewCount) : items;
+  const localHiddenCount = Math.max(0, items.length - previewCount);
+  const remoteHiddenCount =
+    totalCount !== undefined ? Math.max(0, totalCount - items.length) : 0;
+  const showExpand = block && !expanded && localHiddenCount > 0;
+  const showCollapse = block && expanded && items.length > previewCount;
+  const showViewAll = block && totalCount !== undefined && totalCount > items.length;
+
+  const listBody = (
     <>
-      <div className={embedded ? undefined : compact ? 'space-y-2' : 'space-y-3'}>
-        {items.map((item) => (
+      {visibleItems.map((item, index) => (
+        <div
+          key={item.id}
+          className={block && index > 0 ? 'border-t border-gray-100 dark:border-[var(--ud-cloud)]' : undefined}
+        >
           <ActionItemCard
-            key={item.id}
             item={item}
             showProject={showProject}
             compact={compact}
             embedded={embedded}
+            block={block}
             showActions={showActions}
             onStatusChange={handleStatusChange}
           />
-        ))}
-      </div>
+        </div>
+      ))}
+
+      {block && (showExpand || showCollapse || showViewAll) && (
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 px-4 py-2.5 dark:border-[var(--ud-cloud)] sm:px-5">
+          <div>
+            {showExpand && (
+              <button
+                type="button"
+                onClick={() => setExpanded(true)}
+                className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                Show {localHiddenCount} more
+              </button>
+            )}
+            {showCollapse && (
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                className="text-sm font-medium text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
+              >
+                Show less
+              </button>
+            )}
+          </div>
+          {showViewAll && (
+            <Link
+              href={viewAllHref}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              View all {totalCount}
+            </Link>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <>
+      {block ? (
+        embedded ? (
+          <div>{listBody}</div>
+        ) : (
+          <Card padding={false} className="overflow-hidden">
+            {listBody}
+          </Card>
+        )
+      ) : (
+        <div className={embedded ? undefined : compact ? 'space-y-2' : 'space-y-3'}>
+          {visibleItems.map((item) => (
+            <ActionItemCard
+              key={item.id}
+              item={item}
+              showProject={showProject}
+              compact={compact}
+              embedded={embedded}
+              showActions={showActions}
+              onStatusChange={handleStatusChange}
+            />
+          ))}
+        </div>
+      )}
 
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 flex max-w-sm items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 shadow-lg dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] dark:text-gray-100">

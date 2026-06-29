@@ -30,11 +30,12 @@ export default async function DashboardPage() {
   const stats = await getDashboardStats();
   const showBoth = stats.criticalCount > 0 && stats.actionItemsCount > 0;
   const criticalLimit = showBoth ? 3 : 5;
-  const actionLimit = showBoth ? 4 : 5;
+  const actionFetchLimit =
+    stats.actionItemsCount > 0 ? Math.min(stats.actionItemsCount, 5) : 0;
 
   const [criticalItems, actionItems, updates, pendingInboundEmails] = await Promise.all([
     stats.criticalCount > 0 ? getCriticalItems(criticalLimit) : Promise.resolve([]),
-    stats.actionItemsCount > 0 ? getOpenActionItems(actionLimit) : Promise.resolve([]),
+    actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit) : Promise.resolve([]),
     getSunnyUpdates(5),
     getPendingInboundEmails(),
   ]);

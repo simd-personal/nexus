@@ -136,12 +136,20 @@ export default async function ProjectOverviewPage({
       )}
 
       {openActions.length > 0 && (
-        <Card>
-          <CardHeader
-            title="Open Action Items"
-            description="Filtered to follow-ups relevant to you. Adjust keywords above to tune what Sunny surfaces."
+        <Card padding={false} className="overflow-hidden">
+          <div className="px-6 pt-6">
+            <CardHeader
+              title="Open Action Items"
+              description="Filtered to follow-ups relevant to you. Adjust keywords above to tune what Sunny surfaces."
+            />
+          </div>
+          <ActionItemsList
+            items={openActions}
+            block
+            embedded
+            previewCount={2}
+            totalCount={openActions.length}
           />
-          <ActionItemsList items={openActions} embedded />
         </Card>
       )}
 

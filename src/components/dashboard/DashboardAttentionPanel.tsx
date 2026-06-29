@@ -69,22 +69,14 @@ export function DashboardAttentionPanel({
 
       {hasActions && (
         <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-              Your action items
-              {actionTotal > actionItems.length && (
-                <span className="ml-2 font-normal text-gray-400 dark:text-gray-500">
-                  showing {actionItems.length} of {actionTotal}
-                </span>
-              )}
-            </h3>
-            {actionTotal > 0 && (
-              <Link href="/action-items" className="shrink-0">
-                <Button variant="ghost" size="sm">View all</Button>
-              </Link>
-            )}
-          </div>
-          <ActionItemsList items={actionItems} showProject compact={showBoth} />
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Your action items</h3>
+          <ActionItemsList
+            items={actionItems}
+            showProject
+            block
+            previewCount={2}
+            totalCount={actionTotal}
+          />
         </section>
       )}
     </div>
