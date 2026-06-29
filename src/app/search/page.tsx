@@ -4,11 +4,12 @@ import { GlobalSearchPageClient } from '@/components/search/SearchPageClient';
 import { LoadingState } from '@/components/ui/EmptyState';
 import { getProjectsWithStats } from '@/lib/data/queries';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { requireUser } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SearchPage() {
-  const projects = await getProjectsWithStats();
+  const [user, projects] = await Promise.all([requireUser(), getProjectsWithStats()]);
 
   return (
     <AppShell>
@@ -21,7 +22,7 @@ export default async function SearchPage() {
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
           <Suspense fallback={<LoadingState />}>
-            <GlobalSearchPageClient projects={projects} />
+            <GlobalSearchPageClient userId={user.id} projects={projects} />
           </Suspense>
         </div>
       </div>

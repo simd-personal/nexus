@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeChatMessage, normalizeChatMessages } from '@/lib/chat/cache';
+import {
+  chatCacheKey,
+  normalizeChatMessage,
+  normalizeChatMessages,
+} from '@/lib/chat/cache';
+
+describe('chatCacheKey', () => {
+  it('scopes cache keys to the signed-in user', () => {
+    expect(chatCacheKey('user-a', 'search')).toBe('user-a:search:all');
+    expect(chatCacheKey('user-b', 'search')).toBe('user-b:search:all');
+    expect(chatCacheKey('user-a', 'project', 'proj-1')).toBe('user-a:project:proj-1');
+  });
+
+  it('uses different keys for different users on the same mode', () => {
+    const userA = chatCacheKey('user-a', 'search');
+    const userB = chatCacheKey('user-b', 'search');
+    expect(userA).not.toBe(userB);
+  });
+});
 
 describe('normalizeChatMessages', () => {
   it('fills missing citations and metadata from cached rows', () => {

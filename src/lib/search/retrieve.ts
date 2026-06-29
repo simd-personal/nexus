@@ -36,6 +36,24 @@ type RpcChunk = {
   rank?: number;
 };
 
+async function getAccessibleProjectIds(
+  supabase: SupabaseClient,
+  scopedProjectId: string | null
+): Promise<Set<string>> {
+  let query = supabase.from('projects').select('id');
+  if (scopedProjectId) query = query.eq('id', scopedProjectId);
+  const { data } = await query;
+  return new Set((data ?? []).map((row) => row.id));
+}
+
+export function filterResultsToAccessibleProjects<T extends { project_id: string }>(
+  rows: T[],
+  accessibleProjectIds: Set<string>
+): T[] {
+  if (accessibleProjectIds.size === 0) return [];
+  return rows.filter((row) => accessibleProjectIds.has(row.project_id));
+}
+
 export async function retrieveForQuery(
   supabase: SupabaseClient,
   query: string,
@@ -44,6 +62,7 @@ export async function retrieveForQuery(
 ): Promise<RetrievedChunk[]> {
   const limit = options.limit ?? 24;
   const projectId = options.projectId ?? null;
+  const accessibleProjectIds = await getAccessibleProjectIds(supabase, projectId);
 
   const [{ data: vectorResults }, { data: keywordResults }, { data: fuzzyResults }] =
     await Promise.all([
@@ -83,13 +102,15 @@ export async function retrieveForQuery(
   const supplemental = await fetchSupplementalContent(supabase, query, projectId, seen);
   merged.push(...supplemental);
 
-  merged.sort((a, b) => {
+  const scoped = filterResultsToAccessibleProjects(merged, accessibleProjectIds);
+
+  scoped.sort((a, b) => {
     const scoreA = a.similarity ?? a.rank ?? 0;
     const scoreB = b.similarity ?? b.rank ?? 0;
     return scoreB - scoreA;
   });
 
-  const enriched = await enrichResults(supabase, merged.slice(0, limit * 2));
+  const enriched = await enrichResults(supabase, scoped.slice(0, limit * 2));
   return enriched.slice(0, limit);
 }
 

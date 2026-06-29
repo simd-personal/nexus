@@ -2,9 +2,10 @@ import { AppShell } from '@/components/layout/AppShell';
 import { SunnyChatLauncher } from '@/components/chat/SunnyChatLauncher';
 import { getProjectsWithStats } from '@/lib/data/queries';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { requireUser } from '@/lib/supabase/server';
 
 export default async function SunnyChatPage() {
-  const projects = await getProjectsWithStats();
+  const [user, projects] = await Promise.all([requireUser(), getProjectsWithStats()]);
 
   return (
     <AppShell>
@@ -15,7 +16,7 @@ export default async function SunnyChatPage() {
             Create decks, emails, and briefs live in chat, just like ChatGPT and Claude
           </p>
         </div>
-        <SunnyChatLauncher projects={projects} initialProjectId={projects[0]?.id} />
+        <SunnyChatLauncher userId={user.id} projects={projects} initialProjectId={projects[0]?.id} />
       </div>
     </AppShell>
   );

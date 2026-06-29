@@ -23,11 +23,13 @@ const SunnyChatInterface = dynamic(
 );
 
 export function SearchPageClient({
+  userId,
   projectId: initialProjectId,
   projectName: initialProjectName,
   projects = [],
   lockProject = false,
 }: {
+  userId: string;
   projectId?: string;
   projectName?: string;
   projects?: ProjectWithStats[];
@@ -50,6 +52,7 @@ export function SearchPageClient({
 
   return (
     <SunnyChatInterface
+      userId={userId}
       mode="search"
       projectId={selectedProjectId}
       projectName={projectName}
@@ -62,6 +65,12 @@ export function SearchPageClient({
   );
 }
 
-export function GlobalSearchPageClient({ projects }: { projects: ProjectWithStats[] }) {
-  return <SearchPageClient projects={projects} />;
+export function GlobalSearchPageClient({
+  userId,
+  projects,
+}: {
+  userId: string;
+  projects: ProjectWithStats[];
+}) {
+  return <SearchPageClient userId={userId} projects={projects} />;
 }

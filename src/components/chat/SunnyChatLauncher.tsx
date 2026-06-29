@@ -5,12 +5,14 @@ import { SunnyChatInterface } from '@/components/chat/SunnyChatInterface';
 import type { ProjectWithStats, ChatMessage } from '@/types/database';
 
 interface SunnyChatLauncherProps {
+  userId: string;
   projects: ProjectWithStats[];
   initialProjectId?: string;
   initialMessages?: ChatMessage[];
 }
 
 export function SunnyChatLauncher({
+  userId,
   projects,
   initialProjectId,
   initialMessages = [],
@@ -44,6 +46,7 @@ export function SunnyChatLauncher({
       </div>
       <SunnyChatInterface
         key={projectId}
+        userId={userId}
         mode="project"
         projectId={projectId}
         projectName={selected ? `${selected.client_name} · ${selected.project_name}` : undefined}

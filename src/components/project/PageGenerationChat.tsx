@@ -4,6 +4,7 @@ import { SunnyChatInterface } from '@/components/chat/SunnyChatInterface';
 import type { ChatMessage } from '@/types/database';
 
 interface PageGenerationChatProps {
+  userId: string;
   projectId: string;
   type: 'brief' | 'playbook';
   projectName?: string;
@@ -12,6 +13,7 @@ interface PageGenerationChatProps {
 }
 
 export function PageGenerationChat({
+  userId,
   projectId,
   type,
   projectName,
@@ -20,6 +22,7 @@ export function PageGenerationChat({
 }: PageGenerationChatProps) {
   return (
     <SunnyChatInterface
+      userId={userId}
       mode={type}
       projectId={projectId}
       projectName={projectName}

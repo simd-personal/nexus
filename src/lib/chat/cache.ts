@@ -14,8 +14,53 @@ export interface ChatScopeState {
 const SESSIONS_CACHE_MS = 5 * 60 * 1000;
 const store = new Map<string, ChatScopeState>();
 
-export function chatCacheKey(mode: string, projectId?: string) {
-  return `${mode}:${projectId ?? 'all'}`;
+export function chatCacheKey(userId: string, mode: string, projectId?: string) {
+  return `${userId}:${mode}:${projectId ?? 'all'}`;
+}
+
+const STORAGE_PREFIX = 'briefnexus-chat:';
+const MESSAGE_CACHE_PREFIX = 'briefnexus-chat-msgs:';
+const LEGACY_SCOPE_PATTERN = /^(search|project|brief|playbook):/;
+
+/** Remove pre-user-scoping chat keys so another account on the same browser cannot see them. */
+export function purgeLegacyUnscopedChatCaches() {
+  if (typeof window === 'undefined') return;
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key) continue;
+      const isLegacyChatKey =
+        (key.startsWith(STORAGE_PREFIX) || key.startsWith(MESSAGE_CACHE_PREFIX)) &&
+        LEGACY_SCOPE_PATTERN.test(key.slice(key.indexOf(':') + 1));
+      if (isLegacyChatKey) keysToRemove.push(key);
+    }
+    for (const key of keysToRemove) {
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // private browsing / storage disabled
+  }
+}
+
+export function purgeAllChatCaches() {
+  if (typeof window === 'undefined') return;
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i);
+      if (!key) continue;
+      if (key.startsWith(STORAGE_PREFIX) || key.startsWith(MESSAGE_CACHE_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+    for (const key of keysToRemove) {
+      window.localStorage.removeItem(key);
+    }
+  } catch {
+    // private browsing / storage disabled
+  }
+  store.clear();
 }
 
 function emptyState(): ChatScopeState {
@@ -79,8 +124,6 @@ export function dedupeSessions(sessions: ChatSession[]): ChatSession[] {
   );
 }
 
-const STORAGE_PREFIX = 'briefnexus-chat:';
-const MESSAGE_CACHE_PREFIX = 'briefnexus-chat-msgs:';
 const MAX_CACHED_MESSAGES_PER_SESSION = 80;
 const MAX_MESSAGE_CACHE_BYTES = 450_000;
 

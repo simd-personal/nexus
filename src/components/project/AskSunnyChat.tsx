@@ -4,6 +4,7 @@ import { SunnyChatInterface } from '@/components/chat/SunnyChatInterface';
 import type { ChatMessage } from '@/types/database';
 
 interface AskSunnyChatProps {
+  userId: string;
   projectId: string;
   initialMessages: ChatMessage[];
   projectName?: string;
@@ -13,6 +14,7 @@ interface AskSunnyChatProps {
 export function AskSunnyChat(props: AskSunnyChatProps) {
   return (
     <SunnyChatInterface
+      userId={props.userId}
       mode="project"
       projectId={props.projectId}
       projectName={props.projectName}

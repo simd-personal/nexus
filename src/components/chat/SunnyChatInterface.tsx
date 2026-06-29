@@ -24,6 +24,7 @@ import {
   persistActiveSession,
   persistMessageCache,
   normalizeChatMessages,
+  purgeLegacyUnscopedChatCaches,
   sessionsCacheFresh,
 } from '@/lib/chat/cache';
 import { consumeInitialQuery } from '@/lib/chat/initial-query';
@@ -69,6 +70,7 @@ function chatDescription(mode: ChatMode): string {
 }
 
 export interface SunnyChatInterfaceProps {
+  userId: string;
   mode: 'project' | 'search' | 'brief' | 'playbook';
   projectId?: string;
   projectName?: string;
@@ -216,6 +218,7 @@ function MessageActions({
 }
 
 export function SunnyChatInterface({
+  userId,
   mode,
   projectId,
   projectName,
@@ -227,7 +230,8 @@ export function SunnyChatInterface({
   initialMessages = [],
   initialQuery,
 }: SunnyChatInterfaceProps) {
-  const scopeKey = chatCacheKey(mode, projectId);
+  const scopeKey = chatCacheKey(userId, mode, projectId);
+  purgeLegacyUnscopedChatCaches();
   hydrateChatScopeFromStorage(scopeKey);
   const cachedScope = getOrInitChatScopeState(scopeKey);
 
