@@ -59,7 +59,7 @@ export function HomePage() {
             <p className="marketing-hero-body">
               {AI_EMPLOYEE_NAME} is your first AI employee for client work. Drop in decks, emails,
               meetings, and notes — get briefs, risks, and follow ups with every line cited back to
-              the source. Latest GPT &amp; Claude included.
+              the source. Highest-powered GPT &amp; Claude included — no second subscription.
             </p>
 
             <div className="marketing-hero-actions mt-8">
@@ -73,7 +73,7 @@ export function HomePage() {
             </div>
 
             <div className="fun-hero-meta mt-6">
-              <span className="fun-hero-meta-dot" /> No credit card · GPT &amp; Claude included ·
+              <span className="fun-hero-meta-dot" /> No credit card · Top GPT &amp; Claude, one plan ·
               Cancel anytime
             </div>
           </div>
