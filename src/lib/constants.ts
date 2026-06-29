@@ -8,9 +8,9 @@ import type {
 export const APP_NAME = 'UpperDeck';
 export const APP_DOMAIN = 'upperdeck.dev';
 export const PARENT_COMPANY_LEGAL_NAME = 'Sim Capital LLC';
-/** Sunny mascot assets */
+/** Sunny mascot assets — single icon; hero uses larger export for Canva/animation later */
 export const SUNNY_AVATAR_SRC = '/brand/sunny/sunny-avatar.png';
-export const SUNNY_POSES_SRC = '/brand/sunny/sunny-poses.png';
+export const SUNNY_MASCOT_SRC = '/brand/sunny/sunny-mascot.png';
 /** Who operates UpperDeck — use on privacy, terms, signup, and email footers */
 export const LEGAL_ENTITY_DESCRIPTION = `${APP_NAME} (${APP_DOMAIN}) is operated by ${PARENT_COMPANY_LEGAL_NAME}. ${APP_NAME} is a subsidiary of ${PARENT_COMPANY_LEGAL_NAME}.`;
 export const LEGAL_TERMS_PARTY = `In these terms, "UpperDeck," "we," "us," and "our" refer to ${PARENT_COMPANY_LEGAL_NAME}, which operates the ${APP_NAME} service at ${APP_DOMAIN}. ${APP_NAME} is a subsidiary of ${PARENT_COMPANY_LEGAL_NAME}.`;

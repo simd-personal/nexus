@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { AI_EMPLOYEE_NAME, SUNNY_AVATAR_SRC, SUNNY_POSES_SRC } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME, SUNNY_AVATAR_SRC, SUNNY_MASCOT_SRC } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
 const SIZES = {
@@ -24,7 +24,7 @@ export function SunnyAvatar({ size = 'md', className, priority }: SunnyAvatarPro
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-50 ring-1 ring-amber-200/70 dark:bg-amber-950/40 dark:ring-amber-800/50',
+        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#0B1220] shadow-[0_0_10px_rgba(251,191,36,0.18)] ring-1 ring-amber-400/20',
         className
       )}
       style={{ width: px, height: px }}
@@ -35,7 +35,7 @@ export function SunnyAvatar({ size = 'md', className, priority }: SunnyAvatarPro
         width={px}
         height={px}
         priority={priority}
-        className="h-full w-full object-cover object-[center_12%]"
+        className="h-full w-full object-contain"
       />
     </span>
   );
@@ -46,16 +46,16 @@ type SunnyMascotProps = {
   priority?: boolean;
 };
 
-/** Larger pose sheet for marketing, auth, and onboarding hero moments. */
+/** Larger Sunny icon for marketing, auth, and onboarding hero moments. */
 export function SunnyMascot({ className, priority }: SunnyMascotProps) {
   return (
     <Image
-      src={SUNNY_POSES_SRC}
+      src={SUNNY_MASCOT_SRC}
       alt={`${AI_EMPLOYEE_NAME}, your AI employee`}
-      width={900}
-      height={338}
+      width={512}
+      height={512}
       priority={priority}
-      className={cn('h-auto w-full max-w-xl object-contain', className)}
+      className={cn('h-auto w-full max-w-[220px] object-contain drop-shadow-[0_0_24px_rgba(251,191,36,0.28)]', className)}
     />
   );
 }

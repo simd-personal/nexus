@@ -1926,8 +1926,9 @@ html.dark .docx-preview td {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 9999px;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
+  background: #0b1220;
+  border: 1px solid rgba(251, 191, 36, 0.28);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.15);
   overflow: hidden;
 }
 
