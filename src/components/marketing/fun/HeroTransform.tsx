@@ -81,52 +81,57 @@ export function HeroTransform() {
 
   return (
     <div className="hx-wrap" aria-hidden>
-      <div className="hx-glow" />
+      <div className="hx-frame">
+        <p className="hx-frame-label">From messy notes to a client brief</p>
+        <div className="hx-frame-stage">
+          <div className="hx-glow" />
 
-      {/* Input: messy raw notes */}
-      <div className="hx-card hx-input">
-        <div className="hx-card-head">
-          <span className="hx-chip hx-chip-mail">
-            <Mail className="h-3.5 w-3.5" /> call notes
-          </span>
+          {/* Input: messy raw notes */}
+          <div className="hx-card hx-input">
+            <div className="hx-card-head">
+              <span className="hx-chip hx-chip-mail">
+                <Mail className="h-3.5 w-3.5" /> call notes
+              </span>
+            </div>
+            <p className="hx-messy">
+              {typed}
+              {phase === 'typing' && <span className="hx-caret" />}
+            </p>
+          </div>
+
+          {/* Sunny working */}
+          <div className={`hx-bridge ${phase === 'thinking' ? 'hx-bridge-active' : ''}`}>
+            <span className="hx-bridge-orb">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <span className="hx-bridge-label">
+              {phase === 'thinking' ? 'Sunny is reading…' : 'Sunny'}
+            </span>
+            <ArrowRight className="hx-bridge-arrow h-4 w-4" />
+          </div>
+
+          {/* Output: clean brief */}
+          <div className={`hx-card hx-output ${phase === 'reveal' || phase === 'hold' ? 'hx-output-on' : ''}`}>
+            <div className="hx-card-head">
+              <span className="hx-chip hx-chip-brief">
+                <FileText className="h-3.5 w-3.5" /> Client brief
+              </span>
+              <span className="hx-badge-live">auto-generated</span>
+            </div>
+            <ul className="hx-brief">
+              {BRIEF.map((line, idx) => (
+                <li
+                  key={line.text}
+                  className={`hx-brief-line ${idx < revealed ? 'hx-brief-line-in' : ''}`}
+                >
+                  <span className="hx-tick" />
+                  <span className="hx-brief-text">{line.text}</span>
+                  <span className="hx-brief-cite">{line.cite}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-        <p className="hx-messy">
-          {typed}
-          {phase === 'typing' && <span className="hx-caret" />}
-        </p>
-      </div>
-
-      {/* Sunny working */}
-      <div className={`hx-bridge ${phase === 'thinking' ? 'hx-bridge-active' : ''}`}>
-        <span className="hx-bridge-orb">
-          <Sparkles className="h-4 w-4" />
-        </span>
-        <span className="hx-bridge-label">
-          {phase === 'thinking' ? 'Sunny is reading…' : 'Sunny'}
-        </span>
-        <ArrowRight className="hx-bridge-arrow h-4 w-4" />
-      </div>
-
-      {/* Output: clean brief */}
-      <div className={`hx-card hx-output ${phase === 'reveal' || phase === 'hold' ? 'hx-output-on' : ''}`}>
-        <div className="hx-card-head">
-          <span className="hx-chip hx-chip-brief">
-            <FileText className="h-3.5 w-3.5" /> Client brief
-          </span>
-          <span className="hx-badge-live">auto-generated</span>
-        </div>
-        <ul className="hx-brief">
-          {BRIEF.map((line, idx) => (
-            <li
-              key={line.text}
-              className={`hx-brief-line ${idx < revealed ? 'hx-brief-line-in' : ''}`}
-            >
-              <span className="hx-tick" />
-              <span className="hx-brief-text">{line.text}</span>
-              <span className="hx-brief-cite">{line.cite}</span>
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );

@@ -1684,31 +1684,83 @@ html.dark .docx-preview td {
 /* ---------- Hero transform demo ---------- */
 .hx-wrap {
   position: relative;
+  min-width: 0;
+}
+
+.hx-frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.35rem;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(238, 242, 255, 0.88) 52%,
+    rgba(224, 237, 255, 0.82) 100%
+  );
+  box-shadow:
+    0 12px 36px rgba(37, 99, 235, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  padding: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .hx-frame {
+    padding: 1.15rem 1.2rem 1.25rem;
+  }
+}
+
+.hx-frame-label {
+  position: relative;
+  z-index: 2;
+  margin: 0 0 0.85rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--marketing-muted);
+}
+
+.hx-frame-stage {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
+.hx-frame-stage::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 4.5rem;
+  bottom: 4.5rem;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(37, 99, 235, 0.16) 18%,
+    rgba(37, 99, 235, 0.16) 82%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
 .hx-glow {
   position: absolute;
-  inset: -8% -6%;
+  inset: 0;
   z-index: 0;
-  border-radius: 2rem;
-  background: radial-gradient(60% 60% at 70% 30%, rgba(37, 99, 235, 0.22), transparent 70%);
+  border-radius: 1rem;
+  background: radial-gradient(60% 60% at 70% 30%, rgba(37, 99, 235, 0.16), transparent 70%);
   filter: blur(24px);
   pointer-events: none;
 }
 
-.hx-card {
-  position: relative;
-  z-index: 1;
-  border-radius: 1.25rem;
-  border: 1px solid var(--ud-mist);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  padding: 1rem 1.1rem;
-  box-shadow: 0 10px 30px rgba(14, 17, 21, 0.07);
+.hx-frame .hx-card {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 16px rgba(14, 17, 21, 0.05);
 }
 
 .hx-card-head {
@@ -1731,6 +1783,18 @@ html.dark .docx-preview td {
 .hx-chip-mail { background: #e0edff; color: #2563eb; }
 .hx-chip-deck { background: #fde7f3; color: #be185d; }
 .hx-chip-brief { background: var(--ud-gradient); color: #fff; }
+
+.hx-card {
+  position: relative;
+  z-index: 1;
+  border-radius: 1.25rem;
+  border: 1px solid var(--ud-mist);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 1rem 1.1rem;
+  box-shadow: 0 10px 30px rgba(14, 17, 21, 0.07);
+}
 
 .hx-dot-pulse {
   margin-left: auto;
@@ -1809,16 +1873,20 @@ html.dark .docx-preview td {
 .hx-bridge-arrow { color: var(--brand-accent); }
 
 .hx-output {
-  opacity: 0.55;
-  transform: translateY(6px) scale(0.99);
-  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0.78;
+  transform: translateY(4px) scale(0.995);
+  transition:
+    opacity 0.85s ease,
+    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.85s ease,
+    box-shadow 0.85s ease;
 }
 
 .hx-output-on {
   opacity: 1;
   transform: translateY(0) scale(1);
-  border-color: rgba(37, 99, 235, 0.3);
-  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.18);
+  border-color: rgba(37, 99, 235, 0.28);
+  box-shadow: 0 10px 28px rgba(37, 99, 235, 0.14);
 }
 
 .hx-badge-live {
@@ -1846,8 +1914,8 @@ html.dark .docx-preview td {
   font-size: 0.8125rem;
   color: var(--ud-graphite);
   opacity: 0;
-  transform: translateX(-8px);
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateX(-6px);
+  transition: opacity 0.55s ease, transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hx-brief-line-in {
