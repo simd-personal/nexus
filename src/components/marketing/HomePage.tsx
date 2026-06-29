@@ -7,7 +7,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { MarketingShell } from '@/components/marketing/MarketingShell';
-import { LegalPolicyLinks } from '@/components/marketing/LegalPolicyLinks';
 import { AnnouncementBar } from '@/components/marketing/fun/AnnouncementBar';
 import { HeroTransform } from '@/components/marketing/fun/HeroTransform';
 import { LogoMarquee } from '@/components/marketing/fun/LogoMarquee';
@@ -79,11 +78,6 @@ export function HomePage() {
                 <span>Cancel anytime</span>
               </span>
             </div>
-
-            <LegalPolicyLinks
-              className="mt-4 text-xs text-[var(--ud-slate)]"
-              linkClassName="marketing-inline-link text-xs"
-            />
           </div>
 
           <div className="marketing-hero-visual-wrap">
@@ -241,8 +235,6 @@ export function HomePage() {
             </Link>
           </p>
 
-          <LegalPolicyLinks className="mt-3 text-center text-xs text-[var(--ud-slate)]" />
-
           <Reveal className="mt-14">
             <div className="marketing-org-banner">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -286,7 +278,6 @@ export function HomePage() {
                 Request organization info
               </Link>
             </div>
-            <LegalPolicyLinks className="mt-6 text-xs text-[var(--ud-slate)]" />
           </Reveal>
         </div>
       </section>
