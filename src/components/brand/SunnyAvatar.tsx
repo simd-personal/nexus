@@ -35,25 +35,23 @@ export function SunnyAvatar({
   animate = 'none',
 }: SunnyAvatarProps) {
   const px = SIZES[size];
+  const retina = px * 2;
 
   return (
-    <span
+    <Image
+      src={SUNNY_AVATAR_SRC}
+      alt={`${AI_EMPLOYEE_NAME} mascot`}
+      width={retina}
+      height={retina}
+      priority={priority}
+      sizes={`${px}px`}
       className={cn(
-        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-amber-200/80 dark:bg-[var(--ud-mist)] dark:ring-amber-700/40',
+        'inline-block shrink-0 object-contain sunny-avatar-img',
         ANIMATE_CLASS[animate],
         className
       )}
       style={{ width: px, height: px }}
-    >
-      <Image
-        src={SUNNY_AVATAR_SRC}
-        alt={`${AI_EMPLOYEE_NAME} mascot`}
-        width={px}
-        height={px}
-        priority={priority}
-        className="h-full w-full object-contain"
-      />
-    </span>
+    />
   );
 }
 
@@ -81,11 +79,12 @@ export function SunnyMascot({
     <Image
       src={SUNNY_MASCOT_SRC}
       alt={`${AI_EMPLOYEE_NAME}, your AI employee`}
-      width={512}
-      height={512}
+      width={400}
+      height={400}
       priority={priority}
+      sizes="200px"
       className={cn(
-        'h-auto w-full max-w-[200px] object-contain',
+        'h-auto w-full max-w-[200px] object-contain sunny-avatar-img',
         MASCOT_ANIMATE_CLASS[animate],
         className
       )}

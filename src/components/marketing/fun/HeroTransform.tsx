@@ -105,7 +105,6 @@ export function HeroTransform() {
             <span className="hx-bridge-orb">
               <SunnyAvatar
                 size="sm"
-                className="ring-0"
                 animate={phase === 'thinking' ? 'work' : phase === 'typing' ? 'idle' : 'none'}
               />
             </span>

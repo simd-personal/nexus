@@ -81,7 +81,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
               )}
             >
               {'sunnyIcon' in item ? (
-                <SunnyAvatar size="xs" className="ring-0" />
+                <SunnyAvatar size="xs" />
               ) : (
                 Icon && <Icon className="h-4 w-4 shrink-0" />
               )}

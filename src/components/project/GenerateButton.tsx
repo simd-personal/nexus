@@ -91,7 +91,7 @@ export function GenerateButton({
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>
-          <SunnyAvatar size="xs" className="ring-0" animate={loading ? 'work' : 'wave'} />
+          <SunnyAvatar size="xs" animate={loading ? 'work' : 'wave'} />
           Generate with {AI_EMPLOYEE_NAME}
         </Button>
       </Card>
