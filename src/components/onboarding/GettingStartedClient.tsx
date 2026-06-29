@@ -67,6 +67,7 @@ export function GettingStartedClient({
   const [error, setError] = useState('');
   const [progressLabel, setProgressLabel] = useState('Queued for processing…');
   const [progressPercent, setProgressPercent] = useState(0);
+  const [sizeHint, setSizeHint] = useState<string | null>(null);
 
   useEffect(() => {
     setStep(initialStep);
@@ -206,7 +207,8 @@ export function GettingStartedClient({
     setLoading(true);
     setError('');
 
-    const { uploaded, fileIds, errors } = await uploadProjectFiles(projectState.id, files);
+    const { uploaded, fileIds, errors, sizeHint: uploadSizeHint, zipExtracted } =
+      await uploadProjectFiles(projectState.id, files);
 
     if (uploaded.length === 0) {
       setError(errors[0] ?? 'Upload failed');
@@ -214,14 +216,25 @@ export function GettingStartedClient({
       return;
     }
 
-    setUploadedNames(uploaded);
+    if (errors.length > 0) {
+      setError(errors.join(' '));
+    }
+
+    const displayNames = zipExtracted
+      ? [`${fileIds.length} file${fileIds.length !== 1 ? 's' : ''} extracted from zip`]
+      : uploaded;
+
+    setUploadedNames(displayNames);
     setFileId(fileIds[0] ?? null);
     setStep('processing');
     setProgressLabel(
-      uploaded.length === 1
-        ? 'Sunny is reading your file…'
-        : `Sunny is reading ${uploaded.length} files…`
+      zipExtracted
+        ? `Unpacking and reading ${fileIds.length} files…`
+        : fileIds.length === 1
+          ? 'Sunny is reading your file…'
+          : `Sunny is reading ${fileIds.length} files…`
     );
+    setSizeHint(uploadSizeHint);
     setProgressPercent(8);
     setLoading(false);
     router.refresh();
@@ -360,8 +373,8 @@ export function GettingStartedClient({
             Step 2 · Add files for {AI_EMPLOYEE_NAME} to read
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Upload one file, many files, or a whole folder. Large uploads keep processing in the
-            background — you won&apos;t need to wait on this screen.
+            Upload one file, many files, a whole folder, or a zip archive. Large uploads keep
+            processing in the background — you won&apos;t need to wait on this screen.
           </p>
 
           <div
@@ -479,6 +492,12 @@ export function GettingStartedClient({
               ? 'Large batches can take several minutes. Sunny keeps working in the background.'
               : 'Extracting text, indexing for search, and drafting your first brief…'}
           </p>
+
+          {sizeHint && (
+            <p className="mx-auto mt-3 max-w-md rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+              {sizeHint}
+            </p>
+          )}
 
           <Button type="button" className="mt-6" onClick={continueToProject}>
             Continue — processing runs in background

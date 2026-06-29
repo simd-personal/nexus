@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { inferSourceType } from '@/lib/constants';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
+import { buildUploadSizeMetadata } from '@/lib/upload/size-hints';
 import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 import type { SourceType } from '@/types/database';
 
@@ -34,6 +35,8 @@ export async function createProjectFileFromBuffer(options: {
     }
   }
 
+  const byteSize = options.buffer?.length ?? Buffer.byteLength(options.extractedText ?? '', 'utf8');
+
   const insertPayload: Record<string, unknown> = {
     project_id: options.projectId,
     uploaded_by: options.uploadedBy,
@@ -44,6 +47,7 @@ export async function createProjectFileFromBuffer(options: {
     extracted_text: options.extractedText?.trim() || null,
     status: 'pending',
     metadata: {
+      ...buildUploadSizeMetadata(byteSize),
       ...(options.metadata ?? {}),
       processing_progress: {
         stage: 'queued',

@@ -13,10 +13,19 @@ export function FileProcessingProgress({ file }: { file: FileRecord }) {
   const percent = progress?.percent ?? (file.status === 'pending' ? 0 : 5);
   const label = progress?.label ?? 'Waiting to start…';
   const isLarge = Boolean(file.metadata?.is_large_file);
+  const sizeHint =
+    typeof file.metadata?.size_hint === 'string' ? file.metadata.size_hint : null;
+  const sizeTier = file.metadata?.size_tier as string | undefined;
   const detail =
     progress?.chunks_total != null && progress.chunks_done != null
       ? `${progress.chunks_done} of ${progress.chunks_total} sections indexed${isLarge ? ' · large file' : ''}`
-      : progress?.detail ?? (isLarge ? 'Large file. Indexing may take several minutes' : undefined);
+      : progress?.detail ??
+        (isLarge
+          ? 'Large file. Indexing may take several minutes'
+          : sizeHint ??
+            (sizeTier === 'large' || sizeTier === 'very_large'
+              ? 'Indexing may take longer than usual'
+              : undefined));
 
   return (
     <div className="mt-3 space-y-2">

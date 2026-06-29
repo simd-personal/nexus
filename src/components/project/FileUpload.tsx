@@ -35,14 +35,22 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     setMessage('');
 
     try {
-      const { uploaded, errors } = await uploadProjectFiles(projectId, files);
+      const { uploaded, errors, sizeHint, zipExtracted, fileIds } = await uploadProjectFiles(
+        projectId,
+        files
+      );
 
       if (uploaded.length > 0) {
-        setMessage(
-          uploaded.length === 1
+        const count = zipExtracted ? fileIds.length : uploaded.length;
+        let msg =
+          count === 1
             ? `${uploaded[0]} uploaded. Sunny is processing...`
-            : `${uploaded.length} files uploaded. Sunny is processing...`
-        );
+            : `${count} files uploaded. Sunny is processing...`;
+        if (zipExtracted) {
+          msg = `Extracted ${count} files from ${uploaded[0]}. Sunny is processing...`;
+        }
+        if (sizeHint) msg += ` ${sizeHint}`;
+        setMessage(msg);
         onUploadComplete?.();
         window.dispatchEvent(new CustomEvent('project-files-uploaded'));
       }
@@ -149,7 +157,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
             Drag and drop files here
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Any file type works. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, and .eml.
+            Any file type works. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, .eml, and .zip archives.
           </p>
           <label className="inline-block cursor-pointer">
             <input

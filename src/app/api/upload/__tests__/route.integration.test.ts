@@ -100,17 +100,22 @@ describe('POST /api/upload integration', () => {
   });
 
   it('uploads markdown files to storage and creates a file record', async () => {
+    const fileRecord = {
+      id: 'file-1',
+      project_id: 'proj-1',
+      file_name: 'brief.md',
+      status: 'pending',
+    };
+
     const insert = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue({
-          data: {
-            id: 'file-1',
-            project_id: 'proj-1',
-            file_name: 'brief.md',
-            status: 'pending',
-          },
-          error: null,
-        }),
+        single: vi.fn().mockResolvedValue({ data: { id: 'file-1' }, error: null }),
+      }),
+    });
+
+    const select = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: fileRecord, error: null }),
       }),
     });
 
@@ -123,7 +128,7 @@ describe('POST /api/upload integration', () => {
         };
       }
       if (table === 'files') {
-        return { insert };
+        return { insert, select };
       }
       return {};
     });
@@ -144,6 +149,10 @@ describe('POST /api/upload integration', () => {
         file_name: 'brief.md',
         source_type: 'note',
         status: 'pending',
+        metadata: expect.objectContaining({
+          byte_size: expect.any(Number),
+          size_tier: 'normal',
+        }),
       })
     );
     expect(mockEnqueueFileProcessing).toHaveBeenCalledWith('file-1', { resume: false });
@@ -194,12 +203,17 @@ describe('POST /api/upload integration', () => {
   });
 
   it('stores optional user note on photo uploads', async () => {
+    const fileRecord = { id: 'file-photo', status: 'pending', file_name: 'whiteboard.jpg' };
+
     const insert = vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({
-        single: vi.fn().mockResolvedValue({
-          data: { id: 'file-photo', status: 'pending' },
-          error: null,
-        }),
+        single: vi.fn().mockResolvedValue({ data: { id: 'file-photo' }, error: null }),
+      }),
+    });
+
+    const select = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({ data: fileRecord, error: null }),
       }),
     });
 
@@ -212,7 +226,7 @@ describe('POST /api/upload integration', () => {
         };
       }
       if (table === 'files') {
-        return { insert };
+        return { insert, select };
       }
       return {};
     });

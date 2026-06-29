@@ -1,3 +1,8 @@
+import {
+  maxUploadSizeTier,
+  uploadSizeHint,
+} from '@/lib/upload/size-hints';
+
 export function isFileDragEvent(event: DragEvent | React.DragEvent): boolean {
   const dataTransfer = 'dataTransfer' in event ? event.dataTransfer : null;
   if (!dataTransfer) return false;
@@ -30,7 +35,12 @@ export function sanitizeUploadFileName(fileName: string): string {
   return base.replace(/[^\w.\-()+\s]/g, '_') || 'upload';
 }
 
-async function parseUploadResponse(res: Response): Promise<{ error?: string; data?: unknown }> {
+async function parseUploadResponse(res: Response): Promise<{
+  error?: string;
+  data?: unknown;
+  zip_extracted?: boolean;
+  skipped?: string[];
+}> {
   const contentType = res.headers.get('content-type') ?? '';
 
   if (contentType.includes('application/json')) {
@@ -48,11 +58,21 @@ async function parseUploadResponse(res: Response): Promise<{ error?: string; dat
   return { error: `Upload failed (${res.status})` };
 }
 
+export interface UploadFileResult {
+  ok: boolean;
+  fileId?: string;
+  fileIds?: string[];
+  error?: string;
+  sizeHint?: string | null;
+  zipExtracted?: boolean;
+  skipped?: string[];
+}
+
 export async function uploadProjectFile(
   projectId: string,
   file: File,
   options?: { userNote?: string }
-): Promise<{ ok: boolean; fileId?: string; error?: string }> {
+): Promise<UploadFileResult> {
   const formData = new FormData();
   formData.append('project_id', projectId);
   formData.append('file', file, sanitizeUploadFileName(file.name));
@@ -73,8 +93,26 @@ export async function uploadProjectFile(
     return { ok: false, error: data.error ?? 'Upload failed' };
   }
 
+  if (data.zip_extracted && Array.isArray(data.data)) {
+    const records = data.data as Array<{ id: string }>;
+    const fileIds = records.map((r) => r.id).filter(Boolean);
+    return {
+      ok: true,
+      fileIds,
+      fileId: fileIds[0],
+      zipExtracted: true,
+      skipped: data.skipped,
+      sizeHint: getClientUploadSizeHint([file]),
+    };
+  }
+
   const fileId = (data as { data?: { id?: string } }).data?.id;
-  return { ok: true, fileId };
+  return {
+    ok: true,
+    fileId,
+    fileIds: fileId ? [fileId] : [],
+    sizeHint: getClientUploadSizeHint([file]),
+  };
 }
 
 /** Start durable server-side processing (runs in a long-lived /process request). */
@@ -87,29 +125,47 @@ export async function uploadProjectFiles(
   projectId: string,
   files: File[],
   options?: { userNote?: string }
-): Promise<{ uploaded: string[]; fileIds: string[]; errors: string[] }> {
+): Promise<{
+  uploaded: string[];
+  fileIds: string[];
+  errors: string[];
+  sizeHint: string | null;
+  zipExtracted: boolean;
+}> {
   const uploaded: string[] = [];
   const fileIds: string[] = [];
   const errors: string[] = [];
+  let zipExtracted = false;
 
   for (const file of files) {
     const result = await uploadProjectFile(projectId, file, options);
     if (result.ok) {
       uploaded.push(file.name);
-      if (result.fileId) {
+      if (result.fileIds?.length) {
+        fileIds.push(...result.fileIds);
+        for (const id of result.fileIds) kickFileProcessing(id);
+      } else if (result.fileId) {
         fileIds.push(result.fileId);
         kickFileProcessing(result.fileId);
       }
+      if (result.zipExtracted) zipExtracted = true;
     } else {
       errors.push(`${file.name}: ${result.error ?? 'Upload failed'}`);
     }
   }
 
-  return { uploaded, fileIds, errors };
+  const sizeHint = getClientUploadSizeHint(files);
+
+  return { uploaded, fileIds, errors, sizeHint, zipExtracted };
+}
+
+export function getClientUploadSizeHint(files: File[]): string | null {
+  const tier = maxUploadSizeTier(files.map((f) => f.size));
+  return uploadSizeHint(tier);
 }
 
 /** Extensions shown in the upload UI — drops accept any file type. */
 export const UPLOAD_ACCEPT =
-  '.txt,.md,.markdown,.pdf,.docx,.csv,.png,.jpg,.jpeg,.webp,.heic,.heif,.vtt,.srt,.mp3,.m4a,.wav,.eml';
+  '.txt,.md,.markdown,.pdf,.docx,.csv,.png,.jpg,.jpeg,.webp,.heic,.heif,.vtt,.srt,.mp3,.m4a,.wav,.eml,.zip';
 
 export const PHOTO_CAPTURE_ACCEPT = 'image/*';
