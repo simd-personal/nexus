@@ -16,7 +16,7 @@ export function SunnyCard({ criticalCount, newUpdatesCount, actionItemsCount, co
     <Card className="border-[rgba(124,108,240,0.22)] bg-gradient-to-br from-amber-50 via-white to-[#f3f0ff] dark:border-[rgba(167,139,250,0.35)] dark:from-amber-950/40 dark:via-[var(--ud-mist)] dark:to-indigo-950/30">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center">
-          <SunnyAvatar size="lg" />
+          <SunnyAvatar size="lg" animate="idle" />
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-semibold leading-snug text-gray-900 dark:text-gray-100">

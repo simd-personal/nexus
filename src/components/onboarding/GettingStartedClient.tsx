@@ -474,7 +474,7 @@ export function GettingStartedClient({
       {step === 'processing' && (
         <Card className="text-center">
           <div className="mx-auto mb-4 flex justify-center">
-            <SunnyAvatar size="xl" className="animate-pulse" />
+            <SunnyAvatar size="xl" animate="work" />
           </div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Step 3 · {AI_EMPLOYEE_NAME} is on it

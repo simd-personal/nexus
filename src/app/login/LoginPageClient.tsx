@@ -291,7 +291,7 @@ export default function LoginPageClient({
             <p className="text-xs marketing-text-muted">
               Meet {AI_EMPLOYEE_NAME}, your AI employee inside UpperDeck.
             </p>
-            <SunnyMascot className="mt-5 max-w-[180px]" priority />
+            <SunnyMascot className="mt-5 max-w-[180px]" priority animate="float" />
           </div>
         </div>
 

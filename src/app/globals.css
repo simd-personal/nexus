@@ -1933,7 +1933,7 @@ html.dark .docx-preview td {
 }
 
 .hx-bridge-active .hx-bridge-orb {
-  animation: fun-spin-soft 1.1s ease-in-out infinite;
+  animation: sunny-glow 1.1s ease-in-out infinite;
 }
 
 .hx-bridge-active .hx-bridge-label {
@@ -1946,6 +1946,73 @@ html.dark .docx-preview td {
 @keyframes fun-spin-soft {
   0%, 100% { transform: rotate(0deg) scale(1); }
   50% { transform: rotate(180deg) scale(1.12); }
+}
+
+/* Sunny mascot — respects prefers-reduced-motion below */
+@keyframes sunny-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes sunny-wave {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(8deg); }
+  60% { transform: rotate(-5deg); }
+  80% { transform: rotate(5deg); }
+}
+
+@keyframes sunny-work {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-6deg) scale(1.05); }
+  75% { transform: rotate(6deg) scale(1.05); }
+}
+
+@keyframes sunny-glow {
+  0%, 100% { box-shadow: 0 1px 2px rgba(245, 158, 11, 0.08); }
+  50% { box-shadow: 0 0 14px rgba(245, 158, 11, 0.32); }
+}
+
+@keyframes sunny-mascot-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-6px) rotate(-2deg); }
+  66% { transform: translateY(-3px) rotate(2deg); }
+}
+
+@keyframes sunny-mascot-pop {
+  0% { transform: scale(0.88); opacity: 0.6; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.sunny-animate-idle {
+  animation: sunny-float 3.2s ease-in-out infinite;
+}
+
+.sunny-animate-wave {
+  animation: sunny-wave 2.8s ease-in-out infinite;
+}
+
+.sunny-animate-work {
+  animation: sunny-work 1.1s ease-in-out infinite, sunny-glow 1.1s ease-in-out infinite;
+}
+
+.sunny-mascot-float {
+  animation: sunny-mascot-float 4s ease-in-out infinite;
+}
+
+.sunny-mascot-pop {
+  animation: sunny-mascot-pop 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sunny-animate-idle,
+  .sunny-animate-wave,
+  .sunny-animate-work,
+  .sunny-mascot-float,
+  .sunny-mascot-pop {
+    animation: none;
+  }
 }
 
 .hx-bridge-arrow { color: var(--brand-accent); }

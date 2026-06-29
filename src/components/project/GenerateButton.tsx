@@ -91,12 +91,14 @@ export function GenerateButton({
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>
-          <SunnyAvatar size="xs" className="ring-0" />
+          <SunnyAvatar size="xs" className="ring-0" animate={loading ? 'work' : 'wave'} />
           Generate with {AI_EMPLOYEE_NAME}
         </Button>
       </Card>
 
-      {loading && <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with GPT 5 High...`} />}
+      {loading && (
+        <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with GPT 5 High...`} sunny />
+      )}
 
       {content && (
         <Card className="mt-6">

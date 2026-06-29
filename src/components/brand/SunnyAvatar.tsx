@@ -12,19 +12,35 @@ const SIZES = {
 
 export type SunnyAvatarSize = keyof typeof SIZES;
 
+export type SunnyAnimate = 'none' | 'idle' | 'wave' | 'work';
+
+const ANIMATE_CLASS: Record<SunnyAnimate, string> = {
+  none: '',
+  idle: 'sunny-animate-idle',
+  wave: 'sunny-animate-wave',
+  work: 'sunny-animate-work',
+};
+
 type SunnyAvatarProps = {
   size?: SunnyAvatarSize;
   className?: string;
   priority?: boolean;
+  animate?: SunnyAnimate;
 };
 
-export function SunnyAvatar({ size = 'md', className, priority }: SunnyAvatarProps) {
+export function SunnyAvatar({
+  size = 'md',
+  className,
+  priority,
+  animate = 'none',
+}: SunnyAvatarProps) {
   const px = SIZES[size];
 
   return (
     <span
       className={cn(
         'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white shadow-sm ring-1 ring-amber-200/80 dark:bg-[var(--ud-mist)] dark:ring-amber-700/40',
+        ANIMATE_CLASS[animate],
         className
       )}
       style={{ width: px, height: px }}
@@ -41,13 +57,26 @@ export function SunnyAvatar({ size = 'md', className, priority }: SunnyAvatarPro
   );
 }
 
+export type SunnyMascotAnimate = 'none' | 'float' | 'pop';
+
+const MASCOT_ANIMATE_CLASS: Record<SunnyMascotAnimate, string> = {
+  none: '',
+  float: 'sunny-mascot-float',
+  pop: 'sunny-mascot-pop',
+};
+
 type SunnyMascotProps = {
   className?: string;
   priority?: boolean;
+  animate?: SunnyMascotAnimate;
 };
 
 /** Larger Sunny icon for marketing, auth, and onboarding hero moments. */
-export function SunnyMascot({ className, priority }: SunnyMascotProps) {
+export function SunnyMascot({
+  className,
+  priority,
+  animate = 'float',
+}: SunnyMascotProps) {
   return (
     <Image
       src={SUNNY_MASCOT_SRC}
@@ -55,7 +84,11 @@ export function SunnyMascot({ className, priority }: SunnyMascotProps) {
       width={512}
       height={512}
       priority={priority}
-      className={cn('h-auto w-full max-w-[200px] object-contain', className)}
+      className={cn(
+        'h-auto w-full max-w-[200px] object-contain',
+        MASCOT_ANIMATE_CLASS[animate],
+        className
+      )}
     />
   );
 }

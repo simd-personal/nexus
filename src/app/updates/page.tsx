@@ -13,7 +13,7 @@ export default async function SunnyUpdatesPage() {
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="flex items-center gap-3 mb-8">
-          <SunnyAvatar size="md" />
+          <SunnyAvatar size="md" animate="idle" />
           <div>
             <h1 className="app-page-title text-2xl">{AI_EMPLOYEE_NAME} Updates</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">

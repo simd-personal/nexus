@@ -1,4 +1,5 @@
 import { FileText, Search } from 'lucide-react';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 
 interface EmptyStateProps {
   icon?: 'file' | 'search';
@@ -22,13 +23,25 @@ export function EmptyState({ icon = 'file', title, description, action }: EmptyS
   );
 }
 
-export function LoadingState({ message = 'Loading...' }: { message?: string }) {
+export function LoadingState({
+  message = 'Loading...',
+  sunny = false,
+}: {
+  message?: string;
+  sunny?: boolean;
+}) {
   return (
     <div className="flex flex-col items-center justify-center py-16">
-      <svg className="mb-4 h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-      </svg>
+      {sunny ? (
+        <div className="mb-4">
+          <SunnyAvatar size="xl" animate="work" />
+        </div>
+      ) : (
+        <svg className="mb-4 h-8 w-8 animate-spin text-gray-400 dark:text-gray-500" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+      )}
       <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
     </div>
   );

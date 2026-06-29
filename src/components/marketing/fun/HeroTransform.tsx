@@ -103,7 +103,11 @@ export function HeroTransform() {
           {/* Sunny working */}
           <div className={`hx-bridge ${phase === 'thinking' ? 'hx-bridge-active' : ''}`}>
             <span className="hx-bridge-orb">
-              <SunnyAvatar size="sm" className="ring-0" />
+              <SunnyAvatar
+                size="sm"
+                className="ring-0"
+                animate={phase === 'thinking' ? 'work' : phase === 'typing' ? 'idle' : 'none'}
+              />
             </span>
             <span className="hx-bridge-label">
               {phase === 'thinking' ? 'Sunny is reading…' : 'Sunny'}

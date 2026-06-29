@@ -911,7 +911,7 @@ export function SunnyChatInterface({
           >
             {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
-          <SunnyAvatar size="sm" />
+          <SunnyAvatar size="sm" animate={isStreaming ? 'work' : 'idle'} />
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME}</span>
           {mode !== 'search' && projectName && (
             <span className="text-xs text-gray-400 dark:text-gray-500 truncate">· {projectName}</span>
@@ -970,7 +970,7 @@ export function SunnyChatInterface({
             {messages.length === 0 && (
               <div className="text-center py-12">
                 <div className="mx-auto mb-4 flex justify-center">
-                  <SunnyAvatar size="xl" />
+                  <SunnyAvatar size="xl" animate="wave" />
                 </div>
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
                   {chatTitle(mode)}
@@ -1032,7 +1032,7 @@ export function SunnyChatInterface({
                 <div key={msg.id} className={cn('group flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {msg.role === 'assistant' && (
                     <div className="shrink-0 mt-0.5">
-                      <SunnyAvatar size="sm" />
+                      <SunnyAvatar size="sm" animate={streaming ? 'work' : 'none'} />
                     </div>
                   )}
                   <div className={cn('max-w-[85%]', msg.role === 'user' && 'order-first')}>
