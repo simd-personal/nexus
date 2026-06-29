@@ -24,6 +24,7 @@ export default function PricingPage() {
       eyebrow="Pricing"
       title="Start free. Upgrade when you add clients."
       description="Prove value on one client for free, then upgrade when you are managing multiple engagements. Sunny gets more capable as we ship new features."
+      showSignupCta={false}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">
@@ -52,6 +53,7 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
+                {tier.id !== 'free' && (
                 <Link
                   href={tier.ctaHref}
                   className={`mt-8 inline-flex w-full items-center justify-center gap-2 ${pricingButtonClass(tier)}`}
@@ -59,6 +61,7 @@ export default function PricingPage() {
                   <span>{tier.cta}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
+                )}
               </div>
             ))}
           </div>

@@ -8,11 +8,13 @@ export function MarketingPageLayout({
   title,
   description,
   children,
+  showSignupCta = true,
 }: {
   eyebrow?: string;
   title: string;
   description: string;
   children: React.ReactNode;
+  showSignupCta?: boolean;
 }) {
   return (
     <MarketingShell>
@@ -29,6 +31,7 @@ export function MarketingPageLayout({
 
       <div className="marketing-seo-content">{children}</div>
 
+      {showSignupCta && (
       <section className="marketing-section fun-cta border-t border-[var(--ud-mist)]">
         <div className="fun-cta-glow" aria-hidden />
         <div className="marketing-container relative z-10 text-center">
@@ -47,6 +50,7 @@ export function MarketingPageLayout({
           </div>
         </div>
       </section>
+      )}
     </MarketingShell>
   );
 }

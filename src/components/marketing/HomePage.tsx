@@ -210,6 +210,7 @@ export function HomePage() {
                       </li>
                     ))}
                   </ul>
+                  {tier.id !== 'free' && (
                   <Link
                     href={tier.ctaHref}
                     className={`${pricingButtonClass(tier)} mt-8 w-full justify-center`}
@@ -217,6 +218,7 @@ export function HomePage() {
                     <span>{tier.cta}</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>
+                  )}
                 </div>
               </Reveal>
             ))}
