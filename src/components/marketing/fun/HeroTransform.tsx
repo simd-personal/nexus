@@ -1,15 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, FileText, Mail, Presentation, Sparkles } from 'lucide-react';
+import { ArrowRight, FileText, Mail, Sparkles } from 'lucide-react';
 
-const MESSY = `ok so on the call sarah said launch maybe slips to Q3?? budget review thing. but the march deck still says Q2 launch. also someone needs to own the data migration nobody confirmed. follow up w/ finance before fri. they were kinda annoyed about the last invoice too lol`;
+const MESSY = `ok so on the call sarah said launch maybe slips to Q3?? budget review thing. but the march timeline plan still says Q2 launch. also someone needs to own the data migration nobody confirmed. follow up w/ finance before fri. they were kinda annoyed about the last invoice too lol`;
 
 type BriefLine = { text: string; cite: string };
 
 const BRIEF: BriefLine[] = [
   { text: 'Launch likely slipping to Q3 pending budget review', cite: 'Mar 12 call' },
-  { text: 'Conflict: March deck still shows a Q2 launch date', cite: 'Strategy deck p.4' },
+  { text: 'Conflict: March strategy deck still shows a Q2 launch date', cite: 'Strategy deck p.4' },
   { text: 'Ownership gap: data migration has no confirmed owner', cite: 'Mar 12 call' },
   { text: 'Follow up with finance before Friday (invoice friction)', cite: 'Email thread' },
 ];
@@ -87,12 +87,8 @@ export function HeroTransform() {
       <div className="hx-card hx-input">
         <div className="hx-card-head">
           <span className="hx-chip hx-chip-mail">
-            <Mail className="h-3.5 w-3.5" /> raw notes
+            <Mail className="h-3.5 w-3.5" /> call notes
           </span>
-          <span className="hx-chip hx-chip-deck">
-            <Presentation className="h-3.5 w-3.5" /> deck
-          </span>
-          <span className="hx-dot-pulse" />
         </div>
         <p className="hx-messy">
           {typed}

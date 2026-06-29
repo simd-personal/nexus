@@ -70,10 +70,9 @@ export function HomePage() {
             </div>
 
             <div className="fun-hero-meta mt-6">
-              <span className="fun-hero-meta-dot" aria-hidden />
               <span className="fun-hero-meta-items">
-                <span>No credit card</span>
-                <span>Cancel anytime</span>
+                <span>Free accounts for a limited time</span>
+                <span>No credit card needed</span>
               </span>
             </div>
           </div>
