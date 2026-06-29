@@ -1,4 +1,4 @@
-import { AI_EMPLOYEE_NAME, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME, APP_NAME, BRAND_TAGLINE, PARENT_COMPANY_LEGAL_NAME } from '@/lib/constants';
 import { getSiteUrl } from '@/lib/marketing/seo';
 
 export function OrganizationJsonLd() {
@@ -10,6 +10,10 @@ export function OrganizationJsonLd() {
     url: siteUrl,
     description: BRAND_TAGLINE,
     logo: `${siteUrl}/upperdeck-icon.svg`,
+    parentOrganization: {
+      '@type': 'Organization',
+      name: PARENT_COMPANY_LEGAL_NAME,
+    },
   };
 
   return (
@@ -30,6 +34,10 @@ export function SoftwareApplicationJsonLd() {
     operatingSystem: 'Web',
     url: siteUrl,
     description: BRAND_TAGLINE,
+    provider: {
+      '@type': 'Organization',
+      name: PARENT_COMPANY_LEGAL_NAME,
+    },
     offers: {
       '@type': 'Offer',
       price: '0',

@@ -1,5 +1,5 @@
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
-import { AI_EMPLOYEE_NAME, APP_DOMAIN, BRAND_TAGLINE, TAGLINE } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME, APP_DOMAIN, BRAND_TAGLINE, LEGAL_ENTITY_DESCRIPTION, TAGLINE } from '@/lib/constants';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
@@ -19,6 +19,9 @@ export default function AboutPage() {
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container max-w-3xl marketing-prose">
+          <h2>Company</h2>
+          <p>{LEGAL_ENTITY_DESCRIPTION}</p>
+
           <h2>What we&apos;re building</h2>
           <p>
             UpperDeck ({APP_DOMAIN}) helps consultants, agencies, and operators deliver more with

@@ -8,6 +8,10 @@ import type {
 export const APP_NAME = 'UpperDeck';
 export const APP_DOMAIN = 'upperdeck.dev';
 export const PARENT_COMPANY_LEGAL_NAME = 'Sim Capital LLC';
+/** Who operates UpperDeck — use on privacy, terms, signup, and email footers */
+export const LEGAL_ENTITY_DESCRIPTION = `${APP_NAME} (${APP_DOMAIN}) is operated by ${PARENT_COMPANY_LEGAL_NAME}. ${APP_NAME} is a subsidiary of ${PARENT_COMPANY_LEGAL_NAME}.`;
+export const LEGAL_TERMS_PARTY = `In these terms, "UpperDeck," "we," "us," and "our" refer to ${PARENT_COMPANY_LEGAL_NAME}, which operates the ${APP_NAME} service at ${APP_DOMAIN}. ${APP_NAME} is a subsidiary of ${PARENT_COMPANY_LEGAL_NAME}.`;
+export const LEGAL_PRIVACY_CONTROLLER = `${PARENT_COMPANY_LEGAL_NAME} operates ${APP_NAME} (${APP_DOMAIN}) and is responsible for the processing described in this policy. ${APP_NAME} is a subsidiary of ${PARENT_COMPANY_LEGAL_NAME}.`;
 export const SUPPORT_EMAIL = `support@${APP_DOMAIN}`;
 export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
 export const AI_EMPLOYEE_NAME = 'Sunny';

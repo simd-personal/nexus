@@ -1,11 +1,17 @@
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
-import { APP_DOMAIN, SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/constants';
+import {
+  APP_DOMAIN,
+  LEGAL_PRIVACY_CONTROLLER,
+  PARENT_COMPANY_LEGAL_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_MAILTO,
+} from '@/lib/constants';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
   title: 'Privacy policy',
   description:
-    'UpperDeck privacy policy. How we collect, use, and protect your account data and client project content.',
+    `UpperDeck privacy policy, operated by ${PARENT_COMPANY_LEGAL_NAME}. How we collect, use, and protect your account data and client project content.`,
   path: '/privacy',
 });
 
@@ -14,16 +20,17 @@ export default function PrivacyPage() {
     <MarketingPageLayout
       eyebrow="Legal"
       title="Privacy policy"
-      description={`How UpperDeck (${APP_DOMAIN}) handles your data.`}
+      description={`How UpperDeck (${APP_DOMAIN}), operated by ${PARENT_COMPANY_LEGAL_NAME}, handles your data.`}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container max-w-3xl marketing-prose">
           <p className="text-sm marketing-text-muted">Last updated: June 28, 2026</p>
 
           <h2>Overview</h2>
+          <p>{LEGAL_PRIVACY_CONTROLLER}</p>
           <p>
-            UpperDeck provides an AI-powered workspace for client project intelligence. This policy
-            describes what information we collect, how we use it, and the choices you have.
+            This policy describes what information we collect, how we use it, and the choices you
+            have when you use UpperDeck.
           </p>
 
           <h2>Information we collect</h2>
@@ -138,6 +145,7 @@ export default function PrivacyPage() {
             <a href={SUPPORT_MAILTO} className="marketing-inline-link">
               {SUPPORT_EMAIL}
             </a>
+            . {PARENT_COMPANY_LEGAL_NAME} operates UpperDeck at {APP_DOMAIN}.
           </p>
         </div>
       </section>

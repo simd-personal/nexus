@@ -1,11 +1,18 @@
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
-import { APP_DOMAIN, SUPPORT_EMAIL, SUPPORT_MAILTO } from '@/lib/constants';
+import {
+  APP_DOMAIN,
+  LEGAL_ENTITY_DESCRIPTION,
+  LEGAL_TERMS_PARTY,
+  PARENT_COMPANY_LEGAL_NAME,
+  SUPPORT_EMAIL,
+  SUPPORT_MAILTO,
+} from '@/lib/constants';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
   title: 'Terms of service',
   description:
-    'UpperDeck terms of service. Rules for using our AI client intelligence platform, including accounts, content, and subscriptions.',
+    `UpperDeck terms of service, operated by ${PARENT_COMPANY_LEGAL_NAME}. Rules for using our AI client intelligence platform, including accounts, content, and subscriptions.`,
   path: '/terms',
 });
 
@@ -14,11 +21,15 @@ export default function TermsPage() {
     <MarketingPageLayout
       eyebrow="Legal"
       title="Terms of service"
-      description={`Terms for using UpperDeck at ${APP_DOMAIN}.`}
+      description={`Terms for using UpperDeck at ${APP_DOMAIN}, operated by ${PARENT_COMPANY_LEGAL_NAME}.`}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container max-w-3xl marketing-prose">
           <p className="text-sm marketing-text-muted">Last updated: June 28, 2026</p>
+
+          <h2>Who we are</h2>
+          <p>{LEGAL_ENTITY_DESCRIPTION}</p>
+          <p>{LEGAL_TERMS_PARTY}</p>
 
           <h2>Agreement</h2>
           <p>
@@ -181,6 +192,7 @@ export default function TermsPage() {
             <a href={SUPPORT_MAILTO} className="marketing-inline-link">
               {SUPPORT_EMAIL}
             </a>
+            . {PARENT_COMPANY_LEGAL_NAME} operates UpperDeck at {APP_DOMAIN}.
           </p>
         </div>
       </section>

@@ -1,4 +1,4 @@
-import { APP_NAME, APP_DOMAIN, AI_EMPLOYEE_NAME, SUNNY_HERO_LINE } from '@/lib/constants';
+import { APP_NAME, APP_DOMAIN, AI_EMPLOYEE_NAME, PARENT_COMPANY_LEGAL_NAME, SUNNY_HERO_LINE } from '@/lib/constants';
 
 /**
  * Branded transactional email templates.
@@ -85,7 +85,7 @@ function shell(innerHtml: string, preheader: string): string {
           <tr>
             <td style="padding:24px 36px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:18px;color:${BRAND.muted};">
               You're receiving this because an account was created at ${APP_DOMAIN}.<br>
-              &copy; ${new Date().getFullYear()} ${APP_NAME} &middot; ${APP_DOMAIN}
+              &copy; ${new Date().getFullYear()} ${APP_NAME}, a subsidiary of ${PARENT_COMPANY_LEGAL_NAME} &middot; ${APP_DOMAIN}
             </td>
           </tr>
         </table>
@@ -144,7 +144,7 @@ export function renderWelcomeEmail(input: WelcomeEmailInput): {
     '',
     `No need to confirm your email right now. You're already signed in and can start using everything today, so confirm whenever it's convenient.`,
     '',
-    `© ${new Date().getFullYear()} ${APP_NAME} · ${APP_DOMAIN}`,
+    `© ${new Date().getFullYear()} ${APP_NAME}, a subsidiary of ${PARENT_COMPANY_LEGAL_NAME} · ${APP_DOMAIN}`,
   ].join('\n');
 
   return { subject, html: shell(inner, preheader), text };

@@ -1,3 +1,4 @@
+import { LEGAL_ENTITY_DESCRIPTION } from '@/lib/constants';
 import Link from 'next/link';
 
 type LegalPolicyLinksProps = {
@@ -25,7 +26,7 @@ export function LegalPolicyLinks({
 export function SignUpLegalNotice({ className = '' }: { className?: string }) {
   return (
     <p className={`text-center text-[11px] leading-relaxed marketing-text-muted ${className}`}>
-      By creating an account, you agree to our{' '}
+      {LEGAL_ENTITY_DESCRIPTION} By creating an account, you agree to our{' '}
       <Link href="/privacy" className="auth-link">
         Privacy policy
       </Link>{' '}
