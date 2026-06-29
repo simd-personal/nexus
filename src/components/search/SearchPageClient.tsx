@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
@@ -11,7 +11,7 @@ import {
   scopeFromUrlProjects,
   type ChatScope,
 } from '@/lib/chat/scope';
-import type { ProjectWithStats } from '@/types/database';
+import type { ChatMessage, ProjectWithStats } from '@/types/database';
 
 const SunnyChatInterface = dynamic(
   () => import('@/components/chat/SunnyChatInterface').then((m) => m.SunnyChatInterface),
@@ -24,12 +24,16 @@ export function GlobalChatPageClient({
   projectId,
   projectName,
   lockScope = false,
+  initialSessionId,
+  initialMessages = [],
 }: {
   userId: string;
   projects: ProjectWithStats[];
   projectId?: string;
   projectName?: string;
   lockScope?: boolean;
+  initialSessionId?: string;
+  initialMessages?: ChatMessage[];
 }) {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') ?? undefined;
@@ -45,6 +49,15 @@ export function GlobalChatPageClient({
     return ALL_PROJECTS_SCOPE;
   });
 
+  useEffect(() => {
+    if (lockScope) return;
+    setChatScope(
+      urlProjectIds.length > 0
+        ? scopeFromUrlProjects(projects, urlProjectIds)
+        : ALL_PROJECTS_SCOPE
+    );
+  }, [lockScope, projects, urlProjectIds]);
+
   return (
     <SunnyChatInterface
       userId={userId}
@@ -55,6 +68,8 @@ export function GlobalChatPageClient({
       lockScope={lockScope}
       projectId={projectId}
       projectName={projectName}
+      initialSessionId={initialSessionId}
+      initialMessages={initialMessages}
       initialQuery={initialQuery}
       embedded={lockScope}
     />

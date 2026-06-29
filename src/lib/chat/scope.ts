@@ -69,6 +69,7 @@ export function scopeFromUrlProjects(
     const node = findProjectInTree(projects, id);
     if (!node) {
       resolvedIds.add(id);
+      labels.push(id);
       continue;
     }
     const children = node.sub_projects ?? [];

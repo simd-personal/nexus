@@ -165,9 +165,9 @@ export function ChatScopeChips({
 
   return (
     <>
-      {scope.labels.map((label) => (
+      {scope.labels.map((label, index) => (
         <span
-          key={label}
+          key={`${label}-${index}`}
           className="inline-flex items-center gap-1 rounded-full border border-[rgba(124,108,240,0.25)] bg-[rgba(124,108,240,0.08)] px-2.5 py-1 text-xs text-gray-700 dark:text-gray-200"
         >
           {label}

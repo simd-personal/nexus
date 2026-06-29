@@ -353,8 +353,30 @@ async function resolveProjectScopeIds(
 }
 
 export async function getProjectChatMessages(projectId: string): Promise<ChatMessage[]> {
-  const latest = await getLatestChatSession({ sessionType: 'project', projectId });
+  const latest = await getLatestChatSessionForProject(projectId);
   return latest?.messages ?? [];
+}
+
+export function pickLatestChatSession(
+  a: { session: ChatSession; messages: ChatMessage[] } | null,
+  b: { session: ChatSession; messages: ChatMessage[] } | null
+): { session: ChatSession; messages: ChatMessage[] } | null {
+  if (!a) return b;
+  if (!b) return a;
+  const aTime = Date.parse(a.session.updated_at);
+  const bTime = Date.parse(b.session.updated_at);
+  return aTime >= bTime ? a : b;
+}
+
+/** Latest chat for a project, including legacy project-mode and search-mode sessions. */
+export async function getLatestChatSessionForProject(
+  projectId: string
+): Promise<{ session: ChatSession; messages: ChatMessage[] } | null> {
+  const [search, project] = await Promise.all([
+    getLatestChatSession({ sessionType: 'search', projectId }),
+    getLatestChatSession({ sessionType: 'project', projectId }),
+  ]);
+  return pickLatestChatSession(search, project);
 }
 
 export async function getLatestChatSession(opts: {

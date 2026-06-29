@@ -356,18 +356,32 @@ export function SunnyChatInterface({
   const loadSessions = useCallback(async (force = false) => {
     if (!force && sessionsLoadedRef.current && sessionsCacheFresh(scopeKey)) return;
 
-    const params = new URLSearchParams({ type: mode });
-    if (projectId) params.set('project_id', projectId);
-    const res = await fetch(`/api/chat/sessions?${params}`);
-    const data = await res.json();
-    const nextSessions = dedupeSessions(data.sessions ?? []);
+    async function fetchSessions(type: string, scopedProjectId?: string) {
+      const params = new URLSearchParams({ type });
+      if (scopedProjectId) params.set('project_id', scopedProjectId);
+      const res = await fetch(`/api/chat/sessions?${params}`);
+      const data = await res.json();
+      return (data.sessions ?? []) as ChatSession[];
+    }
+
+    let nextSessions: ChatSession[];
+    if (lockScope && projectId && mode === 'search') {
+      const [searchSessions, projectSessions] = await Promise.all([
+        fetchSessions('search', projectId),
+        fetchSessions('project', projectId),
+      ]);
+      nextSessions = dedupeSessions([...searchSessions, ...projectSessions]);
+    } else {
+      nextSessions = dedupeSessions(await fetchSessions(mode, projectId));
+    }
+
     setSessions(nextSessions);
     sessionsLoadedRef.current = true;
     patchChatScopeState(scopeKey, {
       sessions: nextSessions,
       sessionsFetchedAt: Date.now(),
     });
-  }, [mode, projectId, scopeKey]);
+  }, [mode, projectId, scopeKey, lockScope]);
 
   const ensureSessions = useCallback(async () => {
     await loadSessions();
@@ -590,15 +604,12 @@ export function SunnyChatInterface({
         content: text.trim(),
         citations: [],
         metadata:
-          mode === 'search'
+          mode === 'search' && chatScopeRef.current.kind === 'selected'
             ? {
-                scope:
-                  chatScopeRef.current.kind === 'selected'
-                    ? {
-                        project_ids: chatScopeRef.current.projectIds,
-                        labels: chatScopeRef.current.labels,
-                      }
-                    : { project_ids: [], labels: [] },
+                scope: {
+                  project_ids: chatScopeRef.current.projectIds,
+                  labels: chatScopeRef.current.labels,
+                },
               }
             : {},
         created_at: new Date().toISOString(),

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { GlobalChatPageClient } from '@/components/search/SearchPageClient';
 import { LoadingState } from '@/components/ui/EmptyState';
-import { getProject, getProjectsWithStats } from '@/lib/data/queries';
+import { getLatestChatSessionForProject, getProject, getProjectsWithStats } from '@/lib/data/queries';
 import { requireUser } from '@/lib/supabase/server';
 
 export default async function ProjectSearchPage({
@@ -10,8 +10,9 @@ export default async function ProjectSearchPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [user, project, projects] = await Promise.all([
+  const [user, latestChat, project, projects] = await Promise.all([
     requireUser(),
+    getLatestChatSessionForProject(id),
     getProject(id),
     getProjectsWithStats(),
   ]);
@@ -25,6 +26,8 @@ export default async function ProjectSearchPage({
           projectId={id}
           projectName={project ? `${project.client_name} · ${project.project_name}` : undefined}
           lockScope
+          initialSessionId={latestChat?.session.id}
+          initialMessages={latestChat?.messages ?? []}
         />
       </Suspense>
     </div>

@@ -117,6 +117,11 @@ describe('chat scope', () => {
     expect(resolveScopeProjectIds(scope)?.sort()).toEqual(['solo', 'ws-a'].sort());
   });
 
+  it('labels unknown URL project ids', () => {
+    const scope = scopeFromUrlProjects(tree, ['missing-id']);
+    expect(scope.kind === 'selected' && scope.labels).toEqual(['missing-id']);
+  });
+
   it('uses stable cache key suffixes', () => {
     expect(scopeCacheKeySuffix(ALL_PROJECTS_SCOPE)).toBe('all');
     const scope = buildChatScope(tree, new Set(['solo', 'ws-a']));
