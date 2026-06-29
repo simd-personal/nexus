@@ -19,7 +19,7 @@ const AUDIENCES: Audience[] = [
     tab: 'Solo consultants',
     icon: UserRound,
     title: 'Your first hire, on client number one',
-    body: 'Sunny reads every deck, email, and call so you walk into client work prepared — without hiring an analyst.',
+    body: 'Sunny reads every deck, email, and call so you walk into client work prepared, without hiring an analyst.',
     points: [
       'A brief for every project, refreshed as files land',
       'Catch contradictions before your client does',
@@ -30,10 +30,10 @@ const AUDIENCES: Audience[] = [
     id: 'fractional',
     tab: 'Fractional execs',
     icon: Briefcase,
-    title: 'A chief-of-staff-level AI employee',
+    title: 'A chief of staff level AI employee',
     body: 'Juggling five stakeholders across three companies? Sunny keeps the context straight so you never walk in cold.',
     points: [
-      'Per-client memory that never forgets a thread',
+      'Per client memory that never forgets a thread',
       'Risk + decision tracking across engagements',
       'Ask "what changed this week?" and get cited answers',
     ],
@@ -43,11 +43,11 @@ const AUDIENCES: Audience[] = [
     tab: 'Agency leads',
     icon: Building2,
     title: 'Shared client brains for your whole team',
-    body: 'Give every delivery lead an AI employee with the same context — before you need heavyweight enterprise software.',
+    body: 'Give every delivery lead an AI employee with the same context before you need heavyweight enterprise software.',
     points: [
       'One source of truth per client project',
       'Onboard new team members in minutes, not weeks',
-      'Spot at-risk accounts before they churn',
+      'Spot at risk accounts before they churn',
     ],
   },
 ];

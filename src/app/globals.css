@@ -1345,21 +1345,39 @@ html.dark .docx-preview td {
 
 .fun-hero-meta {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
   color: var(--ud-slate);
+  line-height: 1.5;
 }
 
 .fun-hero-meta-dot {
   display: inline-block;
+  flex-shrink: 0;
   width: 8px;
   height: 8px;
+  margin-top: 0.35em;
   border-radius: 9999px;
   background: #22c55e;
   box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
   animation: fun-pulse 2s infinite;
+}
+
+.fun-hero-meta-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+}
+
+.fun-hero-meta-items > span:not(:last-child)::after {
+  content: '·';
+  margin-left: 0.5rem;
+  color: var(--ud-slate);
+  opacity: 0.65;
 }
 
 @keyframes fun-pulse {

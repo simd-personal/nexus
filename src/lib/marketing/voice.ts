@@ -10,5 +10,5 @@ export function sunnyPitch(short = false): string {
   if (short) {
     return `${AI_EMPLOYEE_NAME} is your first AI employee with full context on every client project, with citations back to your files.`;
   }
-  return `${AI_EMPLOYEE_NAME} is your first AI employee inside ${APP_NAME}. Not a blank chat window but a teammate that has read every meeting, deck, email, and note in the project, and gets more powerful as we add features.`;
+  return `${AI_EMPLOYEE_NAME} is your first AI employee inside ${APP_NAME}. Not a blank chat window, but a teammate that has read every meeting, deck, email, and note in the project, and gets more powerful as we add features.`;
 }

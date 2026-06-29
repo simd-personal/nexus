@@ -84,7 +84,7 @@ export function RequestQuoteForm() {
         <textarea
           name="message"
           rows={4}
-          placeholder="Multi-tenant access, PHI safeguards, admin controls, etc."
+          placeholder="Multi tenant access, PHI safeguards, admin controls, etc."
           className="auth-input min-h-[7rem] resize-y"
         />
       </FormField>
@@ -121,7 +121,7 @@ export function RequestQuotePageContent() {
             </h1>
             <p className="marketing-hero-body mt-4 max-w-2xl">
               Tell us about your organization. We&apos;ll follow up with pricing, security details,
-              and a tailored rollout plan. Organization accounts are sold by quote — not free online
+              and a tailored rollout plan. Organization accounts are sold by quote, not free online
               signup.
             </p>
           </Reveal>
@@ -139,7 +139,7 @@ export function RequestQuotePageContent() {
                 <p className="font-semibold text-[var(--ud-graphite)]">{APP_NAME} Enterprise</p>
               </div>
               <p className="mt-4 text-[15px] leading-relaxed text-[var(--ud-slate)]">
-                Shared tenants, admin roles, access approvals, and healthcare PHI safeguards — built
+                Shared tenants, admin roles, access approvals, and healthcare PHI safeguards, built
                 for software companies, consultancies, and regulated industries.
               </p>
               <ul className="mt-6 space-y-3">

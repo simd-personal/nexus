@@ -57,9 +57,10 @@ export function HomePage() {
               <span className="fun-gradient-text">Hire {AI_EMPLOYEE_NAME}.</span>
             </h1>
             <p className="marketing-hero-body">
-              {AI_EMPLOYEE_NAME} is your first AI employee for client work. Drop in decks, emails,
-              meetings, and notes — get briefs, risks, and follow ups with every line cited back to
-              the source. Highest-powered GPT &amp; Claude included — no second subscription.
+              {AI_EMPLOYEE_NAME}
+              {'\u00a0'}is your first AI employee for client work. Drop in decks, emails, meetings,
+              and notes. Get briefs, risks, and follow ups with every line cited back to the source.
+              Latest GPT and Claude models included. No second subscription needed.
             </p>
 
             <div className="marketing-hero-actions mt-8">
@@ -73,8 +74,12 @@ export function HomePage() {
             </div>
 
             <div className="fun-hero-meta mt-6">
-              <span className="fun-hero-meta-dot" /> No credit card · Top GPT &amp; Claude, one plan ·
-              Cancel anytime
+              <span className="fun-hero-meta-dot" aria-hidden />
+              <span className="fun-hero-meta-items">
+                <span>No credit card</span>
+                <span>Latest GPT &amp; Claude models</span>
+                <span>Cancel anytime</span>
+              </span>
             </div>
           </div>
 
@@ -98,7 +103,7 @@ export function HomePage() {
             <SectionTitle className="mt-3">Built for anyone who lives in client work</SectionTitle>
             <p className="marketing-section-body mt-4 max-w-2xl">
               Not a task manager, CRM, or chat tab. UpperDeck is where you hire an AI employee who
-              knows each client project cold — and gets sharper as we ship.
+              knows each client project cold, and gets sharper as we ship.
             </p>
           </Reveal>
           <Reveal className="mt-12" delay={80}>
@@ -176,7 +181,7 @@ export function HomePage() {
                 A whole afternoon of reading, <span className="fun-gradient-text">done before your coffee</span>
               </SectionTitle>
               <p className="marketing-section-body mt-4">
-                {AI_EMPLOYEE_NAME} reads the entire project — every deck, thread, and transcript —
+                {AI_EMPLOYEE_NAME} reads the entire project, every deck, thread, and transcript,
                 and hands you the brief while you&apos;re still finding the meeting link.
               </p>
             </Reveal>
@@ -197,12 +202,12 @@ export function HomePage() {
             <SectionTitle className="mt-3">Meet {AI_EMPLOYEE_NAME}, who actually did the reading</SectionTitle>
             <p className="marketing-section-body mt-4">
               Not a blank ChatGPT window. {AI_EMPLOYEE_NAME} has read every meeting, email, deck, and
-              note in the project. Ask what changed, what is at risk, or what to say tomorrow — every
+              note in the project. Ask what changed, what is at risk, or what to say tomorrow. Every
               answer links back to your files.
             </p>
             <ul className="mt-8 space-y-3">
               {[
-                'Thinks in projects, not one-off prompts',
+                'Thinks in projects, not one off prompts',
                 'Cites your uploads, not invented client facts',
                 'Briefs, timelines, and follow ups on demand',
                 'Gets more capable as UpperDeck ships features',
@@ -281,7 +286,7 @@ export function HomePage() {
             <SectionEyebrow>Love letters</SectionEyebrow>
             <SectionTitle className="mt-3">People stopped dreading prep</SectionTitle>
             <p className="marketing-section-body mt-4 max-w-2xl">
-              Consultants and operators who traded chat-tab chaos for an AI employee that shows up
+              Consultants and operators who traded chat tab chaos for an AI employee that shows up
               prepared.
             </p>
           </Reveal>
@@ -437,7 +442,7 @@ export function HomePage() {
                     For teams &amp; organizations
                   </p>
                   <h3 className="mt-2 text-xl font-semibold text-[var(--ud-graphite)]">
-                    Need admin controls, PHI safeguards, or multi-tenant access?
+                    Need admin controls, PHI safeguards, or multi tenant access?
                   </h3>
                   <p className="mt-2 max-w-xl text-sm leading-relaxed text-[var(--ud-slate)]">
                     Organization accounts are sold by quote, not online checkout. Tell us about your
@@ -549,7 +554,7 @@ export function HomePage() {
           <Reveal>
             <h2 className="marketing-section-title">Hire your first AI employee today</h2>
             <p className="marketing-section-body mx-auto mt-4 max-w-xl">
-              Join consultants and operators who stopped juggling chat tabs and inboxes. Start free —
+              Join consultants and operators who stopped juggling chat tabs and inboxes. Start free.{' '}
               {AI_EMPLOYEE_NAME} is included and getting more capable all the time.
             </p>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
