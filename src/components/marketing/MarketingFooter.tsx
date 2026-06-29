@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
-import { loginHref } from '@/lib/auth/login-url';
-import { APP_DOMAIN, BRAND_TAGLINE } from '@/lib/constants';
+import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE, PARENT_COMPANY_LEGAL_NAME } from '@/lib/constants';
 import {
   COMPANY_LINKS,
   LEGAL_LINKS,
@@ -56,18 +55,11 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--brand-border)] pt-8 sm:flex-row">
+        <div className="mt-12 border-t border-[var(--brand-border)] pt-8 text-center">
           <p className="text-sm text-[var(--brand-text-secondary)]">
-            © {new Date().getFullYear()} UpperDeck · {APP_DOMAIN}
+            © {new Date().getFullYear()} {APP_NAME}, a subsidiary of {PARENT_COMPANY_LEGAL_NAME} ·{' '}
+            {APP_DOMAIN}
           </p>
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
-            <Link href={loginHref({ mode: 'signup' })} className="marketing-nav-link">
-              Get started free
-            </Link>
-            <Link href="/pricing" className="marketing-nav-link">
-              Pricing
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
