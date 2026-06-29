@@ -7,7 +7,7 @@ import type {
 
 export const APP_NAME = 'UpperDeck';
 export const APP_DOMAIN = 'upperdeck.dev';
-export const PARENT_COMPANY_LEGAL_NAME = 'Simd Personal LLC';
+export const PARENT_COMPANY_LEGAL_NAME = 'Sim Capital LLC';
 export const SUPPORT_EMAIL = `support@${APP_DOMAIN}`;
 export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
 export const AI_EMPLOYEE_NAME = 'Sunny';
