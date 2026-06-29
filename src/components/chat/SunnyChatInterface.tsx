@@ -923,13 +923,18 @@ export function SunnyChatInterface({
               const results = msg.metadata?.results as SearchResult[] | undefined;
               const streaming = msg.metadata?.streaming === true;
               const model = msg.metadata?.model as string | undefined;
-              const isDeck = artifact?.type === 'deck' && !streaming;
+              // Cached messages drop artifact.content from localStorage to save space,
+              // so a restored deck/doc can arrive without content — never parse it blindly.
+              const artifactContent = typeof artifact?.content === 'string' ? artifact.content : '';
+              const hasArtifactContent = artifactContent.trim().length > 0;
+              const isDeck = artifact?.type === 'deck' && !streaming && hasArtifactContent;
               const isGeneratedDoc =
-                artifact &&
+                !!artifact &&
                 !streaming &&
+                hasArtifactContent &&
                 ['deck', 'brief', 'playbook', 'follow_up_email'].includes(artifact.type);
               const bubbleText = isDeck
-                ? `Here's your ${artifact.title}, ${parseDeckForViewer(artifact.content).slides.length} slides. Flip through them below, present fullscreen, or download.`
+                ? `Here's your ${artifact.title}, ${parseDeckForViewer(artifactContent).slides.length} slides. Flip through them below, present fullscreen, or download.`
                 : isGeneratedDoc && artifact
                   ? `Here's your ${artifact.title}. Review it below. Use Copy or Download when you're ready.`
                   : msg.content;
@@ -988,7 +993,7 @@ export function SunnyChatInterface({
                         ))}
                       </div>
                     )}
-                    {msg.role === 'assistant' && artifact && !streaming && (
+                    {msg.role === 'assistant' && artifact && !streaming && hasArtifactContent && (
                       isDeck
                         ? <DeckViewer artifact={artifact} />
                         : isGeneratedDoc

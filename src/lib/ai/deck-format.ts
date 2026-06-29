@@ -208,15 +208,16 @@ export function parseSlideContent(body: string, slideNumber = 1): Omit<DeckViewS
 }
 
 /** Parses deck markdown into structured slides for visual rendering in chat. */
-export function parseDeckForViewer(content: string): DeckView {
-  const parsedSlides = parseDeckSlides(content);
+export function parseDeckForViewer(content: string | null | undefined): DeckView {
+  const safeContent = typeof content === 'string' ? content : '';
+  const parsedSlides = parseDeckSlides(safeContent);
   const slides: DeckViewSlide[] = parsedSlides.map((slide) => ({
     number: slide.number,
     title: slide.title,
     ...parseSlideContent(slide.body, slide.number),
   }));
 
-  const beforeFirstSlide = content.split(/^##\s+Slide/im)[0] ?? '';
+  const beforeFirstSlide = safeContent.split(/^##\s+Slide/im)[0] ?? '';
   const titleMatch = beforeFirstSlide.match(/^#\s+(.+)$/m);
   const subtitleMatch = beforeFirstSlide.match(/^###\s+(.+)$/m);
 
@@ -227,8 +228,9 @@ export function parseDeckForViewer(content: string): DeckView {
   };
 }
 
-export function parseDeckSlides(content: string): DeckSlide[] {
+export function parseDeckSlides(content: string | null | undefined): DeckSlide[] {
   const slides: DeckSlide[] = [];
+  if (typeof content !== 'string' || !content) return slides;
   const matches = [...content.matchAll(SLIDE_HEADING_RE)];
 
   for (let i = 0; i < matches.length; i++) {
@@ -258,9 +260,9 @@ function slideHasContent(slide: DeckSlide): boolean {
   );
 }
 
-export function validateDeckFormat(content: string): DeckFormatResult {
+export function validateDeckFormat(content: string | null | undefined): DeckFormatResult {
   const issues: DeckFormatIssue[] = [];
-  const trimmed = content.trim();
+  const trimmed = (typeof content === 'string' ? content : '').trim();
 
   if (!trimmed) {
     return { valid: false, slideCount: 0, slides: [], issues: [{ code: 'empty', message: 'Deck is empty' }] };

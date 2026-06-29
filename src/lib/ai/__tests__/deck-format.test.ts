@@ -27,6 +27,18 @@ describe('deck format validation', () => {
     expect(slides[0].body).toContain('Q3 revenue');
   });
 
+  it('handles missing content without throwing (cached deck artifacts lose content)', () => {
+    // localStorage trims artifact.content, so a restored deck can arrive as undefined.
+    expect(parseDeckSlides(undefined as unknown as string)).toEqual([]);
+    expect(parseDeckSlides('')).toEqual([]);
+    expect(parseDeckForViewer(undefined as unknown as string)).toEqual({
+      title: null,
+      subtitle: null,
+      slides: [],
+    });
+    expect(validateDeckFormat(undefined as unknown as string).valid).toBe(false);
+  });
+
   it('rejects decks with inline citation numbers', () => {
     const bad = SAMPLE_VALID_DECK.replace(
       'Q3 revenue up 12% with board alignment on west expansion',
