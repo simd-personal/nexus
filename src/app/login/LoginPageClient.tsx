@@ -179,12 +179,12 @@ export default function LoginPageClient() {
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
 
-  function postAuthRedirect() {
+  function postAuthRedirect(isNewSignup = false) {
     if (hasCheckoutPlan) {
       window.location.href = `/upgrade?plan=${checkoutPlan}`;
       return;
     }
-    window.location.href = '/dashboard';
+    window.location.href = isNewSignup ? '/getting-started' : '/dashboard';
   }
 
   function switchMode(next: AuthMode) {
@@ -216,7 +216,7 @@ export default function LoginPageClient() {
           setMessage(result.error);
         } else if (result.immediate) {
           setOnboarding(true);
-          window.setTimeout(postAuthRedirect, 2600);
+          window.setTimeout(() => postAuthRedirect(true), 2600);
           return;
         } else if (result.recoveredFromRateLimit) {
           setMode('signin');

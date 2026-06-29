@@ -13,6 +13,7 @@
     "test-connection": "tsx scripts/test-connection.ts",
     "backfill-embeddings": "tsx scripts/backfill-embeddings.ts",
     "verify-setup": "tsx scripts/verify-setup.ts",
+    "verify-stripe-live": "tsx scripts/verify-stripe-live.ts",
     "test-uploads": "tsx scripts/test-uploads.ts",
     "test:flows": "tsx scripts/user-flow-smoke.ts",
     "test:brief": "tsx scripts/test-brief-generation.ts",

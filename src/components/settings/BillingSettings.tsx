@@ -11,6 +11,7 @@ import {
   openBillingPortal,
   pollBillingUntilPro,
 } from '@/lib/billing/client-poll';
+import { getSubscriptionAlert, subscriptionStatusLabel } from '@/lib/billing/subscription-ui';
 import type { Profile } from '@/types/database';
 
 export function BillingSettings({
@@ -41,6 +42,11 @@ export function BillingSettings({
     liveProfile?.plan,
     liveProfile?.subscription_status
   );
+  const subscriptionAlert = getSubscriptionAlert({
+    subscriptionStatus: liveProfile?.subscription_status,
+    isPro,
+    hasStripeSubscription,
+  });
 
   useEffect(() => {
     if (billingNotice !== 'success') return;
@@ -126,6 +132,33 @@ export function BillingSettings({
 
   return (
     <div className="space-y-4">
+      {subscriptionAlert && (
+        <div
+          className={`rounded-lg border px-4 py-3 text-sm ${
+            subscriptionAlert.tone === 'error'
+              ? 'border-red-200 bg-red-50 text-red-900'
+              : subscriptionAlert.tone === 'warning'
+                ? 'border-amber-200 bg-amber-50 text-amber-900'
+                : 'border-blue-200 bg-blue-50 text-blue-900'
+          }`}
+        >
+          <p className="font-medium">{subscriptionAlert.title}</p>
+          <p className="mt-1">{subscriptionAlert.body}</p>
+          {subscriptionAlert.showManageBilling && (
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              className="mt-3"
+              disabled={loading !== null}
+              onClick={openPortal}
+            >
+              {loading === 'portal' ? 'Opening…' : 'Update payment method'}
+            </Button>
+          )}
+        </div>
+      )}
+
       {paymentProcessing && (
         <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
           Processing your payment… This usually takes a few seconds.
@@ -158,7 +191,9 @@ export function BillingSettings({
             {isPro
               ? isTestPremium && !hasStripeSubscription
                 ? 'Unlimited projects and Sunny chat'
-                : `Status: ${liveProfile?.subscription_status ?? 'active'}`
+                : hasStripeSubscription
+                  ? `Status: ${subscriptionStatusLabel(liveProfile?.subscription_status)}`
+                  : 'Pro access active'
               : '1 project · 25 Sunny messages / month'}
           </p>
         </div>
