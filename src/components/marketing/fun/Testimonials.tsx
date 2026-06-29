@@ -1,38 +1,38 @@
 const QUOTES = [
   {
     quote:
-      "I used to spend my Sunday nights re-reading client decks. Now Sunny hands me the brief and I just show up sharp.",
-    name: 'Independent strategy consultant',
+      'Between steering committee prep and the working sessions, I was living in old decks. Sunny pulls the thread across emails and slides so I walk in with the story straight.',
+    name: 'Engagement manager',
     tag: 'McKinsey & Company',
   },
   {
     quote:
-      "It caught a timeline conflict between an email and a deck that I would've walked right into on a board call.",
-    name: 'Fractional COO',
+      'We had a launch date in one thread and a different milestone in a planning doc. Sunny flagged it before the exec review, with both sources linked.',
+    name: 'Technical program manager',
     tag: 'NVIDIA',
   },
   {
     quote:
-      "Onboarding a new project lead used to take a week. They read Sunny's brief and they're caught up in an hour.",
-    name: 'Boutique agency founder',
+      'When a new CSA joined a six-figure rollout, I used to block a week for context transfer. They read the Sunny brief on day one and were useful in the customer call.',
+    name: 'Customer success lead',
     tag: 'Microsoft',
   },
   {
     quote:
-      'The citations are the whole thing. I trust it because every line points back to a real file.',
-    name: 'Management consultant',
+      'Cross-functional reviews move fast here. I need to trust what I am presenting, and Sunny only surfaces claims it can point back to an actual file.',
+    name: 'Strategy & operations',
     tag: 'Meta',
   },
   {
     quote:
-      "Having GPT and Claude included means I stopped paying for three subscriptions and pasting context all day.",
-    name: 'Growth advisor',
+      'I was juggling ChatGPT, Claude, and notes in three tabs for partner briefs. Sunny keeps the latest models in one place with the campaign context already loaded.',
+    name: 'Partnerships manager',
     tag: 'Instagram',
   },
   {
     quote:
-      "It feels less like a tool and more like a teammate who actually did the reading before the meeting.",
-    name: 'Product consultant',
+      'Before a readiness review, I need everyone aligned on what changed since the last sync. Sunny reads the pile so the room can focus on decisions, not catch-up.',
+    name: 'Mission integration engineer',
     tag: 'SpaceX',
   },
 ];
