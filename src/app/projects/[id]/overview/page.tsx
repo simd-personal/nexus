@@ -18,6 +18,7 @@ import { formatRelativeTime } from '@/lib/utils';
 import { Sun, AlertTriangle, Users, MapPin, CheckSquare } from 'lucide-react';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { DeleteProjectButton } from '@/components/project/DeleteProjectButton';
+import { EntityMentionChips } from '@/components/project/EntityMentionChips';
 import { ProjectRelevancePanel } from '@/components/project/ProjectRelevancePanel';
 
 export default async function ProjectOverviewPage({
@@ -160,21 +161,23 @@ export default async function ProjectOverviewPage({
           {people.length > 0 && (
             <Card>
               <CardHeader title="People Mentioned" description="Click a name to find where they're mentioned" />
-              <div className="flex flex-wrap gap-2">
-                {people.map((p) => (
-                  <EntityChip key={p.id} projectId={project.id} name={p.name} />
-                ))}
-              </div>
+              <EntityMentionChips
+                projectId={project.id}
+                entities={people}
+                type="person"
+                includeSubProjects={includeSubProjects}
+              />
             </Card>
           )}
           {facilities.length > 0 && (
             <Card>
               <CardHeader title="Facilities / Locations" description="Click a place to find where it's mentioned" />
-              <div className="flex flex-wrap gap-2">
-                {facilities.map((f) => (
-                  <EntityChip key={f.id} projectId={project.id} name={f.name} />
-                ))}
-              </div>
+              <EntityMentionChips
+                projectId={project.id}
+                entities={facilities}
+                type="facility"
+                includeSubProjects={includeSubProjects}
+              />
             </Card>
           )}
         </div>
@@ -222,17 +225,6 @@ function dedupeEntities<T extends EntityRow>(rows: T[]): T[] {
     unique.push(row);
   }
   return unique;
-}
-
-function EntityChip({ projectId, name }: { projectId: string; name: string }) {
-  return (
-    <Link
-      href={`/projects/${projectId}/search?q=${encodeURIComponent(name)}`}
-      className="rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700 transition-colors hover:bg-gray-900 hover:text-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 dark:bg-[var(--ud-cloud)] dark:text-gray-300 dark:hover:bg-amber-500 dark:hover:text-gray-900 dark:focus:ring-offset-[var(--ud-mist)]"
-    >
-      {name}
-    </Link>
-  );
 }
 
 function GlanceItem({ icon: Icon, label, value, hint }: {
