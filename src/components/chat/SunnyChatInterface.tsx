@@ -253,6 +253,8 @@ export function SunnyChatInterface({
   const sendingRef = useRef(false);
   const sessionsLoadedRef = useRef(sessionsCacheFresh(scopeKey));
   const restoredRef = useRef(false);
+  // Hidden honeypot input — real users never fill it; bots scraping the DOM often do.
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const sessionIdRef = useRef<string | undefined>(initialSessionId ?? cachedScope.activeSessionId);
   const projectIdRef = useRef<string | undefined>(projectId);
   const scopeKeyRef = useRef(scopeKey);
@@ -572,6 +574,7 @@ export function SunnyChatInterface({
       : mode === 'search'
         ? '/api/search/stream'
         : '/api/chat/stream';
+    const honeypot = honeypotRef.current?.value ?? '';
     const body = isPageGenerationMode(mode)
       ? {
           project_id: projectId,
@@ -579,6 +582,7 @@ export function SunnyChatInterface({
           session_id: activeSessionId,
           type: mode,
           regenerate,
+          honeypot,
         }
       : mode === 'search'
         ? {
@@ -588,6 +592,7 @@ export function SunnyChatInterface({
             session_id: activeSessionId,
             model_preference: modelPreference,
             regenerate,
+            honeypot,
           }
         : {
             project_id: projectId,
@@ -595,6 +600,7 @@ export function SunnyChatInterface({
             session_id: activeSessionId,
             model_preference: modelPreference,
             regenerate,
+            honeypot,
           };
 
     let meta: Record<string, unknown> = {};
@@ -1090,6 +1096,16 @@ export function SunnyChatInterface({
               }}
               className="relative flex items-end gap-2 rounded-2xl border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] p-2 shadow-sm focus-within:border-gray-300 dark:focus-within:border-gray-500 focus-within:ring-2 focus-within:ring-gray-200 dark:focus-within:ring-gray-600"
             >
+              {/* Honeypot: hidden from humans, hidden from a11y tree. Bots that fill it get cooled down. */}
+              <input
+                ref={honeypotRef}
+                type="text"
+                name="company_website"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="absolute -left-[9999px] h-0 w-0 opacity-0"
+              />
               <textarea
                 ref={textareaRef}
                 value={input}

@@ -5,6 +5,8 @@ import { streamPageBrief, streamPagePlaybook } from '@/lib/ai/page-generation';
 import { getProjectContext } from '@/lib/generate/context';
 import { loadSessionHistory } from '@/lib/chat/memory';
 import { deleteLastAssistantMessage, getOrCreateSession, saveChatMessage } from '@/lib/chat/sessions';
+import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
+import { guardAiRequest } from '@/lib/security/guard';
 import { encodeSse } from '@/lib/sse';
 
 type PageGenerationType = 'brief' | 'playbook';
@@ -16,7 +18,7 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const { project_id, message, session_id, type, regenerate } = await request.json();
+  const { project_id, message, session_id, type, regenerate, honeypot } = await request.json();
   if (!project_id || !message?.trim() || (type !== 'brief' && type !== 'playbook')) {
     return new Response(JSON.stringify({ error: 'Project ID, message, and type (brief|playbook) required' }), {
       status: 400,
@@ -25,9 +27,28 @@ export async function POST(request: NextRequest) {
 
   const pageType = type as PageGenerationType;
 
+  const billing = await getBillingContextForUser(user.id);
+  const guardResponse = await guardAiRequest({
+    request,
+    userId: user.id,
+    isPro: billing.isPro,
+    cost: 'generate',
+    message,
+    honeypot,
+  });
+  if (guardResponse) return guardResponse;
+
   const { project, context } = await getProjectContext(project_id, supabase);
   if (!project) {
     return new Response(JSON.stringify({ error: 'Project not found' }), { status: 404 });
+  }
+
+  const quota = await checkChatQuota(user.id, billing);
+  if (quota.exceeded) {
+    return new Response(JSON.stringify({ error: quota.message, upgradeRequired: true }), {
+      status: 402,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const stream = new ReadableStream({

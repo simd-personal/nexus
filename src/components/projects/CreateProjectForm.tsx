@@ -35,6 +35,7 @@ export function CreateProjectForm({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState(parentProject?.id ?? '');
   const router = useRouter();
 
@@ -48,6 +49,7 @@ export function CreateProjectForm({
     e.preventDefault();
     setLoading(true);
     setError('');
+    setUpgradeRequired(false);
 
     const formData = new FormData(e.currentTarget);
     if (lockedParent) {
@@ -67,6 +69,7 @@ export function CreateProjectForm({
 
     if (result.error) {
       setError(result.error);
+      setUpgradeRequired(Boolean(result.upgradeRequired));
       setLoading(false);
     } else if (result.data) {
       router.push(`/projects/${result.data.id}/overview`);
@@ -159,7 +162,20 @@ export function CreateProjectForm({
           className={`${INPUT_CLASS} resize-none`}
         />
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="space-y-2">
+          <p className="text-sm text-red-600">{error}</p>
+          {upgradeRequired && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => router.push('/upgrade?plan=pro')}
+            >
+              Upgrade to Pro
+            </Button>
+          )}
+        </div>
+      )}
       <div className="flex gap-2">
         <Button type="submit" loading={loading} size={variant === 'compact' ? 'sm' : 'md'}>
           {lockedParent || selectedParentId ? 'Create workstream' : 'Create Project'}

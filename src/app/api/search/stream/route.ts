@@ -23,6 +23,8 @@ import {
 import { SEARCH_RETRIEVAL_LIMIT, PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
 import { buildHistoryNote, loadSessionHistory } from '@/lib/chat/memory';
+import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
+import { guardAiRequest } from '@/lib/security/guard';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
@@ -32,9 +34,28 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const { query, project_id, source_type, session_id, model_preference, regenerate, limit = SEARCH_RETRIEVAL_LIMIT } = await request.json();
+  const { query, project_id, source_type, session_id, model_preference, regenerate, honeypot, limit = SEARCH_RETRIEVAL_LIMIT } = await request.json();
   if (!query?.trim()) {
     return new Response(JSON.stringify({ error: 'Query required' }), { status: 400 });
+  }
+
+  const billing = await getBillingContextForUser(user.id);
+  const guardResponse = await guardAiRequest({
+    request,
+    userId: user.id,
+    isPro: billing.isPro,
+    cost: 'search',
+    message: query,
+    honeypot,
+  });
+  if (guardResponse) return guardResponse;
+
+  const quota = await checkChatQuota(user.id, billing);
+  if (quota.exceeded) {
+    return new Response(JSON.stringify({ error: quota.message, upgradeRequired: true }), {
+      status: 402,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const scopedProjectId = normalizeProjectId(project_id);

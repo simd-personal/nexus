@@ -8,6 +8,8 @@ import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
 import { PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
 import { loadSessionHistory } from '@/lib/chat/memory';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
+import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
+import { guardAiRequest } from '@/lib/security/guard';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
@@ -17,10 +19,21 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const { project_id, message, session_id, model_preference, regenerate } = await request.json();
+  const { project_id, message, session_id, model_preference, regenerate, honeypot } = await request.json();
   if (!project_id || !message?.trim()) {
     return new Response(JSON.stringify({ error: 'Project ID and message required' }), { status: 400 });
   }
+
+  const billing = await getBillingContextForUser(user.id);
+  const guardResponse = await guardAiRequest({
+    request,
+    userId: user.id,
+    isPro: billing.isPro,
+    cost: 'chat',
+    message,
+    honeypot,
+  });
+  if (guardResponse) return guardResponse;
 
   const { data: project } = await supabase
     .from('projects')
@@ -30,6 +43,14 @@ export async function POST(request: NextRequest) {
 
   if (!project) {
     return new Response(JSON.stringify({ error: 'Project not found' }), { status: 404 });
+  }
+
+  const quota = await checkChatQuota(user.id, billing);
+  if (quota.exceeded) {
+    return new Response(JSON.stringify({ error: quota.message, upgradeRequired: true }), {
+      status: 402,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const stream = new ReadableStream({

@@ -6,9 +6,10 @@ import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
 import { PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
 import {
-  countUserChatMessagesThisMonth,
+  checkChatQuota,
   getBillingContextForUser,
 } from '@/lib/billing/limits';
+import { guardAiRequest } from '@/lib/security/guard';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { project_id, message } = await request.json();
+    const { project_id, message, honeypot } = await request.json();
     if (!project_id || !message?.trim()) {
       return NextResponse.json({ error: 'Project ID and message required' }, { status: 400 });
     }
@@ -34,18 +35,23 @@ export async function POST(request: NextRequest) {
     }
 
     const billing = await getBillingContextForUser(user.id);
-    if (!billing.isPro && billing.chatMessageLimit !== null) {
-      const used = await countUserChatMessagesThisMonth(user.id);
-      if (used >= billing.chatMessageLimit) {
-        return NextResponse.json(
-          {
-            error:
-              'Free plan includes 25 Sunny messages per month. Upgrade to Pro for unlimited chat.',
-            upgradeRequired: true,
-          },
-          { status: 402 }
-        );
-      }
+
+    const guardResponse = await guardAiRequest({
+      request,
+      userId: user.id,
+      isPro: billing.isPro,
+      cost: 'chat',
+      message,
+      honeypot,
+    });
+    if (guardResponse) return guardResponse;
+
+    const quota = await checkChatQuota(user.id, billing);
+    if (quota.exceeded) {
+      return NextResponse.json(
+        { error: quota.message, upgradeRequired: true },
+        { status: 402 }
+      );
     }
 
     const { data: history } = await supabase

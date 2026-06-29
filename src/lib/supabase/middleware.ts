@@ -3,6 +3,17 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isPublicMarketingPath } from '@/lib/marketing/seo';
 
 export async function updateSession(request: NextRequest) {
+  // Supabase auth links (email confirm) carry a `?code=` to exchange for a
+  // session. If the project's redirect allow-list sends it anywhere other than
+  // our callback (e.g. the site root), forward it so the code is still
+  // exchanged instead of stranding the user on a page that ignores it.
+  const incomingCode = request.nextUrl.searchParams.get('code');
+  if (incomingCode && request.nextUrl.pathname !== '/auth/callback') {
+    const callbackUrl = request.nextUrl.clone();
+    callbackUrl.pathname = '/auth/callback';
+    return NextResponse.redirect(callbackUrl);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

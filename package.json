@@ -19,7 +19,8 @@
     "test:all": "vitest run && tsx scripts/test-uploads.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "stripe:setup": "tsx scripts/stripe-setup-products.ts"
+    "stripe:setup": "tsx scripts/stripe-setup-products.ts",
+    "resend:setup": "tsx scripts/resend-setup.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.106.0",
@@ -38,6 +39,7 @@
     "react-dom": "19.2.4",
     "react-markdown": "^9.1.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.16.0",
     "stripe": "^22.3.0",
     "tailwind-merge": "^3.6.0",
     "uuid": "^14.0.1",

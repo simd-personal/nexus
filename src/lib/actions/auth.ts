@@ -11,6 +11,7 @@ import {
   mapAuthErrorMessage,
 } from '@/lib/auth/auth-errors';
 import { recoverAccountAfterEmailRateLimit } from '@/lib/auth/email-rate-limit-recovery';
+import { sendWelcomeEmail } from '@/lib/email/send-welcome';
 
 export async function signUpIndividual(input: {
   email: string;
@@ -81,7 +82,10 @@ export async function signUpIndividual(input: {
     };
   }
 
-  if (data.session) return { success: true, immediate: true };
+  if (data.session) {
+    await sendWelcomeEmail({ email, fullName });
+    return { success: true, immediate: true, welcome: true };
+  }
   return {
     success: true,
     message:

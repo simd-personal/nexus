@@ -9,8 +9,8 @@ import {
   signInIndividual,
   signUpIndividual,
 } from '@/lib/actions/auth';
-import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
-import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
+import { APP_NAME, BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { UpperDeckLogo, UpperDeckIcon } from '@/components/brand/UpperDeckLogo';
 import { ArrowRight, Check, Lock, Users } from 'lucide-react';
 
 type AuthMode = 'signin' | 'signup' | 'forgot';
@@ -172,6 +172,7 @@ export default function LoginPageClient() {
       : 'signin'
   );
   const [loading, setLoading] = useState(false);
+  const [onboarding, setOnboarding] = useState(false);
   const [message, setMessage] = useState('');
   const authError = searchParams.get('error') === 'auth';
   const checkoutPlan = searchParams.get('plan');
@@ -214,7 +215,9 @@ export default function LoginPageClient() {
         if (result.error) {
           setMessage(result.error);
         } else if (result.immediate) {
-          postAuthRedirect();
+          setOnboarding(true);
+          window.setTimeout(postAuthRedirect, 2600);
+          return;
         } else if (result.recoveredFromRateLimit) {
           setMode('signin');
           setMessage(result.message ?? 'Account ready. Sign in with your email and password.');
@@ -251,6 +254,30 @@ export default function LoginPageClient() {
     }
     setMessage(result.error ?? result.message ?? 'Confirmation email sent.');
     setLoading(false);
+  }
+
+  if (onboarding) {
+    return (
+      <div className="auth-onboarding" role="status" aria-live="polite">
+        <div className="auth-onboarding-blob-a" />
+        <div className="auth-onboarding-blob-b" />
+        <div className="auth-onboarding-card">
+          <div className="auth-onboarding-mark">
+            <span className="auth-onboarding-ring" />
+            <UpperDeckIcon size={56} className="auth-onboarding-icon" />
+          </div>
+          <h1 className="auth-onboarding-title">Welcome to {APP_NAME}</h1>
+          <p className="auth-onboarding-sub">
+            You can confirm your email with us later. Let’s get you started.
+          </p>
+          <div className="auth-onboarding-dots" aria-hidden>
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

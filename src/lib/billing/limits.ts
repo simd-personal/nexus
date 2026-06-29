@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { FREE_CHAT_MESSAGES_PER_MONTH, FREE_PROJECT_LIMIT } from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
 
+export type BillingContext = Awaited<ReturnType<typeof getBillingContextForUser>>;
+
 export async function getBillingContextForUser(userId: string) {
   const supabase = await createClient();
   const [{ data: profile }, { data: { user } }] = await Promise.all([
@@ -39,6 +41,31 @@ export async function countUserProjects(userId: string): Promise<number> {
     .eq('owner_id', userId);
 
   return count ?? 0;
+}
+
+/**
+ * Shared gate for Sunny chat/search/generate. Returns whether the free monthly
+ * message quota is exhausted, plus a user-facing message with an upgrade link
+ * (rendered as markdown in the chat bubble).
+ */
+export async function checkChatQuota(
+  userId: string,
+  billing?: BillingContext
+): Promise<{ exceeded: boolean; message: string }> {
+  const ctx = billing ?? (await getBillingContextForUser(userId));
+  if (ctx.isPro || ctx.chatMessageLimit === null) {
+    return { exceeded: false, message: '' };
+  }
+
+  const used = await countUserChatMessagesThisMonth(userId);
+  if (used >= ctx.chatMessageLimit) {
+    return {
+      exceeded: true,
+      message: `You've used all ${ctx.chatMessageLimit} free Sunny messages this month. [Upgrade to Pro](/upgrade?plan=pro) for unlimited chat and projects.`,
+    };
+  }
+
+  return { exceeded: false, message: '' };
 }
 
 export async function countUserChatMessagesThisMonth(userId: string): Promise<number> {
