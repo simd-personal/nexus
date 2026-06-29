@@ -311,7 +311,7 @@ export function GettingStartedClient({
             Getting started
           </p>
           <h1 className="app-page-title text-2xl">
-            Hire {AI_EMPLOYEE_NAME} in three steps
+            Onboard {AI_EMPLOYEE_NAME} in three steps
           </h1>
         </div>
       </div>

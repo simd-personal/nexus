@@ -18,8 +18,8 @@ const AUDIENCES: Audience[] = [
     id: 'solo',
     tab: 'Solo consultants',
     icon: UserRound,
-    title: 'Your first hire, on client number one',
-    body: 'Sunny reads every deck, email, and call so you walk into client work prepared, without hiring an analyst.',
+    title: 'Onboard Sunny on client number one',
+    body: 'Sunny reads every deck, email, and call so you walk into client work prepared, without adding headcount.',
     points: [
       'A brief for every project, refreshed as files land',
       'Catch contradictions before your client does',

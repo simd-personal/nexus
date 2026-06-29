@@ -5,7 +5,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'About',
   description:
-    `UpperDeck is where you hire ${AI_EMPLOYEE_NAME}, an AI employee for client intelligence. Built for consultants and operators who need more delivery capacity.`,
+    `UpperDeck is where you onboard ${AI_EMPLOYEE_NAME}, an AI employee for client intelligence. Built for consultants and operators who need more delivery capacity.`,
   path: '/about',
   keywords: ['about UpperDeck', 'AI employees', 'client intelligence company'],
 });

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 export const metadata = createMarketingMetadata({
   title: 'UpperDeck',
   description:
-    'Deliver more with AI employees. Hire Sunny for client work. Upload decks, emails, and meetings; get briefs and risks with citations. Latest GPT and Claude included.',
+    'Deliver more with AI employees. Onboard Sunny for client work. Upload decks, emails, and meetings; get briefs and risks with citations. Latest GPT and Claude included.',
   path: '/',
   keywords: [
     'AI employees',

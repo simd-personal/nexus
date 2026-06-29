@@ -45,7 +45,7 @@ export function HomePage() {
             <p className="marketing-hero-eyebrow mt-6">{BRAND_TAGLINE}</p>
             <h1 className="marketing-hero-title fun-hero-title">
               Stop reading the pile.{' '}
-              <span className="fun-gradient-text">Hire {AI_EMPLOYEE_NAME}.</span>
+              <span className="fun-gradient-text">Onboard {AI_EMPLOYEE_NAME}.</span>
             </h1>
             <p className="marketing-hero-body">{SUNNY_HERO_LINE}</p>
             <p className="marketing-hero-body mt-4">{TAGLINE}</p>
@@ -176,7 +176,7 @@ export function HomePage() {
         <div className="marketing-container">
           <Reveal>
             <SectionEyebrow>Pricing</SectionEyebrow>
-            <SectionTitle className="mt-3">Hire free. Upgrade at client number two.</SectionTitle>
+            <SectionTitle className="mt-3">Start free. Upgrade at client number two.</SectionTitle>
             <p className="marketing-section-body mt-4 max-w-2xl">
               Start free on one client project at no cost. Pro unlocks unlimited projects
               and unlimited {AI_EMPLOYEE_NAME}, latest models included.
@@ -236,7 +236,7 @@ export function HomePage() {
             <div className="marketing-org-banner">
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-[var(--brand-accent)]">
+                  <p className="marketing-eyebrow">
                     For teams and organizations
                   </p>
                   <h3 className="mt-2 text-xl font-semibold text-[var(--ud-graphite)]">

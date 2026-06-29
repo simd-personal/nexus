@@ -16,7 +16,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Product',
   description:
-    'Deliver more with AI employees. Hire Sunny for client work. Ingest meetings and files, get briefs, decks, and follow ups with citations. Latest GPT and Claude included.',
+    'Deliver more with AI employees. Onboard Sunny for client work. Ingest meetings and files, get briefs, decks, and follow ups with citations. Latest GPT and Claude included.',
   path: '/product',
   keywords: [
     'AI employees',

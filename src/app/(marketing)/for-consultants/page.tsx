@@ -7,7 +7,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'For consultants',
   description:
-    'Hire Sunny, an AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow ups with cited client intelligence.',
+    'Onboard Sunny, an AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow ups with cited client intelligence.',
   path: '/for-consultants',
   keywords: [
     'AI employee for consultants',
@@ -22,7 +22,7 @@ export default function ForConsultantsPage() {
     <MarketingPageLayout
       eyebrow="Solutions"
       title="AI employees for consultants juggling multiple clients"
-      description={`You cannot afford to miss a timeline shift, a contradictory deck, or a follow up buried in email. Hire ${AI_EMPLOYEE_NAME}, an AI employee who keeps every engagement separate and gets more useful as UpperDeck ships new features.`}
+      description={`You cannot afford to miss a timeline shift, a contradictory deck, or a follow up buried in email. Onboard ${AI_EMPLOYEE_NAME}, an AI employee who keeps every engagement separate and gets more useful as UpperDeck ships new features.`}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container grid gap-12 lg:grid-cols-2">
