@@ -792,6 +792,75 @@ html.dark .docx-preview td {
   background: var(--ud-mist);
 }
 
+.marketing-btn-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(180, 138, 26, 0.5);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3d2a04;
+  background: linear-gradient(135deg, #fde68a 0%, #fbbf24 42%, #f59e0b 72%, #fcd34d 100%);
+  background-size: 220% 220%;
+  box-shadow:
+    0 6px 22px rgba(245, 158, 11, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(180, 83, 9, 0.22);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+  animation: marketing-gold-shimmer 3.2s ease-in-out infinite;
+}
+
+.marketing-btn-gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 62%
+  );
+  transform: translateX(-130%);
+  animation: marketing-gold-sheen 2.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.marketing-btn-gold > * {
+  position: relative;
+  z-index: 1;
+}
+
+.marketing-btn-gold:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 12px 34px rgba(245, 158, 11, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(180, 83, 9, 0.28);
+}
+
+@keyframes marketing-gold-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes marketing-gold-sheen {
+  0%, 18% { transform: translateX(-130%); }
+  55%, 100% { transform: translateX(130%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-btn-gold,
+  .marketing-btn-gold::after {
+    animation: none;
+  }
+}
+
 .marketing-btn-ghost {
   display: inline-flex;
   align-items: center;
@@ -821,7 +890,8 @@ html.dark .docx-preview td {
 
 @media (max-width: 639px) {
   .marketing-btn-primary,
-  .marketing-btn-secondary {
+  .marketing-btn-secondary,
+  .marketing-btn-gold {
     justify-content: center;
     width: 100%;
   }

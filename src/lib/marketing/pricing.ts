@@ -67,6 +67,12 @@ export const B2C_PRICING: PricingTier[] = [
   },
 ];
 
+export function pricingButtonClass(tier: PricingTier): string {
+  if (tier.id === 'pro-annual') return 'marketing-btn-gold';
+  if (tier.highlighted) return 'marketing-btn-primary';
+  return 'marketing-btn-secondary';
+}
+
 export const B2B_CAPABILITIES = [
   'Multi tenant organization workspace',
   'Admin roles & access request approvals',

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
 import { LegalPolicyLinks } from '@/components/marketing/LegalPolicyLinks';
-import { B2B_CAPABILITIES, B2C_PRICING } from '@/lib/marketing/pricing';
+import { B2B_CAPABILITIES, B2C_PRICING, pricingButtonClass } from '@/lib/marketing/pricing';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
@@ -54,11 +54,9 @@ export default function PricingPage() {
                 </ul>
                 <Link
                   href={tier.ctaHref}
-                  className={`mt-8 inline-flex w-full items-center justify-center gap-2 ${
-                    tier.highlighted ? 'marketing-btn-primary' : 'marketing-btn-secondary'
-                  }`}
+                  className={`mt-8 inline-flex w-full items-center justify-center gap-2 ${pricingButtonClass(tier)}`}
                 >
-                  {tier.cta}
+                  <span>{tier.cta}</span>
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
