@@ -12,6 +12,7 @@ import { StatusBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
 import { needsProcessingKick } from '@/lib/processing/progress';
+import { fileStatusLabel } from '@/lib/processing/user-messages';
 import { kickFileProcessing } from '@/lib/upload/client';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
@@ -143,14 +144,18 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     status === 'uploaded_unprocessed' || status === 'failed' || status === 'processed';
 
   function fileStatusBadge(file: FileRecord) {
+    const tone =
+      file.status === 'processed' ? 'healthy' :
+      file.status === 'processing' || file.status === 'pending' ? 'watch' :
+      file.status === 'failed' ? 'critical' :
+      file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) ? 'watch' :
+      'needs_review';
+
     return (
-      <StatusBadge status={
-        file.status === 'processed' ? 'healthy' :
-        file.status === 'processing' || file.status === 'pending' ? 'watch' :
-        file.status === 'failed' ? 'critical' :
-        file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) ? 'watch' :
-        'needs_review'
-      } />
+      <StatusBadge
+        status={tone}
+        label={fileStatusLabel(file.status)}
+      />
     );
   }
 
@@ -287,7 +292,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                     <span className="hidden sm:inline">{fileStatusBadge(file)}</span>
                   </div>
 
-                  {(file.status === 'processing' || file.status === 'pending') && (
+                  {(file.status === 'processing' || file.status === 'pending' || file.status === 'failed') && (
                     <FileProcessingProgress file={file} />
                   )}
                   {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (

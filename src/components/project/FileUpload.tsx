@@ -7,11 +7,18 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import {
   isFileDragEvent,
-  MAX_UPLOAD_SIZE_LABEL,
   uploadProjectFiles,
   kickFileProcessing,
   UPLOAD_ACCEPT,
 } from '@/lib/upload/client';
+import {
+  formatUploadApiError,
+  pastedContentSuccessMessage,
+  UPLOAD_ACCEPTED_TYPES_HINT,
+  UPLOAD_BACKGROUND_NOTE,
+  UPLOAD_MAX_SIZE_HINT,
+  uploadSuccessMessage,
+} from '@/lib/upload/user-messages';
 
 interface FileUploadProps {
   projectId: string;
@@ -43,20 +50,21 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
 
       if (uploaded.length > 0) {
         const count = zipExtracted ? fileIds.length : uploaded.length;
-        let msg =
-          count === 1
-            ? `${uploaded[0]} uploaded. Sunny is processing...`
-            : `${count} files uploaded. Sunny is processing...`;
-        if (zipExtracted) {
-          msg = `Extracted ${count} files from ${uploaded[0]}. Sunny is processing...`;
+        let msg = uploadSuccessMessage({
+          count,
+          zipExtracted,
+          archiveName: zipExtracted ? uploaded[0] : undefined,
+          sizeHint,
+        });
+        if (errors.length > 0) {
+          msg += ` Some files were skipped: ${errors.join('; ')}`;
         }
-        if (sizeHint) msg += ` ${sizeHint}`;
         setMessage(msg);
         onUploadComplete?.();
         window.dispatchEvent(new CustomEvent('project-files-uploaded'));
       }
 
-      if (errors.length > 0) {
+      if (errors.length > 0 && uploaded.length === 0) {
         setMessage(`Error: ${errors[0]}`);
       }
     } catch {
@@ -86,11 +94,11 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
       const contentType = res.headers.get('content-type') ?? '';
       const data = contentType.includes('application/json')
         ? await res.json()
-        : { error: res.status === 401 ? 'Please sign in again.' : 'Upload failed' };
-      if (data.error) {
-        setMessage(`Error: ${data.error}`);
+        : {};
+      if (!res.ok || data.error) {
+        setMessage(`Error: ${formatUploadApiError(res.status, data)}`);
       } else {
-        setMessage('Content uploaded. Sunny is processing...');
+        setMessage(pastedContentSuccessMessage());
         setPasteText('');
         setPasteMode(null);
         onUploadComplete?.();
@@ -158,7 +166,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
             Drag and drop files here
           </p>
           <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            Any file type works. Max {MAX_UPLOAD_SIZE_LABEL} per file. Sunny fully processes .txt, .md, .pdf, .docx, .csv, images, transcripts, audio, .eml, and .zip archives.
+            {UPLOAD_ACCEPTED_TYPES_HINT}. {UPLOAD_MAX_SIZE_HINT}. {UPLOAD_BACKGROUND_NOTE}
           </p>
           <label className="inline-block cursor-pointer">
             <input

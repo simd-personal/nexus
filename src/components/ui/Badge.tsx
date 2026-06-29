@@ -27,7 +27,13 @@ export function Badge({ children, variant = 'default', className }: BadgeProps) 
   );
 }
 
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({
+  status,
+  label,
+}: {
+  status: string;
+  label?: string;
+}) {
   const map: Record<string, { label: string; variant: BadgeProps['variant'] }> = {
     healthy: { label: 'Healthy', variant: 'success' },
     watch: { label: 'Watch', variant: 'warning' },
@@ -42,7 +48,7 @@ export function StatusBadge({ status }: { status: string }) {
   };
 
   const config = map[status] ?? { label: status, variant: 'default' as const };
-  return <Badge variant={config.variant}>{config.label}</Badge>;
+  return <Badge variant={config.variant}>{label ?? config.label}</Badge>;
 }
 
 export function SeverityBadge({ severity }: { severity: string }) {

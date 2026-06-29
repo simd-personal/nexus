@@ -7,6 +7,7 @@ import {
   maxBytesForUploadKind,
   validateUploadByteSize,
 } from '@/lib/upload/limits';
+import { formatUploadApiError } from '@/lib/upload/user-messages';
 
 export function isFileDragEvent(event: DragEvent | React.DragEvent): boolean {
   const dataTransfer = 'dataTransfer' in event ? event.dataTransfer : null;
@@ -54,22 +55,38 @@ async function parseUploadResponse(res: Response): Promise<{
   data?: unknown;
   zip_extracted?: boolean;
   skipped?: string[];
+  retry_after?: number;
+  cooldown?: boolean;
 }> {
   const contentType = res.headers.get('content-type') ?? '';
 
   if (contentType.includes('application/json')) {
-    return res.json();
+    const body = (await res.json()) as {
+      error?: string;
+      retry_after?: number;
+      cooldown?: boolean;
+      data?: unknown;
+      zip_extracted?: boolean;
+      skipped?: string[];
+    };
+    if (!res.ok) {
+      return {
+        ...body,
+        error: formatUploadApiError(res.status, body),
+      };
+    }
+    return body;
   }
 
   if (res.status === 401) {
-    return { error: 'Please sign in again to upload files.' };
+    return { error: formatUploadApiError(401) };
   }
 
   if (res.redirected || res.status === 307 || res.status === 302) {
     return { error: 'Session expired. Please sign in again.' };
   }
 
-  return { error: `Upload failed (${res.status})` };
+  return { error: formatUploadApiError(res.status) };
 }
 
 export interface UploadFileResult {

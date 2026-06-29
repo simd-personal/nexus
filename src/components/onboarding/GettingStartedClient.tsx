@@ -21,6 +21,15 @@ import {
 import { ONBOARDING_SAMPLE_MEETING_NOTES } from '@/lib/onboarding/sample-content';
 import type { OnboardingStep } from '@/lib/onboarding/status';
 import {
+  getStageHelperText,
+  onboardingProcessingSubtitle,
+  PROCESSING_BACKGROUND_NOTE,
+} from '@/lib/processing/user-messages';
+import {
+  formatUploadApiError,
+  UPLOAD_MAX_SIZE_HINT,
+} from '@/lib/upload/user-messages';
+import {
   getFilesFromDataTransfer,
   isFileDragEvent,
   kickFileProcessing,
@@ -68,6 +77,7 @@ export function GettingStartedClient({
   const [progressLabel, setProgressLabel] = useState('Queued for processing…');
   const [progressPercent, setProgressPercent] = useState(0);
   const [sizeHint, setSizeHint] = useState<string | null>(null);
+  const [progressHelper, setProgressHelper] = useState<string | null>(null);
 
   useEffect(() => {
     setStep(initialStep);
@@ -103,8 +113,10 @@ export function GettingStartedClient({
           };
 
           if (step === 'processing') {
-            setProgressLabel(data.progress?.label ?? 'Sunny is reading…');
+            const label = data.progress?.label ?? 'Sunny is reading…';
+            setProgressLabel(label);
             setProgressPercent(data.progress?.percent ?? Math.min(90, 10 + attempt * 2));
+            setProgressHelper(getStageHelperText(undefined, { label }));
           }
 
           if (['processed', 'watch', 'critical'].includes(data.status)) {
@@ -117,7 +129,9 @@ export function GettingStartedClient({
 
           if (data.status === 'failed' && step === 'processing' && uploadedNames.length <= 1) {
             if (!cancelled) {
-              setError('One of your files failed to process. You can continue and retry from the project Files tab.');
+              setError(
+                'This file could not be processed. You can continue to your project and tap Reprocess on the Files tab to try again.'
+              );
             }
             return;
           }
@@ -182,7 +196,7 @@ export function GettingStartedClient({
       const data = await response.json();
 
       if (!response.ok || data.error) {
-        setError(data.error ?? 'Upload failed');
+        setError(formatUploadApiError(response.status, data));
         setLoading(false);
         return;
       }
@@ -373,8 +387,8 @@ export function GettingStartedClient({
             Step 2 · Add files for {AI_EMPLOYEE_NAME} to read
           </h2>
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-            Upload one file, many files, a whole folder, or a zip archive. Large uploads keep
-            processing in the background — you won&apos;t need to wait on this screen.
+            Upload one file, many files, a whole folder, or a zip archive. {UPLOAD_MAX_SIZE_HINT}.
+            {PROCESSING_BACKGROUND_NOTE}
           </p>
 
           <div
@@ -488,9 +502,7 @@ export function GettingStartedClient({
           </div>
 
           <p className="mt-4 text-sm text-gray-600 dark:text-gray-300">
-            {uploadedNames.length > 1
-              ? 'Large batches can take several minutes. Sunny keeps working in the background.'
-              : 'Extracting text, indexing for search, and drafting your first brief…'}
+            {onboardingProcessingSubtitle(uploadedNames.length)}
           </p>
 
           {sizeHint && (
@@ -499,12 +511,18 @@ export function GettingStartedClient({
             </p>
           )}
 
+          {progressHelper && (
+            <p className="mx-auto mt-3 max-w-md text-xs text-gray-500 dark:text-gray-400">
+              {progressHelper}
+            </p>
+          )}
+
           <Button type="button" className="mt-6" onClick={continueToProject}>
             Continue — processing runs in background
             <ArrowRight className="h-4 w-4" />
           </Button>
           <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            You can explore your project now. Check the Overview for Sunny&apos;s brief when it&apos;s ready.
+            {PROCESSING_BACKGROUND_NOTE} Check the Overview for Sunny&apos;s brief when it&apos;s ready.
           </p>
         </Card>
       )}
@@ -540,8 +558,8 @@ export function GettingStartedClient({
 
           {!summary && uploadedNames.length > 0 && (
             <p className="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-              Sunny is still reading your files. Your brief will appear on the project Overview when
-              the first batch finishes.
+              Sunny is still reading your files in the background. Your brief will appear on the
+              project Overview when the first batch finishes — usually within a few minutes.
             </p>
           )}
 

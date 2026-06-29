@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 import { PHOTO_CAPTURE_ACCEPT, uploadProjectFile, kickFileProcessing } from '@/lib/upload/client';
+import { uploadSuccessMessage } from '@/lib/upload/user-messages';
 
 type PhotoCaptureUploadProps = {
   projectId: string;
@@ -47,7 +48,7 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
         return;
       }
       if (result.fileId) kickFileProcessing(result.fileId);
-      onMessage?.(`${pendingFile.name} saved to this project. Sunny is processing...`);
+      onMessage?.(uploadSuccessMessage({ count: 1 }));
       clearPreview();
       onUploadComplete?.();
       window.dispatchEvent(new CustomEvent('project-files-uploaded'));

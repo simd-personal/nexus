@@ -5,6 +5,7 @@ import {
   isFileDragEvent,
   uploadProjectFiles,
 } from '@/lib/upload/client';
+import { uploadSuccessMessage } from '@/lib/upload/user-messages';
 import { Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -38,13 +39,15 @@ export function ProjectDropZone({
 
       uploadingRef.current = true;
       try {
-        const { uploaded, errors } = await uploadProjectFiles(projectId, files);
+        const { uploaded, errors, zipExtracted, fileIds } = await uploadProjectFiles(projectId, files);
 
         if (uploaded.length > 0) {
           showToast(
-            uploaded.length === 1
-              ? `${uploaded[0]} uploaded. Sunny is processing…`
-              : `${uploaded.length} files uploaded. Sunny is processing…`
+            uploadSuccessMessage({
+              count: zipExtracted ? fileIds.length : uploaded.length,
+              zipExtracted,
+              archiveName: zipExtracted ? uploaded[0] : undefined,
+            })
           );
           router.refresh();
           window.dispatchEvent(new CustomEvent('project-files-uploaded'));
