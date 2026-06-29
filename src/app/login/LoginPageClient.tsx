@@ -65,6 +65,7 @@ function FormField({
   autoComplete,
   value,
   onChange,
+  placeholder,
 }: {
   id: string;
   name?: string;
@@ -75,6 +76,7 @@ function FormField({
   autoComplete?: string;
   value?: string;
   onChange?: (value: string) => void;
+  placeholder?: string;
 }) {
   return (
     <div>
@@ -90,6 +92,7 @@ function FormField({
         required={required}
         minLength={minLength}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         className="auth-input"
       />
     </div>
@@ -348,15 +351,16 @@ export default function LoginPageClient({
                     type="email"
                     required
                     autoComplete="email"
+                    placeholder="you@company.com"
                   />
                   <div>
-                    <div className="mb-2 flex items-center justify-between">
+                    <div className="mb-1.5 flex items-center justify-between gap-3">
                       <label htmlFor="password" className="auth-label mb-0">
                         Password
                       </label>
                       <Link
                         href={loginHref({ mode: 'forgot', plan: checkoutPlan })}
-                        className="auth-link text-[13px]"
+                        className="auth-link shrink-0 text-[13px]"
                       >
                         Forgot password?
                       </Link>
@@ -368,6 +372,7 @@ export default function LoginPageClient({
                       required
                       minLength={8}
                       autoComplete="current-password"
+                      placeholder="Enter your password"
                       className="auth-input"
                     />
                   </div>
@@ -389,7 +394,7 @@ export default function LoginPageClient({
               {mode === 'signup' && (
                 <form action="/api/auth/sign-up" method="POST" className="mt-6 space-y-4">
                   {checkoutPlan && <input type="hidden" name="plan" value={checkoutPlan} />}
-                  <FormField id="fullName" name="fullName" label="Full name" required autoComplete="name" />
+                  <FormField id="fullName" name="fullName" label="Full name" required autoComplete="name" placeholder="Your name" />
                   <FormField
                     id="email"
                     name="email"
@@ -397,6 +402,7 @@ export default function LoginPageClient({
                     type="email"
                     required
                     autoComplete="email"
+                    placeholder="you@company.com"
                   />
                   <FormField
                     id="password"
@@ -406,6 +412,7 @@ export default function LoginPageClient({
                     required
                     minLength={8}
                     autoComplete="new-password"
+                    placeholder="At least 8 characters"
                   />
                   {message && <AuthMessage message={message} mode={mode} checkoutPlan={checkoutPlan} />}
                   <button type="submit" className="auth-submit group mt-2">
@@ -426,6 +433,7 @@ export default function LoginPageClient({
                     onChange={setEmail}
                     required
                     autoComplete="email"
+                    placeholder="you@company.com"
                   />
                   {message && <AuthMessage message={message} mode={mode} checkoutPlan={checkoutPlan} />}
                   <button type="submit" disabled={loading} className="auth-submit group mt-2">
