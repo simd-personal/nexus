@@ -12,7 +12,7 @@ import { HeroTransform } from '@/components/marketing/fun/HeroTransform';
 import { LogoMarquee } from '@/components/marketing/fun/LogoMarquee';
 import { Reveal } from '@/components/marketing/fun/Reveal';
 import { Testimonials } from '@/components/marketing/fun/Testimonials';
-import { AI_EMPLOYEE_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME, BRAND_TAGLINE, TAGLINE } from '@/lib/constants';
 import { loginHref } from '@/lib/auth/login-url';
 import { HOME_WOW_POINTS, HOME_WORKFLOW_STEPS } from '@/lib/marketing/homepage';
 import { B2C_PRICING } from '@/lib/marketing/pricing';
@@ -47,10 +47,7 @@ export function HomePage() {
               Stop reading the pile.{' '}
               <span className="fun-gradient-text">Hire {AI_EMPLOYEE_NAME}.</span>
             </h1>
-            <p className="marketing-hero-body">
-              {AI_EMPLOYEE_NAME} is your first AI employee for client work. Drop in decks, emails,
-              meetings, and notes. Walk into every call prepared.
-            </p>
+            <p className="marketing-hero-body">{TAGLINE}</p>
 
             <ul className="marketing-hero-highlights" aria-label="Key benefits">
               {HOME_WOW_POINTS.map((point) => (
@@ -181,7 +178,7 @@ export function HomePage() {
             <SectionEyebrow>Pricing</SectionEyebrow>
             <SectionTitle className="mt-3">Hire free. Upgrade at client number two.</SectionTitle>
             <p className="marketing-section-body mt-4 max-w-2xl">
-              Try your first AI employee on one client at no cost. Pro unlocks unlimited projects
+              Start free on one client project at no cost. Pro unlocks unlimited projects
               and unlimited {AI_EMPLOYEE_NAME}, latest models included.
             </p>
           </Reveal>
@@ -265,7 +262,7 @@ export function HomePage() {
         <div className="fun-cta-glow" aria-hidden />
         <div className="marketing-container relative z-10 text-center">
           <Reveal>
-            <h2 className="marketing-section-title">Hire your first AI employee today</h2>
+            <h2 className="marketing-section-title">Deliver more with AI employees today</h2>
             <p className="marketing-section-body mx-auto mt-4 max-w-xl">
               Start free. {AI_EMPLOYEE_NAME} is included and gets more capable with every release.
             </p>

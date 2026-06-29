@@ -10,11 +10,14 @@ export const APP_DOMAIN = 'upperdeck.dev';
 export const SUPPORT_EMAIL = `support@${APP_DOMAIN}`;
 export const SUPPORT_MAILTO = `mailto:${SUPPORT_EMAIL}`;
 export const AI_EMPLOYEE_NAME = 'Sunny';
-/** Brand guide tagline */
-export const BRAND_TAGLINE = 'Your first AI employee for client work';
-/** Marketing / hero copy */
+/** Primary brand tagline */
+export const BRAND_TAGLINE = 'Deliver more with AI employees.';
+/** Hero and product subline */
 export const TAGLINE =
-  'Hire Sunny once. Client briefs, risks, and follow ups from every deck, email, and call.';
+  'Give your business a teammate that plans, executes, and delivers work from start to finish.';
+/** Default meta description for SEO and social */
+export const META_DESCRIPTION =
+  'Deliver more with AI employees. Sunny plans, executes, and delivers client work with citations.';
 
 export const PROJECT_STATUS_LABELS: Record<ProjectStatus, string> = {
   healthy: 'Healthy',

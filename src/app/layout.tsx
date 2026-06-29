@@ -3,7 +3,7 @@ import { Inter, Space_Grotesk } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
 import './globals.css';
-import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
+import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE, META_DESCRIPTION } from '@/lib/constants';
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, OG_IMAGE_ALT } from '@/lib/marketing/seo';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeRouteSync } from '@/components/theme/ThemeRouteSync';
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
     default: `${APP_NAME} | ${BRAND_TAGLINE}`,
     template: `%s | ${APP_NAME}`,
   },
-  description: 'Your first AI employee for client work. Sunny delivers briefs and client intelligence.',
+  description: META_DESCRIPTION,
   keywords: [
-    'first AI employee',
+    'AI employees',
     'AI employee software',
     'client intelligence',
     'consultant software',
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     siteName: APP_NAME,
     title: `${APP_NAME} | ${BRAND_TAGLINE}`,
-    description: 'Your first AI employee for client work. Sunny delivers briefs and client intelligence.',
+    description: META_DESCRIPTION,
     images: [
       {
         url: DEFAULT_OG_IMAGE_PATH,
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: `${APP_NAME} | ${BRAND_TAGLINE}`,
-    description: 'Your first AI employee for client work. Sunny delivers briefs and client intelligence.',
+    description: META_DESCRIPTION,
     images: [DEFAULT_OG_IMAGE_PATH],
   },
   robots: { index: true, follow: true },

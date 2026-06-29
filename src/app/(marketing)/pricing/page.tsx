@@ -8,7 +8,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Pricing',
   description:
-    'UpperDeck pricing: hire your first AI employee free on one client project, upgrade to Pro for unlimited Sunny, or request an enterprise quote for organizations.',
+    'UpperDeck pricing: start free on one client project, upgrade to Pro for unlimited Sunny, or request an enterprise quote for organizations.',
   path: '/pricing',
   keywords: [
     'AI employee pricing',
@@ -22,8 +22,8 @@ export default function PricingPage() {
   return (
     <MarketingPageLayout
       eyebrow="Pricing"
-      title="Hire your first AI employee free. Upgrade when you add clients."
-      description="The best way to try an AI employee: prove value on one client for free, then upgrade when you're managing multiple engagements. Sunny gets more capable as we ship new features."
+      title="Start free. Upgrade when you add clients."
+      description="Prove value on one client for free, then upgrade when you are managing multiple engagements. Sunny gets more capable as we ship new features."
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">

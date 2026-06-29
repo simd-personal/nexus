@@ -19,7 +19,7 @@ export const B2C_PRICING: PricingTier[] = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'For freelancers hiring their first AI employee on a single client.',
+    description: 'For freelancers adding an AI employee on a single client.',
     cta: 'Start free',
     ctaHref: loginHref({ mode: 'signup' }),
     features: [

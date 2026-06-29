@@ -7,7 +7,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'For consultants',
   description:
-    'Hire Sunny, your first AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow ups with cited client intelligence.',
+    'Hire Sunny, an AI employee for consultants juggling multiple clients. One workspace for briefs, decks, emails, and follow ups with cited client intelligence.',
   path: '/for-consultants',
   keywords: [
     'AI employee for consultants',
@@ -21,13 +21,13 @@ export default function ForConsultantsPage() {
   return (
     <MarketingPageLayout
       eyebrow="Solutions"
-      title="Your first AI employee for consultants juggling multiple clients"
+      title="AI employees for consultants juggling multiple clients"
       description={`You cannot afford to miss a timeline shift, a contradictory deck, or a follow up buried in email. Hire ${AI_EMPLOYEE_NAME}, an AI employee who keeps every engagement separate and gets more useful as UpperDeck ships new features.`}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container grid gap-12 lg:grid-cols-2">
           <div>
-            <h2 className="marketing-section-title">From your first AI employee to a full book of business</h2>
+            <h2 className="marketing-section-title">From one client to a full book of business</h2>
             <p className="marketing-section-body mt-4">
               Start free with one active client project, your AI employee on a single engagement.
               When you land your second and third client, Pro unlocks unlimited projects and

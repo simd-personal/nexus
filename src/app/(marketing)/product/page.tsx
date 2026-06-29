@@ -16,10 +16,10 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Product',
   description:
-    'Hire Sunny, your first AI employee for client work. Ingest meetings and files, get briefs, decks, and follow ups with citations. Latest GPT and Claude included. More capable with every release.',
+    'Deliver more with AI employees. Hire Sunny for client work. Ingest meetings and files, get briefs, decks, and follow ups with citations. Latest GPT and Claude included.',
   path: '/product',
   keywords: [
-    'first AI employee',
+    'AI employees',
     'AI employee for consultants',
     'AI executive briefs',
     'client context management',
@@ -30,7 +30,7 @@ export default function ProductPage() {
   return (
     <MarketingPageLayout
       eyebrow="Product"
-      title="Hire your first AI employee for every client project"
+      title="An AI employee for every client project"
       description={`UpperDeck is where you onboard ${AI_EMPLOYEE_NAME}, an AI employee who reads meetings, emails, decks, PDFs, and notes in each client project, then surfaces what matters before your next call. And ${AI_EMPLOYEE_NAME} keeps getting more capable as we ship new features.`}
     >
       <section className="marketing-section bg-white">

@@ -18,7 +18,7 @@ export const HOME_WOW_POINTS = [
 export const HOME_AUDIENCES = [
   {
     title: 'Solo consultants',
-    body: 'Your first AI employee on client number one, then more capacity as your book of business grows.',
+    body: 'One AI employee on your first client, then more capacity as your book of business grows.',
   },
   {
     title: 'Fractional executives',

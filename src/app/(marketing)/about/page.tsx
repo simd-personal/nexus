@@ -1,30 +1,29 @@
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
-import { AI_EMPLOYEE_NAME, APP_DOMAIN, BRAND_TAGLINE } from '@/lib/constants';
+import { AI_EMPLOYEE_NAME, APP_DOMAIN, BRAND_TAGLINE, TAGLINE } from '@/lib/constants';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
   title: 'About',
   description:
-    'UpperDeck is where you hire Sunny, your first AI employee for client intelligence. Built for consultants and operators. Gets more capable with every release.',
+    `UpperDeck is where you hire ${AI_EMPLOYEE_NAME}, an AI employee for client intelligence. Built for consultants and operators who need more delivery capacity.`,
   path: '/about',
-  keywords: ['about UpperDeck', 'first AI employee', 'client intelligence company'],
+  keywords: ['about UpperDeck', 'AI employees', 'client intelligence company'],
 });
 
 export default function AboutPage() {
   return (
     <MarketingPageLayout
       eyebrow="About"
-      title="Hire your first AI employee for client work"
-      description={BRAND_TAGLINE}
+      title={BRAND_TAGLINE}
+      description={TAGLINE}
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container max-w-3xl marketing-prose">
           <h2>What we&apos;re building</h2>
           <p>
-            UpperDeck ({APP_DOMAIN}) is where you hire your first AI employee for client work. We
-            help consultants, agencies, and operators stop reconstructing context from inboxes and
-            slide decks and start every engagement with a clear picture of what matters, backed by
-            evidence.
+            UpperDeck ({APP_DOMAIN}) helps consultants, agencies, and operators deliver more with
+            AI employees. Stop reconstructing context from inboxes and slide decks and start every
+            engagement with a clear picture of what matters, backed by evidence.
           </p>
           <p>
             At the center is {AI_EMPLOYEE_NAME}, an AI employee with full project context.{' '}
@@ -42,7 +41,7 @@ export default function AboutPage() {
 
           <h2>Our principles</h2>
           <ul>
-            <li>Your first AI employee should think in projects, not one off prompts</li>
+            <li>AI employees should think in projects, not one off prompts</li>
             <li>AI should cite sources, especially when stakes are high</li>
             <li>Your AI employee should get more capable over time, not stay static</li>
             <li>Security and access control should scale from freelancer to enterprise</li>

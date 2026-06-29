@@ -261,7 +261,7 @@ export default function LoginPageClient({
           </div>
 
           <div className="relative z-10 mt-10 lg:mt-0 auth-form-enter">
-            <h2 className="auth-hero-title">Hire your first AI employee.</h2>
+            <h2 className="auth-hero-title">Built for businesses that need capacity now.</h2>
             <p className="auth-hero-body">{TAGLINE}</p>
 
             <div className="auth-trust-row mt-10">
@@ -269,7 +269,7 @@ export default function LoginPageClient({
                 <span className="auth-trust-icon">
                   <Check className="h-3.5 w-3.5" strokeWidth={2} />
                 </span>
-                Your first AI employee for client work
+                AI employees built for client delivery
               </div>
               <div className="auth-trust-item">
                 <span className="auth-trust-icon">

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { loginHref } from '@/lib/auth/login-url';
-import { APP_DOMAIN } from '@/lib/constants';
+import { APP_DOMAIN, BRAND_TAGLINE } from '@/lib/constants';
 import {
   COMPANY_LINKS,
   LEGAL_LINKS,
@@ -45,8 +45,7 @@ export function MarketingFooter() {
           <div className="lg:col-span-2">
             <UpperDeckLogo size="sm" theme="dark" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[var(--brand-text-secondary)]">
-              Hire Sunny, your first AI employee for client work. Briefs, risks, and follow ups
-              from every deck, email, and call. Getting more capable with every release.
+              {BRAND_TAGLINE} Briefs, risks, and follow ups from every deck, email, and call.
             </p>
           </div>
           <FooterColumn title="Product" links={PRODUCT_LINKS} />

@@ -7,7 +7,7 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Client intelligence software',
   description:
-    'Client intelligence means knowing what changed, what is at risk, and what to do next. UpperDeck gives you Sunny, your first AI employee focused on that work, getting more powerful over time.',
+    'Client intelligence means knowing what changed, what is at risk, and what to do next. UpperDeck gives you Sunny, an AI employee focused on that work, getting more powerful over time.',
   path: '/client-intelligence',
   keywords: [
     'client intelligence',
