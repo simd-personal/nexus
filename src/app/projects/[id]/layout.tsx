@@ -40,7 +40,7 @@ export default async function ProjectLayout({
                     {!project.parent_project_id && ' · Program'}
                   </p>
                 )}
-                <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{project.project_name}</h1>
+                <h1 className="app-page-title text-xl sm:text-2xl">{project.project_name}</h1>
               </div>
               <StatusBadge status={project.status} />
             </div>

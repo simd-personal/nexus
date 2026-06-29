@@ -13,7 +13,7 @@ interface SunnyCardProps {
 
 export function SunnyCard({ criticalCount, newUpdatesCount, actionItemsCount, conflictsCount }: SunnyCardProps) {
   return (
-    <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 dark:border-amber-800 dark:from-amber-950/40 dark:to-orange-950/30">
+    <Card className="border-[rgba(124,108,240,0.22)] bg-gradient-to-br from-amber-50 via-white to-[#f3f0ff] dark:border-[rgba(167,139,250,0.35)] dark:from-amber-950/40 dark:via-[var(--ud-mist)] dark:to-indigo-950/30">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50">
           <Sun className="h-6 w-6 text-amber-600 dark:text-amber-400" />

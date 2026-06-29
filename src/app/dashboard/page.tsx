@@ -13,14 +13,20 @@ import {
   getPendingInboundEmails,
 } from '@/lib/data/queries';
 import { TAGLINE } from '@/lib/constants';
+import { needsOnboarding } from '@/lib/onboarding/status';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const [projects, stats, criticalItems, updates, pendingInboundEmails] = await Promise.all([
-    getProjectsWithStats(),
+  const projects = await getProjectsWithStats();
+  if (needsOnboarding(projects)) {
+    redirect('/getting-started');
+  }
+
+  const [stats, criticalItems, updates, pendingInboundEmails] = await Promise.all([
     getDashboardStats(),
     getCriticalItems(5),
     getSunnyUpdates(5),
@@ -31,7 +37,7 @@ export default async function DashboardPage() {
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">Executive Dashboard</h1>
+          <h1 className="app-page-title text-xl sm:text-2xl">Executive Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{TAGLINE}</p>
         </div>
 

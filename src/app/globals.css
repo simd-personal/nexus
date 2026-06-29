@@ -1971,3 +1971,48 @@ html.dark .docx-preview td {
   pointer-events: none;
   animation: fun-mesh-drift 16s ease-in-out infinite alternate;
 }
+
+/* ============================================================
+   App shell — subtle brand gradient (static, no animation)
+   ============================================================ */
+
+.app-main {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(900px 500px at 100% -5%, rgba(124, 108, 240, 0.08), transparent 55%),
+    radial-gradient(700px 420px at -5% 15%, rgba(91, 156, 246, 0.07), transparent 50%),
+    var(--ud-stone);
+}
+
+html.dark .app-main {
+  background:
+    radial-gradient(900px 500px at 100% -5%, rgba(124, 108, 240, 0.12), transparent 55%),
+    radial-gradient(700px 420px at -5% 15%, rgba(91, 156, 246, 0.08), transparent 50%),
+    var(--ud-stone);
+}
+
+.app-page-title {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ud-graphite);
+}
+
+.app-nav-active {
+  background: rgba(124, 108, 240, 0.1);
+  color: var(--ud-graphite);
+}
+
+html.dark .app-nav-active {
+  background: rgba(124, 108, 240, 0.18);
+  color: var(--ud-graphite);
+}
+
+.app-nav-link:hover {
+  background: rgba(124, 108, 240, 0.06);
+}
+
+html.dark .app-nav-link:hover {
+  background: rgba(124, 108, 240, 0.1);
+}

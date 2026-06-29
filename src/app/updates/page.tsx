@@ -17,7 +17,7 @@ export default async function SunnyUpdatesPage() {
             <Sun className="w-5 h-5 text-amber-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME} Updates</h1>
+            <h1 className="app-page-title text-2xl">{AI_EMPLOYEE_NAME} Updates</h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               What changed, what matters, and what needs your attention
             </p>

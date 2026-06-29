@@ -11,7 +11,7 @@ export default async function CriticalItemsPage() {
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Critical Items</h1>
+          <h1 className="app-page-title text-2xl">Critical Items</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Issues Sunny has flagged across all projects
           </p>

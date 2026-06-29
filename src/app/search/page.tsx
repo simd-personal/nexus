@@ -14,7 +14,7 @@ export default async function SearchPage() {
     <AppShell>
       <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
         <div className="mb-4 shrink-0">
-          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Search</h1>
+          <h1 className="app-page-title text-xl sm:text-2xl">Search</h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             Chat with {AI_EMPLOYEE_NAME} across all your projects. Answers stream live and conversations are saved
           </p>

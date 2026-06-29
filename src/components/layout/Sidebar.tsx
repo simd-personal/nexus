@@ -68,10 +68,10 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
               href={item.href}
               onClick={onMobileClose}
               className={cn(
-                'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                'app-nav-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-gray-100 text-gray-900 dark:bg-[var(--ud-cloud)] dark:text-gray-100'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[var(--ud-cloud)] dark:hover:text-gray-100'
+                  ? 'app-nav-active'
+                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'
               )}
             >
               <Icon className="h-4 w-4 shrink-0" />

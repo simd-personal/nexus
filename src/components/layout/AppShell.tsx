@@ -29,8 +29,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [mobileOpen]);
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-gray-50 dark:bg-[var(--ud-stone)]">
-      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-gray-200 bg-white px-4 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] lg:hidden">
+    <div className="flex min-h-[100dvh] flex-col bg-[var(--ud-stone)]">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-14 items-center gap-3 border-b border-[var(--ud-cloud)] bg-white px-4 dark:bg-[var(--ud-mist)] lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -56,7 +56,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
 
-      <main className="flex min-h-0 flex-1 flex-col pt-14 lg:ml-64 lg:pt-0">
+      <main className="app-main flex min-h-0 flex-1 flex-col pt-14 lg:ml-64 lg:pt-0">
         {children}
       </main>
     </div>
