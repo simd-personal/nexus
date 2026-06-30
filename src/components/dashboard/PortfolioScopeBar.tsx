@@ -20,8 +20,6 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
-  const activeIndex = DASHBOARD_PORTFOLIO_SCOPES.indexOf(scope);
-  const segmentCount = DASHBOARD_PORTFOLIO_SCOPES.length;
 
   function selectScope(next: DashboardPortfolioScope) {
     if (next === scope) return;
@@ -39,22 +37,10 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
 
   return (
     <div
-      className={cn(
-        'relative inline-flex rounded-[10px] border border-gray-200 bg-gray-50/80 p-[3px] dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]',
-        pending && 'opacity-70',
-        className
-      )}
+      className={cn('flex flex-wrap gap-2', pending && 'opacity-70', className)}
       role="tablist"
       aria-label="Portfolio scope"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-[3px] bottom-[3px] left-[3px] rounded-[7px] border border-gray-200/80 bg-white transition-transform duration-200 ease-out dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]"
-        style={{
-          width: `calc((100% - 6px) / ${segmentCount})`,
-          transform: `translateX(calc(${activeIndex} * 100%))`,
-        }}
-      />
       {DASHBOARD_PORTFOLIO_SCOPES.map((option) => {
         const active = scope === option;
         return (
@@ -66,10 +52,10 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
             disabled={pending}
             onClick={() => selectScope(option)}
             className={cn(
-              'relative z-10 min-w-[4.5rem] rounded-[7px] px-3.5 py-1.5 text-sm font-medium transition-colors sm:min-w-[5.5rem]',
+              'rounded-full px-4 py-2 text-sm font-medium transition-all',
               active
-                ? 'text-gray-900 dark:text-gray-100'
-                : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100'
+                ? 'bg-[var(--brand-accent)] text-white shadow-sm ring-2 ring-[rgba(37,99,235,0.2)] dark:ring-[rgba(37,99,235,0.35)]'
+                : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-400 dark:hover:border-[var(--ud-slate)] dark:hover:text-gray-100'
             )}
           >
             {dashboardScopeLabel(option)}
