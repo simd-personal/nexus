@@ -9,6 +9,7 @@ import {
   CheckSquare,
   Search,
   Settings,
+  LifeBuoy,
   X,
   type LucideIcon,
 } from 'lucide-react';
@@ -31,6 +32,7 @@ const navItems: Array<
   { href: '/sunny', label: 'Sunny Chat', sunnyIcon: true },
   { href: '/search', label: 'Search', icon: Search },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/support', label: 'Support', icon: LifeBuoy },
 ];
 
 interface SidebarProps {

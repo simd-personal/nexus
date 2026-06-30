@@ -70,5 +70,6 @@ describe('Sidebar project-scoped navigation', () => {
     const html = renderToStaticMarkup(<Sidebar />);
     expect(hrefForLabel(html, 'Dashboard')).toBe('/dashboard');
     expect(hrefForLabel(html, 'Settings')).toBe('/settings');
+    expect(hrefForLabel(html, 'Support')).toBe('/support');
   });
 });

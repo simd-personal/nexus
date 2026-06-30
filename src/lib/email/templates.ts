@@ -216,3 +216,69 @@ export function renderQuoteRequestEmail(input: QuoteRequestEmailInput): {
 
   return { subject, html: shell(inner, subject), text };
 }
+
+export type SupportRequestCategory = 'feedback' | 'idea' | 'bug';
+
+const SUPPORT_CATEGORY_LABELS: Record<SupportRequestCategory, string> = {
+  feedback: 'Feedback',
+  idea: 'Product idea',
+  bug: 'Bug report',
+};
+
+export type SupportRequestEmailInput = {
+  fullName: string;
+  email: string;
+  category: SupportRequestCategory;
+  message: string;
+  pageUrl?: string | null;
+};
+
+export function renderSupportRequestEmail(input: SupportRequestEmailInput): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const categoryLabel = SUPPORT_CATEGORY_LABELS[input.category];
+  const subject = `[${APP_NAME}] ${categoryLabel} — ${input.fullName || input.email}`;
+  const font =
+    "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
+
+  const rows = [
+    ['From', input.fullName || '—'],
+    ['Email', input.email],
+    ['Type', categoryLabel],
+    ['Page', input.pageUrl || '—'],
+    ['Message', input.message],
+  ] as const;
+
+  const tableRows = rows
+    .map(
+      ([label, value]) => `
+      <tr>
+        <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.hairline};${font}font-size:13px;font-weight:600;color:${BRAND.muted};width:120px;vertical-align:top;">${escapeHtml(label)}</td>
+        <td style="padding:10px 14px;border-bottom:1px solid ${BRAND.hairline};${font}font-size:14px;line-height:1.55;color:${BRAND.ink};white-space:pre-wrap;">${escapeHtml(value)}</td>
+      </tr>`
+    )
+    .join('');
+
+  const inner = `
+    <h1 style="margin:0 0 8px;${font}font-size:20px;line-height:1.3;font-weight:700;color:${BRAND.ink};">
+      New in-app support request
+    </h1>
+    <p style="margin:0 0 20px;${font}font-size:14px;line-height:1.6;color:${BRAND.body};">
+      A signed-in user submitted this from the Support page on ${APP_DOMAIN}. Reply to reach them directly.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid ${BRAND.hairline};border-radius:12px;overflow:hidden;">
+      ${tableRows}
+    </table>`;
+
+  const text = [
+    'New in-app support request',
+    '',
+    ...rows.map(([label, value]) => `${label}: ${value}`),
+    '',
+    `Reply to ${input.email} to follow up.`,
+  ].join('\n');
+
+  return { subject, html: shell(inner, subject), text };
+}
