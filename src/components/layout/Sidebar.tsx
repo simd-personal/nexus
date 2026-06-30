@@ -35,6 +35,12 @@ const navItems: Array<
   { href: '/support', label: 'Support', icon: LifeBuoy },
 ];
 
+const CHAT_NAV_HREFS = new Set(['/sunny', '/search']);
+
+function prefetchChatBundle() {
+  void import('@/components/chat/SunnyChatInterface');
+}
+
 interface SidebarProps {
   mobileOpen?: boolean;
   onMobileClose?: () => void;
@@ -79,6 +85,8 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
               key={item.href}
               href={href}
               onClick={onMobileClose}
+              onMouseEnter={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
+              onFocus={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
               className={cn(
                 'app-nav-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
                 isActive

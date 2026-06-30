@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import {
   Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, Download, Trash2, Cpu, ArrowDown, RefreshCw, X, ListOrdered,
 } from 'lucide-react';
@@ -362,6 +362,7 @@ export function SunnyChatInterface({
     setModelPreference(cached.modelPreference);
     sessionIdRef.current = cached.activeSessionId;
     sessionsLoadedRef.current = sessionsCacheFresh(scopeKey);
+    setAtBottom(true);
   }, [scopeKey, persistScope]);
 
   const loadSessions = useCallback(async (force = false) => {
@@ -472,12 +473,21 @@ export function SunnyChatInterface({
     })();
   }, [scopeKey, initialSessionId, initialMessages, loadSessions]);
 
-  // Only auto-scroll when the user is already near the bottom (native chat feel).
-  useEffect(() => {
-    if (atBottom) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  // Pin to the latest message before paint — avoids a visible scroll from top on navigation.
+  const scrollMessagesToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {
+    const el = scrollRef.current;
+    if (!el) return;
+    if (behavior === 'smooth') {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+      return;
     }
-  }, [messages, statusHint, isStreaming, atBottom]);
+    el.scrollTop = el.scrollHeight;
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!atBottom || messages.length === 0) return;
+    scrollMessagesToBottom('auto');
+  }, [messages, statusHint, isStreaming, atBottom, sessionId, scrollMessagesToBottom]);
 
   const handleScroll = useCallback(() => {
     const el = scrollRef.current;
@@ -488,8 +498,8 @@ export function SunnyChatInterface({
 
   const scrollToBottom = useCallback(() => {
     setAtBottom(true);
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+    scrollMessagesToBottom('smooth');
+  }, [scrollMessagesToBottom]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -500,6 +510,7 @@ export function SunnyChatInterface({
 
   const loadSession = async (id: string) => {
     await ensureSessions();
+    setAtBottom(true);
 
     const cached = getOrInitChatScopeState(scopeKey).messageCache[id];
     if (cached) {
@@ -970,7 +981,11 @@ export function SunnyChatInterface({
         )}
 
         {/* Messages */}
-        <div ref={scrollRef} onScroll={handleScroll} className="relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain [overflow-anchor:auto]"
+        >
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
             {messages.length === 0 && (
               <div className="text-center py-12">
