@@ -39,6 +39,8 @@ describe('isPublicUnauthenticatedPath', () => {
     expect(MARKETING_PATHS).not.toContain('/login');
     expect(isPublicUnauthenticatedPath('/login')).toBe(true);
     expect(isPublicUnauthenticatedPath('/pricing')).toBe(true);
+    expect(isPublicUnauthenticatedPath('/offline')).toBe(true);
+    expect(isPublicUnauthenticatedPath('/icons/192')).toBe(true);
     expect(isPublicUnauthenticatedPath('/dashboard')).toBe(false);
   });
 });

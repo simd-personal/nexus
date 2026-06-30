@@ -66,7 +66,7 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
         description="Capture or upload pictures for this project only. Sunny never guesses which project a photo belongs to."
       />
       <div className="flex flex-wrap gap-2">
-        <label className="inline-flex cursor-pointer">
+        <label className="inline-flex min-h-11 cursor-pointer touch-manipulation">
           <input
             ref={cameraInputRef}
             type="file"
@@ -79,12 +79,12 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
               event.target.value = '';
             }}
           />
-          <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+          <span className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[var(--ud-cloud)]">
             <Camera className="h-4 w-4" />
             Take Photo
           </span>
         </label>
-        <label className="inline-flex cursor-pointer">
+        <label className="inline-flex min-h-11 cursor-pointer touch-manipulation">
           <input
             ref={galleryInputRef}
             type="file"
@@ -96,7 +96,7 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
               event.target.value = '';
             }}
           />
-          <span className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50">
+          <span className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[var(--ud-cloud)]">
             <Upload className="h-4 w-4" />
             Upload Photo
           </span>

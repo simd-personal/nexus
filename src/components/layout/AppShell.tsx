@@ -8,6 +8,8 @@ import { Sidebar } from './Sidebar';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
 import { ProductTourProvider } from '@/components/tour/ProductTourProvider';
+import { InstallPrompt } from '@/components/pwa/InstallPrompt';
+import { ServiceWorkerRegister } from '@/components/pwa/ServiceWorkerRegister';
 import type { AccountSummary } from '@/lib/account/summary';
 
 export function AppShell({
@@ -67,9 +69,12 @@ export function AppShell({
         <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} account={account} />
       </Suspense>
 
-      <main className="app-main flex min-h-0 flex-1 flex-col pt-[calc(3.5rem+env(safe-area-inset-top,0px))] lg:ml-64 lg:pt-0">
+      <main className="app-main flex min-h-0 flex-1 flex-col pt-[calc(3.5rem+env(safe-area-inset-top,0px))] pb-[max(0px,env(safe-area-inset-bottom,0px))] lg:ml-64 lg:pt-0 lg:pb-0">
         {children}
       </main>
+
+      <InstallPrompt />
+      <ServiceWorkerRegister />
     </div>
     </ProductTourProvider>
   );

@@ -22,6 +22,8 @@ export const MARKETING_PATHS = [
 export { isAuthPath };
 
 export function isPublicUnauthenticatedPath(pathname: string): boolean {
+  if (pathname === '/offline') return true;
+  if (/^\/icons\/(192|512)$/.test(pathname)) return true;
   return isPublicMarketingPath(pathname) || isAuthPath(pathname);
 }
 

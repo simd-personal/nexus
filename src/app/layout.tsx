@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
 import './globals.css';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE, META_DESCRIPTION } from '@/lib/constants';
+import { BRAND } from '@/lib/brand/colors';
 import { DEFAULT_OG_IMAGE_PATH, getSiteUrl, OG_IMAGE_ALT } from '@/lib/marketing/seo';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeRouteSync } from '@/components/theme/ThemeRouteSync';
@@ -61,12 +62,25 @@ export const metadata: Metadata = {
     images: [DEFAULT_OG_IMAGE_PATH],
   },
   robots: { index: true, follow: true },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: APP_NAME,
+  },
+  applicationName: APP_NAME,
+  formatDetection: {
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: BRAND.accent },
+    { media: '(prefers-color-scheme: dark)', color: BRAND.bgPrimary },
+  ],
 };
 
 export default function RootLayout({

@@ -1149,7 +1149,7 @@ export function SunnyChatInterface({
         </div>
 
         {/* Composer — pinned bottom */}
-        <div className="shrink-0 border-t border-gray-200 bg-white p-4 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
+        <div className="shrink-0 border-t border-gray-200 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
           <div className="max-w-3xl mx-auto">
             {mode === 'search' && (
               <div className="flex gap-1.5 mb-3 flex-wrap">

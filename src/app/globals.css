@@ -2422,6 +2422,21 @@ html.dark .app-nav-active {
   color: var(--brand-accent-light);
 }
 
+.project-nav-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.project-nav-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .app-main {
+    padding-bottom: max(0px, env(safe-area-inset-bottom, 0px));
+  }
+}
+
 .app-nav-link:hover {
   background: rgba(37, 99, 235, 0.06);
 }
