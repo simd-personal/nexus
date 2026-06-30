@@ -11,8 +11,6 @@ function formatFileList(fileNames: string[], max = 3): string {
 }
 
 export function IndexingBatchCard({ batch }: { batch: ActiveUploadBatch }) {
-  const remaining = Math.max(batch.total - batch.done, batch.processing);
-
   return (
     <Card className="border-amber-200 bg-amber-50/40 dark:border-amber-900 dark:bg-amber-950/20">
       <div className="flex items-start gap-3">
@@ -36,7 +34,7 @@ export function IndexingBatchCard({ batch }: { batch: ActiveUploadBatch }) {
             {formatFileList(batch.fileNames)}
           </p>
           <p className="mt-2 text-xs text-amber-800 dark:text-amber-300">
-            {remaining} still indexing — Sunny will post one summary when the batch finishes.
+            {batch.done} of {batch.total} ready — Sunny will post one summary when indexing finishes.
           </p>
         </div>
       </div>
