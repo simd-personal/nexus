@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { SupportForm } from '@/components/support/SupportForm';
 import { SUPPORT_EMAIL } from '@/lib/constants';
@@ -12,7 +12,7 @@ export default async function SupportPage() {
   const fullName = data?.profile?.full_name ?? '';
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="max-w-2xl p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
           <h1 className="app-page-title text-2xl">Support</h1>
@@ -29,6 +29,6 @@ export default async function SupportPage() {
           <SupportForm email={email} fullName={fullName} />
         </Card>
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

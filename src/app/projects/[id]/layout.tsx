@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { ProjectLayoutClient } from '@/components/project/ProjectLayoutClient';
 import { ProjectNav } from '@/components/project/ProjectNav';
 import { StatusBadge } from '@/components/ui/Badge';
@@ -21,7 +21,7 @@ export default async function ProjectLayout({
   const parentProject = await getParentProject(project);
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <ProjectLayoutClient projectId={id}>
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="shrink-0 border-b border-gray-200 bg-white px-4 py-4 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)] sm:px-8 sm:py-6">
@@ -51,6 +51,6 @@ export default async function ProjectLayout({
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6 lg:p-8">{children}</div>
         </div>
       </ProjectLayoutClient>
-    </AppShell>
+    </AppShellLayout>
   );
 }

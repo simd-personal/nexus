@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { getProfile } from '@/lib/data/queries';
 import { updateOrganizationSettings } from '@/lib/actions/organizations';
 import { Card, CardHeader } from '@/components/ui/Card';
@@ -38,7 +38,7 @@ export default async function SettingsPage({
     orgContext.membership?.role === 'owner' || orgContext.membership?.role === 'admin';
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="p-4 sm:p-6 lg:p-8 max-w-2xl">
         <div className="mb-8">
           <h1 className="app-page-title text-2xl">Settings</h1>
@@ -170,6 +170,6 @@ export default async function SettingsPage({
           </p>
         )}
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

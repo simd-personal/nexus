@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { GlobalChatPageClient } from '@/components/search/SearchPageClient';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
 import { getProjectsWithStats } from '@/lib/data/queries';
@@ -17,7 +17,7 @@ export default async function SunnyChatPage({
   const [user, projects] = await Promise.all([requireUser(), getProjectsWithStats()]);
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
         <div className="mb-4 shrink-0">
           <h1 className="app-page-title text-xl sm:text-2xl">Chat with {AI_EMPLOYEE_NAME}</h1>
@@ -36,6 +36,6 @@ export default async function SunnyChatPage({
           </Suspense>
         </div>
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

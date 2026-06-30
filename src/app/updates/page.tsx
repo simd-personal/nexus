@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
 import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import { getPendingUploadBatches, getSunnyUpdates } from '@/lib/data/queries';
@@ -21,7 +21,7 @@ export default async function SunnyUpdatesPage({
   ]);
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-6 flex items-center gap-3">
           <SunnyAvatar size="md" animate="idle" />
@@ -37,6 +37,6 @@ export default async function SunnyUpdatesPage({
 
         <SunnyUpdatesList updates={updates} pendingBatches={pendingBatches} />
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

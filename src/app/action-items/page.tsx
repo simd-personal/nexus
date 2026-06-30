@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { ActionItemsPageClient } from '@/components/actions/ActionItemsPageClient';
 import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import { getActionItemsByStatus, getOpenActionItems } from '@/lib/data/queries';
@@ -22,7 +22,7 @@ export default async function ActionItemsPage({
   ]);
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-6">
           <h1 className="app-page-title text-2xl">Your Action Items</h1>
@@ -40,6 +40,6 @@ export default async function ActionItemsPage({
           dismissedItems={dismissedItems}
         />
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

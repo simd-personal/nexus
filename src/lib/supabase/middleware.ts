@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { isApiRoute, isPublicApiRoute } from '@/lib/auth/api-routes';
 import { applyNoStoreHeaders, isAuthPath, withNoStoreIfAuthPath } from '@/lib/auth/cache-control';
 import { isPublicUnauthenticatedPath } from '@/lib/marketing/seo';
 
@@ -58,7 +59,19 @@ export async function updateSession(request: NextRequest) {
   const isAuthPage = isAuthPath(pathname);
   const isPublicRoute =
     isPublicUnauthenticatedPath(pathname) ||
-    pathname === '/api/stripe/webhook';
+    (isApiRoute(pathname) && isPublicApiRoute(pathname));
+
+  if (isApiRoute(pathname)) {
+    if (isPublicApiRoute(pathname)) {
+      return applyNoStoreHeaders(withNoStoreIfAuthPath(pathname, supabaseResponse));
+    }
+    if (!user) {
+      return applyNoStoreHeaders(
+        NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      );
+    }
+    return applyNoStoreHeaders(supabaseResponse);
+  }
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();

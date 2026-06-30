@@ -3,7 +3,10 @@
 import { revalidatePath } from 'next/cache';
 import { createClient, requireUser } from '@/lib/supabase/server';
 import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
-import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
+import {
+  createProjectForUser,
+  createProjectInputFromFormData,
+} from '@/lib/projects/create-project-core';
 import type { ActionItemStatus, ProjectStatus } from '@/types/database';
 import { parseKeywordList } from '@/lib/relevance/watchlist';
 import { parseProjectPortfolio, type DashboardPortfolioScope } from '@/lib/projects/portfolio';
@@ -12,97 +15,16 @@ import { recomputeProjectStatus } from '@/lib/projects/health';
 export async function createProject(formData: FormData) {
   const user = await requireUser();
   const supabase = await createClient();
+  const input = createProjectInputFromFormData(formData);
+  const result = await createProjectForUser(supabase, user, input);
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('default_organization_id, account_type')
-    .eq('user_id', user.id)
-    .single();
-
-  let organizationId: string | null = null;
-  if (profile?.default_organization_id && profile.account_type === 'enterprise') {
-    const { data: membership } = await supabase
-      .from('organization_members')
-      .select('organization_id')
-      .eq('organization_id', profile.default_organization_id)
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .maybeSingle();
-
-    if (membership) {
-      organizationId = profile.default_organization_id;
-    }
-  }
-
-  const clientName = formData.get('client_name') as string;
-  const projectName = formData.get('project_name') as string;
-  const description = formData.get('description') as string;
-  const sunnyNotes = formData.get('sunny_notes') as string;
-  const parentProjectId = (formData.get('parent_project_id') as string)?.trim() || null;
-  const portfolioInput = parseProjectPortfolio(formData.get('portfolio') as string);
-
-  if (!clientName?.trim() || !projectName?.trim()) {
-    return { error: 'Client name and project name are required' };
-  }
-
-  let resolvedParentId: string | null = null;
-  let portfolio = portfolioInput;
-  if (parentProjectId) {
-    const { data: parent } = await supabase
-      .from('projects')
-      .select('id, owner_id, parent_project_id, client_name, portfolio')
-      .eq('id', parentProjectId)
-      .single();
-
-    if (!parent || parent.owner_id !== user.id) {
-      return { error: 'Parent program not found' };
-    }
-    if (parent.parent_project_id) {
-      return { error: 'Workstreams can only be added under a standalone program project' };
-    }
-    resolvedParentId = parent.id;
-    portfolio = parseProjectPortfolio(parent.portfolio);
-  }
-
-  const billing = await getBillingContextForUser(user.id);
-  if (!billing.isPro && billing.projectLimit !== null) {
-    const projectCount = await countUserProjects(user.id);
-    if (projectCount >= billing.projectLimit) {
-      return {
-        error:
-          'Free plan includes 1 active project. Upgrade to Pro for unlimited projects.',
-        upgradeRequired: true,
-      };
-    }
-  }
-
-  const trimmedDescription = description?.trim() || null;
-  const trimmedNotes = sunnyNotes?.trim() || null;
-  const projectDescription =
-    trimmedDescription ??
-    (trimmedNotes ? trimmedNotes : null);
-
-  const { data, error } = await supabase
-    .from('projects')
-    .insert({
-      owner_id: user.id,
-      organization_id: organizationId,
-      parent_project_id: resolvedParentId,
-      client_name: clientName.trim(),
-      project_name: projectName.trim(),
-      description: projectDescription,
-      last_summary: null,
-      portfolio,
-    })
-    .select()
-    .single();
-
-  if (error) return { error: error.message };
+  if (result.error) return result;
 
   revalidatePath('/dashboard');
   revalidatePath('/projects');
-  if (resolvedParentId) revalidatePath(`/projects/${resolvedParentId}/overview`);
-  return { data };
+  revalidatePath('/getting-started');
+  if (input.parentProjectId) revalidatePath(`/projects/${input.parentProjectId}/overview`);
+  return result;
 }
 
 export async function updateProjectStatus(projectId: string, status: ProjectStatus) {

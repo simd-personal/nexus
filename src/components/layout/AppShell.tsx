@@ -8,8 +8,15 @@ import { Sidebar } from './Sidebar';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
 import { ProductTourProvider } from '@/components/tour/ProductTourProvider';
+import type { AccountSummary } from '@/lib/account/summary';
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  account = null,
+}: {
+  children: React.ReactNode;
+  account?: AccountSummary | null;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { darkMode } = useThemePreferences();
 
@@ -57,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
 
       <Suspense fallback={null}>
-        <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+        <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} account={account} />
       </Suspense>
 
       <main className="app-main flex min-h-0 flex-1 flex-col pt-[calc(3.5rem+env(safe-area-inset-top,0px))] lg:ml-64 lg:pt-0">

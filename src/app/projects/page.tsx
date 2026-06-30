@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { CreateProjectForm } from '@/components/projects/CreateProjectForm';
 import { Button } from '@/components/ui/Button';
@@ -14,7 +14,7 @@ export default async function ProjectsPage() {
   }));
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-8">
           <div>
@@ -40,6 +40,6 @@ export default async function ProjectsPage() {
           </div>
         )}
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

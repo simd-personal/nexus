@@ -1,4 +1,4 @@
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
@@ -51,7 +51,7 @@ export default async function DashboardPage({
   ]);
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mb-4 sm:mb-6">
           <h1 className="app-page-title text-xl sm:text-2xl">Executive Dashboard</h1>
@@ -118,6 +118,6 @@ export default async function DashboardPage({
         </div>
         </div>
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }

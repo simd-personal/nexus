@@ -19,6 +19,7 @@ import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { SidebarAccountFooter } from '@/components/layout/SidebarAccountFooter';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
 import { portfolioScopeFromSearchParams, scopedAppHref } from '@/lib/projects/path-context';
+import type { AccountSummary } from '@/lib/account/summary';
 
 const navItems: Array<
   | { href: string; label: string; icon: LucideIcon }
@@ -44,9 +45,10 @@ function prefetchChatBundle() {
 interface SidebarProps {
   mobileOpen?: boolean;
   onMobileClose?: () => void;
+  account?: AccountSummary | null;
 }
 
-export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
+export function Sidebar({ mobileOpen = false, onMobileClose, account = null }: SidebarProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const portfolioScope = portfolioScopeFromSearchParams(searchParams);
@@ -118,7 +120,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         })}
       </nav>
 
-      <SidebarAccountFooter />
+      <SidebarAccountFooter account={account} />
     </aside>
   );
 }

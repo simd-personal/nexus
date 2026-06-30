@@ -1,7 +1,10 @@
 import { Suspense } from 'react';
 import { UpgradePageClient } from '@/components/billing/UpgradePageClient';
+import { getAccountSummary } from '@/lib/account/summary';
 
-export default function UpgradePage() {
+export default async function UpgradePage() {
+  const account = await getAccountSummary();
+
   return (
     <Suspense
       fallback={
@@ -10,7 +13,7 @@ export default function UpgradePage() {
         </div>
       }
     >
-      <UpgradePageClient />
+      <UpgradePageClient account={account} />
     </Suspense>
   );
 }

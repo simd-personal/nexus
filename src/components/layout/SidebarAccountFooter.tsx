@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { SignOutButton } from '@/components/auth/SignOutButton';
-
-type AccountSummary = {
-  displayName: string;
-  subtitle: string;
-};
+import type { AccountSummary } from '@/lib/account/summary';
 
 function AccountAvatar({ name }: { name: string }) {
   const initial = name.trim().charAt(0).toUpperCase() || '?';
@@ -18,10 +14,20 @@ function AccountAvatar({ name }: { name: string }) {
   );
 }
 
-export function SidebarAccountFooter() {
-  const [account, setAccount] = useState<AccountSummary | null>(null);
+export function SidebarAccountFooter({ account: initialAccount = null }: { account?: AccountSummary | null }) {
+  const [account, setAccount] = useState<AccountSummary | null>(initialAccount);
+  const [loadState, setLoadState] = useState<'idle' | 'loading' | 'error'>(() =>
+    initialAccount ? 'idle' : 'loading'
+  );
 
   useEffect(() => {
+    setAccount(initialAccount);
+    setLoadState(initialAccount ? 'idle' : 'loading');
+  }, [initialAccount]);
+
+  useEffect(() => {
+    if (initialAccount) return;
+
     let cancelled = false;
 
     void fetch('/api/account', { credentials: 'same-origin' })
@@ -30,17 +36,27 @@ export function SidebarAccountFooter() {
         return res.json() as Promise<AccountSummary>;
       })
       .then((data) => {
-        if (!cancelled && data) setAccount(data);
+        if (cancelled) return;
+        if (data) {
+          setAccount(data);
+          setLoadState('idle');
+          return;
+        }
+        setLoadState('error');
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setLoadState('error');
+      });
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialAccount]);
 
   const displayName = account?.displayName ?? 'Your account';
-  const subtitle = account?.subtitle ?? 'Loading…';
+  const subtitle =
+    account?.subtitle ??
+    (loadState === 'error' ? 'Session unavailable' : 'Loading…');
 
   return (
     <div className="border-t border-gray-100 p-4 dark:border-[var(--ud-cloud)]">

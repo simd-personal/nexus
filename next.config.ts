@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { APP_DOMAIN } from '@/lib/constants';
 
 const pdfJsWorkerIncludes = [
   './node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs',
@@ -6,11 +7,19 @@ const pdfJsWorkerIncludes = [
   './node_modules/pdfjs-dist/legacy/build/pdf.mjs',
 ];
 
+function serverActionAllowedOrigins(): string[] {
+  const origins = new Set([APP_DOMAIN, `www.${APP_DOMAIN}`, 'localhost:3000']);
+  const vercelUrl = process.env.VERCEL_URL?.trim();
+  if (vercelUrl) origins.add(vercelUrl);
+  return [...origins];
+}
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist', 'mammoth', '@napi-rs/canvas'],
   experimental: {
     serverActions: {
       bodySizeLimit: '6mb',
+      allowedOrigins: serverActionAllowedOrigins(),
     },
   },
   outputFileTracingIncludes: {

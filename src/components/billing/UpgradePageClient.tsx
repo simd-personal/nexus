@@ -6,10 +6,11 @@ import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/Button';
 import { B2C_PRICING } from '@/lib/marketing/pricing';
 import { openBillingPortal } from '@/lib/billing/client-poll';
+import type { AccountSummary } from '@/lib/account/summary';
 
 const VALID_PLANS = new Set(['pro', 'pro-annual']);
 
-export function UpgradePageClient() {
+export function UpgradePageClient({ account = null }: { account?: AccountSummary | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const plan = searchParams.get('plan') ?? 'pro';
@@ -81,7 +82,7 @@ export function UpgradePageClient() {
   }
 
   return (
-    <AppShell>
+    <AppShell account={account}>
       <div className="mx-auto max-w-lg p-4 sm:p-6 lg:p-8">
         <h1 className="app-page-title text-2xl">Upgrade to Pro</h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">

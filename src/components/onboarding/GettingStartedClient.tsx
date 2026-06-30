@@ -11,7 +11,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
-import { createProject } from '@/lib/actions/projects';
+import { submitCreateProject } from '@/lib/projects/create-project-client';
 import { AI_EMPLOYEE_NAME, APP_NAME } from '@/lib/constants';
 import {
   PROJECT_SUBJECT_HINT,
@@ -155,7 +155,7 @@ export function GettingStartedClient({
     setError('');
 
     const formData = new FormData(e.currentTarget);
-    const result = await createProject(formData);
+    const result = await submitCreateProject(formData);
 
     if (result.error) {
       setError(result.error);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createProject } from '@/lib/actions/projects';
+import { submitCreateProject } from '@/lib/projects/create-project-client';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Plus } from 'lucide-react';
@@ -77,7 +77,7 @@ export function CreateProjectForm({
       }
     }
 
-    const result = await createProject(formData);
+    const result = await submitCreateProject(formData);
 
     if (result.error) {
       setError(result.error);

@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { AppShell } from '@/components/layout/AppShell';
+import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { GettingStartedClient } from '@/components/onboarding/GettingStartedClient';
 import { getProjectsWithStats, getProjectFiles } from '@/lib/data/queries';
 import { resolveOnboardingStep } from '@/lib/onboarding/status';
@@ -32,7 +32,7 @@ export default async function GettingStartedPage() {
   const onboarding = resolveOnboardingStep({ projects, recentFile });
 
   return (
-    <AppShell>
+    <AppShellLayout>
       <div className="p-4 sm:p-6 lg:p-8">
         <GettingStartedClient
           initialStep={onboarding.step}
@@ -41,6 +41,6 @@ export default async function GettingStartedPage() {
           initialSummary={primary?.last_summary ?? null}
         />
       </div>
-    </AppShell>
+    </AppShellLayout>
   );
 }
