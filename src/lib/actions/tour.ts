@@ -94,7 +94,6 @@ export async function resetProductTourForReplay() {
     product_tour_completed_at: null,
     product_tour_part1_completed_at: null,
     product_tour_last_step: null,
-    product_tour_prompt_dismissed_at: null,
   });
 }
 

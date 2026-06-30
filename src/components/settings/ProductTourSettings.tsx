@@ -4,10 +4,13 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
+import { useProductTour } from '@/components/tour/ProductTourProvider';
 import { startProductTourFromSettings } from '@/lib/actions/tour';
 
 export function ProductTourSettingsCard() {
   const router = useRouter();
+  const { startTour } = useProductTour();
   const [message, setMessage] = useState('');
   const [pending, startTransition] = useTransition();
 
@@ -19,9 +22,8 @@ export function ProductTourSettingsCard() {
         setMessage(result.error);
         return;
       }
-      setMessage('Tour restarted — look for Sunny.');
       router.refresh();
-      window.dispatchEvent(new CustomEvent('product-tour-restart'));
+      startTour();
     });
   }
 
@@ -29,9 +31,10 @@ export function ProductTourSettingsCard() {
     <Card className="mt-6">
       <CardHeader
         title="Product tour"
-        description="Replay the quick walkthrough of UpperDeck features and Sunny tips"
+        description="Quick walkthrough of projects, files, and Sunny tips — start anytime"
       />
-      <Button onClick={handleStart} loading={pending} size="sm">
+      <Button onClick={handleStart} loading={pending} size="sm" className="gap-2">
+        <SunnyAvatar size="xs" />
         Give me a tour
       </Button>
       {message && (
