@@ -71,6 +71,85 @@ npm run mobile:env
 
 Types and brand colors live in `packages/shared/` (`@upperdeck/shared`). Mobile re-exports types from `src/lib/types.ts`.
 
+## Share with testers (EAS internal build)
+
+Use this for a small group — no App Store review. Builds install via a link from the Expo dashboard.
+
+### One-time setup
+
+1. Install EAS CLI and log in:
+
+   ```bash
+   npm i -g eas-cli
+   eas login
+   ```
+
+2. Link the app to Expo (from `apps/mobile/`):
+
+   ```bash
+   cd apps/mobile
+   eas build:configure
+   ```
+
+3. Point mobile at your **deployed** API in `.env.local` at repo root:
+
+   ```bash
+   NEXT_PUBLIC_SITE_URL=https://your-production-url.com
+   ```
+
+4. Create a Supabase test account for your tester(s).
+
+### iOS: register devices first
+
+Internal iOS builds only install on registered devices. Each tester needs to register once:
+
+```bash
+cd apps/mobile
+eas device:create
+```
+
+Send them the link EAS prints. After they register, rebuild (step below).
+
+### Build and share
+
+From **`apps/mobile/`**:
+
+```bash
+npm run build:preview:ios
+```
+
+From **repo root**:
+
+```bash
+npm run mobile:build:preview:ios
+```
+
+When the build finishes, open [expo.dev](https://expo.dev) → your project → **Builds** → open the build → **Install** / QR code. Send that link to testers.
+
+| Platform | Tester installs via |
+|----------|---------------------|
+| iOS | Safari → install profile → trust developer in Settings → open app |
+| Android | Download APK from the build page |
+
+### Rebuild when env or code changes
+
+`EXPO_PUBLIC_*` values are baked in at build time. After changing API URL or Supabase keys:
+
+```bash
+npm run mobile:eas:env
+npm run mobile:build:preview:ios
+```
+
+### Useful commands
+
+| Command | What |
+|---------|------|
+| `npm run mobile:eas:env` | Push env vars to EAS preview (no build) |
+| `npm run mobile:build:preview:ios` | Internal iOS build |
+| `npm run mobile:build:preview:android` | Internal Android APK |
+| `cd apps/mobile && eas device:create` | Register a tester iPhone |
+| `cd apps/mobile && eas build:list` | Recent builds |
+
 ## Features
 
 - Home dashboard (stats + Sunny updates + critical items)

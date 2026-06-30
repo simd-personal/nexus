@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabBarIcon } from '@/components/TabBarIcon';
+import { SUNNY_MARK_COLORS } from '@/components/SunnyMark';
 import { BRAND } from '@/theme/colors';
 
 const TAB_BAR_BASE = 52;
@@ -67,6 +68,8 @@ export default function TabsLayout() {
         name="sunny"
         options={{
           title: 'Sunny',
+          tabBarHideOnKeyboard: true,
+          tabBarActiveTintColor: SUNNY_MARK_COLORS.face,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon routeName="sunny" focused={focused} color={color} />
           ),

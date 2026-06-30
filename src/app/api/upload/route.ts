@@ -143,6 +143,12 @@ export async function POST(request: NextRequest) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
+    if (buffer.length === 0) {
+      return NextResponse.json(
+        { error: 'Upload was empty. Try capturing or selecting the file again.' },
+        { status: 400 }
+      );
+    }
     const bufferCheck = validateUploadByteSize(buffer.length, uploadKind);
     if (!bufferCheck.ok) {
       return NextResponse.json({ error: bufferCheck.error }, { status: 413 });

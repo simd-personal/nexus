@@ -39,17 +39,19 @@ export default function LoginScreen() {
 
   const passwordRef = useRef<TextInputType>(null);
 
-  useEffect(() => {
-    void (async () => {
-      const [availability, enabled, storedEmail] = await Promise.all([
-        getBiometricAvailability(),
-        isBiometricLoginEnabled(),
-        getStoredBiometricEmail(),
-      ]);
+  async function loadBiometricState() {
+    const [availability, enabled, storedEmail] = await Promise.all([
+      getBiometricAvailability(),
+      isBiometricLoginEnabled(),
+      getStoredBiometricEmail(),
+    ]);
 
-      setBiometric({ ...availability, enabled, storedEmail });
-      if (storedEmail) setEmail(storedEmail);
-    })();
+    setBiometric({ ...availability, enabled, storedEmail });
+    if (storedEmail) setEmail(storedEmail);
+  }
+
+  useEffect(() => {
+    void loadBiometricState();
   }, []);
 
   async function handleSignIn() {
@@ -62,8 +64,7 @@ export default function LoginScreen() {
       setBootstrapping(false);
       setError(result.error);
     } else {
-      const enabled = await isBiometricLoginEnabled();
-      setBiometric((current) => ({ ...current, enabled }));
+      await loadBiometricState();
     }
 
     setSubmitting(false);
@@ -78,6 +79,7 @@ export default function LoginScreen() {
     if (result.error) {
       setBootstrapping(false);
       setError(result.error);
+      await loadBiometricState();
     }
 
     setBiometricLoading(false);
@@ -102,7 +104,7 @@ export default function LoginScreen() {
               <UpperDeckLogo size="md" />
             </View>
             <Title>Your command center on iOS</Title>
-            <Subtitle>Sunny briefings, critical items, and project chat — optimized for mobile.</Subtitle>
+            <Subtitle>Sunny briefings, critical items, and project chat, optimized for mobile.</Subtitle>
           </View>
 
           <View style={styles.formCard}>
@@ -166,11 +168,7 @@ export default function LoginScreen() {
 
               {showBiometric ? (
                 <>
-                  <View style={styles.dividerRow}>
-                    <View style={styles.dividerLine} />
-                    <Text style={styles.dividerText}>or</Text>
-                    <View style={styles.dividerLine} />
-                  </View>
+                  <Text style={styles.dividerText}>or</Text>
 
                   <Pressable
                     accessibilityRole="button"
@@ -272,17 +270,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
     gap: spacing.md,
     alignItems: 'center',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    width: '100%',
-  },
-  dividerLine: {
-    flex: 1,
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: '#E5E7EB',
   },
   dividerText: {
     fontSize: 13,

@@ -71,3 +71,30 @@ export async function authenticateWithBiometrics(promptMessage: string) {
     fallbackLabel: 'Use passcode',
   });
 }
+
+/** True when the refresh token is dead — not for transient network failures. */
+export function isPermanentRefreshTokenError(error: {
+  status?: number;
+  code?: string;
+  message?: string;
+} | null): boolean {
+  if (!error) return false;
+
+  const permanentCodes = ['refresh_token_not_found', 'invalid_grant', 'session_not_found'];
+  if (error.code && permanentCodes.includes(error.code)) return true;
+
+  const message = (error.message ?? '').toLowerCase();
+  if (
+    message.includes('invalid refresh token') ||
+    message.includes('refresh token not found') ||
+    message.includes('session not found')
+  ) {
+    return true;
+  }
+
+  if (error.status === 400 || error.status === 401 || error.status === 403) {
+    return message.includes('refresh') || message.includes('invalid') || message.includes('expired');
+  }
+
+  return false;
+}

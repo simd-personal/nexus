@@ -8,6 +8,7 @@ import { InlineNotice } from '@/components/InlineNotice';
 import { Button, Card } from '@/components/ui';
 import { replaceProjectFile, uploadProjectFile } from '@/lib/api';
 import { findFileByUploadName } from '@/lib/files';
+import { prepareUploadFile } from '@/lib/prepare-upload-file';
 import type { ProjectFile } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -28,6 +29,7 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
   const [note, setNote] = useState('');
   const [pending, setPending] = useState<PendingUpload | null>(null);
   const [notice, setNotice] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+  const [preparing, setPreparing] = useState(false);
 
   const dismissNotice = useCallback(() => setNotice(null), []);
 
@@ -100,6 +102,26 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
     );
   }
 
+  async function stageUpload(uri: string, fileName: string, mimeType: string, preview: boolean) {
+    setPreparing(true);
+    try {
+      const prepared = await prepareUploadFile(uri, fileName, mimeType);
+      setPending({
+        uri: prepared.uri,
+        fileName: prepared.fileName,
+        mimeType: prepared.mimeType,
+        preview,
+      });
+    } catch (err) {
+      setNotice({
+        message: err instanceof Error ? err.message : 'Could not prepare that file.',
+        variant: 'error',
+      });
+    } finally {
+      setPreparing(false);
+    }
+  }
+
   async function pickPhoto(useCamera: boolean) {
     const permission = useCamera
       ? await ImagePicker.requestCameraPermissionsAsync()
@@ -111,20 +133,25 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
     }
 
     const result = useCamera
-      ? await ImagePicker.launchCameraAsync({ quality: 0.85 })
+      ? await ImagePicker.launchCameraAsync({
+          quality: 1,
+          exif: false,
+          allowsEditing: false,
+        })
       : await ImagePicker.launchImageLibraryAsync({
-          quality: 0.85,
+          quality: 1,
+          exif: false,
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
         });
 
     if (!result.canceled && result.assets[0]?.uri) {
       const asset = result.assets[0];
-      setPending({
-        uri: asset.uri,
-        fileName: asset.fileName ?? `photo-${Date.now()}.jpg`,
-        mimeType: asset.mimeType ?? 'image/jpeg',
-        preview: true,
-      });
+      await stageUpload(
+        asset.uri,
+        asset.fileName ?? `photo-${Date.now()}.jpg`,
+        asset.mimeType ?? 'image/jpeg',
+        true
+      );
     }
   }
 
@@ -137,12 +164,13 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
     if (result.canceled || !result.assets[0]) return;
 
     const asset = result.assets[0];
-    setPending({
-      uri: asset.uri,
-      fileName: asset.name,
-      mimeType: asset.mimeType ?? 'application/octet-stream',
-      preview: asset.mimeType?.startsWith('image/'),
-    });
+    const preview = asset.mimeType?.startsWith('image/') ?? false;
+    await stageUpload(
+      asset.uri,
+      asset.name,
+      asset.mimeType ?? 'application/octet-stream',
+      preview
+    );
   }
 
   const busy = uploadMutation.isPending || replaceMutation.isPending;
@@ -158,10 +186,12 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
         <InlineNotice message={notice.message} variant={notice.variant} onDismiss={dismissNotice} />
       ) : null}
 
+      {preparing ? <Text style={styles.preparing}>Preparing photo…</Text> : null}
+
       <View style={styles.actions}>
-        <UploadAction icon="camera-outline" label="Camera" onPress={() => void pickPhoto(true)} />
-        <UploadAction icon="images-outline" label="Photos" onPress={() => void pickPhoto(false)} />
-        <UploadAction icon="document-outline" label="Files" onPress={() => void pickDocument()} />
+        <UploadAction icon="camera-outline" label="Camera" onPress={() => void pickPhoto(true)} disabled={preparing || busy} />
+        <UploadAction icon="images-outline" label="Photos" onPress={() => void pickPhoto(false)} disabled={preparing || busy} />
+        <UploadAction icon="document-outline" label="Files" onPress={() => void pickDocument()} disabled={preparing || busy} />
       </View>
 
       {pending ? (
@@ -202,15 +232,22 @@ function UploadAction({
   icon,
   label,
   onPress,
+  disabled,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   onPress: () => void;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.action, pressed && styles.actionPressed]}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.action,
+        disabled && styles.actionDisabled,
+        pressed && !disabled && styles.actionPressed,
+      ]}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
@@ -250,6 +287,14 @@ const styles = StyleSheet.create({
   },
   actionPressed: {
     opacity: 0.85,
+  },
+  actionDisabled: {
+    opacity: 0.5,
+  },
+  preparing: {
+    fontSize: 14,
+    color: BRAND.textMuted,
+    textAlign: 'center',
   },
   actionIcon: {
     width: 44,

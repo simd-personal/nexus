@@ -10,19 +10,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
-  KeyboardAvoidingView,
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChatMessageBubble, type ChatBubbleMessage } from '@/components/ChatMessageBubble';
 import { ChatScopeChips } from '@/components/ChatScopeChips';
 import { ChatScopePicker } from '@/components/ChatScopePicker';
-import { BrandHeader } from '@/components/BrandHeader';
+import { TabScreenHeader } from '@/components/BrandHeader';
 import { SunnyMark } from '@/components/SunnyMark';
 import { Screen } from '@/components/ui';
 import {
@@ -64,7 +65,6 @@ function toBubbleMessage(message: UiMessage, scope: ChatScope): ChatBubbleMessag
 }
 
 export default function SunnyScreen() {
-  const insets = useSafeAreaInsets();
   const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() });
   const projects = projectsQuery.data?.projects ?? [];
   const [scope, setScope] = useState<ChatScope>({ kind: 'all' });
@@ -78,13 +78,45 @@ export default function SunnyScreen() {
   const abortRef = useRef<AbortController | null>(null);
   const listRef = useRef<FlatList<UiMessage>>(null);
   const assistantIdRef = useRef<string | null>(null);
+  const stickToBottomRef = useRef(true);
   const scopeRef = useRef(scope);
   scopeRef.current = scope;
   const scopeInitialized = useRef(false);
+  const [footerHeight, setFooterHeight] = useState(96);
+  const [keyboardInset, setKeyboardInset] = useState(0);
+
+  const scrollToBottom = useCallback((animated = true) => {
+    requestAnimationFrame(() => {
+      listRef.current?.scrollToEnd({ animated });
+    });
+  }, []);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardInset(event.endCoordinates.height);
+      if (messages.length > 0) {
+        setTimeout(() => scrollToBottom(true), Platform.OS === 'ios' ? 50 : 0);
+      }
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardInset(0));
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [messages.length, scrollToBottom]);
+
+  useEffect(() => {
+    if (!stickToBottomRef.current || messages.length === 0) return;
+    scrollToBottom(false);
+  }, [messages, scrollToBottom]);
 
   useEffect(() => {
     if (projects.length === 0 || scopeReady) return;
@@ -142,6 +174,7 @@ export default function SunnyScreen() {
 
       const assistantId = `assistant-${Date.now()}`;
       assistantIdRef.current = assistantId;
+      stickToBottomRef.current = true;
 
       setMessages((prev) => [
         ...prev,
@@ -244,100 +277,103 @@ export default function SunnyScreen() {
   const canChat = projects.length > 0;
   const scopeSummary = formatScopeSummary(scope);
   const hasMessages = messages.length > 0;
-  const tabBarInset = 56 + insets.bottom;
+  const listBottomInset = footerHeight + keyboardInset + spacing.lg;
+
+  function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distanceFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    stickToBottomRef.current = distanceFromBottom < 96;
+  }
 
   return (
     <Screen>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? tabBarInset : 0}
-      >
-        <View style={styles.shell}>
-          <View style={styles.header}>
-            <BrandHeader compact />
-            <Text style={styles.title}>Ask Sunny</Text>
-            <Text style={styles.subtitle} numberOfLines={2}>
-              Evidence-backed answers from your project materials.
-            </Text>
-          </View>
+      <View style={styles.shell}>
+        <TabScreenHeader
+          compactBrand
+          title="Ask Sunny"
+          subtitle="Evidence-backed answers from your project materials."
+        />
 
-          <View style={styles.scopeSection}>
-            <View style={styles.scopeBar}>
-              <Text style={styles.scopeLabel}>Scope</Text>
-              {projects.length === 0 ? (
-                <Text style={styles.emptyHint}>Create a project to start chatting.</Text>
-              ) : (
-                <ChatScopePicker projects={projects} scope={scope} onScopeChange={setScope} />
-              )}
-            </View>
-            {projects.length > 0 ? (
-              <View style={styles.scopeChipsRow}>
-                <ChatScopeChips
-                  projects={projects}
-                  scope={scope}
-                  onScopeChange={setScope}
-                  compact
-                />
+        <View style={styles.scopeSection}>
+          <Text style={styles.scopeLabel}>Scope</Text>
+          {projects.length === 0 ? (
+            <Text style={styles.emptyHint}>Create a project to start chatting.</Text>
+          ) : (
+            <ChatScopePicker projects={projects} scope={scope} onScopeChange={setScope} />
+          )}
+        </View>
+        {projects.length > 0 && scope.kind !== 'all' ? (
+          <View style={styles.scopeChipsRow}>
+            <ChatScopeChips projects={projects} scope={scope} onScopeChange={setScope} compact />
+          </View>
+        ) : null}
+
+        <View style={styles.chatColumn}>
+          <FlatList
+            ref={listRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            style={styles.chatArea}
+            contentContainerStyle={[
+              hasMessages ? styles.messages : styles.messagesEmpty,
+              { paddingBottom: listBottomInset },
+            ]}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            onContentSizeChange={() => {
+              if (stickToBottomRef.current) scrollToBottom(false);
+            }}
+            ListEmptyComponent={
+            loadingHistory ? (
+              <View style={styles.emptyWrap}>
+                <ActivityIndicator color={BRAND.graphite} />
+                <Text style={styles.emptyChat}>Loading conversation…</Text>
               </View>
-            ) : null}
-          </View>
+            ) : (
+              <View style={styles.emptyWrap}>
+                <SunnyMark size={56} />
+                <Text style={styles.emptyTitle}>
+                  {canChat ? `Ask about ${scopeSummary.toLowerCase()}` : 'Add a project to begin'}
+                </Text>
+                <Text style={styles.emptyChat}>
+                  Search your uploaded materials or ask about risks, follow-ups, and what changed
+                  recently.
+                </Text>
+                <View style={styles.suggestions}>
+                  {SUGGESTIONS.map((suggestion) => (
+                    <Pressable
+                      key={suggestion}
+                      onPress={() => void sendMessage(suggestion)}
+                      disabled={!canChat || streaming}
+                      style={({ pressed }) => [
+                        styles.suggestionChip,
+                        pressed && styles.suggestionChipPressed,
+                        (!canChat || streaming) && styles.suggestionChipDisabled,
+                      ]}
+                    >
+                      <Text style={styles.suggestionText}>{suggestion}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            )
+          }
+          renderItem={({ item }) => (
+            <ChatMessageBubble message={toBubbleMessage(item, scope)} />
+          )}
+          />
 
-          <View style={styles.chatArea}>
-            <FlatList
-              ref={listRef}
-              data={messages}
-              keyExtractor={(item) => item.id}
-              style={styles.messageList}
-              contentContainerStyle={[
-                hasMessages ? styles.messages : styles.messagesEmpty,
-                { paddingBottom: spacing.sm },
-              ]}
-              keyboardShouldPersistTaps="handled"
-              keyboardDismissMode="interactive"
-              onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-              ListEmptyComponent={
-                loadingHistory ? (
-                  <View style={styles.emptyWrap}>
-                    <ActivityIndicator color={BRAND.graphite} />
-                    <Text style={styles.emptyChat}>Loading conversation…</Text>
-                  </View>
-                ) : (
-                  <View style={styles.emptyWrap}>
-                    <SunnyMark size={56} />
-                    <Text style={styles.emptyTitle}>
-                      {canChat ? `Ask about ${scopeSummary.toLowerCase()}` : 'Add a project to begin'}
-                    </Text>
-                    <Text style={styles.emptyChat}>
-                      Search your uploaded materials or ask about risks, follow-ups, and what changed
-                      recently.
-                    </Text>
-                    <View style={styles.suggestions}>
-                      {SUGGESTIONS.map((suggestion) => (
-                        <Pressable
-                          key={suggestion}
-                          onPress={() => void sendMessage(suggestion)}
-                          disabled={!canChat || streaming}
-                          style={({ pressed }) => [
-                            styles.suggestionChip,
-                            pressed && styles.suggestionChipPressed,
-                            (!canChat || streaming) && styles.suggestionChipDisabled,
-                          ]}
-                        >
-                          <Text style={styles.suggestionText}>{suggestion}</Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-                )
+          <View
+            style={[styles.footer, keyboardInset > 0 && { bottom: keyboardInset }]}
+            onLayout={(event) => {
+              const nextHeight = Math.ceil(event.nativeEvent.layout.height);
+              if (nextHeight > 0 && nextHeight !== footerHeight) {
+                setFooterHeight(nextHeight);
               }
-              renderItem={({ item }) => (
-                <ChatMessageBubble message={toBubbleMessage(item, scope)} />
-              )}
-            />
-          </View>
-
-          <View style={styles.footer}>
+            }}
+          >
             {status ? (
               <View style={styles.statusRow}>
                 {streaming ? <ActivityIndicator size="small" color="#9CA3AF" /> : null}
@@ -361,6 +397,10 @@ export default function SunnyScreen() {
                   style={styles.input}
                   multiline
                   editable={canChat && !streaming}
+                  onFocus={() => {
+                    stickToBottomRef.current = true;
+                    setTimeout(() => scrollToBottom(true), 100);
+                  }}
                   onSubmitEditing={() => void sendMessage(input)}
                   blurOnSubmit={false}
                 />
@@ -377,65 +417,44 @@ export default function SunnyScreen() {
                   <Feather name="send" size={16} color="#fff" />
                 </Pressable>
               </View>
-              <Text style={styles.composerHint}>
-                {streaming ? 'Sunny is responding…' : 'Conversations saved automatically'}
-              </Text>
+              {keyboardInset === 0 ? (
+                <Text style={styles.composerHint}>
+                  {streaming ? 'Sunny is responding…' : 'Conversations saved automatically'}
+                </Text>
+              ) : null}
             </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   shell: {
     flex: 1,
     minHeight: 0,
     backgroundColor: '#fff',
   },
-  header: {
-    flexShrink: 0,
-    backgroundColor: BRAND.cream,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E8E6E1',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.xs,
-    paddingBottom: spacing.sm,
-    gap: 2,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: BRAND.graphite,
-    letterSpacing: -0.3,
-    marginTop: spacing.xs,
-  },
-  subtitle: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: BRAND.textMuted,
-  },
   scopeSection: {
     flexShrink: 0,
-    backgroundColor: '#fff',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-    gap: spacing.sm,
-  },
-  scopeBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
+    backgroundColor: '#fff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E7EB',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   scopeChipsRow: {
     flexShrink: 0,
-    flexGrow: 0,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+    backgroundColor: '#fff',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E5E7EB',
   },
   scopeLabel: {
     fontSize: 11,
@@ -450,18 +469,18 @@ const styles = StyleSheet.create({
     color: BRAND.textMuted,
     textAlign: 'right',
   },
+  chatColumn: {
+    flex: 1,
+    minHeight: 0,
+  },
   chatArea: {
     flex: 1,
     minHeight: 0,
     backgroundColor: '#fff',
   },
-  messageList: {
-    flex: 1,
-  },
   messages: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
   },
   messagesEmpty: {
     flexGrow: 1,
@@ -524,7 +543,10 @@ const styles = StyleSheet.create({
     color: '#9CA3AF',
   },
   footer: {
-    flexShrink: 0,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
     backgroundColor: '#FAF9F6',
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: '#E5E7EB',
@@ -532,7 +554,7 @@ const styles = StyleSheet.create({
   composer: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.xs,
+    paddingBottom: spacing.sm,
   },
   composerShell: {
     flexDirection: 'row',

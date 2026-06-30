@@ -202,7 +202,13 @@ export async function uploadProjectFile(
 
   const body = (await response.json().catch(() => ({}))) as { error?: string; data?: { id: string } };
   if (!response.ok) {
-    throw new ApiError(body.error ?? 'Upload failed', response.status);
+    if (response.status === 413) {
+      throw new ApiError('File is too large for upload (max 4 MB on mobile).', response.status);
+    }
+    if (response.status === 400 && !body.error) {
+      throw new ApiError('Upload was rejected. Try capturing the photo again.', response.status);
+    }
+    throw new ApiError(body.error ?? `Upload failed (${response.status})`, response.status);
   }
   return body;
 }

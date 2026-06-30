@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
     width: '100%',
   },
   avatarWrap: {
@@ -102,7 +102,6 @@ const styles = StyleSheet.create({
   assistantBody: {
     flex: 1,
     minWidth: 0,
-    maxWidth: '90%',
   },
   assistantHeader: {
     flexDirection: 'row',

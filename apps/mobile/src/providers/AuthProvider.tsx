@@ -7,6 +7,7 @@ import {
   getBiometricAvailability,
   getStoredRefreshToken,
   isBiometricLoginEnabled,
+  isPermanentRefreshTokenError,
   updateStoredRefreshToken,
 } from '@/lib/biometric-auth';
 import { supabase } from '@/lib/supabase';
@@ -41,6 +42,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      if (data.session?.refresh_token) {
+        void updateStoredRefreshToken(data.session.refresh_token);
+      }
       setLoading(false);
     });
 
@@ -88,10 +92,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { error: 'Biometric sign-in is not set up on this device.' };
         }
 
+        // Drop any stale local session so refresh uses the biometric token cleanly.
+        await supabase.auth.signOut({ scope: 'local' });
+
         const { data, error } = await supabase.auth.refreshSession({ refresh_token: refreshToken });
         if (error || !data.session) {
-          await disableBiometricLogin();
-          return { error: 'Biometric sign-in expired. Sign in with your password once.' };
+          if (isPermanentRefreshTokenError(error)) {
+            await disableBiometricLogin();
+            return { error: 'Biometric sign-in expired. Sign in with your password once.' };
+          }
+          return { error: 'Could not sign in. Check your connection and try again.' };
         }
 
         await updateStoredRefreshToken(data.session.refresh_token);
@@ -100,6 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async signOut() {
         setBootstrapping(false);
         await supabase.auth.signOut();
+        await disableBiometricLogin();
       },
     }),
     [session, loading, bootstrapping]

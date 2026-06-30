@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import type { Citation } from '@/lib/types';
+import { spacing } from '@/theme/colors';
 
 type CitationsListProps = {
   citations: Citation[];
@@ -34,61 +35,69 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.prefix}>Sources: </Text>
-      {unique.map((citation, index) => {
-        const label = citationLabel(citation);
-        const canOpen = Boolean(projectId && citation.file_id);
+      <Text style={styles.title}>Sources</Text>
+      <View style={styles.list}>
+        {unique.map((citation, index) => {
+          const label = citationLabel(citation);
+          const canOpen = Boolean(projectId && citation.file_id);
 
-        return (
-          <View key={`${citation.file_id ?? citation.file_name}-${index}`} style={styles.inline}>
-            {index > 0 ? <Text style={styles.dot}> · </Text> : null}
-            {canOpen ? (
-              <Pressable
-                onPress={() => router.push(`/project/${projectId}`)}
-                accessibilityRole="link"
-              >
-                <Text style={styles.link}>{label}</Text>
-              </Pressable>
-            ) : (
-              <Text style={styles.label}>{label}</Text>
-            )}
-          </View>
-        );
-      })}
+          return (
+            <View key={`${citation.file_id ?? citation.file_name}-${index}`} style={styles.chip}>
+              {canOpen ? (
+                <Pressable
+                  onPress={() => router.push(`/project/${projectId}`)}
+                  accessibilityRole="link"
+                  style={styles.chipPressable}
+                >
+                  <Text style={styles.chipText} numberOfLines={2}>
+                    {label}
+                  </Text>
+                </Pressable>
+              ) : (
+                <Text style={styles.chipText} numberOfLines={2}>
+                  {label}
+                </Text>
+              )}
+            </View>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
-    marginTop: 8,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'flex-start',
+    marginTop: spacing.sm,
+    gap: 6,
   },
-  prefix: {
-    fontSize: 10,
-    lineHeight: 16,
+  title: {
+    fontSize: 11,
+    fontWeight: '600',
     color: '#9CA3AF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
-  inline: {
+  list: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    gap: 6,
   },
-  dot: {
-    fontSize: 10,
-    lineHeight: 16,
-    color: '#D1D5DB',
+  chip: {
+    maxWidth: '100%',
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E5E7EB',
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
   },
-  label: {
-    fontSize: 10,
-    lineHeight: 16,
-    color: '#6B7280',
+  chipPressable: {
+    maxWidth: '100%',
   },
-  link: {
-    fontSize: 10,
+  chipText: {
+    fontSize: 12,
     lineHeight: 16,
-    color: '#6B7280',
-    textDecorationLine: 'underline',
+    color: '#4B5563',
   },
 });

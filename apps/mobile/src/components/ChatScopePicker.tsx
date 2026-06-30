@@ -206,11 +206,9 @@ export function ChatScopePicker({
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setPickerOpen(false)}>
-          <Pressable
-            style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}
-            onPress={() => {}}
-          >
+        <View style={styles.backdrop}>
+          <Pressable style={StyleSheet.absoluteFillObject} onPress={() => setPickerOpen(false)} />
+          <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Project scope</Text>
               <Pressable onPress={() => setPickerOpen(false)} hitSlop={8}>
@@ -260,8 +258,8 @@ export function ChatScopePicker({
             <Pressable onPress={() => setPickerOpen(false)} style={styles.doneBtn}>
               <Text style={styles.doneBtnText}>Done</Text>
             </Pressable>
-          </Pressable>
-        </Pressable>
+          </View>
+        </View>
       </Modal>
     </>
   );
@@ -296,6 +294,7 @@ const styles = StyleSheet.create({
   },
   sheet: {
     maxHeight: '72%',
+    width: '100%',
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     backgroundColor: '#fff',
