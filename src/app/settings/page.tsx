@@ -11,6 +11,7 @@ import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminP
 import { BillingSettings } from '@/components/settings/BillingSettings';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { ProfileForm } from '@/components/settings/ProfileForm';
+import { DashboardPortfolioSettingsCard } from '@/components/settings/DashboardPortfolioSettings';
 import { ProductTourSettingsCard } from '@/components/settings/ProductTourSettings';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
 import { getDashboardPortfolioPreference } from '@/lib/data/queries';

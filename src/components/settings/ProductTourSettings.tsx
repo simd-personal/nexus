@@ -15,7 +15,7 @@ export function ProductTourSettingsCard() {
     setMessage('');
     startTransition(async () => {
       const result = await startProductTourFromSettings();
-      if (result.error) {
+      if ('error' in result) {
         setMessage(result.error);
         return;
       }
