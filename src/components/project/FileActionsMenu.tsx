@@ -4,7 +4,16 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/Button';
 import type { FileRecord } from '@/types/database';
-import { FolderInput, Link2, MoreHorizontal, Pencil, StickyNote, Trash2 } from 'lucide-react';
+import {
+  Eye,
+  FolderInput,
+  Link2,
+  MoreHorizontal,
+  Pencil,
+  RefreshCw,
+  StickyNote,
+  Trash2,
+} from 'lucide-react';
 
 const MENU_WIDTH = 208;
 
@@ -18,12 +27,27 @@ type FileActionsMenuProps = {
   file: FileRecord;
   currentProjectId: string;
   busy?: boolean;
+  iconOnly?: boolean;
+  canReprocess?: boolean;
+  onView?: () => void;
+  onReprocess?: () => void;
+  onDelete?: () => void;
   onUpdated: () => void;
 };
 
 type DialogMode = 'rename' | 'note' | 'move' | 'share' | 'remove' | null;
 
-export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: FileActionsMenuProps) {
+export function FileActionsMenu({
+  file,
+  currentProjectId,
+  busy,
+  iconOnly = false,
+  canReprocess = false,
+  onView,
+  onReprocess,
+  onDelete,
+  onUpdated,
+}: FileActionsMenuProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
@@ -159,6 +183,40 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
             className="fixed z-50 w-52 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]"
             style={{ top: menuPosition.top, left: menuPosition.left }}
           >
+            {onView && (
+              <MenuButton
+                icon={Eye}
+                label="View file"
+                onClick={() => {
+                  setOpen(false);
+                  onView();
+                }}
+              />
+            )}
+            {canReprocess && onReprocess && (
+              <MenuButton
+                icon={RefreshCw}
+                label="Reprocess"
+                onClick={() => {
+                  setOpen(false);
+                  onReprocess();
+                }}
+              />
+            )}
+            {onDelete && (
+              <MenuButton
+                icon={Trash2}
+                label="Delete file"
+                onClick={() => {
+                  setOpen(false);
+                  onDelete();
+                }}
+                danger
+              />
+            )}
+            {(onView || (canReprocess && onReprocess) || onDelete) && (
+              <div className="my-1 border-t border-gray-100 dark:border-[var(--ud-cloud)]" />
+            )}
             <MenuButton icon={Pencil} label="Rename file" onClick={() => startDialog('rename')} />
             <MenuButton icon={StickyNote} label="Add note or context" onClick={() => startDialog('note')} />
             <MenuButton icon={FolderInput} label="Move to project" onClick={() => startDialog('move')} />
@@ -172,17 +230,17 @@ export function FileActionsMenu({ file, currentProjectId, busy, onUpdated }: Fil
   return (
     <div className="relative inline-block" data-file-actions-root ref={anchorRef}>
       <Button
-        variant="secondary"
+        variant={iconOnly ? 'ghost' : 'secondary'}
         size="sm"
         disabled={busy}
         onClick={() => setOpen((current) => !current)}
         aria-label={`File actions for ${file.file_name}`}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="shrink-0"
+        className={iconOnly ? 'h-8 w-8 shrink-0 px-0' : 'shrink-0'}
       >
         <MoreHorizontal className="h-4 w-4" />
-        <span className="hidden sm:inline">Actions</span>
+        {!iconOnly && <span className="hidden sm:inline">Actions</span>}
       </Button>
 
       {menu}

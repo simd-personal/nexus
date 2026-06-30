@@ -1,22 +1,20 @@
 'use client';
 
-import { PhotoCaptureUpload, isImageFileName } from '@/components/project/PhotoCaptureUpload';
-import { EmailForwardCard } from '@/components/project/EmailForwardCard';
 import { FileActionsMenu } from '@/components/project/FileActionsMenu';
-import { FileUploadCenter } from '@/components/project/FileUpload';
-import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { FileProcessingProgress } from '@/components/project/FileProcessingProgress';
+import { FileViewerModal } from '@/components/project/FileViewerModal';
+import { isImageFileName } from '@/components/project/PhotoCaptureUpload';
+import { ProjectUploadSection } from '@/components/project/ProjectUploadSection';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
 import { needsProcessingKick } from '@/lib/processing/progress';
 import { fileStatusLabel } from '@/lib/processing/user-messages';
 import { kickFileProcessing } from '@/lib/upload/client';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
-import { Eye, FileText, Image as ImageIcon, RefreshCw, Trash2 } from 'lucide-react';
+import { FileText, Image as ImageIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
@@ -161,18 +159,13 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 
   return (
     <div className="space-y-6">
-      <EmailForwardCard projectId={projectId} />
-      <PhotoCaptureUpload
+      <ProjectUploadSection
         projectId={projectId}
+        fileCount={files.length}
         onUploadComplete={handleUploadComplete}
         onMessage={setUploadMessage}
+        uploadMessage={uploadMessage}
       />
-      <FileUploadCenter projectId={projectId} onUploadComplete={handleUploadComplete} />
-      {uploadMessage && (
-        <p className={`rounded-lg px-1 text-sm ${uploadMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}>
-          {uploadMessage}
-        </p>
-      )}
 
       {viewingFile && (
         <FileViewerModal file={viewingFile} onClose={() => setViewingFile(null)} />
@@ -202,110 +195,94 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
       )}
 
       <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Uploaded Files</h2>
+        <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">Uploaded Files</h2>
         {files.length === 0 ? (
-          <Card className="text-center py-8">
-            <FileText className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+          <Card className="py-8 text-center">
+            <FileText className="mx-auto mb-2 h-8 w-8 text-gray-400 dark:text-gray-500" />
             <p className="text-sm text-gray-500 dark:text-gray-400">No files uploaded yet</p>
           </Card>
         ) : (
-          <div className="space-y-3">
-            {files.map((file) => (
-              <Card key={file.id} padding={true}>
-                <div className="space-y-3">
-                  <div className="flex min-w-0 items-start gap-3">
+          <div className="overflow-hidden rounded-xl border border-[var(--ud-mist)] bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
+            <ul className="divide-y divide-gray-100 dark:divide-[var(--ud-cloud)]">
+              {files.map((file) => (
+                <li key={file.id} className="px-4 py-3">
+                  <div className="flex items-start gap-3">
                     <button
                       type="button"
                       onClick={() => setViewingFile(file)}
-                      className="flex min-w-0 flex-1 items-start gap-3 text-left hover:opacity-80"
+                      className="mt-0.5 shrink-0 hover:opacity-80"
+                      aria-label={`View ${file.file_name}`}
                     >
                       {isImageFileName(file.file_name) ? (
-                        <ImageIcon className="h-5 w-5 shrink-0 text-violet-500" />
+                        <ImageIcon className="h-4 w-4 text-violet-500" />
                       ) : (
-                        <FileText className="h-5 w-5 shrink-0 text-gray-400 dark:text-gray-500" />
+                        <FileText className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                       )}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 break-words">{file.file_name}</p>
-                          <span className="sm:hidden">{fileStatusBadge(file)}</span>
-                        </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
-                          {' · '}
-                          {formatRelativeTime(file.created_at)}
-                          {file.origin_file_id ? ' · Shared copy' : ''}
-                        </p>
-                        {file.user_note && (
-                          <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">{file.user_note}</p>
-                        )}
-                      </div>
                     </button>
-                    {file.status === 'processing' && (
-                      <RefreshCw className="h-4 w-4 shrink-0 animate-spin text-amber-500" />
-                    )}
-                  </div>
 
-                  <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3 dark:border-[var(--ud-cloud)] sm:border-0 sm:pt-0">
-                    <FileActionsMenu
-                      file={file}
-                      currentProjectId={projectId}
-                      busy={busyFileId === file.id}
-                      onUpdated={async () => {
-                        await fetchFiles();
-                        router.refresh();
-                      }}
-                    />
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setViewingFile(file)}
-                      aria-label={`View ${file.file_name}`}
-                      className="shrink-0"
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span className="hidden sm:inline">View</span>
-                    </Button>
-                    {canReprocess(file.status) && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={busyFileId === file.id}
-                        onClick={() => handleReprocess(file)}
-                        aria-label={`Reprocess ${file.file_name}`}
-                        className="shrink-0"
-                      >
-                        <RefreshCw className={`h-4 w-4 ${busyFileId === file.id ? 'animate-spin' : ''}`} />
-                        <span className="hidden sm:inline">Reprocess</span>
-                      </Button>
-                    )}
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      disabled={busyFileId === file.id}
-                      onClick={() => openDeleteDialog(file)}
-                      aria-label={`Delete ${file.file_name}`}
-                      className="shrink-0 text-red-600 hover:border-red-200 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      <span className="hidden sm:inline">Delete</span>
-                    </Button>
-                    <span className="hidden sm:inline">{fileStatusBadge(file)}</span>
-                  </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setViewingFile(file)}
+                          className="min-w-0 flex-1 text-left hover:opacity-80"
+                        >
+                          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+                            {file.file_name}
+                          </p>
+                          <p className="truncate text-xs text-gray-500 dark:text-gray-400">
+                            {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
+                            {' · '}
+                            {formatRelativeTime(file.created_at)}
+                            {file.origin_file_id ? ' · Shared copy' : ''}
+                          </p>
+                        </button>
+                        <span className="hidden shrink-0 sm:inline-flex">{fileStatusBadge(file)}</span>
+                        <FileActionsMenu
+                          file={file}
+                          currentProjectId={projectId}
+                          busy={busyFileId === file.id}
+                          iconOnly
+                          canReprocess={canReprocess(file.status)}
+                          onView={() => setViewingFile(file)}
+                          onReprocess={() => handleReprocess(file)}
+                          onDelete={() => openDeleteDialog(file)}
+                          onUpdated={async () => {
+                            await fetchFiles();
+                            router.refresh();
+                          }}
+                        />
+                      </div>
 
-                  {(file.status === 'processing' || file.status === 'pending' || file.status === 'failed') && (
-                    <FileProcessingProgress file={file} />
-                  )}
-                  {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
-                    <p className="text-xs text-amber-700">
-                      Not indexed for search yet. Open View to read the spreadsheet, or tap Reprocess to index it.
-                    </p>
-                  )}
-                  {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">This file type is stored but cannot be processed.</p>
-                  )}
-                </div>
-              </Card>
-            ))}
+                      {file.user_note && (
+                        <p className="mt-0.5 line-clamp-1 text-xs text-gray-600 dark:text-gray-300">
+                          {file.user_note}
+                        </p>
+                      )}
+
+                      {(file.status === 'processing' ||
+                        file.status === 'pending' ||
+                        file.status === 'failed') && (
+                        <FileProcessingProgress file={file} compact />
+                      )}
+
+                      {file.status === 'uploaded_unprocessed' && isProcessable(file.file_name) && (
+                        <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+                          Not indexed yet — reprocess to enable search.
+                        </p>
+                      )}
+                      {file.status === 'uploaded_unprocessed' && !isProcessable(file.file_name) && (
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Stored only — this file type cannot be indexed.
+                        </p>
+                      )}
+
+                      <span className="mt-1 inline-flex sm:hidden">{fileStatusBadge(file)}</span>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
