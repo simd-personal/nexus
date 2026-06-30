@@ -35,7 +35,6 @@ export function resolveOnboardingStep(input: {
 }
 
 export function needsOnboarding(projects: ProjectWithStats[]): boolean {
-  if (projects.length === 0) return true;
-  const primary = projects[0];
-  return (primary?.file_count ?? 0) === 0;
+  // Only brand-new users with no projects — empty projects are valid; upload can happen from the project itself.
+  return projects.length === 0;
 }

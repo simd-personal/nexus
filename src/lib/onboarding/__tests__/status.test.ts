@@ -60,12 +60,9 @@ describe('resolveOnboardingStep', () => {
 });
 
 describe('needsOnboarding', () => {
-  it('is true with no projects or zero files', () => {
+  it('is true only when the user has no projects', () => {
     expect(needsOnboarding([])).toBe(true);
-    expect(needsOnboarding([project()])).toBe(true);
-  });
-
-  it('is false once files exist', () => {
+    expect(needsOnboarding([project()])).toBe(false);
     expect(needsOnboarding([project({ file_count: 2 })])).toBe(false);
   });
 });
