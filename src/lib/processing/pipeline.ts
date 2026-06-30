@@ -200,6 +200,9 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
             const extracted = await extractTextFromBuffer(options.buffer, fileName);
             text = extracted.text;
             pages = extracted.pages;
+            if (extracted.ocrExtracted) {
+              metadata = { ...metadata, ocr_extracted: true };
+            }
           }
 
           if (ext === '.eml') {
@@ -227,13 +230,25 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
       if (!text.trim()) {
         await supabase
           .from('files')
-          .update({ status: 'failed', metadata: { ...metadata, error: 'No text extracted' } })
+          .update({
+            status: 'failed',
+            metadata: {
+              ...metadata,
+              error: 'No text extracted',
+              page_count: pages?.length,
+            },
+          })
           .eq('id', fileId);
         await report({
           stage: 'failed',
           percent: 0,
           label: 'Processing failed',
-          detail: 'No text could be extracted from this file',
+          detail:
+            pages?.length && metadata.ocr_extracted
+              ? 'No readable text found, even after OCR on scanned pages'
+              : pages?.length
+                ? `No readable text found in ${pages.length} page(s) — the PDF may be blank or encrypted`
+                : 'No text could be extracted from this file',
         });
         return { completed: false, stage: 'failed' };
       }
@@ -253,11 +268,14 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
       await report({
         stage: 'extracting',
         percent: 15,
-        label: pages?.length
-          ? `Extracted ${pages.length} pages`
-          : sheets?.length
-            ? `Extracted ${sheets.length} sheet(s)`
-            : 'Text extracted',
+        label:
+          metadata.ocr_extracted && pages?.length
+            ? `Read ${pages.length} scanned page(s) with OCR`
+            : pages?.length
+              ? `Extracted ${pages.length} pages`
+              : sheets?.length
+                ? `Extracted ${sheets.length} sheet(s)`
+                : 'Text extracted',
       });
 
       await supabase

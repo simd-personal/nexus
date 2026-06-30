@@ -1,13 +1,39 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   extractTextFromBuffer,
+  needsPdfOcrFallback,
   parseEmailBody,
   parseEmailMetadata,
+  PDF_MIN_CHARS_PER_PAGE,
 } from '@/lib/processing/extract';
 
 vi.mock('@/lib/ai/openai', () => ({
   extractTextFromImage: vi.fn().mockResolvedValue('Slide title: Q3 revenue up 12 percent'),
 }));
+
+describe('needsPdfOcrFallback', () => {
+  it('requests OCR when native PDF text is empty', () => {
+    const pages = Array.from({ length: 21 }, (_, index) => ({
+      pageNumber: index + 1,
+      text: '',
+    }));
+    expect(needsPdfOcrFallback('\n\n', pages)).toBe(true);
+  });
+
+  it('requests OCR when extracted text is too sparse for the page count', () => {
+    const pages = Array.from({ length: 21 }, (_, index) => ({
+      pageNumber: index + 1,
+      text: 'footer',
+    }));
+    expect(needsPdfOcrFallback('footer '.repeat(21), pages)).toBe(true);
+    expect(PDF_MIN_CHARS_PER_PAGE).toBeGreaterThan(1);
+  });
+
+  it('skips OCR for text-heavy PDFs', () => {
+    const pages = [{ pageNumber: 1, text: 'A'.repeat(500) }];
+    expect(needsPdfOcrFallback('A'.repeat(500), pages)).toBe(false);
+  });
+});
 
 describe('extractTextFromBuffer', () => {
   beforeEach(() => {

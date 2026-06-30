@@ -18,17 +18,84 @@ function mimeForExtension(ext: string): string {
   }
 }
 
-async function extractPdfText(buffer: Buffer): Promise<{ text: string; pages: Array<{ pageNumber: number; text: string }> }> {
+/** Scanned PDFs often yield far less text than a real document per page. */
+export const PDF_MIN_CHARS_PER_PAGE = 40;
+const PDF_OCR_SCALE = 1.5;
+const PDF_OCR_CONCURRENCY = 3;
+
+export function needsPdfOcrFallback(
+  text: string,
+  pages: Array<{ pageNumber: number; text: string }>
+): boolean {
+  const pageCount = pages.length;
+  const trimmed = text.trim();
+  if (pageCount === 0) return !trimmed;
+  if (!trimmed) return true;
+  return trimmed.length < pageCount * PDF_MIN_CHARS_PER_PAGE;
+}
+
+async function ocrPdfPages(
+  parser: { getScreenshot: (params: Record<string, unknown>) => Promise<{ pages: Array<{ pageNumber: number; data?: Uint8Array }> }> },
+  pageNumbers: number[]
+): Promise<Array<{ pageNumber: number; text: string }>> {
+  const results: Array<{ pageNumber: number; text: string }> = [];
+
+  for (let i = 0; i < pageNumbers.length; i += PDF_OCR_CONCURRENCY) {
+    const batch = pageNumbers.slice(i, i + PDF_OCR_CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map(async (pageNumber) => {
+        const shot = await parser.getScreenshot({
+          partial: [pageNumber],
+          scale: PDF_OCR_SCALE,
+          imageBuffer: true,
+        });
+        const page = shot.pages.find((entry) => entry.pageNumber === pageNumber) ?? shot.pages[0];
+        if (!page?.data?.length) {
+          return { pageNumber, text: '' };
+        }
+        const text = await extractTextFromImage(Buffer.from(page.data), 'image/png');
+        return { pageNumber, text };
+      })
+    );
+    results.push(...batchResults);
+  }
+
+  return results.sort((a, b) => a.pageNumber - b.pageNumber);
+}
+
+async function extractPdfText(
+  buffer: Buffer
+): Promise<{
+  text: string;
+  pages: Array<{ pageNumber: number; text: string }>;
+  ocrExtracted: boolean;
+}> {
   await ensurePdfParseEnvironment();
   const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();
-    const pages = result.pages.map((page) => ({
+    let pages = result.pages.map((page) => ({
       pageNumber: page.num,
       text: page.text,
     }));
-    return { text: result.text, pages };
+
+    if (!needsPdfOcrFallback(result.text, pages)) {
+      return { text: result.text, pages, ocrExtracted: false };
+    }
+
+    const pageNumbers =
+      pages.length > 0
+        ? pages.map((page) => page.pageNumber)
+        : Array.from({ length: result.total }, (_, index) => index + 1);
+
+    pages = await ocrPdfPages(parser, pageNumbers);
+    const text = pages
+      .map((page) => page.text.trim())
+      .filter(Boolean)
+      .join('\n\n');
+
+    return { text, pages, ocrExtracted: true };
   } finally {
     await parser.destroy();
   }
@@ -55,7 +122,11 @@ export async function extractTextFromBuffer(
   buffer: Buffer,
   fileName: string,
   mimeType?: string
-): Promise<{ text: string; pages?: Array<{ pageNumber: number; text: string }> }> {
+): Promise<{
+  text: string;
+  pages?: Array<{ pageNumber: number; text: string }>;
+  ocrExtracted?: boolean;
+}> {
   const ext = getFileExtension(fileName);
 
   if (IMAGE_EXTENSIONS.includes(ext)) {
@@ -86,6 +157,7 @@ export async function extractTextFromBuffer(
       return {
         text: pdf.text,
         pages: pdf.pages.length ? pdf.pages : [{ pageNumber: 1, text: pdf.text }],
+        ocrExtracted: pdf.ocrExtracted,
       };
     }
 
