@@ -202,6 +202,11 @@ export function toggleNodeChecked(
   return next;
 }
 
+const PORTFOLIO_SCOPE_LABELS: Record<string, 'work' | 'personal'> = {
+  'Work projects': 'work',
+  'Personal projects': 'personal',
+};
+
 export function removeScopeLabel(
   projects: MobileProjectWithStats[],
   scope: ChatScope,
@@ -210,10 +215,29 @@ export function removeScopeLabel(
   if (scope.kind === 'all') return scope;
 
   const checked = checkedIdsFromScope(projects, scope);
+  const portfolio = PORTFOLIO_SCOPE_LABELS[label];
+  if (portfolio) {
+    for (const root of projects) {
+      removePortfolioFromNode(root, portfolio, checked);
+    }
+    return buildChatScope(projects, checked);
+  }
+
   for (const root of projects) {
     removeLabelFromNode(root, label, checked);
   }
   return buildChatScope(projects, checked);
+}
+
+function removePortfolioFromNode(
+  node: MobileProjectWithStats,
+  portfolio: 'work' | 'personal',
+  checked: Set<string>
+): void {
+  if ((node.portfolio ?? 'work') === portfolio) checked.delete(node.id);
+  for (const child of node.sub_projects ?? []) {
+    removePortfolioFromNode(child, portfolio, checked);
+  }
 }
 
 function removeLabelFromNode(

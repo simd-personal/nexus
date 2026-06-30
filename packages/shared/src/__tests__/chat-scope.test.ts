@@ -4,6 +4,7 @@ import {
   buildChatScope,
   formatScopeSummary,
   projectLabel,
+  removeScopeLabel,
   resolveScopeProjectIds,
   scopeFromPortfolio,
 } from '../chat-scope';
@@ -74,5 +75,10 @@ describe('shared chat-scope', () => {
     expect(formatScopeSummary(ALL_PROJECTS_SCOPE)).toBe('All projects');
     const scope = scopeFromPortfolio(tree, 'work');
     expect(formatScopeSummary(scope)).toBe('Work projects');
+  });
+
+  it('removes portfolio scope labels', () => {
+    const scope = scopeFromPortfolio(tree, 'work');
+    expect(removeScopeLabel(tree, scope, 'Work projects')).toEqual(ALL_PROJECTS_SCOPE);
   });
 });

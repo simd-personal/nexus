@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   ALL_PROJECTS_SCOPE,
   buildChatScope,
@@ -111,6 +112,7 @@ export function ChatScopePicker({
   onScopeChange,
   onOpenChange,
 }: ChatScopePickerProps) {
+  const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set());
 
@@ -150,10 +152,12 @@ export function ChatScopePicker({
         <Feather name="chevron-down" size={14} color="#9CA3AF" />
       </Pressable>
 
-      {open ? (
-        <View style={styles.backdrop}>
-          <Pressable style={styles.backdropTap} onPress={() => setPickerOpen(false)} />
-          <View style={styles.sheet}>
+      <Modal visible={open} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
+        <Pressable style={styles.backdrop} onPress={() => setPickerOpen(false)}>
+          <Pressable
+            style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}
+            onPress={() => {}}
+          >
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Project scope</Text>
               <Pressable onPress={() => setPickerOpen(false)} hitSlop={8}>
@@ -190,9 +194,9 @@ export function ChatScopePicker({
             <Pressable onPress={() => setPickerOpen(false)} style={styles.doneBtn}>
               <Text style={styles.doneBtnText}>Done</Text>
             </Pressable>
-          </View>
-        </View>
-      ) : null}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </>
   );
 }
@@ -220,12 +224,8 @@ const styles = StyleSheet.create({
     color: BRAND.graphite,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 50,
+    flex: 1,
     justifyContent: 'flex-end',
-  },
-  backdropTap: {
-    ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
   sheet: {
@@ -234,7 +234,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius.xl,
     backgroundColor: '#fff',
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
   },
   sheetHeader: {
     flexDirection: 'row',
