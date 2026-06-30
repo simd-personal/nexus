@@ -1,31 +1,32 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import {
+  citationDisplayKey,
+  formatCitationDisplay,
+  type CitationDisplay,
+} from '@/lib/citation-display';
 import type { Citation } from '@/lib/types';
-import { spacing } from '@/theme/colors';
+import { BRAND, radius, spacing } from '@/theme/colors';
 
 type CitationsListProps = {
   citations: Citation[];
   projectId?: string;
 };
 
-function dedupeCitations(citations: Citation[]): Citation[] {
+function dedupeCitations(citations: Citation[]): Array<{ citation: Citation; display: CitationDisplay }> {
   const seen = new Set<string>();
-  const unique: Citation[] = [];
+  const unique: Array<{ citation: Citation; display: CitationDisplay }> = [];
 
   for (const citation of citations) {
-    const fileName = citation.file_name?.trim();
-    const key = citation.file_id ?? fileName?.toLowerCase();
-    if (!key || seen.has(key)) continue;
+    const display = formatCitationDisplay(citation);
+    const key = citationDisplayKey(citation, display);
+    if (seen.has(key)) continue;
     seen.add(key);
-    unique.push(citation);
+    unique.push({ citation, display });
   }
 
   return unique;
-}
-
-function citationLabel(citation: Citation): string {
-  const name = citation.file_name?.trim() || 'Unknown source';
-  return citation.page_number ? `${name}, p.${citation.page_number}` : name;
 }
 
 export function CitationsList({ citations, projectId }: CitationsListProps) {
@@ -33,35 +34,60 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
   const unique = dedupeCitations(citations);
   if (!unique.length) return null;
 
+  const showProject = !projectId;
+
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>Sources</Text>
-      <View style={styles.list}>
-        {unique.map((citation, index) => {
-          const label = citationLabel(citation);
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.list}
+        keyboardShouldPersistTaps="handled"
+      >
+        {unique.map(({ citation, display }, index) => {
           const canOpen = Boolean(projectId && citation.file_id);
 
-          return (
-            <View key={`${citation.file_id ?? citation.file_name}-${index}`} style={styles.chip}>
-              {canOpen ? (
-                <Pressable
-                  onPress={() => router.push(`/project/${projectId}`)}
-                  accessibilityRole="link"
-                  style={styles.chipPressable}
-                >
-                  <Text style={styles.chipText} numberOfLines={2}>
-                    {label}
-                  </Text>
-                </Pressable>
-              ) : (
-                <Text style={styles.chipText} numberOfLines={2}>
-                  {label}
+          const chip = (
+            <View style={styles.chip}>
+              <Feather name="file-text" size={12} color={BRAND.textMuted} style={styles.icon} />
+              <View style={styles.textCol}>
+                <Text style={styles.fileName} numberOfLines={1}>
+                  {display.fileName}
                 </Text>
-              )}
+                {showProject && display.projectLabel ? (
+                  <Text style={styles.projectLabel} numberOfLines={1}>
+                    {display.projectLabel}
+                  </Text>
+                ) : null}
+              </View>
+              {display.pageNumber ? (
+                <View style={styles.pageBadge}>
+                  <Text style={styles.pageBadgeText}>p.{display.pageNumber}</Text>
+                </View>
+              ) : null}
             </View>
           );
+
+          if (canOpen) {
+            return (
+              <Pressable
+                key={`${citation.file_id ?? display.fileName}-${index}`}
+                onPress={() => router.push(`/project/${projectId}`)}
+                accessibilityRole="link"
+                accessibilityLabel={`Open ${display.fileName}`}
+                style={({ pressed }) => [pressed && styles.chipPressed]}
+              >
+                {chip}
+              </Pressable>
+            );
+          }
+
+          return (
+            <View key={`${citation.file_id ?? display.fileName}-${index}`}>{chip}</View>
+          );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 }
@@ -80,24 +106,53 @@ const styles = StyleSheet.create({
   },
   list: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+    gap: 8,
+    paddingRight: spacing.sm,
   },
   chip: {
-    maxWidth: '100%',
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    maxWidth: 220,
+    borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E5E7EB',
-    backgroundColor: '#F9FAFB',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: '#fff',
+    paddingVertical: 7,
+    paddingLeft: 10,
+    paddingRight: 10,
+    gap: 6,
   },
-  chipPressable: {
-    maxWidth: '100%',
+  chipPressed: {
+    opacity: 0.75,
   },
-  chipText: {
+  icon: {
+    marginTop: 1,
+  },
+  textCol: {
+    flexShrink: 1,
+    minWidth: 0,
+    gap: 1,
+  },
+  fileName: {
     fontSize: 12,
+    fontWeight: '600',
     lineHeight: 16,
-    color: '#4B5563',
+    color: BRAND.graphite,
+  },
+  projectLabel: {
+    fontSize: 10,
+    lineHeight: 13,
+    color: BRAND.textMuted,
+  },
+  pageBadge: {
+    borderRadius: radius.full,
+    backgroundColor: '#F3F4F6',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  pageBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6B7280',
   },
 });
