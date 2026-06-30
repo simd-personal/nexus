@@ -17,7 +17,7 @@ export type CreateProjectResult =
   | { error: string; upgradeRequired?: boolean; data?: undefined };
 
 export async function createProjectForUser(
-  supabase: SupabaseClient<Database>,
+  supabase: SupabaseClient,
   user: User,
   input: CreateProjectInput
 ): Promise<CreateProjectResult> {
