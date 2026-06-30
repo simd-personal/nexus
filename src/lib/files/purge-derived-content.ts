@@ -26,6 +26,66 @@ function citationsReferenceFile(
   );
 }
 
+function citationsReferenceAnyFile(
+  citations: Citation[] | null | undefined,
+  fileIds: Set<string>,
+  fileNames: Set<string>
+): boolean {
+  if (!citations?.length) return false;
+  return citations.some(
+    (citation) =>
+      (citation.file_id && fileIds.has(citation.file_id)) ||
+      (citation.file_name && fileNames.has(citation.file_name))
+  );
+}
+
+/** Drop prior Sunny updates tied to a file so reprocessing replaces instead of duplicating. */
+export async function removeSunnyUpdatesForFile(
+  supabase: SupabaseClient,
+  projectId: string,
+  fileId: string,
+  fileName: string
+): Promise<void> {
+  const { data: rows } = await supabase
+    .from('sunny_updates')
+    .select('id, source_citations')
+    .eq('project_id', projectId);
+
+  const ids = (rows ?? [])
+    .filter((row) =>
+      citationsReferenceFile(row.source_citations as Citation[] | null, fileId, fileName)
+    )
+    .map((row) => row.id);
+
+  if (ids.length > 0) {
+    await supabase.from('sunny_updates').delete().in('id', ids);
+  }
+}
+
+/** Drop prior Sunny updates tied to any file in a batch before inserting the rollup. */
+export async function removeSunnyUpdatesForFiles(
+  supabase: SupabaseClient,
+  projectId: string,
+  files: Array<{ id: string; file_name: string }>
+): Promise<void> {
+  const fileIds = new Set(files.map((file) => file.id));
+  const fileNames = new Set(files.map((file) => file.file_name));
+  const { data: rows } = await supabase
+    .from('sunny_updates')
+    .select('id, source_citations')
+    .eq('project_id', projectId);
+
+  const ids = (rows ?? [])
+    .filter((row) =>
+      citationsReferenceAnyFile(row.source_citations as Citation[] | null, fileIds, fileNames)
+    )
+    .map((row) => row.id);
+
+  if (ids.length > 0) {
+    await supabase.from('sunny_updates').delete().in('id', ids);
+  }
+}
+
 export function recordCitationsStillValid(
   record: { project_id: string; source_citations?: Citation[] | null },
   filesByProject: Map<string, Set<string>>

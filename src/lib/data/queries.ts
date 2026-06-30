@@ -4,7 +4,12 @@ import { computeProjectStatus, resolveProjectStatus } from '@/lib/projects/healt
 import { filterRelevantOpenActionItems } from '@/lib/relevance/action-items';
 import { getProjectIdsForPortfolioScope } from '@/lib/data/portfolio-scope';
 import { isDashboardIndexingActive } from '@/lib/dashboard/indexing-active';
-import { getActiveUploadBatches, type ActiveUploadBatch } from '@/lib/processing/upload-batch';
+import {
+  getActiveUploadBatches,
+  getPendingIndexingFiles as loadPendingIndexingFiles,
+  type ActiveUploadBatch,
+  type PendingIndexingFile,
+} from '@/lib/processing/upload-batch';
 import type { DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import {
   ensureFreshAppData,
@@ -376,6 +381,7 @@ export async function hasProcessingFilesInPortfolioScope(
 export type DashboardUpdatesFeed = {
   updates: SunnyUpdate[];
   pendingBatches: ActiveUploadBatch[];
+  pendingFiles: PendingIndexingFile[];
   indexingActive: boolean;
 };
 
@@ -383,17 +389,28 @@ export async function getDashboardUpdatesFeed(
   limit: number,
   portfolioScope: DashboardPortfolioScope = 'work'
 ): Promise<DashboardUpdatesFeed> {
-  const [updates, pendingBatches, processingActive] = await Promise.all([
+  const [updates, pendingBatches, pendingFiles, processingActive] = await Promise.all([
     getSunnyUpdates(limit, portfolioScope),
     getPendingUploadBatches(portfolioScope),
+    getPendingIndexingFiles(portfolioScope),
     hasProcessingFilesInPortfolioScope(portfolioScope),
   ]);
 
   return {
     updates,
     pendingBatches,
+    pendingFiles,
     indexingActive: isDashboardIndexingActive(pendingBatches, processingActive),
   };
+}
+
+export async function getPendingIndexingFiles(
+  portfolioScope: DashboardPortfolioScope = 'work'
+): Promise<PendingIndexingFile[]> {
+  await ensureFreshAppData();
+  const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  return loadPendingIndexingFiles(supabase, scopedProjectIds);
 }
 
 export async function getPendingUploadBatches(

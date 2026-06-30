@@ -1,11 +1,12 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   DASHBOARD_PORTFOLIO_SCOPES,
   dashboardScopeLabel,
+  parseDashboardPortfolioScope,
   type DashboardPortfolioScope,
 } from '@/lib/projects/portfolio';
 import { setDashboardPortfolio } from '@/lib/actions/projects';
@@ -20,19 +21,33 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const [activeScope, setActiveScope] = useState(scope);
+
+  useEffect(() => {
+    setActiveScope(scope);
+  }, [scope]);
+
+  useEffect(() => {
+    const urlScope = parseDashboardPortfolioScope(searchParams.get('portfolio'));
+    if (urlScope) {
+      setActiveScope(urlScope);
+    }
+  }, [searchParams]);
 
   function selectScope(next: DashboardPortfolioScope) {
-    if (next === scope) return;
+    if (next === activeScope) return;
 
-    startTransition(async () => {
-      await setDashboardPortfolio(next);
+    setActiveScope(next);
 
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('portfolio', next);
-      const query = params.toString();
-      router.replace(query ? `${pathname}?${query}` : pathname);
-      router.refresh();
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('portfolio', next);
+    const href = `${pathname}?${params.toString()}`;
+
+    startTransition(() => {
+      router.replace(href);
     });
+
+    void setDashboardPortfolio(next);
   }
 
   return (
@@ -42,7 +57,7 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
       aria-label="Portfolio scope"
     >
       {DASHBOARD_PORTFOLIO_SCOPES.map((option) => {
-        const active = scope === option;
+        const active = activeScope === option;
         return (
           <button
             key={option}

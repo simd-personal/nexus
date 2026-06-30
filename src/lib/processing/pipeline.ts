@@ -10,6 +10,7 @@ import {
   extractTextFromBuffer,
   parseEmailMetadata,
   parseEmailBody,
+  isInsubstantialExtractedText,
 } from '@/lib/processing/extract';
 import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constants';
 import { parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
@@ -227,7 +228,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         }
       }
 
-      if (!text.trim()) {
+      if (isInsubstantialExtractedText(text, pages?.length)) {
         await supabase
           .from('files')
           .update({
@@ -244,10 +245,10 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
           percent: 0,
           label: 'Processing failed',
           detail:
-            pages?.length && metadata.ocr_extracted
-              ? 'No readable text found, even after OCR on scanned pages'
+            metadata.ocr_extracted
+              ? 'No readable text found after OCR on scanned pages'
               : pages?.length
-                ? `No readable text found in ${pages.length} page(s) — the PDF may be blank or encrypted`
+                ? `No readable text found in ${pages.length} page(s) — try re-uploading a searchable PDF`
                 : 'No text could be extracted from this file',
         });
         return { completed: false, stage: 'failed' };

@@ -23,6 +23,7 @@ describe('GET /api/dashboard/updates', () => {
     mockGetDashboardUpdatesFeed.mockResolvedValue({
       updates: [{ id: 'update-1', title: 'Ready' }],
       pendingBatches: [],
+      pendingFiles: [],
       indexingActive: false,
     });
   });

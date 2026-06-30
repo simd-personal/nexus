@@ -20,18 +20,47 @@ function mimeForExtension(ext: string): string {
 
 /** Scanned PDFs often yield far less text than a real document per page. */
 export const PDF_MIN_CHARS_PER_PAGE = 40;
+export const PDF_PAGE_MARKER_RE = /--\s*\d+\s+of\s+\d+\s*--/gi;
 const PDF_OCR_SCALE = 1.5;
 const PDF_OCR_CONCURRENCY = 3;
+
+export function stripPdfPageMarkers(text: string): string {
+  return text.replace(PDF_PAGE_MARKER_RE, ' ').replace(/\s+/g, ' ').trim();
+}
+
+export function isPdfPageMarkerText(text: string): boolean {
+  if (!/--\s*\d+\s+of\s+\d+\s*--/i.test(text)) return false;
+  return stripPdfPageMarkers(text).length < 40;
+}
+
+export function isInsubstantialExtractedText(text: string, pageCount?: number): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+  if (isPdfPageMarkerText(trimmed)) return true;
+
+  const substantive = stripPdfPageMarkers(trimmed);
+  if (!substantive) return true;
+  if (pageCount && pageCount > 0) {
+    return substantive.length < pageCount * PDF_MIN_CHARS_PER_PAGE;
+  }
+  return substantive.length < 80;
+}
 
 export function needsPdfOcrFallback(
   text: string,
   pages: Array<{ pageNumber: number; text: string }>
 ): boolean {
+  if (isPdfPageMarkerText(text)) return true;
+
   const pageCount = pages.length;
   const trimmed = text.trim();
   if (pageCount === 0) return !trimmed;
   if (!trimmed) return true;
-  return trimmed.length < pageCount * PDF_MIN_CHARS_PER_PAGE;
+
+  const pagesWithText = pages.filter((page) => page.text.trim().length > 0).length;
+  if (pagesWithText === 0) return true;
+
+  return stripPdfPageMarkers(trimmed).length < pageCount * PDF_MIN_CHARS_PER_PAGE;
 }
 
 async function ocrPdfPages(

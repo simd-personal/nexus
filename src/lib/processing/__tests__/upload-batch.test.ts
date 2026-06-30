@@ -4,6 +4,7 @@ import {
   getUploadBatchInfo,
   isLowSignalSummary,
   isMultiFileBatch,
+  shouldSkipSunnyUpdateForContent,
 } from '@/lib/processing/upload-batch';
 
 describe('upload batch helpers', () => {
@@ -41,6 +42,12 @@ describe('upload batch helpers', () => {
     expect(
       isLowSignalSummary(
         'New project material has been added and indexed. Review the uploaded content for any follow-up needed.'
+      )
+    ).toBe(true);
+    expect(
+      shouldSkipSunnyUpdateForContent(
+        'The newly uploaded Jaidon material cannot be substantively reviewed because the extracted content contains only empty page markers from 1 of 21 through 21 of 21. Not enough evidence in the uploaded materials.',
+        365
       )
     ).toBe(true);
     expect(

@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { generateBatchSunnyUpdate, generateSunnyUpdate } from '@/lib/ai/sunny';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
+import { isInsubstantialExtractedText } from '@/lib/processing/extract';
+import { removeSunnyUpdatesForFile, removeSunnyUpdatesForFiles } from '@/lib/files/purge-derived-content';
 import type { Citation, SourceType } from '@/types/database';
 
 export const UPLOAD_BATCH_ID_KEY = 'upload_batch_id';
@@ -32,6 +34,16 @@ export type ActiveUploadBatch = {
   total: number;
   done: number;
   processing: number;
+};
+
+export type PendingIndexingFile = {
+  fileId: string;
+  fileName: string;
+  projectId: string;
+  projectName: string;
+  clientName: string;
+  status: 'pending' | 'processing';
+  label: string;
 };
 
 const TERMINAL_STATUSES = new Set(['processed', 'failed', 'uploaded_unprocessed']);
@@ -77,11 +89,22 @@ export function isLowSignalSummary(summary: string, extractedTextLength?: number
     'review the uploaded content for any follow-up needed',
     'no text could be extracted',
     'no readable',
+    'not enough evidence',
+    'empty page marker',
+    'page markers',
+    'cannot be substantively reviewed',
     'stored but not processed',
     'file stored but not processed',
   ];
 
   return boilerplate.some((phrase) => normalized.includes(phrase));
+}
+
+export function shouldSkipSunnyUpdateForContent(
+  summary: string,
+  extractedTextLength: number
+): boolean {
+  return isLowSignalSummary(summary, extractedTextLength) || isInsubstantialExtractedText(summary);
 }
 
 function fileSummaryFromMetadata(file: BatchFileRow): string {
@@ -208,6 +231,8 @@ export async function createSingleFileSunnyUpdate(options: {
     snippet: summary,
   };
 
+  await removeSunnyUpdatesForFile(supabase, projectId, fileId, fileName);
+
   if (criticalItems.length > 0) {
     const update = await generateSunnyUpdate(
       projectName,
@@ -225,7 +250,7 @@ export async function createSingleFileSunnyUpdate(options: {
     return;
   }
 
-  if (isLowSignalSummary(summary, extractedTextLength)) {
+  if (shouldSkipSunnyUpdateForContent(summary, extractedTextLength)) {
     return;
   }
 
@@ -320,6 +345,7 @@ async function finalizeUploadBatchRollup(
   let rollupSummary = combinedSummary;
 
   if (!allLowSignal) {
+    await removeSunnyUpdatesForFiles(supabase, projectId, files);
     const update = await generateBatchSunnyUpdate(projectLabel, fileSummaries);
     await supabase.from('sunny_updates').insert({
       project_id: projectId,
@@ -457,4 +483,53 @@ export async function getActiveUploadBatches(
   }
 
   return batches.sort((a, b) => b.processing - a.processing || b.total - a.total);
+}
+
+function progressLabel(metadata: Record<string, unknown> | null | undefined): string {
+  const progress = metadata?.processing_progress as { label?: string } | undefined;
+  return progress?.label?.trim() || 'Indexing file…';
+}
+
+export async function getPendingIndexingFiles(
+  supabase: SupabaseClient,
+  projectIds: string[] | null
+): Promise<PendingIndexingFile[]> {
+  if (projectIds?.length === 0) return [];
+
+  let query = supabase
+    .from('files')
+    .select('id, file_name, status, metadata, project_id, projects(client_name, project_name)')
+    .in('status', ['pending', 'processing']);
+
+  if (projectIds) {
+    query = query.in('project_id', projectIds);
+  }
+
+  const { data: rows } = await query;
+  const batchFileIds = new Set<string>();
+
+  for (const row of rows ?? []) {
+    const { batchId, batchTotal } = getUploadBatchInfo(
+      (row.metadata as Record<string, unknown> | null) ?? {}
+    );
+    if (batchId && batchTotal > 1) {
+      batchFileIds.add(row.id);
+    }
+  }
+
+  return (rows ?? [])
+    .filter((row) => !batchFileIds.has(row.id))
+    .map((row) => {
+      const project = asProjectRef((row as { projects?: unknown }).projects);
+      return {
+        fileId: row.id,
+        fileName: row.file_name,
+        projectId: row.project_id,
+        projectName: project?.project_name ?? 'Project',
+        clientName: project?.client_name ?? 'Client',
+        status: row.status as 'pending' | 'processing',
+        label: progressLabel((row.metadata as Record<string, unknown> | null) ?? {}),
+      };
+    })
+    .sort((a, b) => a.fileName.localeCompare(b.fileName));
 }

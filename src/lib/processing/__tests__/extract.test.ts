@@ -1,15 +1,36 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   extractTextFromBuffer,
+  isInsubstantialExtractedText,
+  isPdfPageMarkerText,
   needsPdfOcrFallback,
   parseEmailBody,
   parseEmailMetadata,
   PDF_MIN_CHARS_PER_PAGE,
+  stripPdfPageMarkers,
 } from '@/lib/processing/extract';
 
 vi.mock('@/lib/ai/openai', () => ({
   extractTextFromImage: vi.fn().mockResolvedValue('Slide title: Q3 revenue up 12 percent'),
 }));
+
+describe('pdf page marker detection', () => {
+  it('detects pdf page marker boilerplate as non-substantive', () => {
+    const markers = Array.from({ length: 21 }, (_, index) => `-- ${index + 1} of 21 --`).join('\n');
+    expect(isPdfPageMarkerText(markers)).toBe(true);
+    expect(isInsubstantialExtractedText(markers, 21)).toBe(true);
+    expect(stripPdfPageMarkers(markers)).toBe('');
+  });
+
+  it('requests OCR when only page markers are present', () => {
+    const pages = Array.from({ length: 21 }, (_, index) => ({
+      pageNumber: index + 1,
+      text: '',
+    }));
+    const markers = pages.map((page) => `-- ${page.pageNumber} of 21 --`).join('\n');
+    expect(needsPdfOcrFallback(markers, pages)).toBe(true);
+  });
+});
 
 describe('needsPdfOcrFallback', () => {
   it('requests OCR when native PDF text is empty', () => {

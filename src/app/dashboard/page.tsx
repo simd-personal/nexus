@@ -2,8 +2,7 @@ import { AppShell } from '@/components/layout/AppShell';
 import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
-import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
-import { DashboardSunnyUpdatesSection } from '@/components/dashboard/DashboardSunnyUpdatesSection';
+import { DashboardUpdatesPanel } from '@/components/dashboard/DashboardUpdatesPanel';
 import { PendingInboundInbox } from '@/components/dashboard/PendingInboundInbox';
 import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import {
@@ -15,7 +14,7 @@ import {
   getPendingInboundEmails,
 } from '@/lib/data/queries';
 import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
-import { dashboardScopeLabel, portfolioScopeHref } from '@/lib/projects/portfolio';
+import { dashboardScopeLabel } from '@/lib/projects/portfolio';
 import { TAGLINE } from '@/lib/constants';
 import { needsOnboarding } from '@/lib/onboarding/status';
 import Link from 'next/link';
@@ -70,6 +69,7 @@ export default async function DashboardPage({
 
         <PendingInboundInbox emails={pendingInboundEmails} projects={allProjects} />
 
+        <div key={portfolioScope} className="contents">
         <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3 lg:items-stretch">
           <div className="flex lg:col-span-1">
             <SunnyCard
@@ -89,18 +89,7 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        <div className="mb-6 sm:mb-8">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Sunny Updates</h2>
-            <Link href={portfolioScopeHref('/updates', portfolioScope)} className="shrink-0">
-              <Button variant="ghost" size="sm">View all</Button>
-            </Link>
-          </div>
-          <DashboardSunnyUpdatesSection
-            portfolioScope={portfolioScope}
-            initialFeed={updatesFeed}
-          />
-        </div>
+        <DashboardUpdatesPanel portfolioScope={portfolioScope} initialFeed={updatesFeed} />
 
         <div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -126,6 +115,7 @@ export default async function DashboardPage({
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
     </AppShell>

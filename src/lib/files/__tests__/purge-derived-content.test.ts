@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildFilesByProject,
   pruneOrphanedEntities,
+  removeSunnyUpdatesForFile,
   sunnyUpdateStillValid,
 } from '@/lib/files/purge-derived-content';
 
@@ -40,6 +41,32 @@ describe('sunnyUpdateStillValid', () => {
     expect(
       sunnyUpdateStillValid({ project_id: 'proj-1', source_citations: [] }, filesByProject)
     ).toBe(true);
+  });
+});
+
+describe('removeSunnyUpdatesForFile', () => {
+  it('deletes prior updates that cite the same file', async () => {
+    const deleteIn = vi.fn().mockResolvedValue({ error: null });
+    const eq = vi.fn().mockReturnValue({
+      data: [
+        { id: 'update-1', source_citations: [{ file_id: 'file-1', file_name: 'doc.pdf' }] },
+        { id: 'update-2', source_citations: [{ file_id: 'file-2', file_name: 'other.pdf' }] },
+      ],
+      error: null,
+    });
+    const select = vi.fn().mockReturnValue({ eq });
+    const supabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'sunny_updates') {
+          return { select, delete: vi.fn().mockReturnValue({ in: deleteIn }) };
+        }
+        throw new Error(`unexpected table ${table}`);
+      }),
+    };
+
+    await removeSunnyUpdatesForFile(supabase as never, 'proj-1', 'file-1', 'doc.pdf');
+
+    expect(deleteIn).toHaveBeenCalledWith('id', ['update-1']);
   });
 });
 
