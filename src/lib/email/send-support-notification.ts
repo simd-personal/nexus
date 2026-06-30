@@ -23,7 +23,8 @@ export async function sendQuoteRequestToSupport(
 
 /** Notify support when a signed-in user submits feedback, ideas, or bug reports. */
 export async function sendSupportRequestToSupport(
-  input: SupportRequestEmailInput
+  input: SupportRequestEmailInput,
+  attachment?: { filename: string; buffer: Buffer } | null
 ): Promise<{ sent: boolean; skipped?: boolean; error?: string }> {
   const { subject, html, text } = renderSupportRequestEmail(input);
 
@@ -33,5 +34,8 @@ export async function sendSupportRequestToSupport(
     html,
     text,
     replyTo: input.email,
+    attachments: attachment
+      ? [{ filename: attachment.filename, content: attachment.buffer }]
+      : undefined,
   });
 }

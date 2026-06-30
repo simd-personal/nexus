@@ -16,4 +16,16 @@ describe('renderSupportRequestEmail', () => {
     expect(text).toContain('alex@acme.com');
     expect(text).toContain('Search from the dashboard does not submit the query.');
   });
+
+  it('notes when a screenshot is attached', () => {
+    const { text } = renderSupportRequestEmail({
+      fullName: 'Alex Rivera',
+      email: 'alex@acme.com',
+      category: 'bug',
+      message: 'Button overlap on mobile.',
+      attachmentFilename: 'mobile-bug.png',
+    });
+
+    expect(text).toContain('Screenshot: mobile-bug.png');
+  });
 });

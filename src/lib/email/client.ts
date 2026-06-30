@@ -51,6 +51,10 @@ export type SendEmailInput = {
   text: string;
   /** When set, replies from the recipient go to this address (e.g. form submitter). */
   replyTo?: string;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer;
+  }>;
 };
 
 export async function sendEmail(
@@ -72,6 +76,10 @@ export async function sendEmail(
       subject: input.subject,
       html: input.html,
       text: input.text,
+      attachments: input.attachments?.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+      })),
     });
 
     if (error) {

@@ -2,6 +2,7 @@
 
 import { sendSupportRequestToSupport } from '@/lib/email/send-support-notification';
 import type { SupportRequestCategory } from '@/lib/email/templates';
+import { parseSupportAttachmentFromFormValue } from '@/lib/support/attachment';
 import { requireUser, createClient } from '@/lib/supabase/server';
 
 export type SupportFormState = {
@@ -36,6 +37,11 @@ export async function submitSupportRequest(
     return { status: 'error', message: 'Message is too long. Please shorten it and try again.' };
   }
 
+  const attachmentResult = await parseSupportAttachmentFromFormValue(formData.get('screenshot'));
+  if (attachmentResult.kind === 'error') {
+    return { status: 'error', message: attachmentResult.error };
+  }
+
   const user = await requireUser();
   const supabase = await createClient();
   const { data: profile } = await supabase
@@ -50,13 +56,20 @@ export async function submitSupportRequest(
     return { status: 'error', message: 'Your account is missing an email address.' };
   }
 
-  const emailResult = await sendSupportRequestToSupport({
-    fullName,
-    email,
-    category,
-    message,
-    pageUrl,
-  });
+  const attachment =
+    attachmentResult.kind === 'ok' ? attachmentResult.attachment : null;
+
+  const emailResult = await sendSupportRequestToSupport(
+    {
+      fullName,
+      email,
+      category,
+      message,
+      pageUrl,
+      attachmentFilename: attachment?.filename ?? null,
+    },
+    attachment
+  );
 
   if (!emailResult.sent && !emailResult.skipped) {
     console.error('[support] Support notification failed:', emailResult.error);

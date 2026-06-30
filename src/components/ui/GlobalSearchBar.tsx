@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
+import { buildGlobalSearchHref } from '@/lib/search/navigation';
 import { cn } from '@/lib/utils';
 
 interface GlobalSearchBarProps {
@@ -22,12 +23,11 @@ export function GlobalSearchBar({
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    if (!query.trim()) return;
+    const href = buildGlobalSearchHref(query, projectId);
+    if (!href) return;
 
     setLoading(true);
-    const params = new URLSearchParams({ q: query });
-    if (projectId) params.set('project', projectId);
-    router.push(`/search?${params.toString()}`);
+    router.push(href);
     setLoading(false);
   }
 

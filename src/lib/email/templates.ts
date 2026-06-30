@@ -231,6 +231,7 @@ export type SupportRequestEmailInput = {
   category: SupportRequestCategory;
   message: string;
   pageUrl?: string | null;
+  attachmentFilename?: string | null;
 };
 
 export function renderSupportRequestEmail(input: SupportRequestEmailInput): {
@@ -248,6 +249,7 @@ export function renderSupportRequestEmail(input: SupportRequestEmailInput): {
     ['Email', input.email],
     ['Type', categoryLabel],
     ['Page', input.pageUrl || '—'],
+    ['Screenshot', input.attachmentFilename || '—'],
     ['Message', input.message],
   ] as const;
 

@@ -8,6 +8,11 @@ const pdfJsWorkerIncludes = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist', 'mammoth', '@napi-rs/canvas'],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '6mb',
+    },
+  },
   outputFileTracingIncludes: {
     '/api/files/*/process': pdfJsWorkerIncludes,
     '/api/files/*/reprocess': pdfJsWorkerIncludes,
