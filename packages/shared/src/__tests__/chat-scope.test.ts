@@ -3,10 +3,13 @@ import {
   ALL_PROJECTS_SCOPE,
   buildChatScope,
   formatScopeSummary,
+  getPortfolioCheckState,
   projectLabel,
   removeScopeLabel,
   resolveScopeProjectIds,
   scopeFromPortfolio,
+  splitProjectsByPortfolio,
+  togglePortfolioChecked,
 } from '../chat-scope';
 import type { MobileProjectWithStats } from '../mobile';
 
@@ -80,5 +83,31 @@ describe('shared chat-scope', () => {
   it('removes portfolio scope labels', () => {
     const scope = scopeFromPortfolio(tree, 'work');
     expect(removeScopeLabel(tree, scope, 'Work projects')).toEqual(ALL_PROJECTS_SCOPE);
+  });
+
+  it('splits top-level projects by portfolio', () => {
+    const mixed: MobileProjectWithStats[] = [
+      project({ id: 'w1', portfolio: 'work' }),
+      project({ id: 'p1', portfolio: 'personal', client_name: 'Home' }),
+    ];
+    const result = splitProjectsByPortfolio(mixed);
+    expect(result.work.map((item) => item.id)).toEqual(['w1']);
+    expect(result.personal.map((item) => item.id)).toEqual(['p1']);
+  });
+
+  it('toggles portfolio check state', () => {
+    const mixed: MobileProjectWithStats[] = [
+      project({ id: 'w1', portfolio: 'work' }),
+      project({ id: 'p1', portfolio: 'personal', client_name: 'Home' }),
+    ];
+    expect(getPortfolioCheckState(mixed, 'personal', new Set())).toBe('unchecked');
+
+    const checked = togglePortfolioChecked(mixed, 'personal', new Set());
+    expect(getPortfolioCheckState(mixed, 'personal', checked)).toBe('checked');
+    expect(checked.has('p1')).toBe(true);
+    expect(checked.has('w1')).toBe(false);
+
+    const cleared = togglePortfolioChecked(mixed, 'personal', checked);
+    expect(getPortfolioCheckState(mixed, 'personal', cleared)).toBe('unchecked');
   });
 });

@@ -16,7 +16,8 @@ export const DASHBOARD_PREFETCH_STEPS: PrefetchStep[] = [
   {
     id: 'stats',
     label: 'Tallying dashboard stats…',
-    run: (client) => client.prefetchQuery({ queryKey: ['dashboard-stats'], queryFn: fetchDashboardStats }),
+    run: (client) =>
+      client.prefetchQuery({ queryKey: ['dashboard-stats'], queryFn: () => fetchDashboardStats() }),
   },
   {
     id: 'updates',
@@ -33,7 +34,7 @@ export const DASHBOARD_PREFETCH_STEPS: PrefetchStep[] = [
   {
     id: 'projects',
     label: 'Loading your projects…',
-    run: (client) => client.prefetchQuery({ queryKey: ['projects'], queryFn: fetchProjects }),
+    run: (client) => client.prefetchQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() }),
   },
   {
     id: 'critical',

@@ -18,6 +18,7 @@ import type {
   ProjectOverviewResponse,
   ProjectWithStats,
   SunnyUpdate,
+  DashboardPortfolioScope,
 } from '@/lib/types';
 
 export class ApiError extends Error {
@@ -63,25 +64,45 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export function fetchDashboardStats() {
-  return apiJson<{ stats: DashboardStats; portfolio: string }>('/api/dashboard/stats');
+const MOBILE_PORTFOLIO_SCOPE: DashboardPortfolioScope = 'all';
+
+function withPortfolioQuery(path: string, portfolio: DashboardPortfolioScope = MOBILE_PORTFOLIO_SCOPE) {
+  const separator = path.includes('?') ? '&' : '?';
+  return `${path}${separator}portfolio=${portfolio}`;
 }
 
-export function fetchDashboardUpdates(limit = 5) {
-  return apiJson<DashboardUpdatesFeed>(`/api/dashboard/updates?limit=${limit}`);
+export function fetchDashboardStats(options?: { portfolio?: DashboardPortfolioScope }) {
+  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
+  return apiJson<{ stats: DashboardStats; portfolio: string }>(withPortfolioQuery('/api/dashboard/stats', portfolio));
+}
+
+export function fetchDashboardUpdates(
+  limit = 5,
+  options?: { portfolio?: DashboardPortfolioScope }
+) {
+  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
+  return apiJson<DashboardUpdatesFeed>(withPortfolioQuery(`/api/dashboard/updates?limit=${limit}`, portfolio));
 }
 
 export function fetchSunnyUpdate(id: string) {
   return apiJson<{ update: SunnyUpdate }>(`/api/sunny-updates/${id}`);
 }
 
-export function fetchCriticalItems(limit?: number) {
-  const query = limit ? `?limit=${limit}` : '';
-  return apiJson<{ items: CriticalItem[] }>(`/api/critical-items${query}`);
+export function fetchCriticalItems(
+  limit?: number,
+  options?: { portfolio?: DashboardPortfolioScope }
+) {
+  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
+  const params = new URLSearchParams({ portfolio });
+  if (limit) params.set('limit', String(limit));
+  return apiJson<{ items: CriticalItem[] }>(`/api/critical-items?${params.toString()}`);
 }
 
-export function fetchProjects() {
-  return apiJson<{ projects: ProjectWithStats[] }>('/api/projects');
+export function fetchProjects(options?: { portfolio?: DashboardPortfolioScope }) {
+  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
+  return apiJson<{ projects: ProjectWithStats[]; portfolio: string }>(
+    withPortfolioQuery('/api/projects', portfolio)
+  );
 }
 
 export function fetchProjectOverview(projectId: string) {

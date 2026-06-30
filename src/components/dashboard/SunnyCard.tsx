@@ -25,7 +25,7 @@ export function SunnyCard({ criticalCount, newUpdatesCount, actionItemsCount, co
           </h3>
           <div className="mt-4 grid w-full grid-cols-2 gap-4">
             <Metric label="Critical items" value={criticalCount} highlight={criticalCount > 0} />
-            <Metric label="New updates" value={newUpdatesCount} />
+            <Metric label="New (24h)" value={newUpdatesCount} />
             <Metric label="Open actions" value={actionItemsCount} />
             <Metric label="Possible conflicts" value={conflictsCount} highlight={conflictsCount > 0} />
           </div>

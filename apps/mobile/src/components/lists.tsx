@@ -52,13 +52,29 @@ export function ProjectRow({
   project,
   onPress,
 }: {
-  project: { id: string; client_name: string; project_name: string; status: string; critical_item_count?: number };
+  project: {
+    id: string;
+    client_name: string;
+    project_name: string;
+    status: string;
+    portfolio?: 'work' | 'personal';
+    critical_item_count?: number;
+  };
   onPress: () => void;
 }) {
+  const portfolio = project.portfolio ?? 'work';
+
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.projectRow, pressed && styles.projectRowPressed]}>
       <View style={styles.projectText}>
-        <Text style={styles.client}>{project.client_name}</Text>
+        <View style={styles.projectTitleRow}>
+          <Text style={styles.client}>{project.client_name}</Text>
+          <View style={[styles.portfolioBadge, portfolio === 'personal' && styles.portfolioBadgePersonal]}>
+            <Text style={[styles.portfolioBadgeText, portfolio === 'personal' && styles.portfolioBadgeTextPersonal]}>
+              {portfolio === 'personal' ? 'Personal' : 'Work'}
+            </Text>
+          </View>
+        </View>
         <Text style={styles.projectName}>{project.project_name}</Text>
       </View>
       <View style={styles.projectMeta}>
@@ -118,6 +134,31 @@ const styles = StyleSheet.create({
   projectText: {
     flex: 1,
     gap: 2,
+  },
+  projectTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  portfolioBadge: {
+    borderRadius: radius.full,
+    backgroundColor: '#EEF2FF',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  portfolioBadgePersonal: {
+    backgroundColor: '#F3F4F6',
+  },
+  portfolioBadgeText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: BRAND.accent,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  portfolioBadgeTextPersonal: {
+    color: '#6B7280',
   },
   client: {
     fontSize: 13,

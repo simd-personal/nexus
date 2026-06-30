@@ -66,7 +66,7 @@ export function FileActionsSheet({
 
   const projectsQuery = useQuery({
     queryKey: ['projects'],
-    queryFn: fetchProjects,
+    queryFn: () => fetchProjects(),
     enabled: visible && (mode === 'move' || mode === 'share'),
   });
 

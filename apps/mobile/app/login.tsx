@@ -40,7 +40,6 @@ export default function LoginScreen() {
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
               <UpperDeckLogo size="md" />
-              <Text style={styles.tagline}>Command Center</Text>
             </View>
             <Title>Your command center on iOS</Title>
             <Subtitle>Sunny briefings, critical items, and project chat — optimized for mobile.</Subtitle>
@@ -93,12 +92,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   logoWrap: {
-    gap: 6,
     marginBottom: spacing.sm,
-  },
-  tagline: {
-    fontSize: 12,
-    color: BRAND.textMuted,
   },
   form: {
     gap: spacing.sm,

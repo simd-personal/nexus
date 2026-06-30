@@ -10,6 +10,7 @@ import type {
   MobileProjectOverviewResponse as ProjectOverviewResponse,
   MobileProjectWithStats as ProjectWithStats,
   MobileSunnyUpdate as SunnyUpdate,
+  DashboardPortfolioScope,
   Citation,
 } from '@upperdeck/shared/mobile';
 
@@ -18,6 +19,7 @@ export type {
   ChatSession,
   Citation,
   CriticalItem,
+  DashboardPortfolioScope,
   DashboardStats,
   DashboardUpdatesFeed,
   InboundInfo,

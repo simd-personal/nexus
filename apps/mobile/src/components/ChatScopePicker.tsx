@@ -8,9 +8,12 @@ import {
   checkedIdsFromScope,
   formatScopeSummary,
   getNodeCheckState,
+  getPortfolioCheckState,
   projectLabel,
   removeScopeLabel,
+  splitProjectsByPortfolio,
   toggleNodeChecked,
+  togglePortfolioChecked,
   type ChatScope,
   type TreeCheckState,
 } from '@upperdeck/shared/chat-scope';
@@ -99,6 +102,54 @@ function ScopeTreeNode({
   );
 }
 
+function PortfolioScopeSection({
+  title,
+  portfolio,
+  projects,
+  allProjects,
+  checkedIds,
+  onToggleCheck,
+  onTogglePortfolio,
+}: {
+  title: string;
+  portfolio: 'work' | 'personal';
+  projects: ProjectWithStats[];
+  allProjects: ProjectWithStats[];
+  checkedIds: Set<string>;
+  onToggleCheck: (node: ProjectWithStats) => void;
+  onTogglePortfolio: () => void;
+}) {
+  const portfolioState = getPortfolioCheckState(allProjects, portfolio, checkedIds);
+  const portfolioLabel = portfolio === 'work' ? 'Work projects' : 'Personal projects';
+
+  return (
+    <View style={styles.portfolioSection}>
+      <Text style={styles.portfolioSectionTitle}>{title}</Text>
+      <Pressable onPress={onTogglePortfolio} style={styles.portfolioRow}>
+        <ScopeCheckBox
+          state={portfolioState}
+          onPress={onTogglePortfolio}
+          label={portfolioLabel}
+        />
+        <Text style={styles.portfolioRowLabel}>{portfolioLabel}</Text>
+      </Pressable>
+      {projects.length === 0 ? (
+        <Text style={styles.portfolioEmpty}>No {title.toLowerCase()} projects yet</Text>
+      ) : (
+        projects.map((project) => (
+          <ScopeTreeNode
+            key={project.id}
+            node={project}
+            depth={0}
+            checkedIds={checkedIds}
+            onToggleCheck={onToggleCheck}
+          />
+        ))
+      )}
+    </View>
+  );
+}
+
 type ChatScopePickerProps = {
   projects: ProjectWithStats[];
   scope: ChatScope;
@@ -136,6 +187,8 @@ export function ChatScopePicker({
     onScopeChange(ALL_PROJECTS_SCOPE);
     setPickerOpen(false);
   }
+
+  const { work, personal } = splitProjectsByPortfolio(projects);
 
   return (
     <>
@@ -180,15 +233,28 @@ export function ChatScopePicker({
             <View style={styles.divider} />
 
             <ScrollView style={styles.treeList} keyboardShouldPersistTaps="handled">
-              {projects.map((project) => (
-                <ScopeTreeNode
-                  key={project.id}
-                  node={project}
-                  depth={0}
-                  checkedIds={checkedIds}
-                  onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
-                />
-              ))}
+              <PortfolioScopeSection
+                title="Work"
+                portfolio="work"
+                projects={work}
+                allProjects={projects}
+                checkedIds={checkedIds}
+                onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
+                onTogglePortfolio={() =>
+                  applyCheckedIds(togglePortfolioChecked(projects, 'work', checkedIds))
+                }
+              />
+              <PortfolioScopeSection
+                title="Personal"
+                portfolio="personal"
+                projects={personal}
+                allProjects={projects}
+                checkedIds={checkedIds}
+                onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
+                onTogglePortfolio={() =>
+                  applyCheckedIds(togglePortfolioChecked(projects, 'personal', checkedIds))
+                }
+              />
             </ScrollView>
 
             <Pressable onPress={() => setPickerOpen(false)} style={styles.doneBtn}>
@@ -269,6 +335,39 @@ const styles = StyleSheet.create({
   },
   treeList: {
     maxHeight: 360,
+  },
+  portfolioSection: {
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  portfolioSectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#9CA3AF',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    paddingHorizontal: spacing.sm,
+    paddingTop: spacing.xs,
+  },
+  portfolioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 10,
+    backgroundColor: '#F9FAFB',
+  },
+  portfolioRowLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: BRAND.graphite,
+  },
+  portfolioEmpty: {
+    fontSize: 12,
+    color: '#9CA3AF',
+    paddingHorizontal: spacing.sm,
+    paddingBottom: spacing.xs,
   },
   treeRow: {
     flexDirection: 'row',

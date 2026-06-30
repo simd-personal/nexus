@@ -73,7 +73,6 @@ export function Sidebar({ mobileOpen = false, onMobileClose, account = null }: S
         </button>
         <Link href="/dashboard" className="block" onClick={onMobileClose}>
           <UpperDeckLogo size="sm" theme={darkMode ? 'dark' : 'light'} />
-          <p className="mt-1.5 text-xs text-[var(--ud-slate)]">Command Center</p>
         </Link>
       </div>
 

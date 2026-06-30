@@ -1,8 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import {
+  ALL_PROJECTS_SCOPE,
   formatScopeSummary,
   resolveScopeProjectIds,
-  scopeFromPortfolio,
   type ChatScope,
 } from '@upperdeck/shared/chat-scope';
 import { useQuery } from '@tanstack/react-query';
@@ -65,7 +65,7 @@ function toBubbleMessage(message: UiMessage, scope: ChatScope): ChatBubbleMessag
 
 export default function SunnyScreen() {
   const insets = useSafeAreaInsets();
-  const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: fetchProjects });
+  const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() });
   const projects = projectsQuery.data?.projects ?? [];
   const [scope, setScope] = useState<ChatScope>({ kind: 'all' });
   const [scopeReady, setScopeReady] = useState(false);
@@ -88,7 +88,7 @@ export default function SunnyScreen() {
 
   useEffect(() => {
     if (projects.length === 0 || scopeReady) return;
-    setScope(scopeFromPortfolio(projects, 'work'));
+    setScope(ALL_PROJECTS_SCOPE);
     setScopeReady(true);
   }, [projects, scopeReady]);
 

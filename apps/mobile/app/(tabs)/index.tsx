@@ -16,7 +16,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
-  const statsQuery = useQuery({ queryKey: ['dashboard-stats'], queryFn: fetchDashboardStats });
+  const statsQuery = useQuery({ queryKey: ['dashboard-stats'], queryFn: () => fetchDashboardStats() });
   const updatesQuery = useQuery({ queryKey: ['dashboard-updates'], queryFn: () => fetchDashboardUpdates(5) });
   const criticalQuery = useQuery({ queryKey: ['home-critical'], queryFn: () => fetchCriticalItems(3) });
 
@@ -45,7 +45,6 @@ export default function HomeScreen() {
         onRefresh={refreshAll}
         header={
           <TabScreenHeader
-            tagline="Command Center"
             compactBrand={false}
             title="Executive Dashboard"
             subtitle="What Sunny flagged and what changed recently."
@@ -67,7 +66,7 @@ export default function HomeScreen() {
           <>
             <View style={styles.statsGrid}>
               <StatPill label="Critical" value={stats?.criticalCount ?? 0} tone="danger" />
-              <StatPill label="Updates" value={stats?.newUpdatesCount ?? 0} tone="accent" />
+              <StatPill label="New (24h)" value={stats?.newUpdatesCount ?? 0} tone="accent" />
               <StatPill label="Actions" value={stats?.actionItemsCount ?? 0} tone="neutral" />
               <StatPill label="Conflicts" value={stats?.conflictsCount ?? 0} tone="neutral" />
             </View>

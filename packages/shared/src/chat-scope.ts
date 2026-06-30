@@ -202,6 +202,67 @@ export function toggleNodeChecked(
   return next;
 }
 
+function collectPortfolioNodeIds(
+  projects: MobileProjectWithStats[],
+  portfolio: 'work' | 'personal'
+): string[] {
+  const ids: string[] = [];
+
+  function visit(node: MobileProjectWithStats) {
+    if ((node.portfolio ?? 'work') === portfolio) ids.push(node.id);
+    for (const child of node.sub_projects ?? []) visit(child);
+  }
+
+  for (const root of projects) visit(root);
+  return ids;
+}
+
+export function getPortfolioCheckState(
+  projects: MobileProjectWithStats[],
+  portfolio: 'work' | 'personal',
+  checkedIds: Set<string>
+): TreeCheckState {
+  const ids = collectPortfolioNodeIds(projects, portfolio);
+  if (ids.length === 0) return 'unchecked';
+
+  const checkedCount = ids.filter((id) => checkedIds.has(id)).length;
+  if (checkedCount === 0) return 'unchecked';
+  if (checkedCount === ids.length) return 'checked';
+  return 'indeterminate';
+}
+
+export function togglePortfolioChecked(
+  projects: MobileProjectWithStats[],
+  portfolio: 'work' | 'personal',
+  checkedIds: Set<string>
+): Set<string> {
+  const shouldCheck = getPortfolioCheckState(projects, portfolio, checkedIds) !== 'checked';
+  const next = new Set(checkedIds);
+
+  function visit(node: MobileProjectWithStats) {
+    if ((node.portfolio ?? 'work') === portfolio) {
+      if (shouldCheck) next.add(node.id);
+      else next.delete(node.id);
+    }
+    for (const child of node.sub_projects ?? []) visit(child);
+  }
+
+  for (const root of projects) visit(root);
+  return next;
+}
+
+export function splitProjectsByPortfolio(projects: MobileProjectWithStats[]) {
+  const work: MobileProjectWithStats[] = [];
+  const personal: MobileProjectWithStats[] = [];
+
+  for (const project of projects) {
+    if (project.portfolio === 'personal') personal.push(project);
+    else work.push(project);
+  }
+
+  return { work, personal };
+}
+
 const PORTFOLIO_SCOPE_LABELS: Record<string, 'work' | 'personal'> = {
   'Work projects': 'work',
   'Personal projects': 'personal',
