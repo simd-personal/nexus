@@ -643,6 +643,7 @@ export function SunnyChatInterface({
           message: text.trim(),
           session_id: activeSessionId,
           type: mode,
+          model_preference: modelPreference,
           regenerate,
           honeypot,
         }
@@ -931,7 +932,6 @@ export function SunnyChatInterface({
                 lockScope={lockScope || !onScopeChange}
               />
             )}
-            {!isPageGenerationMode(mode) && (
             <div
               className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] px-2.5 py-1.5 shadow-sm"
               title="Auto routes Q&A to ChatGPT and document creation to Claude"
@@ -952,7 +952,6 @@ export function SunnyChatInterface({
                 <option value="claude">Claude</option>
               </select>
             </div>
-            )}
           </div>
         </div>
 

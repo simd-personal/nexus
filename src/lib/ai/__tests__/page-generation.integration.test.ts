@@ -4,10 +4,14 @@ import {
   generatePageBrief,
   generatePageFollowUpEmail,
   generatePagePlaybook,
+  streamPageBrief,
+  streamPagePlaybook,
 } from '@/lib/ai/page-generation';
 
 const mockStructuredExtraction = vi.fn();
 const mockGenerateLongForm = vi.fn();
+const mockStreamLongForm = vi.fn();
+const mockStreamClaudeLongForm = vi.fn();
 
 vi.mock('@/lib/ai/openai', () => ({
   OPENAI_MODELS: {
@@ -18,6 +22,15 @@ vi.mock('@/lib/ai/openai', () => ({
   chatCompletion: vi.fn(),
   structuredExtraction: (...args: unknown[]) => mockStructuredExtraction(...args),
   generateLongForm: (...args: unknown[]) => mockGenerateLongForm(...args),
+  streamLongForm: (...args: unknown[]) => mockStreamLongForm(...args),
+}));
+
+vi.mock('@/lib/ai/claude', () => ({
+  CLAUDE_MODELS: {
+    brief: 'claude-opus-4-8',
+    playbook: 'claude-opus-4-8',
+  },
+  streamLongForm: (...args: unknown[]) => mockStreamClaudeLongForm(...args),
 }));
 
 const context = {
@@ -37,6 +50,8 @@ describe('page generation (GPT, outside chat)', () => {
   beforeEach(() => {
     mockStructuredExtraction.mockReset();
     mockGenerateLongForm.mockReset();
+    mockStreamLongForm.mockReset();
+    mockStreamClaudeLongForm.mockReset();
   });
 
   it('generatePageBrief uses GPT and returns sanitized prose fields', async () => {
@@ -114,5 +129,57 @@ describe('page generation (GPT, outside chat)', () => {
       expect.any(String),
       'gpt-5.5'
     );
+  });
+});
+
+describe('page generation streaming (model preference)', () => {
+  beforeEach(() => {
+    mockStreamLongForm.mockReset();
+    mockStreamClaudeLongForm.mockReset();
+    mockStreamLongForm.mockResolvedValue('GPT brief content');
+    mockStreamClaudeLongForm.mockResolvedValue('Claude brief content');
+  });
+
+  it('streamPageBrief uses Claude when preference is auto', async () => {
+    const result = await streamPageBrief(context, 'Summarize the project', [], vi.fn(), 'auto');
+
+    expect(mockStreamClaudeLongForm).toHaveBeenCalled();
+    expect(mockStreamLongForm).not.toHaveBeenCalled();
+    expect(result.model).toBe('claude');
+    expect(result.content).toContain('Claude brief content');
+  });
+
+  it('streamPageBrief uses GPT when preference is gpt', async () => {
+    const result = await streamPageBrief(context, 'Summarize the project', [], vi.fn(), 'gpt');
+
+    expect(mockStreamLongForm).toHaveBeenCalledWith(
+      expect.stringContaining('executive brief'),
+      expect.any(String),
+      expect.any(Function),
+      'gpt-5.5',
+      { reasoningEffort: 'high' }
+    );
+    expect(mockStreamClaudeLongForm).not.toHaveBeenCalled();
+    expect(result.model).toBe('gpt');
+  });
+
+  it('streamPagePlaybook respects claude preference', async () => {
+    const result = await streamPagePlaybook(
+      'Q3 Review',
+      'Acme Corp',
+      context,
+      'Build a playbook',
+      [],
+      vi.fn(),
+      'claude'
+    );
+
+    expect(mockStreamClaudeLongForm).toHaveBeenCalledWith(
+      expect.stringContaining('operating playbook'),
+      expect.any(String),
+      expect.any(Function),
+      'claude-opus-4-8'
+    );
+    expect(result.model).toBe('claude');
   });
 });

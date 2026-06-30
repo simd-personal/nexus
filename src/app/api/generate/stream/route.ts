@@ -8,6 +8,7 @@ import { deleteLastAssistantMessage, getOrCreateSession, saveChatMessage } from 
 import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
 import { guardAiRequest } from '@/lib/security/guard';
 import { encodeSse } from '@/lib/sse';
+import type { ModelEngine, ModelPreference } from '@/types/database';
 
 type PageGenerationType = 'brief' | 'playbook';
 
@@ -18,7 +19,8 @@ export async function POST(request: NextRequest) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
 
-  const { project_id, message, session_id, type, regenerate, honeypot } = await request.json();
+  const { project_id, message, session_id, type, regenerate, honeypot, model_preference } =
+    await request.json();
   if (!project_id || !message?.trim() || (type !== 'brief' && type !== 'playbook')) {
     return new Response(JSON.stringify({ error: 'Project ID, message, and type (brief|playbook) required' }), {
       status: 400,
@@ -85,14 +87,23 @@ export async function POST(request: NextRequest) {
         let citations: unknown[] = [];
         let title = '';
         let actions_taken: string[] = [];
+        let usedModel: ModelEngine = 'claude';
+        const preference = model_preference as ModelPreference | undefined;
 
         if (pageType === 'brief') {
           send({ event: 'status', data: { message: 'Generating executive brief...' } });
-          const result = await streamPageBrief(context, message, history.slice(0, -1), (token) => {
-            send({ event: 'token', data: { text: token } });
-          });
+          const result = await streamPageBrief(
+            context,
+            message,
+            history.slice(0, -1),
+            (token) => {
+              send({ event: 'token', data: { text: token } });
+            },
+            preference
+          );
           content = result.content;
           citations = result.citations;
+          usedModel = result.model;
           title = `Sunny Brief for ${project.project_name}`;
           actions_taken = ['Generated executive brief', 'Saved to project documents'];
 
@@ -102,11 +113,11 @@ export async function POST(request: NextRequest) {
             title,
             content,
             citations,
-            metadata: { source: 'page_chat', instructions: message },
+            metadata: { source: 'page_chat', instructions: message, model: usedModel },
           });
         } else {
           send({ event: 'status', data: { message: 'Building operating playbook...' } });
-          content = await streamPagePlaybook(
+          const result = await streamPagePlaybook(
             project.project_name,
             project.client_name,
             context,
@@ -114,8 +125,11 @@ export async function POST(request: NextRequest) {
             history.slice(0, -1),
             (token) => {
               send({ event: 'token', data: { text: token } });
-            }
+            },
+            preference
           );
+          content = result.content;
+          usedModel = result.model;
           title = `Operating Playbook for ${project.client_name}`;
           actions_taken = ['Generated operating playbook', 'Saved to project documents'];
 
@@ -124,7 +138,7 @@ export async function POST(request: NextRequest) {
             type: 'playbook',
             title,
             content,
-            metadata: { source: 'page_chat', instructions: message },
+            metadata: { source: 'page_chat', instructions: message, model: usedModel },
           });
 
           await supabase.from('timeline_events').insert({
@@ -144,7 +158,7 @@ export async function POST(request: NextRequest) {
             citations,
             confidence: 'high',
             actions_taken,
-            model: 'gpt',
+            model: usedModel,
           },
         });
 
@@ -158,7 +172,7 @@ export async function POST(request: NextRequest) {
             confidence: 'high',
             artifact,
             actions_taken,
-            model: 'gpt',
+            model: usedModel,
           },
         });
 

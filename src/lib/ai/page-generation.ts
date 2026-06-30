@@ -2,7 +2,10 @@
  * GPT generation for project pages (/api/generate) — outside chat.
  * Output is natural prose with no asterisks or dashes.
  */
+import { streamLongForm as streamClaudeLongForm, CLAUDE_MODELS } from '@/lib/ai/claude';
+import { isOpenAIUnavailable } from '@/lib/ai/errors';
 import { chatCompletion, generateLongForm, streamLongForm, structuredExtraction, OPENAI_MODELS } from '@/lib/ai/openai';
+import { resolveEngine } from '@/lib/ai/stream-agent';
 import {
   BRIEF_SYSTEM_PROMPT,
   EMAIL_SYSTEM_PROMPT,
@@ -12,7 +15,7 @@ import {
   filterSubstantiveChunks,
   formatNaturalProse,
 } from '@/lib/ai/generation-prompts';
-import type { Citation, SunnyBrief } from '@/types/database';
+import type { Citation, ModelEngine, ModelPreference, SunnyBrief } from '@/types/database';
 import { buildHistoryNote, type ChatTurn } from '@/lib/chat/memory';
 
 export interface PageGenerationContext {
@@ -193,22 +196,56 @@ function buildPageChatPrompt(
     .join('\n\n');
 }
 
+async function streamWithEngine(
+  engine: ModelEngine,
+  systemPrompt: string,
+  userPrompt: string,
+  onToken: (token: string) => void,
+  options?: { highReasoning?: boolean; claudeModel?: string }
+): Promise<{ text: string; engine: ModelEngine }> {
+  const claudeModel = options?.claudeModel ?? CLAUDE_MODELS.brief;
+  const runClaude = () => streamClaudeLongForm(systemPrompt, userPrompt, onToken, claudeModel);
+  const runGpt = () =>
+    streamLongForm(
+      systemPrompt,
+      userPrompt,
+      onToken,
+      options?.highReasoning ? OPENAI_MODELS.generationHigh : OPENAI_MODELS.generation,
+      options?.highReasoning ? { reasoningEffort: 'high' } : undefined
+    );
+
+  try {
+    if (engine === 'claude') {
+      return { text: await runClaude(), engine: 'claude' };
+    }
+    return { text: await runGpt(), engine: 'gpt' };
+  } catch (error) {
+    if (engine === 'gpt' && isOpenAIUnavailable(error)) {
+      console.warn('[openai] Page generation unavailable — falling back to Claude');
+      return { text: await runClaude(), engine: 'claude' };
+    }
+    throw error;
+  }
+}
+
 /** Streaming executive brief for Sunny Brief page chat */
 export async function streamPageBrief(
   context: PageGenerationContext,
   message: string,
   history: ChatTurn[],
-  onToken: (token: string) => void
-): Promise<{ content: string; citations: Citation[] }> {
+  onToken: (token: string) => void,
+  preference?: ModelPreference
+): Promise<{ content: string; citations: Citation[]; model: ModelEngine }> {
+  const engine = resolveEngine(preference, 'create');
   const userPrompt = buildPageChatPrompt(context, message, history);
-  const raw = await streamLongForm(
+  const { text, engine: usedEngine } = await streamWithEngine(
+    engine,
     `${SUNNY_PERSONA}\n\n${BRIEF_SYSTEM_PROMPT}\n\nWrite a complete executive brief with clear section titles and prose paragraphs. Cover executive summary, what changed recently, critical items, client concerns, risks, opportunities, open action items, and recommended next steps.`,
     userPrompt,
     onToken,
-    OPENAI_MODELS.generationHigh,
-    { reasoningEffort: 'high' }
+    { highReasoning: true }
   );
-  return { content: formatNaturalProse(raw), citations: buildCitations(context) };
+  return { content: formatNaturalProse(text), citations: buildCitations(context), model: usedEngine };
 }
 
 /** Streaming operating playbook for Playbook page chat */
@@ -218,21 +255,24 @@ export async function streamPagePlaybook(
   context: PageGenerationContext,
   message: string,
   history: ChatTurn[],
-  onToken: (token: string) => void
-): Promise<string> {
+  onToken: (token: string) => void,
+  preference?: ModelPreference
+): Promise<{ content: string; model: ModelEngine }> {
+  const engine = resolveEngine(preference, 'create');
   const userPrompt = buildPageChatPrompt(
     context,
     message,
     history,
     `Client: ${clientName}\nProject: ${projectName}`
   );
-  const raw = await streamLongForm(
+  const { text, engine: usedEngine } = await streamWithEngine(
+    engine,
     `${SUNNY_PERSONA}\n\n${PLAYBOOK_SYSTEM_PROMPT}`,
     userPrompt,
     onToken,
-    OPENAI_MODELS.generation
+    { claudeModel: CLAUDE_MODELS.playbook }
   );
-  return formatNaturalProse(raw);
+  return { content: formatNaturalProse(text), model: usedEngine };
 }
 
 /** ChatGPT — one paragraph project summary refresh (optional utility) */
