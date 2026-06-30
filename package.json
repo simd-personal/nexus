@@ -21,6 +21,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "stripe:setup": "tsx scripts/stripe-setup-products.ts",
+    "test:stripe": "tsx scripts/test-stripe-sandbox.ts",
     "resend:setup": "tsx scripts/resend-setup.ts"
   },
   "dependencies": {
