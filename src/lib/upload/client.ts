@@ -100,6 +100,49 @@ export interface UploadFileResult {
   skipped?: string[];
 }
 
+export async function replaceProjectFile(
+  _projectId: string,
+  fileId: string,
+  file: File,
+  options?: { trackProgress?: boolean }
+): Promise<UploadFileResult> {
+  const trackProgress = options?.trackProgress ?? true;
+  if (trackProgress) notifyUploadStart([file]);
+
+  try {
+    const sizeGuard = validateClientUploadFile(file);
+    if (!sizeGuard.ok) {
+      return { ok: false, error: sizeGuard.error };
+    }
+
+    const formData = new FormData();
+    formData.append('file', file, sanitizeUploadFileName(file.name));
+
+    const res = await fetch(`/api/files/${fileId}/replace`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      redirect: 'manual',
+    });
+
+    const data = await parseUploadResponse(res);
+
+    if (data.error || !res.ok) {
+      return { ok: false, error: data.error ?? 'Replace failed' };
+    }
+
+    const fileIdResult = (data as { data?: { id?: string } }).data?.id ?? fileId;
+    return {
+      ok: true,
+      fileId: fileIdResult,
+      fileIds: [fileIdResult],
+      sizeHint: getClientUploadSizeHint([file]),
+    };
+  } finally {
+    if (trackProgress) notifyUploadEnd();
+  }
+}
+
 export async function uploadProjectFile(
   projectId: string,
   file: File,

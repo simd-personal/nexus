@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import {
   isFileDragEvent,
-  uploadProjectFiles,
   kickFileProcessing,
   UPLOAD_ACCEPT,
 } from '@/lib/upload/client';
@@ -20,15 +19,18 @@ import {
   UPLOAD_ACCEPTED_TYPES_HINT,
   UPLOAD_BACKGROUND_NOTE,
   UPLOAD_MAX_SIZE_HINT,
-  uploadSuccessMessage,
+  uploadBatchSuccessMessage,
 } from '@/lib/upload/user-messages';
+import { useProjectFileUpload } from '@/hooks/useProjectFileUpload';
+import type { ProjectFileSummary } from '@/lib/files/replace-content';
 
 interface FileUploadProps {
   projectId: string;
+  existingFiles?: ProjectFileSummary[];
   onUploadComplete?: () => void;
 }
 
-export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProps) {
+export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }: FileUploadProps) {
   const dragDepth = useRef(0);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -37,6 +39,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
   const [message, setMessage] = useState('');
   const uploadProgress = useUploadProgress();
   const isUploading = uploading || Boolean(uploadProgress);
+  const { uploadFiles, collisionDialog } = useProjectFileUpload(projectId, { existingFiles });
 
   const handleFiles = useCallback(async (files: File[]) => {
     if (!files.length) {
@@ -48,15 +51,17 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     setMessage('');
 
     try {
-      const { uploaded, errors, sizeHint, zipExtracted, fileIds } = await uploadProjectFiles(
-        projectId,
-        files
-      );
+      const { uploaded, replaced, errors, sizeHint, zipExtracted, cancelled } = await uploadFiles(files);
 
-      if (uploaded.length > 0) {
-        const count = zipExtracted ? fileIds.length : uploaded.length;
-        let msg = uploadSuccessMessage({
-          count,
+      if (cancelled) {
+        setMessage('Upload cancelled.');
+        return;
+      }
+
+      if (uploaded.length > 0 || replaced.length > 0) {
+        let msg = uploadBatchSuccessMessage({
+          uploaded,
+          replaced,
           zipExtracted,
           archiveName: zipExtracted ? uploaded[0] : undefined,
           sizeHint,
@@ -69,7 +74,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
         window.dispatchEvent(new CustomEvent('project-files-uploaded'));
       }
 
-      if (errors.length > 0 && uploaded.length === 0) {
+      if (errors.length > 0 && uploaded.length === 0 && replaced.length === 0) {
         setMessage(`Error: ${errors[0]}`);
       }
     } catch {
@@ -77,7 +82,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     } finally {
       setUploading(false);
     }
-  }, [projectId, onUploadComplete]);
+  }, [uploadFiles, onUploadComplete]);
 
   const uploadPastedText = useCallback(async () => {
     if (!pasteText.trim() || !pasteMode) return;
@@ -153,6 +158,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
 
   return (
     <div className="space-y-6">
+      {collisionDialog}
       <Card>
         <CardHeader
           title="Upload Center"

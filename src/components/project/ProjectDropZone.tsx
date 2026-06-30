@@ -3,20 +3,23 @@
 import {
   getFilesFromDataTransfer,
   isFileDragEvent,
-  uploadProjectFiles,
 } from '@/lib/upload/client';
 import { useUploadProgress } from '@/lib/upload/use-upload-progress';
-import { uploadSuccessMessage } from '@/lib/upload/user-messages';
+import { uploadBatchSuccessMessage } from '@/lib/upload/user-messages';
 import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
+import { useProjectFileUpload } from '@/hooks/useProjectFileUpload';
+import type { ProjectFileSummary } from '@/lib/files/replace-content';
 import { Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export function ProjectDropZone({
   projectId,
+  existingFiles,
   children,
 }: {
   projectId: string;
+  existingFiles?: ProjectFileSummary[];
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -25,6 +28,7 @@ export function ProjectDropZone({
   const uploadProgress = useUploadProgress();
   const [dragging, setDragging] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const { uploadFiles, collisionDialog } = useProjectFileUpload(projectId, { existingFiles });
 
   const showToast = useCallback((message: string) => {
     setToast(message);
@@ -42,12 +46,18 @@ export function ProjectDropZone({
 
       uploadingRef.current = true;
       try {
-        const { uploaded, errors, zipExtracted, fileIds } = await uploadProjectFiles(projectId, files);
+        const { uploaded, replaced, errors, zipExtracted, cancelled } = await uploadFiles(files);
 
-        if (uploaded.length > 0) {
+        if (cancelled) {
+          showToast('Upload cancelled.');
+          return;
+        }
+
+        if (uploaded.length > 0 || replaced.length > 0) {
           showToast(
-            uploadSuccessMessage({
-              count: zipExtracted ? fileIds.length : uploaded.length,
+            uploadBatchSuccessMessage({
+              uploaded,
+              replaced,
               zipExtracted,
               archiveName: zipExtracted ? uploaded[0] : undefined,
             })
@@ -57,7 +67,7 @@ export function ProjectDropZone({
         }
 
         if (errors.length > 0) {
-          showToast(errors[0]);
+          showToast(errors[0]!);
         }
       } catch {
         showToast('Upload failed. Please try again.');
@@ -67,7 +77,7 @@ export function ProjectDropZone({
         setDragging(false);
       }
     },
-    [projectId, router, showToast]
+    [projectId, router, showToast, uploadFiles]
   );
 
   useEffect(() => {
@@ -121,6 +131,7 @@ export function ProjectDropZone({
 
   return (
     <>
+      {collisionDialog}
       {children}
 
       {uploadProgress && (

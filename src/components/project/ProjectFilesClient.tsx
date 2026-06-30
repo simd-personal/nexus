@@ -188,6 +188,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
       <ProjectUploadSection
         projectId={projectId}
         fileCount={files.length}
+        existingFiles={files.map((file) => ({ id: file.id, file_name: file.file_name }))}
         onUploadComplete={handleUploadComplete}
         onMessage={setUploadMessage}
         uploadMessage={uploadMessage}
@@ -290,6 +291,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                             await fetchFiles();
                             router.refresh();
                           }}
+                          onError={setActionError}
                         />
                       </div>
 

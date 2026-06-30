@@ -13,7 +13,9 @@ import {
   RefreshCw,
   StickyNote,
   Trash2,
+  Upload,
 } from 'lucide-react';
+import { replaceProjectFile } from '@/lib/upload/client';
 
 const MENU_WIDTH = 208;
 
@@ -33,6 +35,7 @@ type FileActionsMenuProps = {
   onReprocess?: () => void;
   onDelete?: () => void;
   onUpdated: () => void;
+  onError?: (message: string) => void;
 };
 
 type DialogMode = 'rename' | 'note' | 'move' | 'share' | 'remove' | null;
@@ -47,8 +50,10 @@ export function FileActionsMenu({
   onReprocess,
   onDelete,
   onUpdated,
+  onError,
 }: FileActionsMenuProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
+  const replaceInputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -119,6 +124,27 @@ export function FileActionsMenu({
     setError('');
     setValue(nextMode === 'rename' ? file.file_name : nextMode === 'note' ? file.user_note ?? '' : '');
     setTargetProjectId('');
+  }
+
+  async function handleReplaceSelected(selected: File | undefined) {
+    if (!selected) return;
+    setSubmitting(true);
+    setError('');
+    try {
+      const result = await replaceProjectFile(currentProjectId, file.id, selected);
+      if (!result.ok) {
+        const message = result.error ?? 'Replace failed';
+        setError(message);
+        onError?.(message);
+        return;
+      }
+      onUpdated();
+    } finally {
+      setSubmitting(false);
+      if (replaceInputRef.current) {
+        replaceInputRef.current.value = '';
+      }
+    }
   }
 
   async function submit() {
@@ -203,6 +229,14 @@ export function FileActionsMenu({
                 }}
               />
             )}
+            <MenuButton
+              icon={Upload}
+              label="Replace file"
+              onClick={() => {
+                setOpen(false);
+                replaceInputRef.current?.click();
+              }}
+            />
             {onDelete && (
               <MenuButton
                 icon={Trash2}
@@ -229,6 +263,12 @@ export function FileActionsMenu({
 
   return (
     <div className="relative inline-block" data-file-actions-root ref={anchorRef}>
+      <input
+        ref={replaceInputRef}
+        type="file"
+        className="hidden"
+        onChange={(event) => void handleReplaceSelected(event.target.files?.[0])}
+      />
       <Button
         variant={iconOnly ? 'ghost' : 'secondary'}
         size="sm"

@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/Card';
 type ProjectUploadSectionProps = {
   projectId: string;
   fileCount: number;
+  existingFiles?: Array<{ id: string; file_name: string }>;
   onUploadComplete: () => void;
   onMessage: (message: string) => void;
   uploadMessage?: string;
@@ -19,6 +20,7 @@ type ProjectUploadSectionProps = {
 export function ProjectUploadSection({
   projectId,
   fileCount,
+  existingFiles,
   onUploadComplete,
   onMessage,
   uploadMessage,
@@ -64,7 +66,11 @@ export function ProjectUploadSection({
         onUploadComplete={onUploadComplete}
         onMessage={onMessage}
       />
-      <FileUploadCenter projectId={projectId} onUploadComplete={onUploadComplete} />
+      <FileUploadCenter
+        projectId={projectId}
+        existingFiles={existingFiles}
+        onUploadComplete={onUploadComplete}
+      />
       {uploadMessage && (
         <p
           className={`rounded-lg px-1 text-sm ${uploadMessage.startsWith('Error') ? 'text-red-600' : 'text-emerald-600'}`}

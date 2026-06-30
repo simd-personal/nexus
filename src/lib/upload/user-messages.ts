@@ -35,6 +35,47 @@ export function pastedContentSuccessMessage(): string {
   return 'Content saved. Sunny is indexing it in the background.';
 }
 
+export function replaceSuccessMessage(fileName: string): string {
+  return `Replaced ${fileName}. Sunny is re-indexing project memory from the new version.`;
+}
+
+export function uploadBatchSuccessMessage(options: {
+  uploaded: string[];
+  replaced: string[];
+  zipExtracted?: boolean;
+  archiveName?: string;
+  sizeHint?: string | null;
+}): string {
+  const parts: string[] = [];
+
+  if (options.replaced.length === 1) {
+    parts.push(replaceSuccessMessage(options.replaced[0]!));
+  } else if (options.replaced.length > 1) {
+    parts.push(
+      `Replaced ${options.replaced.length} files. Sunny is re-indexing project memory from the new versions.`
+    );
+  }
+
+  if (options.uploaded.length > 0) {
+    parts.push(
+      uploadSuccessMessage({
+        count: options.zipExtracted ? options.uploaded.length : options.uploaded.length,
+        zipExtracted: options.zipExtracted,
+        archiveName: options.archiveName,
+        sizeHint: options.sizeHint,
+      })
+    );
+  } else if (options.sizeHint && parts.length > 0) {
+    parts[parts.length - 1] += ` ${options.sizeHint}`;
+  }
+
+  if (parts.length === 0) {
+    return uploadSuccessMessage({ count: 1 });
+  }
+
+  return parts.join(' ');
+}
+
 export function formatUploadApiError(
   status: number,
   body: { error?: string; retry_after?: number; cooldown?: boolean } = {}
