@@ -8,6 +8,7 @@ import { ProjectUploadSection } from '@/components/project/ProjectUploadSection'
 import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/Badge';
 import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
 import { needsProcessingKick } from '@/lib/processing/progress';
@@ -20,7 +21,7 @@ import {
 } from '@/lib/upload/progress-events';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
-import { FileText, Image as ImageIcon } from 'lucide-react';
+import { Eye, FileText, Image as ImageIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
@@ -267,6 +268,15 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                             {file.origin_file_id ? ' · Shared copy' : ''}
                           </p>
                         </button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="shrink-0"
+                          onClick={() => setViewingFile(file)}
+                        >
+                          <Eye className="h-4 w-4" />
+                          View
+                        </Button>
                         <span className="hidden shrink-0 sm:inline-flex">{fileStatusBadge(file)}</span>
                         <FileActionsMenu
                           file={file}
@@ -274,7 +284,6 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                           busy={busyFileId === file.id}
                           iconOnly
                           canReprocess={canReprocess(file.status)}
-                          onView={() => setViewingFile(file)}
                           onReprocess={() => handleReprocess(file)}
                           onDelete={() => openDeleteDialog(file)}
                           onUpdated={async () => {
