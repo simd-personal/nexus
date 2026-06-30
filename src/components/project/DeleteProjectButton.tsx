@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 import { deleteProject } from '@/lib/actions/projects';
 import { Button } from '@/components/ui/Button';
+import { DeleteProjectDialog } from '@/components/project/DeleteProjectDialog';
 
 export function DeleteProjectButton({
   projectId,
@@ -18,28 +19,36 @@ export function DeleteProjectButton({
   iconOnly?: boolean;
 }) {
   const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [confirmText, setConfirmText] = useState('');
+  const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  async function handleDelete() {
-    const label = `${clientName} · ${projectName}`;
-    const confirmed = window.confirm(
-      `Delete "${label}"?\n\nThis permanently removes the project, all uploaded files, chats, and indexed content. This cannot be undone.`
-    );
-    if (!confirmed) return;
+  function openDialog() {
+    setConfirmText('');
+    setError('');
+    setOpen(true);
+  }
 
-    const typed = window.prompt(`Type "${projectName}" to confirm deletion:`);
-    if (typed?.trim() !== projectName) {
-      window.alert('Project name did not match. Deletion cancelled.');
-      return;
-    }
+  function closeDialog() {
+    if (busy) return;
+    setOpen(false);
+    setConfirmText('');
+    setError('');
+  }
+
+  async function handleConfirm() {
+    if (confirmText.trim().toLowerCase() !== 'delete') return;
 
     setBusy(true);
+    setError('');
     try {
       const result = await deleteProject(projectId);
       if (result.error) {
-        window.alert(result.error);
+        setError(result.error);
         return;
       }
+      setOpen(false);
       router.push('/projects');
       router.refresh();
     } finally {
@@ -47,31 +56,43 @@ export function DeleteProjectButton({
     }
   }
 
-  if (iconOnly) {
-    return (
-      <button
-        type="button"
-        disabled={busy}
-        onClick={handleDelete}
-        aria-label={busy ? 'Deleting project…' : `Delete ${projectName}`}
-        title="Delete project"
-        className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-    );
-  }
-
   return (
-    <Button
-      variant="secondary"
-      size="sm"
-      disabled={busy}
-      onClick={handleDelete}
-      className="text-red-600 hover:border-red-200 hover:bg-red-50"
-    >
-      <Trash2 className="w-4 h-4" />
-      {busy ? 'Deleting…' : 'Delete project'}
-    </Button>
+    <>
+      {iconOnly ? (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={openDialog}
+          aria-label={busy ? 'Deleting project…' : `Delete ${projectName}`}
+          title="Delete project"
+          className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:hover:bg-red-950/30 dark:hover:text-red-400"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      ) : (
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={busy}
+          onClick={openDialog}
+          className="text-red-600 hover:border-red-200 hover:bg-red-50 dark:hover:border-red-900 dark:hover:bg-red-950/30"
+        >
+          <Trash2 className="w-4 h-4" />
+          Delete project
+        </Button>
+      )}
+
+      <DeleteProjectDialog
+        open={open}
+        projectName={projectName}
+        clientName={clientName}
+        confirmText={confirmText}
+        onConfirmTextChange={setConfirmText}
+        loading={busy}
+        error={error}
+        onConfirm={handleConfirm}
+        onCancel={closeDialog}
+      />
+    </>
   );
 }

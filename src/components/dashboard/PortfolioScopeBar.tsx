@@ -20,6 +20,8 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
+  const activeIndex = DASHBOARD_PORTFOLIO_SCOPES.indexOf(scope);
+  const segmentCount = DASHBOARD_PORTFOLIO_SCOPES.length;
 
   function selectScope(next: DashboardPortfolioScope) {
     if (next === scope) return;
@@ -38,13 +40,21 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
   return (
     <div
       className={cn(
-        'inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]',
+        'relative inline-flex rounded-[10px] border border-gray-200 bg-gray-50/80 p-[3px] dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]',
         pending && 'opacity-70',
         className
       )}
       role="tablist"
       aria-label="Portfolio scope"
     >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-[3px] bottom-[3px] left-[3px] rounded-[7px] border border-gray-200/80 bg-white transition-transform duration-200 ease-out dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]"
+        style={{
+          width: `calc((100% - 6px) / ${segmentCount})`,
+          transform: `translateX(calc(${activeIndex} * 100%))`,
+        }}
+      />
       {DASHBOARD_PORTFOLIO_SCOPES.map((option) => {
         const active = scope === option;
         return (
@@ -56,10 +66,10 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
             disabled={pending}
             onClick={() => selectScope(option)}
             className={cn(
-              'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+              'relative z-10 min-w-[4.5rem] rounded-[7px] px-3.5 py-1.5 text-sm font-medium transition-colors sm:min-w-[5.5rem]',
               active
-                ? 'bg-white text-gray-900 shadow-sm dark:bg-[var(--ud-mist)] dark:text-gray-100'
-                : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100'
+                ? 'text-gray-900 dark:text-gray-100'
+                : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100'
             )}
           >
             {dashboardScopeLabel(option)}
