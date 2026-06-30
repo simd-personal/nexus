@@ -5,7 +5,9 @@ import {
   isFileDragEvent,
   uploadProjectFiles,
 } from '@/lib/upload/client';
+import { useUploadProgress } from '@/lib/upload/use-upload-progress';
 import { uploadSuccessMessage } from '@/lib/upload/user-messages';
+import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
 import { Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -20,6 +22,7 @@ export function ProjectDropZone({
   const router = useRouter();
   const dragDepth = useRef(0);
   const uploadingRef = useRef(false);
+  const uploadProgress = useUploadProgress();
   const [dragging, setDragging] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -120,7 +123,18 @@ export function ProjectDropZone({
     <>
       {children}
 
-      {dragging && (
+      {uploadProgress && (
+        <div className="pointer-events-none fixed bottom-6 left-1/2 z-50 w-full max-w-md -translate-x-1/2 px-4">
+          <UploadingFilesIndicator
+            count={uploadProgress.count}
+            names={uploadProgress.names}
+            variant="banner"
+            className="shadow-lg"
+          />
+        </div>
+      )}
+
+      {dragging && !uploadProgress && (
         <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-gray-900/40 p-8 backdrop-blur-sm">
           <div className="flex max-w-lg flex-col items-center rounded-2xl border-2 border-dashed border-white/80 bg-white/95 px-10 py-12 text-center shadow-2xl">
             <Upload className="mb-4 h-10 w-10 text-gray-700 dark:text-gray-300" />

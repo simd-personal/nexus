@@ -28,11 +28,7 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
       await setDashboardPortfolio(next);
 
       const params = new URLSearchParams(searchParams.toString());
-      if (next === 'work') {
-        params.delete('portfolio');
-      } else {
-        params.set('portfolio', next);
-      }
+      params.set('portfolio', next);
       const query = params.toString();
       router.replace(query ? `${pathname}?${query}` : pathname);
       router.refresh();

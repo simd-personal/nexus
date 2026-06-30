@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache';
 import { createClient, requireUser } from '@/lib/supabase/server';
 import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
-import { enrichProjectSetup } from '@/lib/ai/sunny';
 import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
 import type { ActionItemStatus, ProjectStatus } from '@/types/database';
 import { parseKeywordList } from '@/lib/relevance/watchlist';
@@ -77,21 +76,11 @@ export async function createProject(formData: FormData) {
     }
   }
 
-  let enrichedDescription = description?.trim() || null;
-  let initialSummary: string | null = null;
-
-  try {
-    const enriched = await enrichProjectSetup({
-      clientName: clientName.trim(),
-      projectName: projectName.trim(),
-      description: description?.trim(),
-      userNotes: sunnyNotes?.trim(),
-    });
-    enrichedDescription = enriched.description || enrichedDescription;
-    initialSummary = enriched.initial_summary || null;
-  } catch {
-    // GPT enrichment is optional — project still creates without it
-  }
+  const trimmedDescription = description?.trim() || null;
+  const trimmedNotes = sunnyNotes?.trim() || null;
+  const projectDescription =
+    trimmedDescription ??
+    (trimmedNotes ? trimmedNotes : null);
 
   const { data, error } = await supabase
     .from('projects')
@@ -101,8 +90,8 @@ export async function createProject(formData: FormData) {
       parent_project_id: resolvedParentId,
       client_name: clientName.trim(),
       project_name: projectName.trim(),
-      description: enrichedDescription,
-      last_summary: initialSummary,
+      description: projectDescription,
+      last_summary: null,
       portfolio,
     })
     .select()

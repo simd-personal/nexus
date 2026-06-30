@@ -36,6 +36,7 @@ import {
   uploadProjectFiles,
   UPLOAD_ACCEPT,
 } from '@/lib/upload/client';
+import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { UpperDeckIcon } from '@/components/brand/UpperDeckLogo';
@@ -72,6 +73,7 @@ export function GettingStartedClient({
   const [uploadedNames, setUploadedNames] = useState<string[]>([]);
   const [summary, setSummary] = useState(initialSummary);
   const [loading, setLoading] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<string[]>([]);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState('');
   const [progressLabel, setProgressLabel] = useState('Queued for processing…');
@@ -219,6 +221,7 @@ export function GettingStartedClient({
     if (!files.length || !projectState) return;
 
     setLoading(true);
+    setUploadingFiles(files.map((file) => file.name));
     setError('');
 
     const { uploaded, fileIds, errors, sizeHint: uploadSizeHint, zipExtracted } =
@@ -227,6 +230,7 @@ export function GettingStartedClient({
     if (uploaded.length === 0) {
       setError(errors[0] ?? 'Upload failed');
       setLoading(false);
+      setUploadingFiles([]);
       return;
     }
 
@@ -251,6 +255,7 @@ export function GettingStartedClient({
     setSizeHint(uploadSizeHint);
     setProgressPercent(8);
     setLoading(false);
+    setUploadingFiles([]);
     router.refresh();
   }
 
@@ -450,7 +455,17 @@ export function GettingStartedClient({
             />
           </div>
 
-          {loading && (
+          {loading && uploadingFiles.length > 0 && (
+            <div className="mt-4">
+              <UploadingFilesIndicator
+                count={uploadingFiles.length}
+                names={uploadingFiles}
+                variant="banner"
+              />
+            </div>
+          )}
+
+          {loading && uploadingFiles.length === 0 && (
             <p className="mt-3 text-center text-sm text-gray-600 dark:text-gray-300">
               Uploading…
             </p>

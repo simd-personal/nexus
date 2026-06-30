@@ -11,6 +11,9 @@ import {
   kickFileProcessing,
   UPLOAD_ACCEPT,
 } from '@/lib/upload/client';
+import { notifyUploadEnd, notifyUploadStart } from '@/lib/upload/progress-events';
+import { useUploadProgress } from '@/lib/upload/use-upload-progress';
+import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
 import {
   formatUploadApiError,
   pastedContentSuccessMessage,
@@ -32,6 +35,8 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
   const [pasteMode, setPasteMode] = useState<'email' | 'meeting' | 'transcript' | 'note' | null>(null);
   const [pasteText, setPasteText] = useState('');
   const [message, setMessage] = useState('');
+  const uploadProgress = useUploadProgress();
+  const isUploading = uploading || Boolean(uploadProgress);
 
   const handleFiles = useCallback(async (files: File[]) => {
     if (!files.length) {
@@ -78,6 +83,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     if (!pasteText.trim() || !pasteMode) return;
     setUploading(true);
     setMessage('');
+    notifyUploadStart([{ name: `Pasted ${pasteMode.replace('_', ' ')}` }]);
 
     const formData = new FormData();
     formData.append('project_id', projectId);
@@ -109,6 +115,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
     } catch {
       setMessage('Upload failed');
     } finally {
+      notifyUploadEnd();
       setUploading(false);
     }
   }, [projectId, pasteText, pasteMode, onUploadComplete]);
@@ -158,28 +165,45 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
           onDragLeave={handleDragLeave}
           className={cn(
             'rounded-xl border-2 border-dashed p-4 text-center transition-colors sm:p-8',
-            dragging ? 'border-gray-400 bg-gray-50' : 'border-gray-200'
+            uploading
+              ? 'border-[var(--brand-accent)]/40 bg-[rgba(37,99,235,0.04)] dark:bg-[rgba(37,99,235,0.08)]'
+              : dragging
+                ? 'border-gray-400 bg-gray-50 dark:bg-[var(--ud-cloud)]/40'
+                : 'border-gray-200 dark:border-[var(--ud-cloud)]'
           )}
         >
-          <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Drag and drop files here
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            {UPLOAD_ACCEPTED_TYPES_HINT}. {UPLOAD_MAX_SIZE_HINT}. {UPLOAD_BACKGROUND_NOTE}
-          </p>
-          <label className="inline-block cursor-pointer">
-            <input
-              type="file"
-              multiple
-              className="hidden"
-              onChange={handleFileInput}
-              accept={UPLOAD_ACCEPT}
-            />
-            <span className="inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors bg-white text-gray-700 dark:text-gray-300 border border-gray-200 hover:bg-gray-50 shadow-sm px-3 py-1.5 text-xs">
-              {uploading ? 'Uploading...' : 'Browse files'}
-            </span>
-          </label>
+          {uploadProgress ? (
+            <div className="py-2">
+              <UploadingFilesIndicator
+                count={uploadProgress.count}
+                names={uploadProgress.names}
+                variant="banner"
+                className="border-0 bg-transparent px-0 py-0 dark:bg-transparent"
+              />
+            </div>
+          ) : (
+            <>
+              <Upload className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-3" />
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Drag and drop files here
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                {UPLOAD_ACCEPTED_TYPES_HINT}. {UPLOAD_MAX_SIZE_HINT}. {UPLOAD_BACKGROUND_NOTE}
+              </p>
+              <label className="inline-block cursor-pointer">
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileInput}
+                  accept={UPLOAD_ACCEPT}
+                />
+                <span className="inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors bg-white text-gray-700 dark:text-gray-300 border border-gray-200 hover:bg-gray-50 shadow-sm px-3 py-1.5 text-xs dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:hover:bg-[var(--ud-cloud)]/40">
+                  Browse files
+                </span>
+              </label>
+            </>
+          )}
         </div>
 
         {message && (
@@ -208,7 +232,7 @@ export function FileUploadCenter({ projectId, onUploadComplete }: FileUploadProp
               className="w-full h-40 p-3 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
             />
             <div className="flex gap-2 mt-3">
-              <Button onClick={uploadPastedText} loading={uploading} disabled={!pasteText.trim()}>
+              <Button onClick={uploadPastedText} loading={isUploading} disabled={!pasteText.trim()}>
                 Upload to Sunny
               </Button>
               <Button variant="ghost" onClick={() => { setPasteMode(null); setPasteText(''); }}>

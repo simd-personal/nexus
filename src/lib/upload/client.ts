@@ -8,6 +8,7 @@ import {
   validateUploadByteSize,
 } from '@/lib/upload/limits';
 import { formatUploadApiError } from '@/lib/upload/user-messages';
+import { notifyUploadEnd, notifyUploadStart } from '@/lib/upload/progress-events';
 
 export function isFileDragEvent(event: DragEvent | React.DragEvent): boolean {
   const dataTransfer = 'dataTransfer' in event ? event.dataTransfer : null;
@@ -102,57 +103,69 @@ export interface UploadFileResult {
 export async function uploadProjectFile(
   projectId: string,
   file: File,
-  options?: { userNote?: string; uploadBatchId?: string; uploadBatchTotal?: number }
+  options?: {
+    userNote?: string;
+    uploadBatchId?: string;
+    uploadBatchTotal?: number;
+    trackProgress?: boolean;
+  }
 ): Promise<UploadFileResult> {
-  const sizeGuard = validateClientUploadFile(file);
-  if (!sizeGuard.ok) {
-    return { ok: false, error: sizeGuard.error };
-  }
+  const trackProgress = options?.trackProgress ?? true;
+  if (trackProgress) notifyUploadStart([file]);
 
-  const formData = new FormData();
-  formData.append('project_id', projectId);
-  formData.append('file', file, sanitizeUploadFileName(file.name));
-  if (options?.userNote?.trim()) {
-    formData.append('user_note', options.userNote.trim());
-  }
-  if (options?.uploadBatchId && (options.uploadBatchTotal ?? 0) > 1) {
-    formData.append('upload_batch_id', options.uploadBatchId);
-    formData.append('upload_batch_total', String(options.uploadBatchTotal));
-  }
+  try {
+    const sizeGuard = validateClientUploadFile(file);
+    if (!sizeGuard.ok) {
+      return { ok: false, error: sizeGuard.error };
+    }
 
-  const res = await fetch('/api/upload', {
-    method: 'POST',
-    body: formData,
-    credentials: 'same-origin',
-    redirect: 'manual',
-  });
+    const formData = new FormData();
+    formData.append('project_id', projectId);
+    formData.append('file', file, sanitizeUploadFileName(file.name));
+    if (options?.userNote?.trim()) {
+      formData.append('user_note', options.userNote.trim());
+    }
+    if (options?.uploadBatchId && (options.uploadBatchTotal ?? 0) > 1) {
+      formData.append('upload_batch_id', options.uploadBatchId);
+      formData.append('upload_batch_total', String(options.uploadBatchTotal));
+    }
 
-  const data = await parseUploadResponse(res);
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      redirect: 'manual',
+    });
 
-  if (data.error || !res.ok) {
-    return { ok: false, error: data.error ?? 'Upload failed' };
-  }
+    const data = await parseUploadResponse(res);
 
-  if (data.zip_extracted && Array.isArray(data.data)) {
-    const records = data.data as Array<{ id: string }>;
-    const fileIds = records.map((r) => r.id).filter(Boolean);
+    if (data.error || !res.ok) {
+      return { ok: false, error: data.error ?? 'Upload failed' };
+    }
+
+    if (data.zip_extracted && Array.isArray(data.data)) {
+      const records = data.data as Array<{ id: string }>;
+      const fileIds = records.map((r) => r.id).filter(Boolean);
+      return {
+        ok: true,
+        fileIds,
+        fileId: fileIds[0],
+        zipExtracted: true,
+        skipped: data.skipped,
+        sizeHint: getClientUploadSizeHint([file]),
+      };
+    }
+
+    const fileId = (data as { data?: { id?: string } }).data?.id;
     return {
       ok: true,
-      fileIds,
-      fileId: fileIds[0],
-      zipExtracted: true,
-      skipped: data.skipped,
+      fileId,
+      fileIds: fileId ? [fileId] : [],
       sizeHint: getClientUploadSizeHint([file]),
     };
+  } finally {
+    if (trackProgress) notifyUploadEnd();
   }
-
-  const fileId = (data as { data?: { id?: string } }).data?.id;
-  return {
-    ok: true,
-    fileId,
-    fileIds: fileId ? [fileId] : [],
-    sizeHint: getClientUploadSizeHint([file]),
-  };
 }
 
 /** Start durable server-side processing (runs in a long-lived /process request). */
@@ -172,36 +185,43 @@ export async function uploadProjectFiles(
   sizeHint: string | null;
   zipExtracted: boolean;
 }> {
+  notifyUploadStart(files);
+
   const uploaded: string[] = [];
   const fileIds: string[] = [];
   const errors: string[] = [];
   let zipExtracted = false;
   const uploadBatchId = files.length > 1 ? crypto.randomUUID() : undefined;
 
-  for (const file of files) {
-    const result = await uploadProjectFile(projectId, file, {
-      ...options,
-      uploadBatchId,
-      uploadBatchTotal: files.length,
-    });
-    if (result.ok) {
-      uploaded.push(file.name);
-      if (result.fileIds?.length) {
-        fileIds.push(...result.fileIds);
-        for (const id of result.fileIds) kickFileProcessing(id);
-      } else if (result.fileId) {
-        fileIds.push(result.fileId);
-        kickFileProcessing(result.fileId);
+  try {
+    for (const file of files) {
+      const result = await uploadProjectFile(projectId, file, {
+        ...options,
+        uploadBatchId,
+        uploadBatchTotal: files.length,
+        trackProgress: false,
+      });
+      if (result.ok) {
+        uploaded.push(file.name);
+        if (result.fileIds?.length) {
+          fileIds.push(...result.fileIds);
+          for (const id of result.fileIds) kickFileProcessing(id);
+        } else if (result.fileId) {
+          fileIds.push(result.fileId);
+          kickFileProcessing(result.fileId);
+        }
+        if (result.zipExtracted) zipExtracted = true;
+      } else {
+        errors.push(`${file.name}: ${result.error ?? 'Upload failed'}`);
       }
-      if (result.zipExtracted) zipExtracted = true;
-    } else {
-      errors.push(`${file.name}: ${result.error ?? 'Upload failed'}`);
     }
+
+    const sizeHint = getClientUploadSizeHint(files);
+
+    return { uploaded, fileIds, errors, sizeHint, zipExtracted };
+  } finally {
+    notifyUploadEnd();
   }
-
-  const sizeHint = getClientUploadSizeHint(files);
-
-  return { uploaded, fileIds, errors, sizeHint, zipExtracted };
 }
 
 export function getClientUploadSizeHint(files: File[]): string | null {

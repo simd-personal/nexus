@@ -1,5 +1,4 @@
 import { AppShell } from '@/components/layout/AppShell';
-import { GlobalSearchBar } from '@/components/ui/GlobalSearchBar';
 import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
@@ -69,8 +68,6 @@ export default async function DashboardPage({
               : `Showing ${dashboardScopeLabel(portfolioScope).toLowerCase()} projects only.`
           }
         />
-
-        <GlobalSearchBar className="mb-6 sm:mb-8" portfolioScope={portfolioScope} />
 
         <PendingInboundInbox emails={pendingInboundEmails} projects={allProjects} />
 

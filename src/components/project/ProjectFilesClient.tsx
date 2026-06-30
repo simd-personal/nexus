@@ -5,6 +5,7 @@ import { FileProcessingProgress } from '@/components/project/FileProcessingProgr
 import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { isImageFileName } from '@/components/project/PhotoCaptureUpload';
 import { ProjectUploadSection } from '@/components/project/ProjectUploadSection';
+import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Card } from '@/components/ui/Card';
 import { StatusBadge } from '@/components/ui/Badge';
@@ -12,6 +13,11 @@ import { SOURCE_TYPE_LABELS, isProcessable } from '@/lib/constants';
 import { needsProcessingKick } from '@/lib/processing/progress';
 import { fileStatusLabel } from '@/lib/processing/user-messages';
 import { kickFileProcessing } from '@/lib/upload/client';
+import {
+  UPLOAD_PROGRESS_END,
+  UPLOAD_PROGRESS_START,
+  type UploadProgressDetail,
+} from '@/lib/upload/progress-events';
 import type { FileRecord, SourceType } from '@/types/database';
 import { formatRelativeTime } from '@/lib/utils';
 import { FileText, Image as ImageIcon } from 'lucide-react';
@@ -29,6 +35,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
   const [busyFileId, setBusyFileId] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
+  const [pendingUpload, setPendingUpload] = useState<UploadProgressDetail | null>(null);
   const kickingRef = useRef(new Set<string>());
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -65,6 +72,24 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
     const interval = setInterval(fetchFiles, intervalMs);
     return () => clearInterval(interval);
   }, [fetchFiles, hasActiveProcessing]);
+
+  useEffect(() => {
+    function onUploadStart(event: Event) {
+      setPendingUpload((event as CustomEvent<UploadProgressDetail>).detail);
+    }
+
+    async function onUploadEnd() {
+      await fetchFiles();
+      setPendingUpload(null);
+    }
+
+    window.addEventListener(UPLOAD_PROGRESS_START, onUploadStart);
+    window.addEventListener(UPLOAD_PROGRESS_END, onUploadEnd);
+    return () => {
+      window.removeEventListener(UPLOAD_PROGRESS_START, onUploadStart);
+      window.removeEventListener(UPLOAD_PROGRESS_END, onUploadEnd);
+    };
+  }, [fetchFiles]);
 
   useEffect(() => {
     function onUploaded() {
@@ -196,7 +221,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
 
       <div>
         <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">Uploaded Files</h2>
-        {files.length === 0 ? (
+        {files.length === 0 && !pendingUpload ? (
           <Card className="py-8 text-center">
             <FileText className="mx-auto mb-2 h-8 w-8 text-gray-400 dark:text-gray-500" />
             <p className="text-sm text-gray-500 dark:text-gray-400">No files uploaded yet</p>
@@ -204,6 +229,11 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
         ) : (
           <div className="overflow-hidden rounded-xl border border-[var(--ud-mist)] bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
             <ul className="divide-y divide-gray-100 dark:divide-[var(--ud-cloud)]">
+              {pendingUpload?.names.map((name, index) => (
+                <li key={`pending-${index}-${name}`}>
+                  <UploadingFilesIndicator count={1} names={[name]} variant="row" />
+                </li>
+              ))}
               {files.map((file) => (
                 <li key={file.id} className="px-4 py-3">
                   <div className="flex items-start gap-3">

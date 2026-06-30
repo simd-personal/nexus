@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Plus } from 'lucide-react';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { ProjectCreatingOverlay } from '@/components/projects/ProjectCreatingOverlay';
+import type { ProjectPortfolio } from '@/lib/projects/portfolio';
 import {
   PROJECT_SUBJECT_HINT,
   PROJECT_SUBJECT_LABEL,
@@ -39,6 +41,7 @@ export function CreateProjectForm({
 }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [creatingPortfolio, setCreatingPortfolio] = useState<ProjectPortfolio | undefined>();
   const [error, setError] = useState('');
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [selectedParentId, setSelectedParentId] = useState(parentProject?.id ?? '');
@@ -57,6 +60,10 @@ export function CreateProjectForm({
     setUpgradeRequired(false);
 
     const formData = new FormData(e.currentTarget);
+    const portfolioValue = formData.get('portfolio');
+    setCreatingPortfolio(
+      portfolioValue === 'personal' || portfolioValue === 'work' ? portfolioValue : undefined
+    );
     if (lockedParent) {
       formData.set('parent_project_id', lockedParent.id);
       formData.set('client_name', lockedParent.client_name);
@@ -76,6 +83,7 @@ export function CreateProjectForm({
       setError(result.error);
       setUpgradeRequired(Boolean(result.upgradeRequired));
       setLoading(false);
+      setCreatingPortfolio(undefined);
     } else if (result.data) {
       router.push(`/projects/${result.data.id}/overview`);
       router.refresh();
@@ -96,7 +104,7 @@ export function CreateProjectForm({
     : 'Create New Project';
   const description = lockedParent
     ? `A parallel track under ${lockedParent.client_name}. Separate files and forwarding address.`
-    : `${AI_EMPLOYEE_NAME} uses Claude to adapt the project setup to what you describe.`;
+    : `Name it now, add files when you're ready — ${AI_EMPLOYEE_NAME} summarizes from your materials.`;
 
   const form = (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -225,23 +233,29 @@ export function CreateProjectForm({
 
   if (variant === 'compact') {
     return (
-      <div>
-        {!open ? (
-          <Button onClick={() => setOpen(true)} size="sm">
-            <Plus className="h-4 w-4" />
-            Add workstream
-          </Button>
-        ) : (
-          <div className="rounded-lg border border-gray-200 p-4 dark:border-[var(--ud-cloud)]">{form}</div>
-        )}
-      </div>
+      <>
+        {loading && <ProjectCreatingOverlay portfolio={creatingPortfolio} />}
+        <div>
+          {!open ? (
+            <Button onClick={() => setOpen(true)} size="sm">
+              <Plus className="h-4 w-4" />
+              Add workstream
+            </Button>
+          ) : (
+            <div className="rounded-lg border border-gray-200 p-4 dark:border-[var(--ud-cloud)]">{form}</div>
+          )}
+        </div>
+      </>
     );
   }
 
   return (
-    <Card className="mb-6">
-      <CardHeader title={title} description={description} />
-      {form}
-    </Card>
+    <>
+      {loading && <ProjectCreatingOverlay portfolio={creatingPortfolio} />}
+      <Card className="mb-6">
+        <CardHeader title={title} description={description} />
+        {form}
+      </Card>
+    </>
   );
 }
