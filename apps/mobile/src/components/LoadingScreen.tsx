@@ -14,23 +14,33 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AnimatedSunnyLoader } from '@/components/AnimatedSunnyLoader';
+import { SunnyLoadProgress } from '@/components/SunnyLoadProgress';
 import { UpperDeckIcon } from '@/components/UpperDeckLogo';
 import { BRAND, spacing } from '@/theme/colors';
 
 type LoadingScreenProps = {
   message?: string;
   submessage?: string;
+  progress?: number | null;
+  progressLabel?: string;
 };
 
 export function LoadingScreen({
   message = 'Loading…',
   submessage,
+  progress = null,
+  progressLabel,
 }: LoadingScreenProps) {
   const textOpacity = useSharedValue(0);
   const textY = useSharedValue(8);
 
   useEffect(() => {
-    void SplashScreen.hideAsync();
+    // Wait for the animated loader to paint before replacing the native splash.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        void SplashScreen.hideAsync();
+      });
+    });
   }, []);
 
   useEffect(() => {
@@ -79,6 +89,7 @@ export function LoadingScreen({
       <SafeAreaView style={styles.content} edges={['top', 'left', 'right', 'bottom']}>
         <View style={styles.center}>
           <AnimatedSunnyLoader />
+          <SunnyLoadProgress progress={progress} statusLabel={progressLabel} />
 
           <Animated.View style={[styles.copy, textStyle]}>
             <View style={styles.brandRow}>

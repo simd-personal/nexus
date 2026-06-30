@@ -39,6 +39,17 @@ Do **not** use `npm run dev` inside `apps/mobile` for the web API — that scrip
 | `npm run mobile:ios` | repo root | Sync env + open iOS simulator |
 | `npm run mobile:start` | repo root | Sync env + Expo dev menu |
 | `npm run ios` | `apps/mobile/` | Expo iOS only (run `mobile:env` first) |
+| `npm run mobile:ios:rebuild` | repo root | Rebuild native iOS app after splash/icon changes |
+
+## Splash screen
+
+The launch splash is **native** (baked into the iOS build). After changing splash assets or `app.json`, rebuild once:
+
+```bash
+npm run mobile:ios:rebuild
+```
+
+A Metro reload is not enough — you need a fresh native install to drop the old static Sunny splash.
 
 ## Environment
 

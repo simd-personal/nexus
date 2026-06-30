@@ -1,8 +1,10 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { prefetchDashboard } from '@/lib/prefetch';
 import { stackDetailScreenOptions } from '@/navigation/stackHeaderOptions';
 import { AppProviders } from '@/providers/AppProviders';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
@@ -12,9 +14,14 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 function AuthGate() {
-  const { user, loading, bootstrapping } = useAuth();
+  const { user, loading, bootstrapping, setBootstrapping } = useAuth();
+  const queryClient = useQueryClient();
   const segments = useSegments();
   const router = useRouter();
+  const prefetchStartedRef = useRef(false);
+  const [warmupDone, setWarmupDone] = useState(false);
+  const [prefetchProgress, setPrefetchProgress] = useState<number | null>(null);
+  const [prefetchLabel, setPrefetchLabel] = useState('Warming up Sunny…');
 
   useEffect(() => {
     if (loading || bootstrapping) return;
@@ -35,15 +42,44 @@ function AuthGate() {
     }
   }, [user, loading, bootstrapping, segments, router]);
 
-  if (loading) {
-    return <LoadingScreen message="Starting UpperDeck" submessage="Restoring your session…" />;
-  }
+  useEffect(() => {
+    if (loading) return;
 
-  if (bootstrapping) {
+    if (!user) {
+      prefetchStartedRef.current = false;
+      setWarmupDone(true);
+      setPrefetchProgress(null);
+      return;
+    }
+
+    if (prefetchStartedRef.current) return;
+    prefetchStartedRef.current = true;
+    setWarmupDone(false);
+    setPrefetchProgress(0);
+    setPrefetchLabel('Warming up Sunny…');
+
+    void prefetchDashboard(queryClient, (completed, total, step) => {
+      setPrefetchProgress(completed / total);
+      setPrefetchLabel(step.label);
+    })
+      .finally(() => {
+        setPrefetchProgress(1);
+        setPrefetchLabel('Ready!');
+        setWarmupDone(true);
+        setBootstrapping(false);
+      });
+  }, [loading, user, queryClient, setBootstrapping]);
+
+  const showLoading = loading || bootstrapping || (Boolean(user) && !warmupDone);
+
+  if (showLoading) {
+    const signingIn = bootstrapping && !user;
     return (
       <LoadingScreen
-        message="Welcome back"
-        submessage="Signing you in and loading your dashboard…"
+        message={loading ? 'Starting UpperDeck' : signingIn ? 'Signing in' : 'Welcome back'}
+        submessage={loading ? 'Restoring your session…' : signingIn ? 'Verifying your credentials…' : undefined}
+        progress={loading || signingIn ? null : prefetchProgress}
+        progressLabel={loading || signingIn ? undefined : prefetchLabel}
       />
     );
   }

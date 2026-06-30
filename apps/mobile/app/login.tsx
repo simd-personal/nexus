@@ -8,16 +8,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useQueryClient } from '@tanstack/react-query';
 import { Button, Screen, Subtitle, Title } from '@/components/ui';
 import { UpperDeckLogo } from '@/components/UpperDeckLogo';
-import { prefetchDashboard } from '@/lib/prefetch';
 import { useAuth } from '@/providers/AuthProvider';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
 export default function LoginScreen() {
   const { signIn, setBootstrapping } = useAuth();
-  const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -30,13 +27,6 @@ export default function LoginScreen() {
     if (result.error) {
       setBootstrapping(false);
       setError(result.error);
-      return;
-    }
-
-    try {
-      await prefetchDashboard(queryClient);
-    } finally {
-      setBootstrapping(false);
     }
   }
 

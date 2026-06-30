@@ -7,8 +7,9 @@
     "env": "cd ../.. && npm run mobile:env",
     "dev": "npm run env && expo start",
     "start": "expo start",
-    "ios": "expo start --ios",
-    "android": "expo start --android",
+    "ios": "expo run:ios",
+    "ios:rebuild": "expo prebuild --platform ios --clean && expo run:ios",
+    "android": "expo run:android",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit"
   },

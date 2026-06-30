@@ -97,18 +97,6 @@ function renderSplash(width: number, height: number) {
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   fillBackground(ctx, width, height);
-
-  const cx = width / 2;
-  const cy = height * 0.42;
-  drawGlow(ctx, cx, cy, 220);
-  drawSunnyMark(ctx, cx, cy, 160);
-
-  ctx.fillStyle = '#94A3B8';
-  ctx.font = '600 28px system-ui, -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.letterSpacing = '8px';
-  ctx.fillText('UPPERDECK', cx, cy + 130);
-
   return canvas.toBuffer('image/png');
 }
 
@@ -127,6 +115,7 @@ mkdirSync(OUT_DIR, { recursive: true });
 const splash = renderSplash(1284, 2778);
 const icon = renderIcon(1024);
 
+writeFileSync(join(OUT_DIR, 'splash-blank.png'), splash);
 writeFileSync(join(OUT_DIR, 'splash.png'), splash);
 writeFileSync(join(OUT_DIR, 'icon.png'), icon);
 writeFileSync(join(OUT_DIR, 'adaptive-icon.png'), icon);

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
@@ -20,8 +20,10 @@ export function AnimatedSunnyLoader() {
   const float = useSharedValue(0);
   const pulse = useSharedValue(0);
   const shimmer = useSharedValue(0);
+  const reveal = useSharedValue(0);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    reveal.value = withTiming(1, { duration: 320, easing: Easing.out(Easing.cubic) });
     orbit.value = withRepeat(
       withTiming(360, { duration: 2800, easing: Easing.linear }),
       -1
@@ -45,7 +47,11 @@ export function AnimatedSunnyLoader() {
       -1,
       true
     );
-  }, [float, orbit, pulse, shimmer]);
+  }, [float, orbit, pulse, reveal, shimmer]);
+
+  const revealStyle = useAnimatedStyle(() => ({
+    opacity: reveal.value,
+  }));
 
   const orbitStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${orbit.value}deg` }],
@@ -72,7 +78,7 @@ export function AnimatedSunnyLoader() {
   }));
 
   return (
-    <View style={styles.wrap} accessibilityRole="progressbar" accessibilityLabel="Loading">
+    <Animated.View style={[styles.wrap, revealStyle]} accessibilityRole="progressbar" accessibilityLabel="Loading">
       <Animated.View style={[styles.blueGlow, glowStyle]} />
       <Animated.View style={[styles.amberGlow, amberGlowStyle]} />
 
@@ -88,7 +94,7 @@ export function AnimatedSunnyLoader() {
           <SunnyMark size={MARK_SIZE} />
         </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
