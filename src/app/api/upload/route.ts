@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
 import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 import { ingestProjectFileUpload } from '@/lib/upload/ingest-file';
@@ -23,13 +23,9 @@ export const maxDuration = 300;
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireRequestAuth(request);
+    if (auth.response) return auth.response;
+    const { user, supabase } = auth;
 
     const formData = await request.formData();
     const projectId = formData.get('project_id') as string;

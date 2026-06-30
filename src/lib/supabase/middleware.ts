@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { isApiRoute, isPublicApiRoute } from '@/lib/auth/api-routes';
 import { applyNoStoreHeaders, isAuthPath, withNoStoreIfAuthPath } from '@/lib/auth/cache-control';
 import { isPublicUnauthenticatedPath } from '@/lib/marketing/seo';
+import { getUserFromBearerToken, parseBearerToken } from '@/lib/supabase/request-auth';
 
 export async function updateSession(request: NextRequest) {
   // Supabase auth links (email confirm) carry a `?code=` to exchange for a
@@ -64,6 +65,12 @@ export async function updateSession(request: NextRequest) {
   if (isApiRoute(pathname)) {
     if (isPublicApiRoute(pathname)) {
       return applyNoStoreHeaders(withNoStoreIfAuthPath(pathname, supabaseResponse));
+    }
+    if (!user) {
+      const bearerToken = parseBearerToken(request);
+      if (bearerToken) {
+        user = await getUserFromBearerToken(bearerToken);
+      }
     }
     if (!user) {
       return applyNoStoreHeaders(

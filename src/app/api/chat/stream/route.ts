@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import { createEmbeddingOrNull } from '@/lib/ai/openai';
 import { formatStreamError } from '@/lib/ai/errors';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
@@ -14,11 +14,12 @@ import { evaluatePreQueryGuard } from '@/lib/security/query-guard';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
+  const { user } = auth;
+  const supabase = auth.supabase;
 
   const { project_id, message, session_id, model_preference, regenerate, honeypot } = await request.json();
   if (!project_id || !message?.trim()) {

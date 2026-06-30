@@ -2,11 +2,19 @@
   "name": "nexus-brief",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "mobile:env": "tsx scripts/sync-mobile-env.ts",
+    "mobile:install": "npm install --prefix apps/mobile",
+    "mobile:ios": "npm run mobile:env && npm run ios --prefix apps/mobile",
+    "mobile:start": "npm run mobile:env && npm run start --prefix apps/mobile",
+    "mobile:android": "npm run mobile:env && npm run android --prefix apps/mobile",
     "seed": "tsx scripts/seed.ts",
     "seed:rich": "tsx scripts/seed.ts",
     "create-demo-user": "tsx scripts/create-demo-user.ts",
@@ -26,6 +34,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.106.0",
+    "@upperdeck/shared": "*",
     "@napi-rs/canvas": "^1.0.1",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",

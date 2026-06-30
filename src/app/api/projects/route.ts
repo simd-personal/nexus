@@ -1,45 +1,36 @@
 import { revalidatePath } from 'next/cache';
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { getProjectsWithStats } from '@/lib/data/queries';
+import { NextRequest, NextResponse } from 'next/server';
+import { getProjectsWithStats, getDashboardPortfolioPreference } from '@/lib/data/queries';
 import {
   createProjectForUser,
   createProjectInputFromFormData,
 } from '@/lib/projects/create-project-core';
+import { resolveDashboardPortfolioScope } from '@/lib/projects/portfolio';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
-export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function GET(request: NextRequest) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const portfolioParam = request.nextUrl.searchParams.get('portfolio');
+  const preference = await getDashboardPortfolioPreference(auth.supabase);
+  const portfolioScope = resolveDashboardPortfolioScope(portfolioParam ?? undefined, preference);
 
-  const projects = await getProjectsWithStats();
-  return NextResponse.json({
-    projects: projects.map((project) => ({
-      id: project.id,
-      client_name: project.client_name,
-      project_name: project.project_name,
-    })),
+  const projects = await getProjectsWithStats({
+    portfolio: portfolioScope,
+    supabase: auth.supabase,
   });
+
+  return NextResponse.json({ projects, portfolio: portfolioScope });
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
   const formData = await request.formData();
   const input = createProjectInputFromFormData(formData);
-  const result = await createProjectForUser(supabase, user, input);
+  const result = await createProjectForUser(auth.supabase, auth.user, input);
 
   if (result.error) {
     return NextResponse.json(

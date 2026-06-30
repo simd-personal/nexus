@@ -1,20 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const { id } = await params;
+  const { supabase } = auth;
 
   const { data: project, error } = await supabase
     .from('projects')
@@ -30,18 +26,14 @@ export async function GET(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
+
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const result = await deleteProjectAndFiles(supabase, id, user.id);
+  const result = await deleteProjectAndFiles(auth.supabase, id, auth.user.id);
   if (result.error) {
     return NextResponse.json({ error: result.error }, { status: result.status ?? 500 });
   }

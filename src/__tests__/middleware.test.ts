@@ -6,6 +6,6 @@ describe('middleware config', () => {
   it('excludes API routes from middleware to preserve multipart uploads', () => {
     const source = readFileSync(resolve(process.cwd(), 'src/middleware.ts'), 'utf8');
     expect(source).toContain('api/');
-    expect(source).toMatch(/Skip API routes/);
+    expect(source).toMatch(/skip multipart upload\/replace paths/);
   });
 });

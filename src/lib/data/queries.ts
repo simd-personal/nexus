@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import type { RequestSupabaseClient } from '@/lib/supabase/request-auth';
 import { nestProjectsWithStats, getProjectFamilyIds } from '@/lib/projects/hierarchy';
 import { computeProjectStatus, resolveProjectStatus } from '@/lib/projects/health';
 import { filterRelevantOpenActionItems } from '@/lib/relevance/action-items';
@@ -32,8 +33,12 @@ import type {
   InboundEmailEvent,
 } from '@/types/database';
 
+async function resolveSupabase(supabase?: RequestSupabaseClient) {
+  return supabase ?? (await createClient());
+}
+
 async function enrichProjectStats(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: RequestSupabaseClient,
   project: Project
 ): Promise<ProjectWithStats> {
   const projectId = project.id;
@@ -80,8 +85,9 @@ async function enrichProjectStats(
 
 export async function getProjectsWithStats(options?: {
   portfolio?: DashboardPortfolioScope;
+  supabase?: RequestSupabaseClient;
 }): Promise<ProjectWithStats[]> {
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(options?.supabase);
 
   let query = supabase.from('projects').select('*').order('last_activity_at', { ascending: false });
 
@@ -97,8 +103,10 @@ export async function getProjectsWithStats(options?: {
   return nestProjectsWithStats(enriched);
 }
 
-export async function getDashboardPortfolioPreference(): Promise<DashboardPortfolioScope> {
-  const supabase = await createClient();
+export async function getDashboardPortfolioPreference(
+  supabaseClient?: RequestSupabaseClient
+): Promise<DashboardPortfolioScope> {
+  const supabase = await resolveSupabase(supabaseClient);
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -143,8 +151,8 @@ export async function getParentProject(project: { parent_project_id: string | nu
   return getProject(project.parent_project_id);
 }
 
-export async function getProject(projectId: string) {
-  const supabase = await createClient();
+export async function getProject(projectId: string, supabaseClient?: RequestSupabaseClient) {
+  const supabase = await resolveSupabase(supabaseClient);
   const { data } = await supabase
     .from('projects')
     .select('*')
@@ -155,9 +163,12 @@ export async function getProject(projectId: string) {
   return { ...data, status };
 }
 
-export async function getDashboardStats(portfolioScope: DashboardPortfolioScope = 'work') {
+export async function getDashboardStats(
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
+) {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const since = new Date(Date.now() - 86400000).toISOString();
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
 
@@ -218,10 +229,11 @@ export async function getDashboardStats(portfolioScope: DashboardPortfolioScope 
 
 export async function getCriticalItems(
   limit?: number,
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<CriticalItem[]> {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   if (scopedProjectIds?.length === 0) return [];
 
@@ -324,10 +336,11 @@ export async function getActionItemsByStatus(
 
 export async function getSunnyUpdates(
   limit?: number,
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<SunnyUpdate[]> {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   if (scopedProjectIds?.length === 0) return [];
 
@@ -356,11 +369,37 @@ export async function getSunnyUpdates(
   return limit ? validUpdates.slice(0, limit) : validUpdates;
 }
 
+export async function getSunnyUpdateById(
+  id: string,
+  supabaseClient?: RequestSupabaseClient
+): Promise<SunnyUpdate | null> {
+  await ensureFreshAppData();
+  const supabase = await resolveSupabase(supabaseClient);
+  const filesByProject = await refreshDerivedRecords(supabase);
+
+  const { data, error } = await supabase
+    .from('sunny_updates')
+    .select('*, projects(client_name, project_name)')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) return null;
+
+  const update: SunnyUpdate = {
+    ...data,
+    source_citations: data.source_citations ?? [],
+    project: data.projects as SunnyUpdate['project'],
+  };
+
+  return sunnyUpdateStillValid(update, filesByProject) ? update : null;
+}
+
 export async function hasProcessingFilesInPortfolioScope(
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<boolean> {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   if (scopedProjectIds?.length === 0) return false;
 
@@ -387,13 +426,14 @@ export type DashboardUpdatesFeed = {
 
 export async function getDashboardUpdatesFeed(
   limit: number,
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<DashboardUpdatesFeed> {
   const [updates, pendingBatches, pendingFiles, processingActive] = await Promise.all([
-    getSunnyUpdates(limit, portfolioScope),
-    getPendingUploadBatches(portfolioScope),
-    getPendingIndexingFiles(portfolioScope),
-    hasProcessingFilesInPortfolioScope(portfolioScope),
+    getSunnyUpdates(limit, portfolioScope, supabaseClient),
+    getPendingUploadBatches(portfolioScope, supabaseClient),
+    getPendingIndexingFiles(portfolioScope, supabaseClient),
+    hasProcessingFilesInPortfolioScope(portfolioScope, supabaseClient),
   ]);
 
   return {
@@ -405,19 +445,21 @@ export async function getDashboardUpdatesFeed(
 }
 
 export async function getPendingIndexingFiles(
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<PendingIndexingFile[]> {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   return loadPendingIndexingFiles(supabase, scopedProjectIds);
 }
 
 export async function getPendingUploadBatches(
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ) {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   return getActiveUploadBatches(supabase, scopedProjectIds);
 }
@@ -475,9 +517,9 @@ export async function getProjectFiles(projectId: string): Promise<FileRecord[]> 
 
 export async function getProjectCriticalItems(
   projectId: string,
-  options?: { includeSubProjects?: boolean }
+  options?: { includeSubProjects?: boolean; supabase?: RequestSupabaseClient }
 ): Promise<CriticalItem[]> {
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(options?.supabase);
   const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
 
   if (options?.includeSubProjects) {

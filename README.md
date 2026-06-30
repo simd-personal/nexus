@@ -76,6 +76,23 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Mobile app (iOS simulator)
+
+With `.env.local` configured, from repo root:
+
+```bash
+# One-time: mobile deps are isolated from web (avoids Metro conflicts)
+cd apps/mobile && npm install && cd ../..
+
+# Terminal 1
+npm run dev
+
+# Terminal 2 — syncs apps/mobile/.env from .env.local, opens iOS simulator
+npm run mobile:ios
+```
+
+See `apps/mobile/README.md` and `AGENTS.md` for monorepo layout.
+
 ### 5. Seed demo data (optional)
 
 Create an account via the login page, then:
@@ -98,10 +115,14 @@ This creates an **Adventist Health — June Site Visit** demo project with:
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
 | `npm run seed` | Seed demo project data |
+| `npm run mobile:env` | Sync `apps/mobile/.env` from `.env.local` |
+| `npm run mobile:ios` | Sync env + start Expo on iOS simulator |
 
 ## Project Structure
 
 ```
+apps/mobile/              # Expo React Native app
+packages/shared/          # Shared types + brand tokens
 src/
 ├── app/                    # Next.js App Router pages
 │   ├── dashboard/          # Executive dashboard
