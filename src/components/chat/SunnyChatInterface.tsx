@@ -59,14 +59,14 @@ function isPageGenerationMode(mode: ChatMode): boolean {
 
 function chatTitle(mode: ChatMode): string {
   if (mode === 'search') return `Chat with ${AI_EMPLOYEE_NAME}`;
-  if (mode === 'brief') return 'Sunny Brief';
+  if (mode === 'brief') return `Ask ${AI_EMPLOYEE_NAME}`;
   if (mode === 'playbook') return 'Operating Playbook';
   return `Chat with ${AI_EMPLOYEE_NAME}`;
 }
 
 function chatDescription(mode: ChatMode): string {
   if (mode === 'brief') {
-    return 'Generate and refine executive briefs from your project materials. Conversations are saved automatically.';
+    return `Ask questions, generate executive briefs, and refine answers from your project materials. Conversations are saved automatically.`;
   }
   if (mode === 'playbook') {
     return 'Build and refine client operating playbooks from your project evidence. Conversations are saved automatically.';
@@ -1217,7 +1217,7 @@ export function SunnyChatInterface({
                       : 'Queue your next message...'
                     : isPageGenerationMode(mode)
                       ? mode === 'brief'
-                        ? 'Generate or refine an executive brief...'
+                        ? `Ask ${AI_EMPLOYEE_NAME} anything or request an executive brief...`
                         : 'Generate or refine an operating playbook...'
                       : mode === 'search'
                         ? 'Ask anything about your projects...'

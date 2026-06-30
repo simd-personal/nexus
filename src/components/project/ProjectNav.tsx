@@ -8,11 +8,10 @@ const tabs = [
   { href: 'overview', label: 'Overview' },
   { href: 'files', label: 'Files' },
   { href: 'search', label: 'Search' },
-  { href: 'brief', label: 'Sunny Brief' },
+  { href: 'ask-sunny', label: 'Ask Sunny' },
   { href: 'deck', label: 'Deck' },
   { href: 'critical-items', label: 'Critical Items' },
   { href: 'timeline', label: 'Timeline' },
-  { href: 'ask-sunny', label: 'Ask Sunny' },
   { href: 'playbook', label: 'Playbook' },
   { href: 'follow-up', label: 'Follow Up Email' },
 ];

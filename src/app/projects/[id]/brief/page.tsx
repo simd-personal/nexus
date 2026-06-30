@@ -1,27 +1,10 @@
-import { PageGenerationChat } from '@/components/project/PageGenerationChat';
-import { getLatestChatSession, getProject } from '@/lib/data/queries';
-import { requireUser } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
-export default async function SunnyBriefPage({
+export default async function SunnyBriefRedirect({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [user, latestChat, project] = await Promise.all([
-    requireUser(),
-    getLatestChatSession({ sessionType: 'brief', projectId: id }),
-    getProject(id),
-  ]);
-
-  return (
-    <PageGenerationChat
-      userId={user.id}
-      projectId={id}
-      type="brief"
-      projectName={project ? `${project.client_name} · ${project.project_name}` : undefined}
-      initialMessages={latestChat?.messages ?? []}
-      initialSessionId={latestChat?.session.id}
-    />
-  );
+  redirect(`/projects/${id}/ask-sunny`);
 }

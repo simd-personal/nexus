@@ -159,11 +159,10 @@ async function main() {
       `/projects/${projectId}/files`,
       `/projects/${projectId}/timeline`,
       `/projects/${projectId}/critical-items`,
-      `/projects/${projectId}/brief`,
+      `/projects/${projectId}/ask-sunny`,
       `/projects/${projectId}/deck`,
       `/projects/${projectId}/playbook`,
       `/projects/${projectId}/follow-up`,
-      `/projects/${projectId}/ask-sunny`,
       `/projects/${projectId}/search`,
     ];
 
