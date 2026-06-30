@@ -37,7 +37,7 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
 
   return (
     <div
-      className={cn('flex flex-wrap gap-2', pending && 'opacity-70', className)}
+      className={cn('flex flex-wrap items-center gap-x-5 gap-y-2', pending && 'opacity-70', className)}
       role="tablist"
       aria-label="Portfolio scope"
     >
@@ -52,12 +52,21 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
             disabled={pending}
             onClick={() => selectScope(option)}
             className={cn(
-              'rounded-full px-4 py-2 text-sm font-medium transition-all',
+              'group inline-flex items-center gap-2.5 rounded-md py-1.5 text-sm transition-colors',
               active
-                ? 'bg-[var(--brand-accent)] text-white shadow-sm ring-2 ring-[rgba(37,99,235,0.2)] dark:ring-[rgba(37,99,235,0.35)]'
-                : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-400 dark:hover:border-[var(--ud-slate)] dark:hover:text-gray-100'
+                ? 'font-semibold text-gray-900 dark:text-gray-100'
+                : 'font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-100'
             )}
           >
+            <span
+              aria-hidden
+              className={cn(
+                'shrink-0 rounded-full transition-all',
+                active
+                  ? 'h-3 w-3 bg-[var(--brand-accent)] ring-[3px] ring-[rgba(37,99,235,0.18)] dark:ring-[rgba(37,99,235,0.35)]'
+                  : 'h-2.5 w-2.5 border-2 border-gray-300 bg-transparent group-hover:border-gray-400 dark:border-[var(--ud-slate)] dark:group-hover:border-gray-400'
+              )}
+            />
             {dashboardScopeLabel(option)}
           </button>
         );
