@@ -91,4 +91,15 @@ describe('GlobalChatPageClient', () => {
 
     expect(captured.props?.chatScope).toEqual({ kind: 'all' });
   });
+
+  it('uses all projects for dashboard global search (?q= without project)', () => {
+    searchParamsState.value = new URLSearchParams('q=staffing+concerns');
+
+    renderToStaticMarkup(
+      <GlobalChatPageClient userId="user-1" projects={projects} />
+    );
+
+    expect(captured.props?.chatScope).toEqual({ kind: 'all' });
+    expect(captured.props?.initialQuery).toBe('staffing concerns');
+  });
 });

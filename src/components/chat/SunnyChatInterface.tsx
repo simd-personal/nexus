@@ -29,7 +29,6 @@ import {
   purgeLegacyUnscopedChatCaches,
   sessionsCacheFresh,
 } from '@/lib/chat/cache';
-import { consumeInitialQuery } from '@/lib/chat/initial-query';
 import {
   ALL_PROJECTS_SCOPE,
   resolveScopeProjectIds,
@@ -281,7 +280,6 @@ export function SunnyChatInterface({
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const initialQuerySentRef = useRef(false);
   const sendingRef = useRef(false);
   const sessionsLoadedRef = useRef(sessionsCacheFresh(scopeKey));
   const restoredRef = useRef(false);
@@ -793,13 +791,21 @@ export function SunnyChatInterface({
 
   const lastAssistantId = [...messages].reverse().find((m) => m.role === 'assistant')?.id;
 
+  // Submit ?q= from dashboard/global search once params are stable (Strict Mode safe).
   useEffect(() => {
-    if (!initialQuery || initialQuerySentRef.current) return;
-    const queryKey = `${mode}:${projectId ?? 'all'}:${initialQuery}`;
-    if (!consumeInitialQuery(queryKey)) return;
-    initialQuerySentRef.current = true;
-    submitMessage(initialQuery);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const q = initialQuery?.trim();
+    if (!q) return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (!cancelled) void sendMessageRef.current(q);
+    }, 0);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [initialQuery]);
 
   const suggestions =
     mode === 'search'

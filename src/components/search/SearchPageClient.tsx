@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
 import { loadChatScope, persistChatScope } from '@/lib/chat/cache';
 import {
+  ALL_PROJECTS_SCOPE,
   parseProjectIdsFromSearchParams,
   resolveInitialChatScope,
   scopeFromUrlProjects,
@@ -37,9 +38,10 @@ export function GlobalChatPageClient({
   initialMessages?: ChatMessage[];
 }) {
   const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') ?? undefined;
+  const initialQuery = searchParams.get('q')?.trim() || undefined;
   const urlProjectIds = useMemo(() => parseProjectIdsFromSearchParams(searchParams), [searchParams]);
   const urlScopeKey = useMemo(() => [...urlProjectIds].sort().join(','), [urlProjectIds]);
+  const isGlobalSearch = Boolean(initialQuery && urlProjectIds.length === 0 && !lockScope);
 
   const [chatScope, setChatScope] = useState<ChatScope>(() =>
     resolveInitialChatScope({
@@ -48,7 +50,7 @@ export function GlobalChatPageClient({
       projectName,
       projects,
       urlProjectIds,
-      persistedScope: loadChatScope(userId),
+      persistedScope: isGlobalSearch ? null : loadChatScope(userId),
     })
   );
 
@@ -69,6 +71,15 @@ export function GlobalChatPageClient({
     const next = scopeFromUrlProjects(projects, urlProjectIds);
     setChatScope((prev) => (scopesEqual(prev, next) ? prev : next));
   }, [lockScope, projects, urlScopeKey, urlProjectIds]);
+
+  useEffect(() => {
+    if (!isGlobalSearch) return;
+    setChatScope((prev) => {
+      if (prev.kind === 'all') return prev;
+      persistChatScope(userId, ALL_PROJECTS_SCOPE);
+      return ALL_PROJECTS_SCOPE;
+    });
+  }, [isGlobalSearch, userId]);
 
   return (
     <SunnyChatInterface
