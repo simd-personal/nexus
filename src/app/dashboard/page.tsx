@@ -3,6 +3,7 @@ import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
+import { DashboardSunnyUpdatesSection } from '@/components/dashboard/DashboardSunnyUpdatesSection';
 import { PendingInboundInbox } from '@/components/dashboard/PendingInboundInbox';
 import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import {
@@ -10,8 +11,7 @@ import {
   getDashboardStats,
   getCriticalItems,
   getOpenActionItems,
-  getSunnyUpdates,
-  getPendingUploadBatches,
+  getDashboardUpdatesFeed,
   getPendingInboundEmails,
 } from '@/lib/data/queries';
 import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
@@ -44,11 +44,10 @@ export default async function DashboardPage({
   const actionFetchLimit =
     stats.actionItemsCount > 0 ? Math.min(stats.actionItemsCount, 5) : 0;
 
-  const [criticalItems, actionItems, updates, pendingBatches, pendingInboundEmails] = await Promise.all([
+  const [criticalItems, actionItems, updatesFeed, pendingInboundEmails] = await Promise.all([
     stats.criticalCount > 0 ? getCriticalItems(criticalLimit, portfolioScope) : Promise.resolve([]),
     actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit, portfolioScope) : Promise.resolve([]),
-    getSunnyUpdates(5, portfolioScope),
-    getPendingUploadBatches(portfolioScope),
+    getDashboardUpdatesFeed(5, portfolioScope),
     getPendingInboundEmails(),
   ]);
 
@@ -97,7 +96,10 @@ export default async function DashboardPage({
               <Button variant="ghost" size="sm">View all</Button>
             </Link>
           </div>
-          <SunnyUpdatesList updates={updates} pendingBatches={pendingBatches} />
+          <DashboardSunnyUpdatesSection
+            portfolioScope={portfolioScope}
+            initialFeed={updatesFeed}
+          />
         </div>
 
         <div>

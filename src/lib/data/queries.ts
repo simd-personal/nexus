@@ -3,7 +3,8 @@ import { nestProjectsWithStats, getProjectFamilyIds } from '@/lib/projects/hiera
 import { computeProjectStatus, resolveProjectStatus } from '@/lib/projects/health';
 import { filterRelevantOpenActionItems } from '@/lib/relevance/action-items';
 import { getProjectIdsForPortfolioScope } from '@/lib/data/portfolio-scope';
-import { getActiveUploadBatches } from '@/lib/processing/upload-batch';
+import { isDashboardIndexingActive } from '@/lib/dashboard/indexing-active';
+import { getActiveUploadBatches, type ActiveUploadBatch } from '@/lib/processing/upload-batch';
 import type { DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import {
   ensureFreshAppData,
@@ -348,6 +349,51 @@ export async function getSunnyUpdates(
     .filter((update) => sunnyUpdateStillValid(update, filesByProject));
 
   return limit ? validUpdates.slice(0, limit) : validUpdates;
+}
+
+export async function hasProcessingFilesInPortfolioScope(
+  portfolioScope: DashboardPortfolioScope = 'work'
+): Promise<boolean> {
+  await ensureFreshAppData();
+  const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  if (scopedProjectIds?.length === 0) return false;
+
+  let query = supabase
+    .from('files')
+    .select('id')
+    .in('status', ['pending', 'processing'])
+    .limit(1);
+
+  if (scopedProjectIds) {
+    query = query.in('project_id', scopedProjectIds);
+  }
+
+  const { data } = await query;
+  return (data?.length ?? 0) > 0;
+}
+
+export type DashboardUpdatesFeed = {
+  updates: SunnyUpdate[];
+  pendingBatches: ActiveUploadBatch[];
+  indexingActive: boolean;
+};
+
+export async function getDashboardUpdatesFeed(
+  limit: number,
+  portfolioScope: DashboardPortfolioScope = 'work'
+): Promise<DashboardUpdatesFeed> {
+  const [updates, pendingBatches, processingActive] = await Promise.all([
+    getSunnyUpdates(limit, portfolioScope),
+    getPendingUploadBatches(portfolioScope),
+    hasProcessingFilesInPortfolioScope(portfolioScope),
+  ]);
+
+  return {
+    updates,
+    pendingBatches,
+    indexingActive: isDashboardIndexingActive(pendingBatches, processingActive),
+  };
 }
 
 export async function getPendingUploadBatches(

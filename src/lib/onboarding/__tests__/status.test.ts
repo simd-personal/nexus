@@ -65,4 +65,13 @@ describe('needsOnboarding', () => {
     expect(needsOnboarding([project()])).toBe(false);
     expect(needsOnboarding([project({ file_count: 2 })])).toBe(false);
   });
+
+  it('does not force onboarding when the first project is empty but others have files', () => {
+    expect(
+      needsOnboarding([
+        project({ id: 'empty', file_count: 0 }),
+        project({ id: 'ready', file_count: 3 }),
+      ])
+    ).toBe(false);
+  });
 });

@@ -20,6 +20,19 @@ vi.mock('@/lib/supabase/admin', () => ({
   })),
 }));
 
+function deleteChain(resolved: { error: null } = { error: null }) {
+  const chain = {
+    eq: vi.fn(),
+    in: vi.fn(),
+    is: vi.fn(),
+  };
+  chain.eq.mockReturnValue(chain);
+  chain.in.mockResolvedValue(resolved);
+  chain.is.mockReturnValue(chain);
+  chain.eq.mockResolvedValue(resolved);
+  return chain;
+}
+
 function buildSupabase(handlers: Record<string, unknown>) {
   return {
     from: vi.fn((table: string) => handlers[table]),
@@ -211,8 +224,8 @@ describe('file actions', () => {
 
   it('removes a shared copy without requiring origin deletion', async () => {
     const sharedCopy = { ...baseFile, id: 'file-2', origin_file_id: 'file-1', project_id: 'proj-b' };
-    const deleteEq = vi.fn().mockResolvedValue({ error: null });
-    const deleteChain = { eq: vi.fn().mockResolvedValue({ error: null }) };
+    const fileDeleteEq = vi.fn().mockResolvedValue({ error: null });
+    const purgeDeleteChain = deleteChain();
 
     const supabase = buildSupabase({
       files: {
@@ -221,11 +234,11 @@ describe('file actions', () => {
             single: vi.fn().mockResolvedValue({ data: sharedCopy, error: null }),
           }),
         }),
-        delete: vi.fn().mockReturnValue({ eq: deleteEq }),
+        delete: vi.fn().mockReturnValue({ eq: fileDeleteEq }),
       },
-      chunks: { delete: vi.fn().mockReturnValue(deleteChain) },
-      entities: { delete: vi.fn().mockReturnValue(deleteChain) },
-      timeline_events: { delete: vi.fn().mockReturnValue(deleteChain) },
+      chunks: { delete: vi.fn().mockReturnValue(purgeDeleteChain) },
+      entities: { delete: vi.fn().mockReturnValue(purgeDeleteChain) },
+      timeline_events: { delete: vi.fn().mockReturnValue(purgeDeleteChain) },
       sunny_updates: {
         select: vi.fn().mockReturnValue({ eq: vi.fn().mockResolvedValue({ data: [] }) }),
         delete: vi.fn().mockReturnValue({ in: vi.fn().mockResolvedValue({ error: null }) }),
@@ -242,7 +255,8 @@ describe('file actions', () => {
 
     const result = await removeFileFromProject(supabase, 'file-2', 'proj-b');
     expect(result.error).toBeUndefined();
-    expect(deleteEq).toHaveBeenCalledWith('id', 'file-2');
+    expect(fileDeleteEq).toHaveBeenCalledWith('id', 'file-2');
+    expect(purgeDeleteChain.is).toHaveBeenCalledWith('source_file_id', null);
     expect(mockRemove).toHaveBeenCalled();
   });
 });

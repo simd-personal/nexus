@@ -47,6 +47,7 @@ function buildSupabaseMock(accessibleProjectIds: string[]) {
   const awaitable = {
     eq: () => awaitable,
     in: () => awaitable,
+    not: () => awaitable,
     limit: () => awaitable,
     then: (
       resolve: (value: { data: unknown[] }) => void,
@@ -54,17 +55,20 @@ function buildSupabaseMock(accessibleProjectIds: string[]) {
     ) => empty.then(resolve, reject),
   };
 
-  const chain = () => ({
-    select: () => chain(),
-    not: () => chain(),
-    eq: () => awaitable,
-    in: () => awaitable,
-    limit: () => awaitable,
-    then: (
-      resolve: (value: { data: unknown[] }) => void,
-      reject?: (reason?: unknown) => void
-    ) => empty.then(resolve, reject),
-  });
+  const chain = () => {
+    const link = {
+      select: () => link,
+      not: () => link,
+      eq: () => link,
+      in: () => link,
+      limit: () => link,
+      then: (
+        resolve: (value: { data: unknown[] }) => void,
+        reject?: (reason?: unknown) => void
+      ) => empty.then(resolve, reject),
+    };
+    return link;
+  };
 
   return {
     rpc: vi.fn((fn: string) => {
