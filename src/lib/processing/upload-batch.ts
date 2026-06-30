@@ -7,6 +7,14 @@ export const UPLOAD_BATCH_ID_KEY = 'upload_batch_id';
 export const UPLOAD_BATCH_TOTAL_KEY = 'upload_batch_total';
 export const PROCESSING_SUMMARY_KEY = 'processing_summary';
 
+type ProjectRef = { client_name: string; project_name: string };
+
+function asProjectRef(value: unknown): ProjectRef | null {
+  if (!value) return null;
+  if (Array.isArray(value)) return (value[0] as ProjectRef | undefined) ?? null;
+  return value as ProjectRef;
+}
+
 type BatchFileRow = {
   id: string;
   file_name: string;
@@ -416,19 +424,21 @@ export async function getActiveUploadBatches(
       .select('id, file_name, status, metadata, project_id, projects(client_name, project_name)')
       .contains('metadata', { [UPLOAD_BATCH_ID_KEY]: batchId });
 
-    const files = (batchRows ?? []) as Array<
-      BatchFileRow & {
-        project_id: string;
-        projects: { client_name: string; project_name: string } | null;
-      }
-    >;
+    const files = (batchRows ?? []) as unknown as Array<{
+      id: string;
+      file_name: string;
+      status: string;
+      metadata: Record<string, unknown> | null;
+      project_id: string;
+      projects: unknown;
+    }>;
 
     if (!files.some((file) => file.status === 'pending' || file.status === 'processing')) {
       continue;
     }
 
     const { batchTotal } = getUploadBatchInfo(files[0]?.metadata ?? {});
-    const project = files[0]?.projects;
+    const project = asProjectRef(files[0]?.projects);
     const done = files.filter((file) => TERMINAL_STATUSES.has(file.status)).length;
     const processing = files.filter(
       (file) => file.status === 'pending' || file.status === 'processing'
