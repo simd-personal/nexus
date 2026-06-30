@@ -21,8 +21,8 @@ export default function SunnyUpdateDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: 'Sunny update', headerBackTitle: 'Back' }} />
-      <Screen>
+      <Stack.Screen options={{ title: 'Sunny update' }} />
+      <Screen edges={['left', 'right', 'bottom']}>
         {query.isLoading ? (
           <View style={styles.centered}>
             <ActivityIndicator size="large" />

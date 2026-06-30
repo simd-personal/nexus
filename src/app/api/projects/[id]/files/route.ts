@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
 export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { data: files } = await supabase
+  const { id } = await context.params;
+  const { data: files, error } = await auth.supabase
     .from('files')
-    .select('*')
+    .select('id, project_id, file_name, file_type, source_type, status, created_at, user_note, origin_file_id')
     .eq('project_id', id)
     .order('created_at', { ascending: false });
 
-  return NextResponse.json({ files: files ?? [] });
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ files: files ?? [] }, { headers: { 'Cache-Control': 'no-store' } });
 }

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import { createEmbeddingOrNull } from '@/lib/ai/openai';
 import { formatStreamError } from '@/lib/ai/errors';
 import {
@@ -29,11 +29,11 @@ import { evaluatePreQueryGuard } from '@/lib/security/query-guard';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
   }
+  const { user, supabase } = auth;
 
   const {
     query,

@@ -4,7 +4,8 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CriticalItemRow } from '@/components/lists';
 import { RefreshableScroll, SectionHeader } from '@/components/RefreshableScroll';
-import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { TabScreenHeader } from '@/components/BrandHeader';
+import { HeaderActions, HeaderIconButton } from '@/components/ScreenHeader';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { SunnyUpdatePreviewCard } from '@/components/SunnyUpdateCard';
 import { EmptyState, Screen, StatPill } from '@/components/ui';
@@ -43,14 +44,16 @@ export default function HomeScreen() {
         refreshing={refreshing}
         onRefresh={refreshAll}
         header={
-          <ScreenHeader
+          <TabScreenHeader
+            tagline="Command Center"
+            compactBrand={false}
             title="Executive Dashboard"
             subtitle="What Sunny flagged and what changed recently."
             rightAction={
               <HeaderActions>
                 <HeaderIconButton
                   label="Settings"
-                  icon="settings-outline"
+                  icon="settings-sharp"
                   onPress={() => router.push('/settings')}
                 />
               </HeaderActions>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import { replaceProjectFileContent } from '@/lib/files/replace-content';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
 import { validateUploadByteSize } from '@/lib/upload/limits';
@@ -11,16 +11,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
+
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const formData = await request.formData();
   const file = formData.get('file') as File | null;
 
@@ -49,7 +43,7 @@ export async function POST(
     return NextResponse.json({ error: bufferCheck.error }, { status: 413 });
   }
 
-  const result = await replaceProjectFileContent(supabase, id, {
+  const result = await replaceProjectFileContent(auth.supabase, id, {
     buffer,
     fileName,
     mimeType,

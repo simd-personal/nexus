@@ -1,0 +1,245 @@
+import type { MobileProjectWithStats } from './mobile';
+
+export type ChatScope =
+  | { kind: 'all' }
+  | { kind: 'selected'; projectIds: string[]; labels: string[] };
+
+export const ALL_PROJECTS_SCOPE: ChatScope = { kind: 'all' };
+
+export type TreeCheckState = 'checked' | 'unchecked' | 'indeterminate';
+
+export function projectLabel(
+  project: Pick<MobileProjectWithStats, 'client_name' | 'project_name'>
+): string {
+  return `${project.client_name} · ${project.project_name}`;
+}
+
+function getProjectFamilyIds(
+  project: Pick<MobileProjectWithStats, 'id'>,
+  subProjects: Pick<MobileProjectWithStats, 'id'>[]
+): string[] {
+  return [project.id, ...subProjects.map((child) => child.id)];
+}
+
+export function findProjectInTree(
+  projects: MobileProjectWithStats[],
+  projectId: string
+): MobileProjectWithStats | null {
+  for (const root of projects) {
+    if (root.id === projectId) return root;
+    for (const child of root.sub_projects ?? []) {
+      if (child.id === projectId) return child;
+    }
+  }
+  return null;
+}
+
+export function scopeFromPortfolio(
+  projects: MobileProjectWithStats[],
+  portfolio: 'work' | 'personal'
+): ChatScope {
+  const projectIds: string[] = [];
+
+  function visit(node: MobileProjectWithStats) {
+    if ((node.portfolio ?? 'work') === portfolio) projectIds.push(node.id);
+    for (const child of node.sub_projects ?? []) visit(child);
+  }
+
+  for (const root of projects) visit(root);
+  if (projectIds.length === 0) return ALL_PROJECTS_SCOPE;
+
+  return {
+    kind: 'selected',
+    projectIds,
+    labels: [`${portfolio === 'work' ? 'Work' : 'Personal'} projects`],
+  };
+}
+
+export function resolveScopeProjectIds(scope: ChatScope): string[] | null {
+  if (scope.kind === 'all') return null;
+  return scope.projectIds;
+}
+
+export function formatScopeSummary(scope: ChatScope): string {
+  if (scope.kind === 'all') return 'All projects';
+  if (scope.labels.length === 1) return scope.labels[0];
+  if (scope.labels.length <= 3) return scope.labels.join(', ');
+  return `${scope.labels.slice(0, 2).join(', ')} +${scope.labels.length - 2} more`;
+}
+
+export function buildChatScope(
+  projects: MobileProjectWithStats[],
+  checkedIds: Set<string>
+): ChatScope {
+  if (checkedIds.size === 0) return ALL_PROJECTS_SCOPE;
+
+  const projectIds = new Set<string>();
+  const labels: string[] = [];
+
+  for (const root of projects) {
+    collectScopeFromNode(root, checkedIds, projectIds, labels);
+  }
+
+  return {
+    kind: 'selected',
+    projectIds: [...projectIds],
+    labels,
+  };
+}
+
+function collectScopeFromNode(
+  node: MobileProjectWithStats,
+  checkedIds: Set<string>,
+  projectIds: Set<string>,
+  labels: string[]
+): void {
+  const children = node.sub_projects ?? [];
+  const label = projectLabel(node);
+
+  if (children.length === 0) {
+    if (checkedIds.has(node.id)) {
+      projectIds.add(node.id);
+      labels.push(label);
+    }
+    return;
+  }
+
+  const programChecked = checkedIds.has(node.id);
+  const checkedChildren = children.filter((child) => checkedIds.has(child.id));
+  const allChildrenChecked = checkedChildren.length === children.length;
+
+  if (programChecked || allChildrenChecked) {
+    for (const id of getProjectFamilyIds(node, children)) {
+      projectIds.add(id);
+    }
+    labels.push(`${label} · all workstreams`);
+    return;
+  }
+
+  for (const child of checkedChildren) {
+    projectIds.add(child.id);
+    labels.push(projectLabel(child));
+  }
+}
+
+export function getNodeCheckState(
+  node: MobileProjectWithStats,
+  checkedIds: Set<string>
+): TreeCheckState {
+  const children = node.sub_projects ?? [];
+  if (children.length === 0) {
+    return checkedIds.has(node.id) ? 'checked' : 'unchecked';
+  }
+
+  if (checkedIds.has(node.id)) return 'checked';
+
+  const childStates = children.map((child) => getNodeCheckState(child, checkedIds));
+  const checkedCount = childStates.filter((state) => state === 'checked').length;
+  const indeterminateCount = childStates.filter((state) => state === 'indeterminate').length;
+
+  if (checkedCount === children.length) return 'checked';
+  if (checkedCount > 0 || indeterminateCount > 0) return 'indeterminate';
+  return 'unchecked';
+}
+
+export function checkedIdsFromScope(
+  projects: MobileProjectWithStats[],
+  scope: ChatScope
+): Set<string> {
+  if (scope.kind === 'all') return new Set();
+
+  const checked = new Set<string>();
+  const scopedIds = new Set(scope.projectIds);
+  for (const root of projects) {
+    applyScopeToNode(root, scopedIds, checked);
+  }
+  return checked;
+}
+
+function applyScopeToNode(
+  node: MobileProjectWithStats,
+  scopedIds: Set<string>,
+  checked: Set<string>
+): void {
+  const children = node.sub_projects ?? [];
+
+  if (children.length === 0) {
+    if (scopedIds.has(node.id)) checked.add(node.id);
+    return;
+  }
+
+  const familyIds = getProjectFamilyIds(node, children);
+  const entireFamilySelected = familyIds.every((id) => scopedIds.has(id));
+
+  if (entireFamilySelected) {
+    checked.add(node.id);
+    for (const child of children) checked.add(child.id);
+    return;
+  }
+
+  for (const child of children) {
+    if (scopedIds.has(child.id)) checked.add(child.id);
+  }
+}
+
+export function toggleNodeChecked(
+  node: MobileProjectWithStats,
+  checkedIds: Set<string>
+): Set<string> {
+  const next = new Set(checkedIds);
+  const state = getNodeCheckState(node, checkedIds);
+  const shouldCheck = state !== 'checked';
+
+  const apply = (current: MobileProjectWithStats) => {
+    if (shouldCheck) next.add(current.id);
+    else next.delete(current.id);
+    for (const child of current.sub_projects ?? []) {
+      apply(child);
+    }
+  };
+
+  apply(node);
+  return next;
+}
+
+export function removeScopeLabel(
+  projects: MobileProjectWithStats[],
+  scope: ChatScope,
+  label: string
+): ChatScope {
+  if (scope.kind === 'all') return scope;
+
+  const checked = checkedIdsFromScope(projects, scope);
+  for (const root of projects) {
+    removeLabelFromNode(root, label, checked);
+  }
+  return buildChatScope(projects, checked);
+}
+
+function removeLabelFromNode(
+  node: MobileProjectWithStats,
+  label: string,
+  checked: Set<string>
+): void {
+  const nodeLabel = projectLabel(node);
+  const allWorkstreamsLabel = `${nodeLabel} · all workstreams`;
+  const children = node.sub_projects ?? [];
+
+  if (label === allWorkstreamsLabel || (label === nodeLabel && children.length > 0)) {
+    checked.delete(node.id);
+    for (const child of children) checked.delete(child.id);
+    return;
+  }
+
+  if (label === nodeLabel) {
+    checked.delete(node.id);
+    return;
+  }
+
+  for (const child of children) {
+    if (projectLabel(child) === label) {
+      checked.delete(child.id);
+      checked.delete(node.id);
+    }
+  }
+}

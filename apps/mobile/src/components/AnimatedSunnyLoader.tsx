@@ -5,7 +5,6 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withRepeat,
   withSequence,
   withTiming,
@@ -13,112 +12,81 @@ import Animated, {
 import { SunnyMark } from '@/components/SunnyMark';
 import { BRAND } from '@/theme/colors';
 
-const MARK_SIZE = 88;
-const RING_SIZE = MARK_SIZE + 36;
+const MARK_SIZE = 112;
+const ORBIT = MARK_SIZE + 48;
 
 export function AnimatedSunnyLoader() {
-  const ringSpin = useSharedValue(0);
-  const raySpin = useSharedValue(0);
-  const breathe = useSharedValue(0);
-  const glow = useSharedValue(0);
-  const dot1 = useSharedValue(0);
-  const dot2 = useSharedValue(0);
-  const dot3 = useSharedValue(0);
+  const orbit = useSharedValue(0);
+  const float = useSharedValue(0);
+  const pulse = useSharedValue(0);
+  const shimmer = useSharedValue(0);
 
   useEffect(() => {
-    ringSpin.value = withRepeat(
-      withTiming(360, { duration: 2400, easing: Easing.linear }),
+    orbit.value = withRepeat(
+      withTiming(360, { duration: 2800, easing: Easing.linear }),
       -1
     );
-    raySpin.value = withRepeat(
-      withTiming(360, { duration: 18000, easing: Easing.linear }),
-      -1
-    );
-    breathe.value = withRepeat(
+    float.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 1400, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 1400, easing: Easing.inOut(Easing.ease) })
+        withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.sin) }),
+        withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.sin) })
       ),
       -1
     );
-    glow.value = withRepeat(
+    pulse.value = withRepeat(
       withSequence(
-        withTiming(1, { duration: 1800, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0.35, { duration: 1800, easing: Easing.inOut(Easing.ease) })
+        withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0.4, { duration: 2000, easing: Easing.inOut(Easing.ease) })
       ),
       -1
     );
-    dot1.value = withRepeat(
-      withSequence(withTiming(1, { duration: 400 }), withTiming(0.25, { duration: 400 })),
-      -1
+    shimmer.value = withRepeat(
+      withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
     );
-    dot2.value = withDelay(
-      150,
-      withRepeat(
-        withSequence(withTiming(1, { duration: 400 }), withTiming(0.25, { duration: 400 })),
-        -1
-      )
-    );
-    dot3.value = withDelay(
-      300,
-      withRepeat(
-        withSequence(withTiming(1, { duration: 400 }), withTiming(0.25, { duration: 400 })),
-        -1
-      )
-    );
-  }, [breathe, dot1, dot2, dot3, glow, raySpin, ringSpin]);
+  }, [float, orbit, pulse, shimmer]);
 
-  const glowStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(glow.value, [0, 1], [0.35, 0.85]),
-    transform: [{ scale: interpolate(breathe.value, [0, 1], [1, 1.12]) }],
+  const orbitStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${orbit.value}deg` }],
   }));
 
-  const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${ringSpin.value}deg` }],
-  }));
-
-  const raysStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${raySpin.value}deg` }],
+  const orbitStyleOffset = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${orbit.value + 120}deg` }],
   }));
 
   const sunStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: interpolate(breathe.value, [0, 1], [1, 1.05]) }],
+    transform: [
+      { translateY: interpolate(float.value, [0, 1], [0, -6]) },
+      { scale: interpolate(float.value, [0, 1], [1, 1.04]) },
+    ],
   }));
 
-  const dot1Style = useAnimatedStyle(() => ({
-    opacity: interpolate(dot1.value, [0, 1], [0.25, 1]),
-    transform: [{ scale: interpolate(dot1.value, [0, 1], [0.85, 1.15]) }],
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: pulse.value,
+    transform: [{ scale: interpolate(pulse.value, [0.4, 1], [0.92, 1.08]) }],
   }));
 
-  const dot2Style = useAnimatedStyle(() => ({
-    opacity: interpolate(dot2.value, [0, 1], [0.25, 1]),
-    transform: [{ scale: interpolate(dot2.value, [0, 1], [0.85, 1.15]) }],
-  }));
-
-  const dot3Style = useAnimatedStyle(() => ({
-    opacity: interpolate(dot3.value, [0, 1], [0.25, 1]),
-    transform: [{ scale: interpolate(dot3.value, [0, 1], [0.85, 1.15]) }],
+  const amberGlowStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(shimmer.value, [0, 1], [0.25, 0.55]),
   }));
 
   return (
     <View style={styles.wrap} accessibilityRole="progressbar" accessibilityLabel="Loading">
-      <Animated.View style={[styles.glow, glowStyle]} />
+      <Animated.View style={[styles.blueGlow, glowStyle]} />
+      <Animated.View style={[styles.amberGlow, amberGlowStyle]} />
+
       <View style={styles.stage}>
-        <Animated.View style={[styles.ring, ringStyle]}>
-          <View style={styles.ringArc} />
-          <View style={[styles.ringArc, styles.ringArcSecondary]} />
+        <Animated.View style={[styles.orbitTrack, orbitStyle]}>
+          <View style={styles.orbitDot} />
         </Animated.View>
-        <Animated.View style={[styles.rays, raysStyle]}>
-          <View style={styles.raysGhost} />
+        <Animated.View style={[styles.orbitTrack, orbitStyleOffset]}>
+          <View style={[styles.orbitDot, styles.orbitDotSecondary]} />
         </Animated.View>
-        <Animated.View style={[styles.sun, sunStyle]}>
+        <View style={styles.ring} />
+        <Animated.View style={sunStyle}>
           <SunnyMark size={MARK_SIZE} />
         </Animated.View>
-      </View>
-      <View style={styles.dots}>
-        <Animated.View style={[styles.dot, dot1Style]} />
-        <Animated.View style={[styles.dot, dot2Style]} />
-        <Animated.View style={[styles.dot, dot3Style]} />
       </View>
     </View>
   );
@@ -126,75 +94,59 @@ export function AnimatedSunnyLoader() {
 
 const styles = StyleSheet.create({
   wrap: {
+    width: ORBIT + 80,
+    height: ORBIT + 80,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  glow: {
+  blueGlow: {
     position: 'absolute',
-    width: RING_SIZE + 80,
-    height: RING_SIZE + 80,
-    borderRadius: (RING_SIZE + 80) / 2,
-    backgroundColor: 'rgba(37, 99, 235, 0.22)',
+    width: ORBIT + 60,
+    height: ORBIT + 60,
+    borderRadius: (ORBIT + 60) / 2,
+    backgroundColor: 'rgba(37, 99, 235, 0.28)',
+  },
+  amberGlow: {
+    position: 'absolute',
+    width: MARK_SIZE + 40,
+    height: MARK_SIZE + 40,
+    borderRadius: (MARK_SIZE + 40) / 2,
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
   },
   stage: {
-    width: RING_SIZE,
-    height: RING_SIZE,
+    width: ORBIT,
+    height: ORBIT,
     alignItems: 'center',
     justifyContent: 'center',
   },
   ring: {
+    position: 'absolute',
+    width: ORBIT,
+    height: ORBIT,
+    borderRadius: ORBIT / 2,
+    borderWidth: 1.5,
+    borderColor: 'rgba(148, 163, 184, 0.18)',
+  },
+  orbitTrack: {
     ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  ringArc: {
-    position: 'absolute',
-    width: RING_SIZE,
-    height: RING_SIZE,
-    borderRadius: RING_SIZE / 2,
-    borderWidth: 2,
-    borderColor: 'transparent',
-    borderTopColor: BRAND.accentLight,
-    borderRightColor: 'rgba(59, 130, 246, 0.35)',
-  },
-  ringArcSecondary: {
-    width: RING_SIZE - 14,
-    height: RING_SIZE - 14,
-    borderRadius: (RING_SIZE - 14) / 2,
-    borderTopColor: 'rgba(59, 130, 246, 0.2)',
-    borderRightColor: 'transparent',
-    transform: [{ rotate: '120deg' }],
-  },
-  rays: {
-    position: 'absolute',
-    width: MARK_SIZE + 8,
-    height: MARK_SIZE + 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  raysGhost: {
-    width: MARK_SIZE + 8,
-    height: MARK_SIZE + 8,
-    borderRadius: (MARK_SIZE + 8) / 2,
-    borderWidth: 1,
-    borderColor: 'rgba(251, 191, 36, 0.15)',
-  },
-  sun: {
-    shadowColor: '#F59E0B',
-    shadowOpacity: 0.35,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  dots: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 28,
-  },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+  orbitDot: {
+    marginTop: -3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: BRAND.accentLight,
+    shadowColor: BRAND.accentLight,
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  orbitDotSecondary: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#FBBF24',
+    shadowColor: '#FBBF24',
   },
 });

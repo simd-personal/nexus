@@ -1,22 +1,16 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { buildProjectInboundAddress } from '@/lib/inbound/addresses';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
 export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { data: project } = await supabase
+  const { id } = await context.params;
+  const { data: project } = await auth.supabase
     .from('projects')
     .select('id, inbound_token, client_name, project_name')
     .eq('id', id)
@@ -26,10 +20,13 @@ export async function GET(
     return NextResponse.json({ error: 'Project not found' }, { status: 404 });
   }
 
-  return NextResponse.json({
-    address: buildProjectInboundAddress(project.inbound_token),
-    client_name: project.client_name,
-    project_name: project.project_name,
-    subject_hint: `[${project.client_name} · ${project.project_name}]`,
-  });
+  return NextResponse.json(
+    {
+      address: buildProjectInboundAddress(project.inbound_token),
+      client_name: project.client_name,
+      project_name: project.project_name,
+      subject_hint: `[${project.client_name} · ${project.project_name}]`,
+    },
+    { headers: { 'Cache-Control': 'no-store' } }
+  );
 }

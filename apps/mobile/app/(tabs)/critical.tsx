@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { CriticalItemRow } from '@/components/lists';
 import { RefreshableScroll } from '@/components/RefreshableScroll';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { TabScreenHeader } from '@/components/BrandHeader';
 import { EmptyState, Screen } from '@/components/ui';
 import { fetchCriticalItems, updateCriticalItemStatus } from '@/lib/api';
 
@@ -49,7 +49,7 @@ export default function CriticalScreen() {
         refreshing={refreshing}
         onRefresh={refresh}
         header={
-          <ScreenHeader
+          <TabScreenHeader
             title="Critical Items"
             subtitle="Issues Sunny flagged that need your attention."
           />

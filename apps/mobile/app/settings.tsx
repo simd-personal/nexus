@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { ScreenHeader } from '@/components/ScreenHeader';
+import { EmailForwardPanel } from '@/components/EmailForwardPanel';
+import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Card, Screen } from '@/components/ui';
 import { useAuth } from '@/providers/AuthProvider';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { BRAND, spacing } from '@/theme/colors';
 
 function SettingsRow({
   icon,
@@ -44,24 +45,17 @@ export default function SettingsScreen() {
   const { user, signOut } = useAuth();
 
   return (
-    <Screen>
+    <Screen edges={['top', 'left', 'right', 'bottom']}>
+      <ScreenHeader
+        title="Settings"
+        subtitle="Manage your account and security"
+        rightAction={
+          <HeaderActions>
+            <HeaderIconButton label="Close settings" icon="close" onPress={() => router.back()} />
+          </HeaderActions>
+        }
+      />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <ScreenHeader
-          title="Settings"
-          subtitle="Manage your account and security"
-          rightAction={
-            <Pressable
-              onPress={() => router.back()}
-              hitSlop={8}
-              style={({ pressed }) => [styles.closeBtn, pressed && styles.pressed]}
-              accessibilityRole="button"
-              accessibilityLabel="Close settings"
-            >
-              <Ionicons name="close" size={22} color={BRAND.graphite} />
-            </Pressable>
-          }
-        />
-
         <Card>
           <Text style={styles.cardLabel}>Account</Text>
           <SettingsRow
@@ -70,6 +64,8 @@ export default function SettingsScreen() {
             description="Your UpperDeck account email"
           />
         </Card>
+
+        <EmailForwardPanel mode="account" />
 
         <Card>
           <Text style={styles.cardLabel}>Session</Text>
@@ -95,19 +91,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,
     gap: spacing.md,
-  },
-  closeBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-  },
-  pressed: {
-    opacity: 0.75,
   },
   cardLabel: {
     fontSize: 13,
@@ -155,5 +138,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: '#475569',
+  },
+  pressed: {
+    opacity: 0.75,
   },
 });

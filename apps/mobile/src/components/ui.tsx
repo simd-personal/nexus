@@ -1,8 +1,20 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
-export function Screen({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
-  return <View style={[styles.screen, style]}>{children}</View>;
+type ScreenProps = {
+  children: React.ReactNode;
+  style?: ViewStyle;
+  /** Safe area edges to respect. Tab screens should omit bottom (tab bar handles it). */
+  edges?: Edge[];
+};
+
+export function Screen({ children, style, edges = ['top', 'left', 'right'] }: ScreenProps) {
+  return (
+    <SafeAreaView style={[styles.screen, style]} edges={edges}>
+      {children}
+    </SafeAreaView>
+  );
 }
 
 export function Card({ children }: { children: React.ReactNode }) {
@@ -109,7 +121,7 @@ export function SeverityBadge({ severity }: { severity: string }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: BRAND.stone,
+    backgroundColor: BRAND.cream,
   },
   card: {
     backgroundColor: '#fff',

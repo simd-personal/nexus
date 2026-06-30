@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { getFileExtension, IMAGE_EXTENSIONS } from '@/lib/constants';
 import { convertDocxBufferToHtml, isDocxFile } from '@/lib/processing/docx-preview';
@@ -27,16 +27,14 @@ function inferViewType(fileName: string, mimeType: string): FileViewType {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const { id } = await params;
+  const { supabase } = auth;
 
   const { data: file, error } = await supabase
     .from('files')

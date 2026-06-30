@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, Screen, Subtitle, Title } from '@/components/ui';
+import { UpperDeckLogo } from '@/components/UpperDeckLogo';
 import { prefetchDashboard } from '@/lib/prefetch';
 import { useAuth } from '@/providers/AuthProvider';
 import { BRAND, radius, spacing } from '@/theme/colors';
@@ -40,14 +41,17 @@ export default function LoginScreen() {
   }
 
   return (
-    <Screen>
+    <Screen edges={['top', 'left', 'right', 'bottom']}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.hero}>
-            <Text style={styles.brand}>UpperDeck</Text>
+            <View style={styles.logoWrap}>
+              <UpperDeckLogo size="md" />
+              <Text style={styles.tagline}>Command Center</Text>
+            </View>
             <Title>Your command center on iOS</Title>
             <Subtitle>Sunny briefings, critical items, and project chat — optimized for mobile.</Subtitle>
           </View>
@@ -96,13 +100,15 @@ const styles = StyleSheet.create({
   },
   hero: {
     gap: spacing.sm,
+    alignItems: 'flex-start',
   },
-  brand: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: BRAND.accent,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
+  logoWrap: {
+    gap: 6,
+    marginBottom: spacing.sm,
+  },
+  tagline: {
+    fontSize: 12,
+    color: BRAND.textMuted,
   },
   form: {
     gap: spacing.sm,

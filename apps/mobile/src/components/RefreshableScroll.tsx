@@ -34,7 +34,7 @@ export function RefreshableScroll({
         />
       }
     >
-      {header}
+      {header ? <View style={styles.headerSlot}>{header}</View> : null}
       {children}
     </ScrollView>
   );
@@ -58,6 +58,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.xl,
     flexGrow: 1,
+  },
+  headerSlot: {
+    marginHorizontal: -spacing.md,
   },
   sectionHeader: {
     flexDirection: 'row',

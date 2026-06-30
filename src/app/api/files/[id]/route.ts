@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import { deleteProjectFile } from '@/lib/files/delete-file';
 import { updateFileDetails } from '@/lib/files/actions';
 
@@ -7,18 +7,12 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
+
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   const body = await request.json().catch(() => ({}));
-  const result = await updateFileDetails(supabase, id, {
+  const result = await updateFileDetails(auth.supabase, id, {
     file_name: typeof body.file_name === 'string' ? body.file_name : undefined,
     user_note: body.user_note === null || typeof body.user_note === 'string' ? body.user_note : undefined,
   });
@@ -31,20 +25,14 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
+
   const { id } = await params;
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const result = await deleteProjectFile(supabase, id);
+  const result = await deleteProjectFile(auth.supabase, id);
   if (result.error) {
     return NextResponse.json({ error: result.error }, { status: result.status ?? 500 });
   }

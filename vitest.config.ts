@@ -9,6 +9,7 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'src/**/*.integration.test.ts',
       'packages/shared/src/**/*.test.ts',
+      'apps/mobile/src/**/*.test.ts',
     ],
     globals: false,
   },

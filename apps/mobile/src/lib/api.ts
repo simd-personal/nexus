@@ -1,12 +1,20 @@
+import { Platform } from 'react-native';
 import { getApiBaseUrl } from '@/lib/config';
+import {
+  streamChatWithFetch,
+  streamChatWithXhr,
+  type ChatStreamHandlers,
+} from '@/lib/chat-stream';
 import { supabase } from '@/lib/supabase';
-import { parseSseChunk } from '@/lib/sse';
 import type {
   ChatMessage,
   ChatSession,
   CriticalItem,
   DashboardStats,
   DashboardUpdatesFeed,
+  InboundInfo,
+  Project,
+  ProjectFile,
   ProjectOverviewResponse,
   ProjectWithStats,
   SunnyUpdate,
@@ -97,7 +105,61 @@ export function fetchChatSession(sessionId: string) {
   return apiJson<{ session: ChatSession; messages: ChatMessage[] }>(`/api/chat/sessions/${sessionId}`);
 }
 
-export async function uploadProjectPhoto(projectId: string, uri: string, fileName: string, userNote?: string) {
+export function fetchProjectFiles(projectId: string) {
+  return apiJson<{ files: ProjectFile[] }>(`/api/projects/${projectId}/files`);
+}
+
+export function fetchProjectInbound(projectId: string) {
+  return apiJson<InboundInfo>(`/api/projects/${projectId}/inbound`);
+}
+
+export function fetchAccountInbound() {
+  return apiJson<InboundInfo>('/api/account/inbound');
+}
+
+export type CreateProjectInput = {
+  clientName: string;
+  projectName: string;
+  description?: string;
+  sunnyNotes?: string;
+  portfolio?: 'work' | 'personal';
+  parentProjectId?: string;
+};
+
+export async function createProject(input: CreateProjectInput) {
+  const formData = new FormData();
+  formData.append('client_name', input.clientName.trim());
+  formData.append('project_name', input.projectName.trim());
+  if (input.description?.trim()) formData.append('description', input.description.trim());
+  if (input.sunnyNotes?.trim()) formData.append('sunny_notes', input.sunnyNotes.trim());
+  if (input.portfolio) formData.append('portfolio', input.portfolio);
+  if (input.parentProjectId) formData.append('parent_project_id', input.parentProjectId);
+
+  const response = await apiFetch('/api/projects', { method: 'POST', body: formData });
+  const body = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    upgradeRequired?: boolean;
+    data?: Project;
+  };
+
+  if (!response.ok) {
+    throw new ApiError(body.error ?? 'Could not create project', response.status);
+  }
+
+  if (!body.data) {
+    throw new ApiError('Project was created but no data returned', 500);
+  }
+
+  return { project: body.data, upgradeRequired: body.upgradeRequired };
+}
+
+export async function uploadProjectFile(
+  projectId: string,
+  uri: string,
+  fileName: string,
+  mimeType: string,
+  userNote?: string
+) {
   const formData = new FormData();
   formData.append('project_id', projectId);
   formData.append(
@@ -105,7 +167,7 @@ export async function uploadProjectPhoto(projectId: string, uri: string, fileNam
     {
       uri,
       name: fileName,
-      type: 'image/jpeg',
+      type: mimeType,
     } as unknown as Blob
   );
   if (userNote?.trim()) {
@@ -124,14 +186,166 @@ export async function uploadProjectPhoto(projectId: string, uri: string, fileNam
   return body;
 }
 
-export type ChatStreamHandlers = {
-  onSession?: (sessionId: string, title?: string) => void;
-  onStatus?: (message: string) => void;
-  onToken?: (fullText: string) => void;
-  onMeta?: (meta: Record<string, unknown>) => void;
-  onDone?: (sessionId: string) => void;
-  onError?: (message: string) => void;
+export async function uploadProjectPhoto(projectId: string, uri: string, fileName: string, userNote?: string) {
+  return uploadProjectFile(projectId, uri, fileName, 'image/jpeg', userNote);
+}
+
+export type FilePreviewResponse = {
+  fileName: string;
+  mimeType: string;
+  viewType: 'image' | 'pdf' | 'text' | 'spreadsheet' | 'docx' | 'unsupported';
+  url: string | null;
+  text?: string | null;
+  html?: string | null;
+  sheets?: { name: string; rows: string[][] }[];
+  status: string;
+  hasOriginal: boolean;
 };
+
+export function fetchFilePreview(fileId: string) {
+  return apiJson<FilePreviewResponse>(`/api/files/${fileId}/view`);
+}
+
+export function patchProjectFile(
+  fileId: string,
+  patch: { file_name?: string; user_note?: string | null }
+) {
+  return apiJson<{ data: ProjectFile }>(`/api/files/${fileId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+  });
+}
+
+export function deleteProjectFile(fileId: string) {
+  return apiJson<{ success: boolean }>(`/api/files/${fileId}`, { method: 'DELETE' });
+}
+
+export function removeProjectFile(fileId: string, projectId: string) {
+  return apiJson<{ success: boolean }>(`/api/files/${fileId}/remove`, {
+    method: 'POST',
+    body: JSON.stringify({ project_id: projectId }),
+  });
+}
+
+export function moveProjectFile(fileId: string, targetProjectId: string) {
+  return apiJson<{ data: ProjectFile }>(`/api/files/${fileId}/move`, {
+    method: 'POST',
+    body: JSON.stringify({ target_project_id: targetProjectId }),
+  });
+}
+
+export function shareProjectFile(fileId: string, targetProjectId: string) {
+  return apiJson<{ data: ProjectFile }>(`/api/files/${fileId}/share`, {
+    method: 'POST',
+    body: JSON.stringify({ target_project_id: targetProjectId }),
+  });
+}
+
+export function reprocessProjectFile(fileId: string) {
+  return apiJson<{ success: boolean; status: string; file_id: string }>(
+    `/api/files/${fileId}/reprocess`,
+    { method: 'POST' }
+  );
+}
+
+export async function replaceProjectFile(
+  fileId: string,
+  uri: string,
+  fileName: string,
+  mimeType: string
+) {
+  const formData = new FormData();
+  formData.append(
+    'file',
+    {
+      uri,
+      name: fileName,
+      type: mimeType,
+    } as unknown as Blob
+  );
+
+  const response = await apiFetch(`/api/files/${fileId}/replace`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const body = (await response.json().catch(() => ({}))) as {
+    error?: string;
+    data?: ProjectFile;
+    replaced?: boolean;
+  };
+  if (!response.ok) {
+    throw new ApiError(body.error ?? 'Replace failed', response.status);
+  }
+  return body;
+}
+
+export function fetchSearchChatSessions() {
+  return apiJson<{ sessions: ChatSession[] }>('/api/chat/sessions?type=search');
+}
+
+export type { ChatStreamHandlers };
+
+async function streamSsePost(
+  path: string,
+  payload: string,
+  handlers: ChatStreamHandlers,
+  signal?: AbortSignal
+) {
+  if (Platform.OS !== 'web') {
+    const token = await getAccessToken();
+    try {
+      await streamChatWithXhr(`${getApiBaseUrl()}${path}`, token, payload, handlers, signal);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+      const message = error instanceof Error ? error.message : 'Stream failed';
+      throw new ApiError(message, 500);
+    }
+    return;
+  }
+
+  const response = await apiFetch(path, {
+    method: 'POST',
+    body: payload,
+    signal,
+  });
+
+  if (!response.ok) {
+    const err = (await response.json().catch(() => ({}))) as { error?: string };
+    throw new ApiError(err.error ?? `Request failed (${response.status})`, response.status);
+  }
+
+  try {
+    await streamChatWithFetch(response, handlers);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return;
+    }
+    const message = error instanceof Error ? error.message : 'Stream failed';
+    throw new ApiError(message, 500);
+  }
+}
+
+export async function streamSearchChat(
+  input: {
+    query: string;
+    projectIds?: string[] | null;
+    scopeLabels?: string[];
+    sessionId?: string;
+  },
+  handlers: ChatStreamHandlers,
+  signal?: AbortSignal
+) {
+  const payload = JSON.stringify({
+    query: input.query,
+    project_ids: input.projectIds ?? undefined,
+    scope_labels: input.scopeLabels ?? [],
+    session_id: input.sessionId,
+  });
+  await streamSsePost('/api/search/stream', payload, handlers, signal);
+}
 
 export async function streamProjectChat(
   input: {
@@ -142,63 +356,11 @@ export async function streamProjectChat(
   handlers: ChatStreamHandlers,
   signal?: AbortSignal
 ) {
-  const response = await apiFetch('/api/chat/stream', {
-    method: 'POST',
-    body: JSON.stringify({
-      project_id: input.projectId,
-      message: input.message,
-      session_id: input.sessionId,
-    }),
-    signal,
+  const payload = JSON.stringify({
+    project_id: input.projectId,
+    message: input.message,
+    session_id: input.sessionId,
   });
 
-  if (!response.ok) {
-    const err = (await response.json().catch(() => ({}))) as { error?: string };
-    throw new ApiError(err.error ?? `Chat failed (${response.status})`, response.status);
-  }
-
-  if (!response.body) {
-    throw new ApiError('No response stream', 500);
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = '';
-  let fullText = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const { events, remainder } = parseSseChunk(buffer);
-    buffer = remainder;
-
-    for (const event of events) {
-      switch (event.event) {
-        case 'session':
-          handlers.onSession?.(
-            String(event.data.session_id),
-            event.data.title ? String(event.data.title) : undefined
-          );
-          break;
-        case 'status':
-          handlers.onStatus?.(String(event.data.message ?? ''));
-          break;
-        case 'token':
-          fullText += String(event.data.text ?? '');
-          handlers.onToken?.(fullText);
-          break;
-        case 'meta':
-          handlers.onMeta?.(event.data);
-          break;
-        case 'done':
-          handlers.onDone?.(String(event.data.session_id));
-          break;
-        case 'error':
-          handlers.onError?.(String(event.data.message ?? 'Stream error'));
-          break;
-      }
-    }
-  }
+  await streamSsePost('/api/chat/stream', payload, handlers, signal);
 }

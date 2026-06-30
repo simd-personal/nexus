@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { stackDetailScreenOptions } from '@/navigation/stackHeaderOptions';
 import { AppProviders } from '@/providers/AppProviders';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 
@@ -14,13 +15,11 @@ function AuthGate() {
   const { user, loading, bootstrapping } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const isAppReady = !loading && !bootstrapping;
 
   useEffect(() => {
-    if (isAppReady) {
-      void SplashScreen.hideAsync();
-    }
-  }, [isAppReady]);
+    if (loading || bootstrapping) return;
+    void SplashScreen.hideAsync();
+  }, [loading, bootstrapping]);
 
   useEffect(() => {
     if (loading || bootstrapping) return;
@@ -56,8 +55,9 @@ function AuthGate() {
         <Stack.Screen name="login" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
-        <Stack.Screen name="update/[id]" options={{ headerShown: true, title: 'Sunny update' }} />
-        <Stack.Screen name="project/[id]" options={{ headerShown: true, title: 'Project' }} />
+        <Stack.Screen name="project/new" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="update/[id]" options={stackDetailScreenOptions('Sunny update')} />
+        <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
       </Stack>
     </>
   );

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
+import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
 import { BRAND, spacing } from '@/theme/colors';
 
 export function ScreenHeader({
@@ -17,10 +17,16 @@ export function ScreenHeader({
     <View style={styles.wrap}>
       <View style={styles.row}>
         <View style={styles.textBlock}>
-          <Text style={styles.title}>{title}</Text>
-          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+          <Text style={styles.title} numberOfLines={2}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text style={styles.subtitle} numberOfLines={3}>
+              {subtitle}
+            </Text>
+          ) : null}
         </View>
-        {rightAction}
+        {rightAction ? <View style={styles.actionsSlot}>{rightAction}</View> : null}
       </View>
     </View>
   );
@@ -38,13 +44,13 @@ export function HeaderIconButton({
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={8}
+      hitSlop={4}
       style={({ pressed }) => [styles.iconBtn, pressed && styles.iconBtnPressed]}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
       {icon ? (
-        <Ionicons name={icon} size={20} color={BRAND.graphite} />
+        <Ionicons name={icon} size={22} color={BRAND.graphite} />
       ) : (
         <Text style={styles.iconBtnLabel}>{label}</Text>
       )}
@@ -61,7 +67,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
-    backgroundColor: BRAND.stone,
+    backgroundColor: BRAND.cream,
   },
   row: {
     flexDirection: 'row',
@@ -71,27 +77,39 @@ const styles = StyleSheet.create({
   textBlock: {
     flex: 1,
     gap: 4,
+    minWidth: 0,
+    paddingTop: 2,
   },
   title: {
     fontSize: 26,
     fontWeight: '700',
     color: BRAND.graphite,
     letterSpacing: -0.6,
+    lineHeight: 32,
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 21,
     color: BRAND.textMuted,
   },
+  actionsSlot: {
+    flexShrink: 0,
+    paddingTop: 2,
+  },
   iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 999,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E5E7EB',
+    shadowColor: '#0E1115',
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   actions: {
     flexDirection: 'row',

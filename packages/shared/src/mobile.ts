@@ -10,6 +10,7 @@ export interface Citation {
   file_name: string;
   snippet: string;
   source_type?: string;
+  page_number?: number;
 }
 
 export interface MobileProject {
@@ -93,4 +94,23 @@ export interface MobileProjectOverviewResponse {
     action_item_count: number;
   } | null;
   critical_items: MobileCriticalItem[];
+}
+
+export interface MobileProjectFile {
+  id: string;
+  project_id: string;
+  file_name: string;
+  file_type: string | null;
+  source_type: string | null;
+  status: string;
+  created_at: string;
+  user_note: string | null;
+  origin_file_id?: string | null;
+}
+
+export interface MobileInboundInfo {
+  address: string;
+  subject_hint: string;
+  client_name?: string;
+  project_name?: string;
 }

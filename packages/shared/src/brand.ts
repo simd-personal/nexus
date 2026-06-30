@@ -14,6 +14,7 @@ export const BRAND = {
   textMuted: '#64748B',
   border: '#334155',
   stone: '#F4F5F7',
+  cream: '#FAF9F6',
   graphite: '#0E1115',
 } as const;
 
