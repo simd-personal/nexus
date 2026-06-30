@@ -1,48 +1,37 @@
 import { Tabs } from 'expo-router';
-import { Platform, StyleSheet } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StyleSheet, View } from 'react-native';
+import { FloatingTabBar } from '@/components/FloatingTabBar';
 import { TabBarIcon } from '@/components/TabBarIcon';
 import { SUNNY_MARK_COLORS } from '@/components/SunnyMark';
 import { BRAND } from '@/theme/colors';
 
-const TAB_BAR_BASE = 52;
-
 export default function TabsLayout() {
-  const insets = useSafeAreaInsets();
-  const tabBarHeight = TAB_BAR_BASE + insets.bottom;
-
   return (
     <Tabs
+      safeAreaInsets={{ bottom: 0 }}
+      tabBar={(props) => (
+        <View style={styles.tabBarHost} pointerEvents="box-none">
+          <FloatingTabBar {...props} />
+        </View>
+      )}
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
         tabBarActiveTintColor: BRAND.accent,
         tabBarInactiveTintColor: BRAND.textMuted,
+        sceneStyle: {
+          backgroundColor: 'transparent',
+        },
         tabBarStyle: {
-          height: tabBarHeight,
-          paddingTop: 6,
-          paddingBottom: Math.max(insets.bottom, 6),
-          backgroundColor: '#fff',
-          borderTopColor: '#E5E7EB',
-          borderTopWidth: StyleSheet.hairlineWidth,
-          ...Platform.select({
-            ios: {
-              shadowColor: '#0E1115',
-              shadowOpacity: 0.06,
-              shadowRadius: 8,
-              shadowOffset: { width: 0, height: -2 },
-            },
-            android: {
-              elevation: 8,
-            },
-          }),
-        },
-        tabBarItemStyle: {
-          paddingTop: 2,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 2,
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 0,
+          backgroundColor: 'transparent',
+          borderTopWidth: 0,
+          elevation: 0,
+          shadowOpacity: 0,
         },
       }}
     >
@@ -87,3 +76,13 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarHost: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'transparent',
+  },
+});

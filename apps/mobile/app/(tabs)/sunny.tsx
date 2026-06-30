@@ -24,6 +24,7 @@ import { ChatMessageBubble, type ChatBubbleMessage } from '@/components/ChatMess
 import { ChatScopeChips } from '@/components/ChatScopeChips';
 import { ChatScopePicker } from '@/components/ChatScopePicker';
 import { TabScreenHeader } from '@/components/BrandHeader';
+import { useFloatingTabBarLift } from '@/components/FloatingTabBar';
 import { SunnyMark } from '@/components/SunnyMark';
 import { Screen } from '@/components/ui';
 import {
@@ -65,6 +66,7 @@ function toBubbleMessage(message: UiMessage, scope: ChatScope): ChatBubbleMessag
 }
 
 export default function SunnyScreen() {
+  const tabBarLift = useFloatingTabBarLift();
   const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() });
   const projects = projectsQuery.data?.projects ?? [];
   const [scope, setScope] = useState<ChatScope>({ kind: 'all' });
@@ -277,7 +279,8 @@ export default function SunnyScreen() {
   const canChat = projects.length > 0;
   const scopeSummary = formatScopeSummary(scope);
   const hasMessages = messages.length > 0;
-  const listBottomInset = footerHeight + keyboardInset + spacing.lg;
+  const listBottomInset =
+    footerHeight + keyboardInset + (keyboardInset > 0 ? 0 : tabBarLift) + spacing.lg;
 
   function handleScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
@@ -366,7 +369,7 @@ export default function SunnyScreen() {
           />
 
           <View
-            style={[styles.footer, keyboardInset > 0 && { bottom: keyboardInset }]}
+            style={[styles.footer, { bottom: keyboardInset > 0 ? keyboardInset : tabBarLift }]}
             onLayout={(event) => {
               const nextHeight = Math.ceil(event.nativeEvent.layout.height);
               if (nextHeight > 0 && nextHeight !== footerHeight) {

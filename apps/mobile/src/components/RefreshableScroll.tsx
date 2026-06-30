@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View, type ScrollViewProps } from 'react-native';
+import { useFloatingTabBarInset } from '@/components/FloatingTabBar';
 import { BRAND, spacing } from '@/theme/colors';
 
 type RefreshableScrollProps = ScrollViewProps & {
@@ -17,12 +18,18 @@ export function RefreshableScroll({
   contentContainerStyle,
   ...rest
 }: RefreshableScrollProps) {
+  const tabBarInset = useFloatingTabBarInset();
+
   return (
     <ScrollView
       {...rest}
       alwaysBounceVertical
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={[styles.content, contentContainerStyle]}
+      contentContainerStyle={[
+        styles.content,
+        { paddingBottom: tabBarInset },
+        contentContainerStyle,
+      ]}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -56,7 +63,6 @@ export function SectionHeader({ title, count }: { title: string; count?: number 
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
     flexGrow: 1,
   },
   headerSlot: {
