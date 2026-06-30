@@ -1,7 +1,6 @@
 'use client';
 
 import { LogOut } from 'lucide-react';
-import { signOut } from '@/lib/actions/auth';
 import { purgeAllChatCaches } from '@/lib/chat/cache';
 import { cn } from '@/lib/utils';
 
@@ -13,7 +12,8 @@ type SignOutButtonProps = {
 export function SignOutButton({ variant = 'sidebar', className }: SignOutButtonProps) {
   return (
     <form
-      action={signOut}
+      action="/api/auth/sign-out"
+      method="post"
       className={variant === 'icon' ? undefined : 'w-full'}
       onSubmit={() => purgeAllChatCaches()}
     >

@@ -9,7 +9,6 @@ import {
   parseDashboardPortfolioScope,
   type DashboardPortfolioScope,
 } from '@/lib/projects/portfolio';
-import { setDashboardPortfolio } from '@/lib/actions/projects';
 
 interface PortfolioScopeBarProps {
   scope: DashboardPortfolioScope;
@@ -47,7 +46,12 @@ export function PortfolioScopeBar({ scope, className }: PortfolioScopeBarProps) 
       router.replace(href);
     });
 
-    void setDashboardPortfolio(next);
+    void fetch('/api/me/dashboard-portfolio', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: next }),
+    });
   }
 
   return (
