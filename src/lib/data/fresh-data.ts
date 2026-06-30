@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import {
   buildFilesByProject,
   pruneOrphanedDerivedRecords,
+  pruneOrphanedEntities,
   recordCitationsStillValid,
   sunnyUpdateStillValid,
 } from '@/lib/files/purge-derived-content';
@@ -21,12 +22,16 @@ export async function refreshDerivedRecords(
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<Map<string, Set<string>>> {
   const filesByProject = await loadProjectFilesIndex(supabase);
-  await pruneOrphanedDerivedRecords(supabase, filesByProject);
+  await Promise.all([
+    pruneOrphanedDerivedRecords(supabase, filesByProject),
+    pruneOrphanedEntities(supabase),
+  ]);
   return filesByProject;
 }
 
 export {
   buildFilesByProject,
+  pruneOrphanedEntities,
   recordCitationsStillValid,
   sunnyUpdateStillValid,
 };

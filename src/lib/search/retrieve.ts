@@ -243,6 +243,9 @@ async function fetchSupplementalContent(
     } else if (scopedProjectIds && scopedProjectIds.length > 1) {
       q = q.in('project_id', scopedProjectIds);
     }
+    if (table === 'entities') {
+      q = q.not('source_file_id', 'is', null);
+    }
     const { data: rows } = await q;
 
     for (const row of rows ?? []) {

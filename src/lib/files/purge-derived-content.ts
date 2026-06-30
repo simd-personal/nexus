@@ -96,6 +96,22 @@ export async function pruneOrphanedDerivedRecords(
   }
 }
 
+/** Remove entity rows left behind when source files were deleted (FK ON DELETE SET NULL). */
+export async function pruneOrphanedEntities(
+  supabase: SupabaseClient,
+  projectIds?: string[]
+): Promise<void> {
+  let query = supabase.from('entities').delete().is('source_file_id', null);
+
+  if (projectIds?.length === 1) {
+    query = query.eq('project_id', projectIds[0]!);
+  } else if (projectIds && projectIds.length > 1) {
+    query = query.in('project_id', projectIds);
+  }
+
+  await query;
+}
+
 export async function purgeFileDerivedContent(
   supabase: SupabaseClient,
   projectId: string,
@@ -143,4 +159,6 @@ export async function purgeFileDerivedContent(
   if (actionItemIds.length > 0) {
     await supabase.from('action_items').delete().in('id', actionItemIds);
   }
+
+  await pruneOrphanedEntities(supabase, [projectId]);
 }
