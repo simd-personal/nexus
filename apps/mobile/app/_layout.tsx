@@ -24,25 +24,6 @@ function AuthGate() {
   const [prefetchLabel, setPrefetchLabel] = useState('Warming up Sunny…');
 
   useEffect(() => {
-    if (loading || bootstrapping) return;
-    void SplashScreen.hideAsync();
-  }, [loading, bootstrapping]);
-
-  useEffect(() => {
-    if (loading || bootstrapping) return;
-    const inAuth = segments[0] === 'login';
-
-    if (!user && !inAuth) {
-      router.replace('/login');
-      return;
-    }
-
-    if (user && inAuth) {
-      router.replace('/(tabs)');
-    }
-  }, [user, loading, bootstrapping, segments, router]);
-
-  useEffect(() => {
     if (loading) return;
 
     if (!user) {
@@ -61,16 +42,42 @@ function AuthGate() {
     void prefetchDashboard(queryClient, (completed, total, step) => {
       setPrefetchProgress(completed / total);
       setPrefetchLabel(step.label);
-    })
-      .finally(() => {
-        setPrefetchProgress(1);
-        setPrefetchLabel('Ready!');
-        setWarmupDone(true);
-        setBootstrapping(false);
-      });
+    }).finally(() => {
+      setPrefetchProgress(1);
+      setPrefetchLabel('Ready!');
+      setWarmupDone(true);
+      setBootstrapping(false);
+    });
   }, [loading, user, queryClient, setBootstrapping]);
 
-  const showLoading = loading || bootstrapping || (Boolean(user) && !warmupDone);
+  const inAuth = segments[0] === 'login';
+
+  // Keep the loading overlay until we've left login — otherwise the login form
+  // flashes for a frame after prefetch completes and before router.replace runs.
+  useEffect(() => {
+    if (loading || !user) return;
+    if (inAuth) {
+      router.replace('/(tabs)');
+    }
+  }, [loading, user, inAuth, router]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !inAuth) {
+      router.replace('/login');
+    }
+  }, [loading, user, inAuth, router]);
+
+  const showLoading =
+    loading ||
+    bootstrapping ||
+    (Boolean(user) && !warmupDone) ||
+    (Boolean(user) && inAuth);
+
+  useEffect(() => {
+    if (showLoading) return;
+    void SplashScreen.hideAsync();
+  }, [showLoading]);
 
   if (showLoading) {
     const signingIn = bootstrapping && !user;
@@ -87,9 +94,9 @@ function AuthGate() {
   return (
     <>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="(tabs)" />
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <Stack.Screen name="login" options={{ animation: 'none' }} />
+        <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="project/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="update/[id]" options={stackDetailScreenOptions('Sunny update')} />
