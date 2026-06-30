@@ -1,18 +1,26 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
+import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import { getSunnyUpdates } from '@/lib/data/queries';
+import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
 import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SunnyUpdatesPage() {
-  const updates = await getSunnyUpdates();
+export default async function SunnyUpdatesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ portfolio?: string }>;
+}) {
+  const params = await searchParams;
+  const portfolioScope = await resolveActivePortfolioScope(params);
+  const updates = await getSunnyUpdates(undefined, portfolioScope);
 
   return (
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
-        <div className="flex items-center gap-3 mb-8">
+        <div className="mb-6 flex items-center gap-3">
           <SunnyAvatar size="md" animate="idle" />
           <div>
             <h1 className="app-page-title text-2xl">{AI_EMPLOYEE_NAME} Updates</h1>
@@ -21,6 +29,8 @@ export default async function SunnyUpdatesPage() {
             </p>
           </div>
         </div>
+
+        <PortfolioScopeHeader scope={portfolioScope} />
 
         <SunnyUpdatesList updates={updates} />
       </div>

@@ -21,6 +21,7 @@ import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { DeleteProjectButton } from '@/components/project/DeleteProjectButton';
 import { EntityMentionChips } from '@/components/project/EntityMentionChips';
 import { ProjectRelevancePanel } from '@/components/project/ProjectRelevancePanel';
+import { ProjectPortfolioPanel } from '@/components/project/ProjectPortfolioPanel';
 
 export default async function ProjectOverviewPage({
   params,
@@ -72,6 +73,12 @@ export default async function ProjectOverviewPage({
       )}
 
       {isProgram && <SubProjectsPanel parentProject={project} subProjects={subProjects} />}
+
+      <ProjectPortfolioPanel
+        projectId={project.id}
+        portfolio={project.portfolio ?? 'work'}
+        isSubProject={Boolean(project.parent_project_id)}
+      />
 
       <ProjectRelevancePanel
         projectId={project.id}

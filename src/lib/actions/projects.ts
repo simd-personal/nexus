@@ -7,6 +7,7 @@ import { enrichProjectSetup } from '@/lib/ai/sunny';
 import { countUserProjects, getBillingContextForUser } from '@/lib/billing/limits';
 import type { ActionItemStatus, ProjectStatus } from '@/types/database';
 import { parseKeywordList } from '@/lib/relevance/watchlist';
+import { parseProjectPortfolio, type DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import { recomputeProjectStatus } from '@/lib/projects/health';
 
 export async function createProject(formData: FormData) {
@@ -39,16 +40,18 @@ export async function createProject(formData: FormData) {
   const description = formData.get('description') as string;
   const sunnyNotes = formData.get('sunny_notes') as string;
   const parentProjectId = (formData.get('parent_project_id') as string)?.trim() || null;
+  const portfolioInput = parseProjectPortfolio(formData.get('portfolio') as string);
 
   if (!clientName?.trim() || !projectName?.trim()) {
     return { error: 'Client name and project name are required' };
   }
 
   let resolvedParentId: string | null = null;
+  let portfolio = portfolioInput;
   if (parentProjectId) {
     const { data: parent } = await supabase
       .from('projects')
-      .select('id, owner_id, parent_project_id, client_name')
+      .select('id, owner_id, parent_project_id, client_name, portfolio')
       .eq('id', parentProjectId)
       .single();
 
@@ -59,6 +62,7 @@ export async function createProject(formData: FormData) {
       return { error: 'Workstreams can only be added under a standalone program project' };
     }
     resolvedParentId = parent.id;
+    portfolio = parseProjectPortfolio(parent.portfolio);
   }
 
   const billing = await getBillingContextForUser(user.id);
@@ -99,6 +103,7 @@ export async function createProject(formData: FormData) {
       project_name: projectName.trim(),
       description: enrichedDescription,
       last_summary: initialSummary,
+      portfolio,
     })
     .select()
     .single();
@@ -242,4 +247,81 @@ export async function updateProjectRelevance(
 
   revalidatePath(`/projects/${projectId}/overview`);
   return { status: 'success', message: 'Relevance settings saved.' };
+}
+
+export async function updateProjectPortfolio(
+  projectId: string,
+  _prevState: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
+  await requireUser();
+  const supabase = await createClient();
+  const portfolio = parseProjectPortfolio(formData.get('portfolio') as string);
+
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, parent_project_id')
+    .eq('id', projectId)
+    .single();
+
+  if (!project) {
+    return { status: 'error', message: 'Project not found.' };
+  }
+  if (project.parent_project_id) {
+    return { status: 'error', message: 'Change portfolio on the parent program project.' };
+  }
+
+  const { error } = await supabase.from('projects').update({ portfolio }).eq('id', projectId);
+  if (error) {
+    return { status: 'error', message: 'Could not save portfolio. Please try again.' };
+  }
+
+  await supabase
+    .from('projects')
+    .update({ portfolio })
+    .eq('parent_project_id', projectId);
+
+  revalidatePath('/dashboard');
+  revalidatePath('/projects');
+  revalidatePath('/updates');
+  revalidatePath('/critical-items');
+  revalidatePath('/action-items');
+  revalidatePath(`/projects/${projectId}/overview`);
+  return { status: 'success', message: 'Portfolio saved.' };
+}
+
+export async function setDashboardPortfolio(scope: DashboardPortfolioScope) {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ dashboard_portfolio: scope })
+    .eq('user_id', user.id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/dashboard');
+  revalidatePath('/updates');
+  revalidatePath('/critical-items');
+  revalidatePath('/action-items');
+  revalidatePath('/settings');
+  return { success: true };
+}
+
+export async function updateDashboardPortfolioPreference(
+  _prevState: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
+  const scope = formData.get('dashboard_portfolio');
+  if (scope !== 'work' && scope !== 'personal' && scope !== 'all') {
+    return { status: 'error', message: 'Choose a valid dashboard scope.' };
+  }
+
+  const result = await setDashboardPortfolio(scope);
+  if (result.error) {
+    return { status: 'error', message: 'Could not save preference. Please try again.' };
+  }
+
+  return { status: 'success', message: 'Default dashboard scope saved.' };
 }

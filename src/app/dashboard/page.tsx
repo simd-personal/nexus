@@ -5,6 +5,7 @@ import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
 import { PendingInboundInbox } from '@/components/dashboard/PendingInboundInbox';
+import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import {
   getProjectsWithStats,
   getDashboardStats,
@@ -13,6 +14,8 @@ import {
   getSunnyUpdates,
   getPendingInboundEmails,
 } from '@/lib/data/queries';
+import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
+import { dashboardScopeLabel } from '@/lib/projects/portfolio';
 import { TAGLINE } from '@/lib/constants';
 import { needsOnboarding } from '@/lib/onboarding/status';
 import Link from 'next/link';
@@ -21,36 +24,53 @@ import { Button } from '@/components/ui/Button';
 
 export const dynamic = 'force-dynamic';
 
-export default async function DashboardPage() {
-  const projects = await getProjectsWithStats();
-  if (needsOnboarding(projects)) {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ portfolio?: string }>;
+}) {
+  const params = await searchParams;
+  const portfolioScope = await resolveActivePortfolioScope(params);
+
+  const allProjects = await getProjectsWithStats();
+  if (needsOnboarding(allProjects)) {
     redirect('/getting-started');
   }
 
-  const stats = await getDashboardStats();
+  const projects = await getProjectsWithStats({ portfolio: portfolioScope });
+  const stats = await getDashboardStats(portfolioScope);
   const showBoth = stats.criticalCount > 0 && stats.actionItemsCount > 0;
   const criticalLimit = showBoth ? 3 : 5;
   const actionFetchLimit =
     stats.actionItemsCount > 0 ? Math.min(stats.actionItemsCount, 5) : 0;
 
   const [criticalItems, actionItems, updates, pendingInboundEmails] = await Promise.all([
-    stats.criticalCount > 0 ? getCriticalItems(criticalLimit) : Promise.resolve([]),
-    actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit) : Promise.resolve([]),
-    getSunnyUpdates(5),
+    stats.criticalCount > 0 ? getCriticalItems(criticalLimit, portfolioScope) : Promise.resolve([]),
+    actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit, portfolioScope) : Promise.resolve([]),
+    getSunnyUpdates(5, portfolioScope),
     getPendingInboundEmails(),
   ]);
 
   return (
     <AppShell>
       <div className="p-4 sm:p-6 lg:p-8">
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-6">
           <h1 className="app-page-title text-xl sm:text-2xl">Executive Dashboard</h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{TAGLINE}</p>
         </div>
 
+        <PortfolioScopeHeader
+          scope={portfolioScope}
+          description={
+            portfolioScope === 'all'
+              ? 'Showing all projects.'
+              : `Showing ${dashboardScopeLabel(portfolioScope).toLowerCase()} projects only.`
+          }
+        />
+
         <GlobalSearchBar className="mb-6 sm:mb-8" />
 
-        <PendingInboundInbox emails={pendingInboundEmails} projects={projects} />
+        <PendingInboundInbox emails={pendingInboundEmails} projects={allProjects} />
 
         <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3 lg:items-stretch">
           <div className="flex lg:col-span-1">
@@ -74,7 +94,7 @@ export default async function DashboardPage() {
         <div className="mb-6 sm:mb-8">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Sunny Updates</h2>
-            <Link href="/updates" className="shrink-0">
+            <Link href={`/updates${portfolioScope === 'work' ? '' : `?portfolio=${portfolioScope}`}`} className="shrink-0">
               <Button variant="ghost" size="sm">View all</Button>
             </Link>
           </div>
@@ -89,14 +109,17 @@ export default async function DashboardPage() {
             </Link>
           </div>
           {projects.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl border border-gray-200 dark:bg-[var(--ud-mist)] dark:border-[var(--ud-cloud)]">
-              <p className="text-gray-500 dark:text-gray-400 mb-4">No projects yet. Create your first client project to get started.</p>
+            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
+              <p className="mb-4 text-gray-500 dark:text-gray-400">
+                No {portfolioScope === 'all' ? '' : `${dashboardScopeLabel(portfolioScope).toLowerCase()} `}
+                projects in this view.
+              </p>
               <Link href="/projects">
                 <Button>Create Project</Button>
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {projects.map((project) => (
                 <ProjectCard key={project.id} project={project} />
               ))}

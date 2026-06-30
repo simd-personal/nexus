@@ -11,7 +11,9 @@ import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminP
 import { BillingSettings } from '@/components/settings/BillingSettings';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { ProfileForm } from '@/components/settings/ProfileForm';
+import { DashboardPortfolioSettingsCard } from '@/components/settings/DashboardPortfolioSettings';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
+import { getDashboardPortfolioPreference } from '@/lib/data/queries';
 import { planDisplayName } from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
 
@@ -21,6 +23,7 @@ export default async function SettingsPage({
   searchParams: Promise<{ billing?: string }>;
 }) {
   const data = await getProfile();
+  const dashboardScope = await getDashboardPortfolioPreference();
   const orgContext = await getOrganizationAdminContext();
   const params = await searchParams;
   const isEnterprise = orgContext.profile?.account_type === 'enterprise';
@@ -56,6 +59,8 @@ export default async function SettingsPage({
           />
           <EmailForwardSettings />
         </Card>
+
+        <DashboardPortfolioSettingsCard currentScope={dashboardScope} />
 
         <Card className="mt-6">
           <CardHeader title="Profile" />

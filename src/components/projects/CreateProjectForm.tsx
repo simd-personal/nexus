@@ -125,6 +125,27 @@ export function CreateProjectForm({
         </div>
       )}
 
+      {!lockedParent && !selectedParentId && (
+        <div>
+          <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Portfolio
+          </label>
+          <fieldset className="grid grid-cols-2 gap-2">
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-[var(--ud-cloud)]">
+              <input type="radio" name="portfolio" value="work" defaultChecked className="h-4 w-4" />
+              Work
+            </label>
+            <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm dark:border-[var(--ud-cloud)]">
+              <input type="radio" name="portfolio" value="personal" className="h-4 w-4" />
+              Personal
+            </label>
+          </fieldset>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Personal projects stay off your work dashboard unless you switch scope.
+          </p>
+        </div>
+      )}
+
       <div>
         <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
           {PROJECT_SUBJECT_LABEL}

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { DeleteProjectButton } from '@/components/project/DeleteProjectButton';
 import { formatRelativeTime } from '@/lib/utils';
+import { projectPortfolioLabel } from '@/lib/projects/portfolio';
 import type { ProjectWithStats } from '@/types/database';
 import { FileText, Mail, Calendar, AlertTriangle, CheckSquare } from 'lucide-react';
 
@@ -17,6 +18,11 @@ export function ProjectCard({ project }: { project: ProjectWithStats }) {
           {(project.sub_project_count ?? 0) > 0 && (
             <p className="mt-1 text-xs text-violet-600 dark:text-violet-400">
               {project.sub_project_count} workstream{(project.sub_project_count ?? 0) !== 1 ? 's' : ''}
+            </p>
+          )}
+          {project.portfolio === 'personal' && (
+            <p className="mt-1 text-xs text-sky-600 dark:text-sky-400">
+              {projectPortfolioLabel('personal')} portfolio
             </p>
           )}
         </div>

@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { nestProjectsWithStats, getProjectFamilyIds } from '@/lib/projects/hierarchy';
 import { computeProjectStatus, resolveProjectStatus } from '@/lib/projects/health';
 import { filterRelevantOpenActionItems } from '@/lib/relevance/action-items';
+import { getProjectIdsForPortfolioScope } from '@/lib/data/portfolio-scope';
+import type { DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import {
   ensureFreshAppData,
   recordCitationsStillValid,
@@ -68,18 +70,40 @@ async function enrichProjectStats(
   };
 }
 
-export async function getProjectsWithStats(): Promise<ProjectWithStats[]> {
+export async function getProjectsWithStats(options?: {
+  portfolio?: DashboardPortfolioScope;
+}): Promise<ProjectWithStats[]> {
   const supabase = await createClient();
 
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('*')
-    .order('last_activity_at', { ascending: false });
+  let query = supabase.from('projects').select('*').order('last_activity_at', { ascending: false });
+
+  if (options?.portfolio && options.portfolio !== 'all') {
+    query = query.eq('portfolio', options.portfolio);
+  }
+
+  const { data: projects } = await query;
 
   if (!projects) return [];
 
   const enriched = await Promise.all(projects.map((project) => enrichProjectStats(supabase, project)));
   return nestProjectsWithStats(enriched);
+}
+
+export async function getDashboardPortfolioPreference(): Promise<DashboardPortfolioScope> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return 'work';
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('dashboard_portfolio')
+    .eq('user_id', user.id)
+    .single();
+
+  const scope = profile?.dashboard_portfolio;
+  return scope === 'personal' || scope === 'all' ? scope : 'work';
 }
 
 export async function getTopLevelProjects(): Promise<ProjectWithStats[]> {
@@ -123,26 +147,52 @@ export async function getProject(projectId: string) {
   return { ...data, status };
 }
 
-export async function getDashboardStats() {
+export async function getDashboardStats(portfolioScope: DashboardPortfolioScope = 'work') {
   await ensureFreshAppData();
   const supabase = await createClient();
   const since = new Date(Date.now() - 86400000).toISOString();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+
+  if (scopedProjectIds?.length === 0) {
+    return {
+      criticalCount: 0,
+      newUpdatesCount: 0,
+      actionItemsCount: 0,
+      conflictsCount: 0,
+    };
+  }
 
   const filesByProject = await refreshDerivedRecords(supabase);
 
+  let criticalQuery = supabase.from('critical_items').select('id', { count: 'exact' }).eq('status', 'open');
+  let updatesQuery = supabase
+    .from('sunny_updates')
+    .select('id, project_id, source_citations, created_at')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false });
+  let actionQuery = supabase
+    .from('action_items')
+    .select('title, owner, item_kind, applies_to_me, matched_terms, status')
+    .eq('status', 'open')
+    .eq('applies_to_me', true);
+  let conflictsQuery = supabase
+    .from('critical_items')
+    .select('id', { count: 'exact' })
+    .eq('category', 'conflict')
+    .eq('status', 'open');
+
+  if (scopedProjectIds) {
+    criticalQuery = criticalQuery.in('project_id', scopedProjectIds);
+    updatesQuery = updatesQuery.in('project_id', scopedProjectIds);
+    actionQuery = actionQuery.in('project_id', scopedProjectIds);
+    conflictsQuery = conflictsQuery.in('project_id', scopedProjectIds);
+  }
+
   const [criticalItems, recentUpdates, actionItems, conflicts] = await Promise.all([
-    supabase.from('critical_items').select('id', { count: 'exact' }).eq('status', 'open'),
-    supabase
-      .from('sunny_updates')
-      .select('id, project_id, source_citations, created_at')
-      .gte('created_at', since)
-      .order('created_at', { ascending: false }),
-    supabase
-      .from('action_items')
-      .select('title, owner, item_kind, applies_to_me, matched_terms, status')
-      .eq('status', 'open')
-      .eq('applies_to_me', true),
-    supabase.from('critical_items').select('id', { count: 'exact' }).eq('category', 'conflict').eq('status', 'open'),
+    criticalQuery,
+    updatesQuery,
+    actionQuery,
+    conflictsQuery,
   ]);
 
   const validRecentUpdates = (recentUpdates.data ?? []).filter((update) =>
@@ -158,9 +208,15 @@ export async function getDashboardStats() {
   };
 }
 
-export async function getCriticalItems(limit?: number): Promise<CriticalItem[]> {
+export async function getCriticalItems(
+  limit?: number,
+  portfolioScope: DashboardPortfolioScope = 'work'
+): Promise<CriticalItem[]> {
   await ensureFreshAppData();
   const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  if (scopedProjectIds?.length === 0) return [];
+
   const filesByProject = await refreshDerivedRecords(supabase);
 
   let query = supabase
@@ -168,6 +224,10 @@ export async function getCriticalItems(limit?: number): Promise<CriticalItem[]> 
     .select('*, projects(client_name, project_name)')
     .eq('status', 'open')
     .order('created_at', { ascending: false });
+
+  if (scopedProjectIds) {
+    query = query.in('project_id', scopedProjectIds);
+  }
 
   if (limit) query = query.limit(limit * 3);
 
@@ -183,9 +243,14 @@ export async function getCriticalItems(limit?: number): Promise<CriticalItem[]> 
   return limit ? items.slice(0, limit) : items;
 }
 
-export async function getOpenActionItems(limit?: number): Promise<ActionItem[]> {
+export async function getOpenActionItems(
+  limit?: number,
+  portfolioScope: DashboardPortfolioScope = 'work'
+): Promise<ActionItem[]> {
   await ensureFreshAppData();
   const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  if (scopedProjectIds?.length === 0) return [];
 
   let query = supabase
     .from('action_items')
@@ -193,6 +258,10 @@ export async function getOpenActionItems(limit?: number): Promise<ActionItem[]> 
     .eq('status', 'open')
     .eq('applies_to_me', true)
     .order('created_at', { ascending: false });
+
+  if (scopedProjectIds) {
+    query = query.in('project_id', scopedProjectIds);
+  }
 
   if (limit) query = query.limit(limit * 3);
 
@@ -211,10 +280,13 @@ export async function getOpenActionItems(limit?: number): Promise<ActionItem[]> 
 
 export async function getActionItemsByStatus(
   status: Exclude<ActionItem['status'], 'open'>,
-  limit = 50
+  limit = 50,
+  portfolioScope: DashboardPortfolioScope = 'work'
 ): Promise<ActionItem[]> {
   await ensureFreshAppData();
   const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  if (scopedProjectIds?.length === 0) return [];
 
   let query = supabase
     .from('action_items')
@@ -222,6 +294,10 @@ export async function getActionItemsByStatus(
     .eq('status', status)
     .order('created_at', { ascending: false })
     .limit(limit);
+
+  if (scopedProjectIds) {
+    query = query.in('project_id', scopedProjectIds);
+  }
 
   if (status === 'cancelled') {
     query = query.eq('applies_to_me', false);
@@ -238,15 +314,25 @@ export async function getActionItemsByStatus(
   }));
 }
 
-export async function getSunnyUpdates(limit?: number): Promise<SunnyUpdate[]> {
+export async function getSunnyUpdates(
+  limit?: number,
+  portfolioScope: DashboardPortfolioScope = 'work'
+): Promise<SunnyUpdate[]> {
   await ensureFreshAppData();
   const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  if (scopedProjectIds?.length === 0) return [];
+
   const filesByProject = await refreshDerivedRecords(supabase);
 
   let query = supabase
     .from('sunny_updates')
     .select('*, projects(client_name, project_name)')
     .order('created_at', { ascending: false });
+
+  if (scopedProjectIds) {
+    query = query.in('project_id', scopedProjectIds);
+  }
 
   if (limit) query = query.limit(limit * 3);
 

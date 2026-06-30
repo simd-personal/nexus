@@ -31,6 +31,8 @@ export type OrganizationIndustry = 'software' | 'healthcare' | 'other';
 export type OrganizationMemberRole = 'owner' | 'admin' | 'member';
 export type OrganizationMemberStatus = 'active' | 'suspended';
 export type AccessRequestStatus = 'pending' | 'approved' | 'denied';
+export type ProjectPortfolio = 'work' | 'personal';
+export type DashboardPortfolioScope = 'work' | 'personal' | 'all';
 
 export interface Citation {
   file_id?: string;
@@ -59,6 +61,7 @@ export interface Profile {
   plan: 'free' | 'pro' | 'pro_annual';
   subscription_status: string | null;
   inbound_token: string | null;
+  dashboard_portfolio: DashboardPortfolioScope;
   created_at: string;
 }
 
@@ -107,6 +110,7 @@ export interface Project {
   parent_project_id: string | null;
   watch_keywords: string[];
   my_role: string | null;
+  portfolio: ProjectPortfolio;
   created_at: string;
   updated_at: string;
 }

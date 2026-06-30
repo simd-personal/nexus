@@ -30,6 +30,8 @@ function project(partial: Partial<ProjectWithStats> & Pick<ProjectWithStats, 'id
     critical_item_count: 0,
     last_sunny_update: null,
     watch_keywords: [],
+    my_role: null,
+    portfolio: 'work',
     ...partial,
   };
 }
