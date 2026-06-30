@@ -10,6 +10,7 @@ import {
   projectLabel,
   removeScopeLabel,
   resolveInitialChatScope,
+  resolvePortfolioChatScope,
   resolveScopeProjectIds,
   scopeCacheKeySuffix,
   scopeFromPortfolio,
@@ -192,6 +193,16 @@ describe('chat scope', () => {
         projects: mixed,
         urlProjectIds: [],
         urlPortfolio: 'personal',
+        persistedScope: persisted,
+      })
+    ).toEqual(scopeFromPortfolio(mixed, 'personal'));
+
+    expect(
+      resolveInitialChatScope({
+        lockScope: false,
+        projects: mixed,
+        urlProjectIds: [],
+        defaultPortfolioScope: 'personal',
         persistedScope: persisted,
       })
     ).toEqual(scopeFromPortfolio(mixed, 'personal'));

@@ -98,11 +98,35 @@ describe('GlobalChatPageClient', () => {
     searchParamsState.value = new URLSearchParams('q=staffing+concerns');
 
     renderToStaticMarkup(
-      <GlobalChatPageClient userId="user-1" projects={projects} />
+      <GlobalChatPageClient userId="user-1" projects={projects} defaultPortfolioScope="all" />
     );
 
     expect(captured.props?.chatScope).toEqual({ kind: 'all' });
     expect(captured.props?.initialQuery).toBe('staffing concerns');
+  });
+
+  it('falls back to the server portfolio when dashboard search omits URL scope', () => {
+    searchParamsState.value = new URLSearchParams('q=budget+risks');
+
+    const mixedProjects: ProjectWithStats[] = [
+      project({ id: 'work-1', portfolio: 'work' }),
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+
+    renderToStaticMarkup(
+      <GlobalChatPageClient
+        userId="user-1"
+        projects={mixedProjects}
+        defaultPortfolioScope="personal"
+      />
+    );
+
+    expect(captured.props?.chatScope).toEqual({
+      kind: 'selected',
+      projectIds: ['personal-1'],
+      labels: ['Personal projects'],
+    });
+    expect(captured.props?.initialQuery).toBe('budget risks');
   });
 
   it('scopes prefilled dashboard search to the active portfolio', () => {

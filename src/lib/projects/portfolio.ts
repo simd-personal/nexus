@@ -40,3 +40,20 @@ export function resolveDashboardPortfolioScope(
 ): DashboardPortfolioScope {
   return parseDashboardPortfolioScope(urlScope) ?? profileDefault ?? 'work';
 }
+
+/** Preserve active portfolio when linking between scoped aggregate pages. */
+export function portfolioScopeHref(
+  basePath: string,
+  scope: DashboardPortfolioScope
+): string {
+  return `${basePath}?portfolio=${scope}`;
+}
+
+/** Carry dashboard portfolio context onto global chat/search routes. */
+export function globalChatScopeHref(
+  basePath: '/search' | '/sunny',
+  portfolioScope?: DashboardPortfolioScope | null
+): string {
+  if (!portfolioScope) return basePath;
+  return `${basePath}?portfolio=${portfolioScope}`;
+}

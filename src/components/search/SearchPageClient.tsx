@@ -6,15 +6,15 @@ import { useSearchParams } from 'next/navigation';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
 import { loadChatScope, persistChatScope } from '@/lib/chat/cache';
 import {
-  ALL_PROJECTS_SCOPE,
   parsePortfolioFromSearchParams,
   parseProjectIdsFromSearchParams,
   resolveInitialChatScope,
-  scopeFromPortfolio,
+  resolvePortfolioChatScope,
   scopeFromUrlProjects,
   scopesEqual,
   type ChatScope,
 } from '@/lib/chat/scope';
+import type { DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import type { ChatMessage, ProjectWithStats } from '@/types/database';
 
 const SunnyChatInterface = dynamic(
@@ -28,6 +28,7 @@ export function GlobalChatPageClient({
   projectId,
   projectName,
   lockScope = false,
+  defaultPortfolioScope,
   initialSessionId,
   initialMessages = [],
 }: {
@@ -36,6 +37,7 @@ export function GlobalChatPageClient({
   projectId?: string;
   projectName?: string;
   lockScope?: boolean;
+  defaultPortfolioScope?: DashboardPortfolioScope;
   initialSessionId?: string;
   initialMessages?: ChatMessage[];
 }) {
@@ -43,12 +45,11 @@ export function GlobalChatPageClient({
   const initialQuery = searchParams.get('q')?.trim() || undefined;
   const urlProjectIds = useMemo(() => parseProjectIdsFromSearchParams(searchParams), [searchParams]);
   const urlPortfolio = useMemo(() => parsePortfolioFromSearchParams(searchParams), [searchParams]);
+  const activePortfolioScope = urlPortfolio ?? defaultPortfolioScope ?? null;
   const urlScopeKey = useMemo(
-    () => `${[...urlProjectIds].sort().join(',')}:${urlPortfolio ?? ''}`,
-    [urlProjectIds, urlPortfolio]
+    () => `${[...urlProjectIds].sort().join(',')}:${activePortfolioScope ?? ''}`,
+    [urlProjectIds, activePortfolioScope]
   );
-  const hasUrlScope =
-    urlProjectIds.length > 0 || (urlPortfolio != null && urlPortfolio !== 'all');
   const isPrefilledQuery = Boolean(initialQuery && !lockScope);
 
   const [chatScope, setChatScope] = useState<ChatScope>(() =>
@@ -59,6 +60,7 @@ export function GlobalChatPageClient({
       projects,
       urlProjectIds,
       urlPortfolio,
+      defaultPortfolioScope,
       persistedScope: isPrefilledQuery ? null : loadChatScope(userId),
     })
   );
@@ -84,20 +86,11 @@ export function GlobalChatPageClient({
       return;
     }
 
-    if (urlPortfolio && urlPortfolio !== 'all') {
-      const next = scopeFromPortfolio(projects, urlPortfolio);
+    const next = resolvePortfolioChatScope(projects, activePortfolioScope);
+    if (next) {
       setChatScope((prev) => (scopesEqual(prev, next) ? prev : next));
     }
-  }, [lockScope, projects, urlScopeKey, urlProjectIds, urlPortfolio]);
-
-  useEffect(() => {
-    if (!isPrefilledQuery || lockScope || hasUrlScope) return;
-    setChatScope((prev) => {
-      if (prev.kind === 'all') return prev;
-      persistChatScope(userId, ALL_PROJECTS_SCOPE);
-      return ALL_PROJECTS_SCOPE;
-    });
-  }, [hasUrlScope, isPrefilledQuery, lockScope, userId]);
+  }, [activePortfolioScope, lockScope, projects, urlScopeKey, urlProjectIds]);
 
   return (
     <SunnyChatInterface

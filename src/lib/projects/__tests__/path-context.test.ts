@@ -23,10 +23,17 @@ describe('scopedAppHref', () => {
     expect(scopedAppHref('/projects/abc/files', '/sunny')).toBe('/projects/abc/ask-sunny');
   });
 
-  it('leaves global links unchanged off project pages', () => {
+  it('leaves global links unchanged off project pages without portfolio context', () => {
     expect(scopedAppHref('/dashboard', '/search')).toBe('/search');
     expect(scopedAppHref('/dashboard', '/sunny')).toBe('/sunny');
     expect(scopedAppHref('/updates', '/search')).toBe('/search');
+  });
+
+  it('carries portfolio context from aggregate pages onto chat routes', () => {
+    expect(scopedAppHref('/dashboard', '/search', { portfolioScope: 'personal' })).toBe(
+      '/search?portfolio=personal'
+    );
+    expect(scopedAppHref('/updates', '/sunny', { portfolioScope: 'all' })).toBe('/sunny?portfolio=all');
   });
 
   it('does not scope unrelated sidebar routes', () => {

@@ -3,10 +3,17 @@ import { AppShell } from '@/components/layout/AppShell';
 import { GlobalChatPageClient } from '@/components/search/SearchPageClient';
 import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
 import { getProjectsWithStats } from '@/lib/data/queries';
+import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 import { requireUser } from '@/lib/supabase/server';
 
-export default async function SunnyChatPage() {
+export default async function SunnyChatPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ portfolio?: string }>;
+}) {
+  const params = await searchParams;
+  const portfolioScope = await resolveActivePortfolioScope(params);
   const [user, projects] = await Promise.all([requireUser(), getProjectsWithStats()]);
 
   return (
@@ -21,7 +28,11 @@ export default async function SunnyChatPage() {
         </div>
         <div className="flex min-h-0 flex-1 flex-col">
           <Suspense fallback={<ChatLoadingShell />}>
-            <GlobalChatPageClient userId={user.id} projects={projects} />
+            <GlobalChatPageClient
+              userId={user.id}
+              projects={projects}
+              defaultPortfolioScope={portfolioScope}
+            />
           </Suspense>
         </div>
       </div>

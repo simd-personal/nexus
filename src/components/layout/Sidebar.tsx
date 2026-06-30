@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import {
   LayoutDashboard,
   FolderKanban,
@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { SidebarAccountFooter } from '@/components/layout/SidebarAccountFooter';
 import { useThemePreferences } from '@/hooks/useThemePreferences';
-import { scopedAppHref } from '@/lib/projects/path-context';
+import { portfolioScopeFromSearchParams, scopedAppHref } from '@/lib/projects/path-context';
 
 const navItems: Array<
   | { href: string; label: string; icon: LucideIcon }
@@ -42,6 +42,8 @@ interface SidebarProps {
 
 export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const portfolioScope = portfolioScopeFromSearchParams(searchParams);
   const { darkMode } = useThemePreferences();
 
   return (
@@ -69,7 +71,7 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
 
       <nav className="flex-1 space-y-1 overflow-y-auto p-4">
         {navItems.map((item) => {
-          const href = scopedAppHref(pathname, item.href);
+          const href = scopedAppHref(pathname, item.href, { portfolioScope });
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
           const Icon = 'icon' in item ? item.icon : null;
           return (

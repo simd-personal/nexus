@@ -19,6 +19,9 @@ describe('buildGlobalSearchHref', () => {
     expect(buildGlobalSearchHref('budget risks', { portfolio: 'personal' })).toBe(
       '/search?q=budget+risks&portfolio=personal'
     );
+    expect(buildGlobalSearchHref('budget risks', { portfolio: 'all' })).toBe(
+      '/search?q=budget+risks&portfolio=all'
+    );
   });
 
   it('prefers project scope over portfolio scope', () => {

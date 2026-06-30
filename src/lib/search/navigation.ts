@@ -18,7 +18,7 @@ export function buildGlobalSearchHref(
 
   if (opts?.projectId) {
     params.set('project', opts.projectId);
-  } else if (opts?.portfolio && opts.portfolio !== 'all') {
+  } else if (opts?.portfolio) {
     params.set('portfolio', opts.portfolio);
   }
 

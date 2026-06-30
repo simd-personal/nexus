@@ -3,8 +3,13 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 const pathnameState = vi.hoisted(() => ({ value: '/dashboard' }));
 
+const searchParamsState = vi.hoisted(() => ({
+  value: new URLSearchParams(),
+}));
+
 vi.mock('next/navigation', () => ({
   usePathname: () => pathnameState.value,
+  useSearchParams: () => searchParamsState.value,
 }));
 
 vi.mock('next/link', () => ({
@@ -50,6 +55,7 @@ function hrefForLabel(html: string, label: string): string | undefined {
 describe('Sidebar project-scoped navigation', () => {
   beforeEach(() => {
     pathnameState.value = '/dashboard';
+    searchParamsState.value = new URLSearchParams();
   });
 
   it('links Search to the global page when not inside a project', () => {
@@ -63,6 +69,14 @@ describe('Sidebar project-scoped navigation', () => {
     const html = renderToStaticMarkup(<Sidebar />);
     expect(hrefForLabel(html, 'Search')).toBe('/projects/proj-123/search');
     expect(hrefForLabel(html, 'Sunny Chat')).toBe('/projects/proj-123/ask-sunny');
+  });
+
+  it('carries dashboard portfolio context onto Search links', () => {
+    pathnameState.value = '/dashboard';
+    searchParamsState.value = new URLSearchParams('portfolio=personal');
+    const html = renderToStaticMarkup(<Sidebar />);
+    expect(hrefForLabel(html, 'Search')).toBe('/search?portfolio=personal');
+    expect(hrefForLabel(html, 'Sunny Chat')).toBe('/sunny?portfolio=personal');
   });
 
   it('keeps other nav links unscoped inside a project', () => {

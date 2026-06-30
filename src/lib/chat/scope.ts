@@ -72,6 +72,14 @@ export function scopesEqual(a: ChatScope, b: ChatScope): boolean {
   return a.labels.join('\0') === b.labels.join('\0');
 }
 
+export function resolvePortfolioChatScope(
+  projects: ProjectWithStats[],
+  portfolio: DashboardPortfolioScope | null | undefined
+): ChatScope | null {
+  if (!portfolio || portfolio === 'all') return portfolio === 'all' ? ALL_PROJECTS_SCOPE : null;
+  return scopeFromPortfolio(projects, portfolio);
+}
+
 export function resolveInitialChatScope(opts: {
   lockScope: boolean;
   projectId?: string;
@@ -79,6 +87,7 @@ export function resolveInitialChatScope(opts: {
   projects: ProjectWithStats[];
   urlProjectIds: string[];
   urlPortfolio?: DashboardPortfolioScope | null;
+  defaultPortfolioScope?: DashboardPortfolioScope | null;
   persistedScope?: ChatScope | null;
 }): ChatScope {
   if (opts.lockScope && opts.projectId) {
@@ -87,9 +96,11 @@ export function resolveInitialChatScope(opts: {
   if (opts.urlProjectIds.length > 0) {
     return scopeFromUrlProjects(opts.projects, opts.urlProjectIds);
   }
-  if (opts.urlPortfolio && opts.urlPortfolio !== 'all') {
-    return scopeFromPortfolio(opts.projects, opts.urlPortfolio);
-  }
+
+  const portfolioScope = opts.urlPortfolio ?? opts.defaultPortfolioScope ?? null;
+  const portfolioScopeResult = resolvePortfolioChatScope(opts.projects, portfolioScope);
+  if (portfolioScopeResult) return portfolioScopeResult;
+
   if (opts.persistedScope) {
     return opts.persistedScope;
   }
