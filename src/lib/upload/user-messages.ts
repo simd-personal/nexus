@@ -36,7 +36,7 @@ export function pastedContentSuccessMessage(): string {
 }
 
 export function replaceSuccessMessage(fileName: string): string {
-  return `Replaced ${fileName}. Sunny is re-indexing project memory from the new version.`;
+  return `Replaced ${fileName}. Sunny is re-indexing and will summarize what changed when processing finishes.`;
 }
 
 export function uploadBatchSuccessMessage(options: {

@@ -68,6 +68,15 @@ export async function replaceProjectFileContent(
     return { error: 'File is still processing. Wait until indexing finishes, then replace.', status: 409 };
   }
 
+  const previousText = existing.extracted_text?.trim() ?? '';
+  const pendingReplacement =
+    previousText.length > 0
+      ? {
+          previous_text: previousText,
+          replaced_at: new Date().toISOString(),
+        }
+      : null;
+
   const fileName = sanitizeUploadFileName(options.fileName);
   const mimeType = options.mimeType || 'application/octet-stream';
   const sourceType = inferSourceType(fileName, mimeType);
@@ -90,6 +99,7 @@ export async function replaceProjectFileContent(
     ...((existing.metadata as Record<string, unknown> | undefined) ?? {}),
     ...buildUploadSizeMetadata(options.buffer.length),
     replaced_at: new Date().toISOString(),
+    ...(pendingReplacement ? { pending_replacement: pendingReplacement } : {}),
     processing_phase: 'extract',
     processing_lock: null,
     processing_progress: {

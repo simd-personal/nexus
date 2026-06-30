@@ -17,6 +17,7 @@ const eventIcons: Record<string, React.ComponentType<{ className?: string }>> = 
   playbook: BookOpen,
   follow_up_email: Send,
   contradiction: GitCompare,
+  file_replaced: GitCompare,
 };
 
 export function TimelineView({ events }: { events: TimelineEvent[] }) {
@@ -55,7 +56,9 @@ export function TimelineView({ events }: { events: TimelineEvent[] }) {
                 <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mt-0.5">{event.title}</h4>
                 {event.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                    {event.event_type === 'sunny_summary' || event.event_type === 'contradiction'
+                    {event.event_type === 'sunny_summary' ||
+                    event.event_type === 'contradiction' ||
+                    event.event_type === 'file_replaced'
                       ? formatNaturalSummary(event.description)
                       : event.description}
                   </p>

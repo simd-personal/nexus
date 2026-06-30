@@ -3,7 +3,7 @@ import { replaceSuccessMessage, uploadBatchSuccessMessage } from '@/lib/upload/u
 
 describe('upload user messages', () => {
   it('describes a single replaced file', () => {
-    expect(replaceSuccessMessage('Issue-Tracker-LIVE.docx')).toMatch(/re-indexing project memory/i);
+    expect(replaceSuccessMessage('Issue-Tracker-LIVE.docx')).toMatch(/summarize what changed/i);
   });
 
   it('combines replaced and uploaded messages', () => {

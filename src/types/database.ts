@@ -24,7 +24,8 @@ export type TimelineEventType =
   | 'follow_up_email'
   | 'contradiction'
   | 'file_moved'
-  | 'file_shared';
+  | 'file_shared'
+  | 'file_replaced';
 export type GeneratedDocType = 'playbook' | 'follow_up_email' | 'brief' | 'memo';
 export type AccountType = 'individual' | 'enterprise';
 export type OrganizationIndustry = 'software' | 'healthcare' | 'other';
@@ -139,6 +140,24 @@ export interface FileRecord {
   user_note: string | null;
   origin_file_id: string | null;
   metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface FileRevision {
+  id: string;
+  project_id: string;
+  file_id: string;
+  file_name: string;
+  summary: string;
+  ai_summary: string;
+  additions: string[];
+  removals: string[];
+  diff_stats: {
+    lines_added: number;
+    lines_removed: number;
+    lines_unchanged: number;
+  };
+  diff_preview: string | null;
   created_at: string;
 }
 

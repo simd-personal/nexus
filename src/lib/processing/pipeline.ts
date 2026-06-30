@@ -28,7 +28,10 @@ import {
   type ProcessFileResult,
 } from '@/lib/processing/large-file';
 import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
-import { recomputeProjectStatus } from '@/lib/projects/health';
+import {
+  finalizeFileReplacement,
+  readPendingFileReplacement,
+} from '@/lib/files/finalize-replacement';
 import {
   createSingleFileSunnyUpdate,
   insertSingleFileTimelineEvents,
@@ -497,6 +500,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
     };
 
     const batchUpload = isMultiFileBatch(metadata);
+    let replacementMeta: Record<string, unknown> = {};
 
     if (!batchUpload) {
       const { data: projectMeta } = await supabase
@@ -505,27 +509,48 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         .eq('id', projectId)
         .single();
 
-      await createSingleFileSunnyUpdate({
-        supabase,
-        projectId,
-        projectName: projectMeta?.project_name ?? fileName,
-        fileId,
-        fileName,
-        sourceType,
-        summary,
-        extractedTextLength: text.length,
-        criticalItems,
-      });
+      const pendingReplacement = readPendingFileReplacement(metadata);
+      if (pendingReplacement) {
+        const finalized = await finalizeFileReplacement({
+          supabase,
+          projectId,
+          fileId,
+          fileName,
+          newText: text,
+          pending: pendingReplacement,
+          projectName: projectMeta?.project_name ?? undefined,
+        });
+        if (finalized) {
+          replacementMeta = {
+            latest_revision_summary: finalized.summary,
+            latest_revision_at: new Date().toISOString(),
+            ...(finalized.revisionId ? { latest_revision_id: finalized.revisionId } : {}),
+          };
+        }
+        delete metadata.pending_replacement;
+      } else {
+        await createSingleFileSunnyUpdate({
+          supabase,
+          projectId,
+          projectName: projectMeta?.project_name ?? fileName,
+          fileId,
+          fileName,
+          sourceType,
+          summary,
+          extractedTextLength: text.length,
+          criticalItems,
+        });
 
-      await insertSingleFileTimelineEvents({
-        supabase,
-        projectId,
-        fileId,
-        fileName,
-        sourceType,
-        summary,
-        actionItemCount: actionItems.length,
-      });
+        await insertSingleFileTimelineEvents({
+          supabase,
+          projectId,
+          fileId,
+          fileName,
+          sourceType,
+          summary,
+          actionItemCount: actionItems.length,
+        });
+      }
 
       await supabase
         .from('projects')
@@ -540,6 +565,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
 
     const finalMetadata = {
       ...metadata,
+      ...replacementMeta,
       source_type: resolvedSourceType,
       chunk_count: textChunks.length,
       processing_phase: 'done',

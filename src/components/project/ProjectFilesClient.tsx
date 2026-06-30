@@ -1,6 +1,6 @@
 'use client';
 
-import { FileActionsMenu } from '@/components/project/FileActionsMenu';
+import { FileRevisionBadge } from '@/components/project/FileRevisionPanel';
 import { FileProcessingProgress } from '@/components/project/FileProcessingProgress';
 import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { isImageFileName } from '@/components/project/PhotoCaptureUpload';
@@ -294,6 +294,19 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                           onError={setActionError}
                         />
                       </div>
+
+                      {typeof file.metadata?.latest_revision_summary === 'string' && (
+                        <FileRevisionBadge
+                          summary={file.metadata.latest_revision_summary}
+                          updatedAt={
+                            typeof file.metadata.latest_revision_at === 'string'
+                              ? file.metadata.latest_revision_at
+                              : typeof file.metadata.replaced_at === 'string'
+                                ? file.metadata.replaced_at
+                                : null
+                          }
+                        />
+                      )}
 
                       {file.user_note && (
                         <p className="mt-0.5 line-clamp-1 text-xs text-gray-600 dark:text-gray-300">

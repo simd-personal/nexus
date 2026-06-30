@@ -1,5 +1,6 @@
 'use client';
 
+import { FileRevisionPanel } from '@/components/project/FileRevisionPanel';
 import { Button } from '@/components/ui/Button';
 import type { FileRecord } from '@/types/database';
 import { FileText, Image as ImageIcon, Loader2, Table2, X } from 'lucide-react';
@@ -22,7 +23,7 @@ interface FileViewPayload {
   hasOriginal: boolean;
 }
 
-type PreviewTab = 'original' | 'spreadsheet' | 'formatted' | 'text';
+type PreviewTab = 'original' | 'spreadsheet' | 'formatted' | 'text' | 'changes';
 
 function defaultPreviewTab(data: FileViewPayload): PreviewTab {
   if (data.viewType === 'spreadsheet' && data.sheets?.length) {
@@ -88,6 +89,11 @@ export function FileViewerModal({
   const showSpreadsheetTab = payload?.viewType === 'spreadsheet' && Boolean(payload.sheets?.length);
   const showFormattedTab = payload?.viewType === 'docx' && Boolean(payload.html?.trim());
   const showTextTab = Boolean(payload?.text?.trim());
+  const showChangesTab = Boolean(
+    file.metadata?.latest_revision_id ||
+      file.metadata?.latest_revision_summary ||
+      file.metadata?.replaced_at
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -108,8 +114,13 @@ export function FileViewerModal({
           </Button>
         </div>
 
-        {(showOriginalTab || showSpreadsheetTab || showFormattedTab || showTextTab) && (
+        {(showOriginalTab || showSpreadsheetTab || showFormattedTab || showTextTab || showChangesTab) && (
           <div className="flex gap-1 border-b border-gray-100 px-4 pt-2 dark:border-[var(--ud-cloud)]">
+            {showChangesTab && (
+              <TabButton active={tab === 'changes'} onClick={() => setTab('changes')}>
+                Changes
+              </TabButton>
+            )}
             {showFormattedTab && (
               <TabButton active={tab === 'formatted'} onClick={() => setTab('formatted')}>
                 Formatted
@@ -149,6 +160,10 @@ export function FileViewerModal({
                 Retry
               </Button>
             </div>
+          )}
+
+          {!loading && !error && tab === 'changes' && (
+            <FileRevisionPanel fileId={file.id} />
           )}
 
           {!loading && !error && payload && tab === 'original' && (
