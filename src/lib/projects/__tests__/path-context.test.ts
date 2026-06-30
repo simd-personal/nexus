@@ -18,9 +18,9 @@ describe('projectIdFromPathname', () => {
 });
 
 describe('scopedAppHref', () => {
-  it('scopes search and sunny links to the active project', () => {
-    expect(scopedAppHref('/projects/abc/files', '/search')).toBe('/search?project=abc');
-    expect(scopedAppHref('/projects/abc/files', '/sunny')).toBe('/sunny?project=abc');
+  it('routes search and sunny links to the active project pages', () => {
+    expect(scopedAppHref('/projects/abc/files', '/search')).toBe('/projects/abc/search');
+    expect(scopedAppHref('/projects/abc/files', '/sunny')).toBe('/projects/abc/ask-sunny');
   });
 
   it('leaves global links unchanged off project pages', () => {
@@ -35,20 +35,16 @@ describe('scopedAppHref', () => {
     expect(scopedAppHref('/projects/abc/overview', '/projects')).toBe('/projects');
   });
 
-  it('encodes project ids for query strings', () => {
+  it('encodes project ids in project routes', () => {
     expect(scopedAppHref('/projects/abc%2F123/overview', '/search')).toBe(
-      '/search?project=abc%252F123'
+      '/projects/abc%2F123/search'
     );
   });
 });
 
 describe('sidebar search navigation flow', () => {
-  it('builds a search URL that GlobalChatPageClient can parse', () => {
+  it('routes sidebar search to the project search page', () => {
     const pathname = '/projects/ws-a/files';
-    const searchHref = scopedAppHref(pathname, '/search');
-    expect(searchHref).toBe('/search?project=ws-a');
-
-    const params = new URLSearchParams(searchHref.split('?')[1] ?? '');
-    expect(params.get('project')).toBe('ws-a');
+    expect(scopedAppHref(pathname, '/search')).toBe('/projects/ws-a/search');
   });
 });

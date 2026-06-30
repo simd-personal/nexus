@@ -15,7 +15,7 @@ import {
   getPendingInboundEmails,
 } from '@/lib/data/queries';
 import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
-import { dashboardScopeLabel } from '@/lib/projects/portfolio';
+import { dashboardScopeLabel, portfolioScopeHref } from '@/lib/projects/portfolio';
 import { TAGLINE } from '@/lib/constants';
 import { needsOnboarding } from '@/lib/onboarding/status';
 import Link from 'next/link';
@@ -68,7 +68,7 @@ export default async function DashboardPage({
           }
         />
 
-        <GlobalSearchBar className="mb-6 sm:mb-8" />
+        <GlobalSearchBar className="mb-6 sm:mb-8" portfolioScope={portfolioScope} />
 
         <PendingInboundInbox emails={pendingInboundEmails} projects={allProjects} />
 
@@ -94,7 +94,7 @@ export default async function DashboardPage({
         <div className="mb-6 sm:mb-8">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Sunny Updates</h2>
-            <Link href={`/updates${portfolioScope === 'work' ? '' : `?portfolio=${portfolioScope}`}`} className="shrink-0">
+            <Link href={portfolioScopeHref('/updates', portfolioScope)} className="shrink-0">
               <Button variant="ghost" size="sm">View all</Button>
             </Link>
           </div>

@@ -94,7 +94,7 @@ describe('GlobalChatPageClient', () => {
     expect(captured.props?.chatScope).toEqual({ kind: 'all' });
   });
 
-  it('uses all projects for dashboard global search (?q= without project)', () => {
+  it('uses all projects for dashboard global search (?q= without scope)', () => {
     searchParamsState.value = new URLSearchParams('q=staffing+concerns');
 
     renderToStaticMarkup(
@@ -103,5 +103,25 @@ describe('GlobalChatPageClient', () => {
 
     expect(captured.props?.chatScope).toEqual({ kind: 'all' });
     expect(captured.props?.initialQuery).toBe('staffing concerns');
+  });
+
+  it('scopes prefilled dashboard search to the active portfolio', () => {
+    searchParamsState.value = new URLSearchParams('q=budget+risks&portfolio=personal');
+
+    const mixedProjects: ProjectWithStats[] = [
+      project({ id: 'work-1', portfolio: 'work' }),
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+
+    renderToStaticMarkup(
+      <GlobalChatPageClient userId="user-1" projects={mixedProjects} />
+    );
+
+    expect(captured.props?.chatScope).toEqual({
+      kind: 'selected',
+      projectIds: ['personal-1'],
+      labels: ['Personal projects'],
+    });
+    expect(captured.props?.initialQuery).toBe('budget risks');
   });
 });

@@ -1,4 +1,10 @@
 import { getProjectFamilyIds } from '@/lib/projects/hierarchy';
+import {
+  parseDashboardPortfolioScope,
+  projectPortfolioLabel,
+  type DashboardPortfolioScope,
+  type ProjectPortfolio,
+} from '@/lib/projects/portfolio';
 import type { ProjectWithStats } from '@/types/database';
 
 export type ChatScope =
@@ -72,6 +78,7 @@ export function resolveInitialChatScope(opts: {
   projectName?: string;
   projects: ProjectWithStats[];
   urlProjectIds: string[];
+  urlPortfolio?: DashboardPortfolioScope | null;
   persistedScope?: ChatScope | null;
 }): ChatScope {
   if (opts.lockScope && opts.projectId) {
@@ -80,10 +87,42 @@ export function resolveInitialChatScope(opts: {
   if (opts.urlProjectIds.length > 0) {
     return scopeFromUrlProjects(opts.projects, opts.urlProjectIds);
   }
+  if (opts.urlPortfolio && opts.urlPortfolio !== 'all') {
+    return scopeFromPortfolio(opts.projects, opts.urlPortfolio);
+  }
   if (opts.persistedScope) {
     return opts.persistedScope;
   }
   return ALL_PROJECTS_SCOPE;
+}
+
+export function scopeFromPortfolio(
+  projects: ProjectWithStats[],
+  portfolio: ProjectPortfolio
+): ChatScope {
+  const projectIds = collectPortfolioProjectIds(projects, portfolio);
+  if (projectIds.length === 0) return ALL_PROJECTS_SCOPE;
+
+  return {
+    kind: 'selected',
+    projectIds,
+    labels: [`${projectPortfolioLabel(portfolio)} projects`],
+  };
+}
+
+function collectPortfolioProjectIds(
+  projects: ProjectWithStats[],
+  portfolio: ProjectPortfolio
+): string[] {
+  const ids: string[] = [];
+
+  function visit(node: ProjectWithStats) {
+    if ((node.portfolio ?? 'work') === portfolio) ids.push(node.id);
+    for (const child of node.sub_projects ?? []) visit(child);
+  }
+
+  for (const root of projects) visit(root);
+  return ids;
 }
 
 export function scopeFromUrlProjects(
@@ -131,6 +170,12 @@ export function parseProjectIdsFromSearchParams(searchParams: URLSearchParams): 
   const legacy = searchParams.get('project');
   const ids = [...repeated, ...(legacy ? [legacy] : [])].map((value) => value.trim()).filter(Boolean);
   return [...new Set(ids)];
+}
+
+export function parsePortfolioFromSearchParams(
+  searchParams: URLSearchParams
+): DashboardPortfolioScope | null {
+  return parseDashboardPortfolioScope(searchParams.get('portfolio'));
 }
 
 export function scopeCacheKeySuffix(scope: ChatScope): string {

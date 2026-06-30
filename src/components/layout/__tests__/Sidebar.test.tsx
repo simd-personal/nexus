@@ -61,8 +61,8 @@ describe('Sidebar project-scoped navigation', () => {
   it('pre-selects the active project when Search is clicked from a project page', () => {
     pathnameState.value = '/projects/proj-123/files';
     const html = renderToStaticMarkup(<Sidebar />);
-    expect(hrefForLabel(html, 'Search')).toBe('/search?project=proj-123');
-    expect(hrefForLabel(html, 'Sunny Chat')).toBe('/sunny?project=proj-123');
+    expect(hrefForLabel(html, 'Search')).toBe('/projects/proj-123/search');
+    expect(hrefForLabel(html, 'Sunny Chat')).toBe('/projects/proj-123/ask-sunny');
   });
 
   it('keeps other nav links unscoped inside a project', () => {

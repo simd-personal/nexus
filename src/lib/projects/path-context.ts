@@ -10,8 +10,12 @@ export function scopedAppHref(pathname: string, href: string): string {
   const projectId = projectIdFromPathname(pathname);
   if (!projectId) return href;
 
-  if (href === '/search' || href === '/sunny') {
-    return `${href}?project=${encodeURIComponent(projectId)}`;
+  if (href === '/search') {
+    return `/projects/${projectId}/search`;
+  }
+
+  if (href === '/sunny') {
+    return `/projects/${projectId}/ask-sunny`;
   }
 
   return href;

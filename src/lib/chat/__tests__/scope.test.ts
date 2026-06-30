@@ -12,6 +12,7 @@ import {
   resolveInitialChatScope,
   resolveScopeProjectIds,
   scopeCacheKeySuffix,
+  scopeFromPortfolio,
   scopeFromUrlProjects,
   scopesEqual,
   toggleNodeChecked,
@@ -121,6 +122,16 @@ describe('chat scope', () => {
     expect(resolveScopeProjectIds(scope)?.sort()).toEqual(['solo', 'ws-a'].sort());
   });
 
+  it('builds scope from portfolio', () => {
+    const mixed = [
+      ...tree,
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+    const scope = scopeFromPortfolio(mixed, 'personal');
+    expect(resolveScopeProjectIds(scope)).toEqual(['personal-1']);
+    expect(scope.kind === 'selected' && scope.labels).toEqual(['Personal projects']);
+  });
+
   it('labels unknown URL project ids', () => {
     const scope = scopeFromUrlProjects(tree, ['missing-id']);
     expect(scope.kind === 'selected' && scope.labels).toEqual(['missing-id']);
@@ -170,6 +181,20 @@ describe('chat scope', () => {
         persistedScope: persisted,
       })
     ).toEqual(initialScopeForProject(tree, 'ws-a'));
+
+    const mixed = [
+      ...tree,
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+    expect(
+      resolveInitialChatScope({
+        lockScope: false,
+        projects: mixed,
+        urlProjectIds: [],
+        urlPortfolio: 'personal',
+        persistedScope: persisted,
+      })
+    ).toEqual(scopeFromPortfolio(mixed, 'personal'));
 
     expect(
       resolveInitialChatScope({

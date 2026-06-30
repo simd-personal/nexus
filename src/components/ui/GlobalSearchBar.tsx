@@ -1,29 +1,38 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
+import { projectIdFromPathname } from '@/lib/projects/path-context';
+import type { DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import { buildGlobalSearchHref } from '@/lib/search/navigation';
 import { cn } from '@/lib/utils';
 
 interface GlobalSearchBarProps {
   className?: string;
   projectId?: string;
+  portfolioScope?: DashboardPortfolioScope;
   placeholder?: string;
 }
 
 export function GlobalSearchBar({
   className,
-  projectId,
+  projectId: projectIdProp,
+  portfolioScope,
   placeholder = 'Ask anything: meetings, decks, people, risks, decisions…',
 }: GlobalSearchBarProps) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const projectId = projectIdProp ?? projectIdFromPathname(pathname);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
-    const href = buildGlobalSearchHref(query, projectId);
+    const href = buildGlobalSearchHref(query, {
+      projectId,
+      portfolio: projectId ? undefined : portfolioScope,
+    });
     if (!href) return;
 
     setLoading(true);
