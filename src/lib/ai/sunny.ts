@@ -393,6 +393,41 @@ export async function generateSunnyUpdate(
   };
 }
 
+export async function generateBatchSunnyUpdate(
+  projectName: string,
+  files: Array<{
+    fileName: string;
+    status: string;
+    summary: string;
+    criticalCount: number;
+  }>
+): Promise<{ title: string; summary: string; why_it_matters: string; suggested_action: string }> {
+  const fileBriefs = files
+    .map(
+      (file) =>
+        `- ${file.fileName} (${file.status})${file.criticalCount > 0 ? ` — ${file.criticalCount} critical item(s)` : ''}\n  ${file.summary || 'No extractable summary.'}`
+    )
+    .join('\n');
+
+  const result = await structuredExtraction<{
+    title: string;
+    summary: string;
+    why_it_matters: string;
+    suggested_action: string;
+  }>(
+    `${SUNNY_PERSONA}\n\nThe user uploaded ${files.length} files at once. Write ONE consolidated Sunny update for the VP — not separate updates per file. Synthesize cross-file themes, conflicts, and gaps. Return JSON with title, summary, why_it_matters, suggested_action.\n\nFor summary, why_it_matters, and suggested_action:\n${PROSE_STYLE_GUIDE}`,
+    `Project: ${projectName}\n\nFiles reviewed:\n${fileBriefs}`,
+    OPENAI_MODELS.summary
+  );
+
+  return {
+    title: result.title,
+    summary: formatNaturalSummary(result.summary),
+    why_it_matters: formatNaturalSummary(result.why_it_matters),
+    suggested_action: formatNaturalSummary(result.suggested_action),
+  };
+}
+
 /** ChatGPT — project setup when user creates a project */
 export async function enrichProjectSetup(input: {
   clientName: string;

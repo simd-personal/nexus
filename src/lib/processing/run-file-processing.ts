@@ -7,6 +7,10 @@ import {
 import { loadFileContent } from '@/lib/processing/load-content';
 import { processFile } from '@/lib/processing/pipeline';
 import { enqueueFileProcessing } from '@/lib/processing/enqueue';
+import {
+  getUploadBatchInfo,
+  maybeFinalizeUploadBatch,
+} from '@/lib/processing/upload-batch';
 import type { SourceType } from '@/types/database';
 import type { EnqueueFileProcessingOptions } from '@/lib/processing/enqueue';
 
@@ -36,6 +40,31 @@ async function tryAcquireProcessingLock(
     .single();
 
   return Boolean(data);
+}
+
+async function finalizeBatchIfNeeded(
+  supabase: ReturnType<typeof createServiceClient>,
+  fileId: string
+): Promise<void> {
+  const { data: fresh } = await supabase
+    .from('files')
+    .select('project_id, metadata')
+    .eq('id', fileId)
+    .maybeSingle();
+
+  if (!fresh) return;
+
+  const { batchId } = getUploadBatchInfo((fresh.metadata as Record<string, unknown> | null) ?? {});
+  if (!batchId) return;
+
+  try {
+    await maybeFinalizeUploadBatch(supabase, fresh.project_id, batchId);
+  } catch (error) {
+    console.error(
+      'runFileProcessing: batch finalize error',
+      error instanceof Error ? error.message : 'Unknown'
+    );
+  }
 }
 
 export async function runFileProcessing(
@@ -70,16 +99,62 @@ export async function runFileProcessing(
     return;
   }
 
-  let buffer: Buffer | undefined;
-  let pastedText: string | undefined;
-
   try {
-    const content = await loadFileContent(file);
-    buffer = content.buffer;
-    pastedText = content.pastedText;
-  } catch (loadError) {
-    if (!file.extracted_text?.trim()) {
-      console.error('runFileProcessing: could not load content', loadError);
+    let buffer: Buffer | undefined;
+    let pastedText: string | undefined;
+
+    try {
+      const content = await loadFileContent(file);
+      buffer = content.buffer;
+      pastedText = content.pastedText;
+    } catch (loadError) {
+      if (!file.extracted_text?.trim()) {
+        console.error('runFileProcessing: could not load content', loadError);
+        await supabase
+          .from('files')
+          .update({
+            status: 'failed',
+            metadata: {
+              ...metadata,
+              processing_lock: null,
+              error: 'Could not load file content',
+              processing_progress: {
+                stage: 'failed',
+                percent: 0,
+                label: 'Processing failed',
+                detail:
+                  loadError instanceof Error ? loadError.message : 'Could not load file content',
+                updated_at: new Date().toISOString(),
+              },
+            },
+          })
+          .eq('id', fileId);
+        return;
+      }
+      pastedText = file.extracted_text;
+    }
+
+    try {
+      const result = await processFile({
+        fileId: file.id,
+        projectId: file.project_id,
+        fileName: file.file_name,
+        sourceType: file.source_type as SourceType,
+        buffer,
+        pastedText,
+        resume,
+      });
+
+      if (!result.completed && result.stage === 'embedding') {
+        enqueueFileProcessing(fileId, { resume: true });
+        return;
+      }
+    } catch (processingError) {
+      console.error(
+        'runFileProcessing: pipeline error',
+        processingError instanceof Error ? processingError.message : 'Unknown'
+      );
+      const progress = getFileProcessingProgress(metadata);
       await supabase
         .from('files')
         .update({
@@ -87,60 +162,20 @@ export async function runFileProcessing(
           metadata: {
             ...metadata,
             processing_lock: null,
-            error: 'Could not load file content',
+            error: processingError instanceof Error ? processingError.message : 'Processing failed',
             processing_progress: {
               stage: 'failed',
-              percent: 0,
+              percent: progress?.percent ?? 0,
               label: 'Processing failed',
-              detail: loadError instanceof Error ? loadError.message : 'Could not load file content',
+              detail:
+                processingError instanceof Error ? processingError.message : 'Processing failed',
               updated_at: new Date().toISOString(),
             },
           },
         })
         .eq('id', fileId);
-      return;
     }
-    pastedText = file.extracted_text;
-  }
-
-  try {
-    const result = await processFile({
-      fileId: file.id,
-      projectId: file.project_id,
-      fileName: file.file_name,
-      sourceType: file.source_type as SourceType,
-      buffer,
-      pastedText,
-      resume,
-    });
-
-    if (!result.completed && result.stage === 'embedding') {
-      enqueueFileProcessing(fileId, { resume: true });
-      return;
-    }
-  } catch (processingError) {
-    console.error(
-      'runFileProcessing: pipeline error',
-      processingError instanceof Error ? processingError.message : 'Unknown'
-    );
-    const progress = getFileProcessingProgress(metadata);
-    await supabase
-      .from('files')
-      .update({
-        status: 'failed',
-        metadata: {
-          ...metadata,
-          processing_lock: null,
-          error: processingError instanceof Error ? processingError.message : 'Processing failed',
-          processing_progress: {
-            stage: 'failed',
-            percent: progress?.percent ?? 0,
-            label: 'Processing failed',
-            detail: processingError instanceof Error ? processingError.message : 'Processing failed',
-            updated_at: new Date().toISOString(),
-          },
-        },
-      })
-      .eq('id', fileId);
+  } finally {
+    await finalizeBatchIfNeeded(supabase, fileId);
   }
 }

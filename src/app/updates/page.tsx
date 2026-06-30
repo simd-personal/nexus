@@ -1,7 +1,7 @@
 import { AppShell } from '@/components/layout/AppShell';
 import { SunnyUpdatesList } from '@/components/updates/SunnyUpdateCard';
 import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
-import { getSunnyUpdates } from '@/lib/data/queries';
+import { getPendingUploadBatches, getSunnyUpdates } from '@/lib/data/queries';
 import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
 import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
@@ -15,7 +15,10 @@ export default async function SunnyUpdatesPage({
 }) {
   const params = await searchParams;
   const portfolioScope = await resolveActivePortfolioScope(params);
-  const updates = await getSunnyUpdates(undefined, portfolioScope);
+  const [updates, pendingBatches] = await Promise.all([
+    getSunnyUpdates(undefined, portfolioScope),
+    getPendingUploadBatches(portfolioScope),
+  ]);
 
   return (
     <AppShell>
@@ -32,7 +35,7 @@ export default async function SunnyUpdatesPage({
 
         <PortfolioScopeHeader scope={portfolioScope} />
 
-        <SunnyUpdatesList updates={updates} />
+        <SunnyUpdatesList updates={updates} pendingBatches={pendingBatches} />
       </div>
     </AppShell>
   );

@@ -5,6 +5,8 @@ import { formatRelativeTime } from '@/lib/utils';
 import type { SunnyUpdate } from '@/types/database';
 import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import Link from 'next/link';
+import type { ActiveUploadBatch } from '@/lib/processing/upload-batch';
+import { IndexingBatchList } from '@/components/updates/IndexingBatchCard';
 
 export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
   return (
@@ -51,8 +53,14 @@ export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
   );
 }
 
-export function SunnyUpdatesList({ updates }: { updates: SunnyUpdate[] }) {
-  if (!updates.length) {
+export function SunnyUpdatesList({
+  updates,
+  pendingBatches = [],
+}: {
+  updates: SunnyUpdate[];
+  pendingBatches?: ActiveUploadBatch[];
+}) {
+  if (!updates.length && !pendingBatches.length) {
     return (
       <p className="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
         No updates yet. Upload project materials and Sunny will start reporting.
@@ -62,6 +70,7 @@ export function SunnyUpdatesList({ updates }: { updates: SunnyUpdate[] }) {
 
   return (
     <div className="space-y-4">
+      <IndexingBatchList batches={pendingBatches} />
       {updates.map((update) => (
         <SunnyUpdateCard key={update.id} update={update} />
       ))}

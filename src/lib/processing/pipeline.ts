@@ -3,7 +3,6 @@ import { createEmbeddings, transcribeAudio } from '@/lib/ai/openai';
 import {
   detectCriticalItems,
   extractEntities,
-  generateSunnyUpdate,
   summarizeContent,
 } from '@/lib/ai/sunny';
 import { chunkText, chunkByPages, chunkBySheets } from '@/lib/processing/chunk';
@@ -14,7 +13,6 @@ import {
 } from '@/lib/processing/extract';
 import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constants';
 import { parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
-import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
 import { normalizeEntityName } from '@/lib/utils';
 import { redactPhi, redactPhiPages } from '@/lib/compliance/phi-redact';
 import {
@@ -30,6 +28,12 @@ import {
 } from '@/lib/processing/large-file';
 import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
 import { recomputeProjectStatus } from '@/lib/projects/health';
+import {
+  createSingleFileSunnyUpdate,
+  insertSingleFileTimelineEvents,
+  isMultiFileBatch,
+  PROCESSING_SUMMARY_KEY,
+} from '@/lib/processing/upload-batch';
 import type { Citation, SourceType } from '@/types/database';
 
 interface ProcessFileOptions {
@@ -466,64 +470,53 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
 
     await report({ stage: 'finishing', percent: 96, label: 'Saving Sunny update…' });
 
-    if (criticalItems.length > 0) {
-      const update = await generateSunnyUpdate(
-        fileName,
-        criticalItems.map((c) => c.summary).join('\n')
-      );
-
-      await supabase.from('sunny_updates').insert({
-        project_id: projectId,
-        title: update.title,
-        summary: update.summary,
-        why_it_matters: update.why_it_matters,
-        suggested_action: update.suggested_action,
-        source_citations: [{ file_id: fileId, file_name: fileName, snippet: summary }] as Citation[],
-      });
-    } else {
-      await supabase.from('sunny_updates').insert({
-        project_id: projectId,
-        title: `New ${sourceType} processed: ${fileName}`,
-        summary,
-        why_it_matters: formatNaturalSummary('New project material has been added and indexed.'),
-        suggested_action: formatNaturalSummary('Review the uploaded content for any follow-up needed.'),
-        source_citations: [{ file_id: fileId, file_name: fileName, snippet: summary }] as Citation[],
-      });
-    }
-
-    await supabase.from('timeline_events').insert([
-      {
-        project_id: projectId,
-        event_type: sourceType === 'email' ? 'email' : sourceType === 'meeting' ? 'meeting' : 'file_upload',
-        title: `Uploaded: ${fileName}`,
-        description: summary,
-        source_file_id: fileId,
-      },
-      {
-        project_id: projectId,
-        event_type: 'sunny_summary',
-        title: `Sunny summarized: ${fileName}`,
-        description: summary,
-        source_file_id: fileId,
-      },
-    ]);
-
-    if (actionItems.length > 0) {
-      await supabase.from('timeline_events').insert({
-        project_id: projectId,
-        event_type: 'action_item',
-        title: `${actionItems.length} action item(s) extracted`,
-        description: actionItems.map((a) => a.title).join('; '),
-        source_file_id: fileId,
-      });
-    }
-
-    const updateFields: Record<string, unknown> = {
-      last_summary: summary,
-      last_activity_at: new Date().toISOString(),
+    metadata = {
+      ...metadata,
+      [PROCESSING_SUMMARY_KEY]: summary,
+      critical_item_count: criticalItems.length,
+      action_item_count: actionItems.length,
     };
 
-    await supabase.from('projects').update(updateFields).eq('id', projectId);
+    const batchUpload = isMultiFileBatch(metadata);
+
+    if (!batchUpload) {
+      const { data: projectMeta } = await supabase
+        .from('projects')
+        .select('project_name')
+        .eq('id', projectId)
+        .single();
+
+      await createSingleFileSunnyUpdate({
+        supabase,
+        projectId,
+        projectName: projectMeta?.project_name ?? fileName,
+        fileId,
+        fileName,
+        sourceType,
+        summary,
+        extractedTextLength: text.length,
+        criticalItems,
+      });
+
+      await insertSingleFileTimelineEvents({
+        supabase,
+        projectId,
+        fileId,
+        fileName,
+        sourceType,
+        summary,
+        actionItemCount: actionItems.length,
+      });
+
+      await supabase
+        .from('projects')
+        .update({
+          last_summary: summary,
+          last_activity_at: new Date().toISOString(),
+        })
+        .eq('id', projectId);
+    }
+
     await recomputeProjectStatus(supabase, projectId);
 
     const finalMetadata = {

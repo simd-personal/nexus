@@ -102,7 +102,7 @@ export interface UploadFileResult {
 export async function uploadProjectFile(
   projectId: string,
   file: File,
-  options?: { userNote?: string }
+  options?: { userNote?: string; uploadBatchId?: string; uploadBatchTotal?: number }
 ): Promise<UploadFileResult> {
   const sizeGuard = validateClientUploadFile(file);
   if (!sizeGuard.ok) {
@@ -114,6 +114,10 @@ export async function uploadProjectFile(
   formData.append('file', file, sanitizeUploadFileName(file.name));
   if (options?.userNote?.trim()) {
     formData.append('user_note', options.userNote.trim());
+  }
+  if (options?.uploadBatchId && (options.uploadBatchTotal ?? 0) > 1) {
+    formData.append('upload_batch_id', options.uploadBatchId);
+    formData.append('upload_batch_total', String(options.uploadBatchTotal));
   }
 
   const res = await fetch('/api/upload', {
@@ -172,9 +176,14 @@ export async function uploadProjectFiles(
   const fileIds: string[] = [];
   const errors: string[] = [];
   let zipExtracted = false;
+  const uploadBatchId = files.length > 1 ? crypto.randomUUID() : undefined;
 
   for (const file of files) {
-    const result = await uploadProjectFile(projectId, file, options);
+    const result = await uploadProjectFile(projectId, file, {
+      ...options,
+      uploadBatchId,
+      uploadBatchTotal: files.length,
+    });
     if (result.ok) {
       uploaded.push(file.name);
       if (result.fileIds?.length) {

@@ -12,6 +12,7 @@ import {
   getCriticalItems,
   getOpenActionItems,
   getSunnyUpdates,
+  getPendingUploadBatches,
   getPendingInboundEmails,
 } from '@/lib/data/queries';
 import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
@@ -44,10 +45,11 @@ export default async function DashboardPage({
   const actionFetchLimit =
     stats.actionItemsCount > 0 ? Math.min(stats.actionItemsCount, 5) : 0;
 
-  const [criticalItems, actionItems, updates, pendingInboundEmails] = await Promise.all([
+  const [criticalItems, actionItems, updates, pendingBatches, pendingInboundEmails] = await Promise.all([
     stats.criticalCount > 0 ? getCriticalItems(criticalLimit, portfolioScope) : Promise.resolve([]),
     actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit, portfolioScope) : Promise.resolve([]),
     getSunnyUpdates(5, portfolioScope),
+    getPendingUploadBatches(portfolioScope),
     getPendingInboundEmails(),
   ]);
 
@@ -98,7 +100,7 @@ export default async function DashboardPage({
               <Button variant="ghost" size="sm">View all</Button>
             </Link>
           </div>
-          <SunnyUpdatesList updates={updates} />
+          <SunnyUpdatesList updates={updates} pendingBatches={pendingBatches} />
         </div>
 
         <div>

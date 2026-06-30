@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
 import { enqueueFileProcessing } from '@/lib/processing/enqueue';
 import { ingestProjectFileUpload } from '@/lib/upload/ingest-file';
+import { buildUploadBatchMetadata } from '@/lib/processing/upload-batch';
 import { buildUploadSizeMetadata } from '@/lib/upload/size-hints';
 import {
   uploadRateLimitForPro,
@@ -35,6 +37,13 @@ export async function POST(request: NextRequest) {
     const pastedType = formData.get('pasted_type') as string | null;
     const userNoteRaw = formData.get('user_note') as string | null;
     const userNote = userNoteRaw?.trim() || null;
+    const uploadBatchIdRaw = formData.get('upload_batch_id') as string | null;
+    const uploadBatchTotalRaw = formData.get('upload_batch_total') as string | null;
+    const uploadBatchTotal = uploadBatchTotalRaw ? Number.parseInt(uploadBatchTotalRaw, 10) : undefined;
+    const uploadBatchMeta = buildUploadBatchMetadata({
+      uploadBatchId: uploadBatchIdRaw,
+      uploadBatchTotal: Number.isFinite(uploadBatchTotal) ? uploadBatchTotal : undefined,
+    });
     const file = formData.get('file') as File | null;
 
     if (!projectId) {
@@ -159,9 +168,14 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      const zipBatchId = entries.length > 1 ? randomUUID() : null;
       const zipMeta = {
         extracted_from_zip: fileName,
         zip_entry_count: entries.length,
+        ...buildUploadBatchMetadata({
+          uploadBatchId: zipBatchId,
+          uploadBatchTotal: entries.length,
+        }),
       };
 
       const created: Array<{ id: string; file_name: string }> = [];
@@ -193,6 +207,10 @@ export async function POST(request: NextRequest) {
         if (record) created.push(record);
       }
 
+      for (const record of created) {
+        enqueueFileProcessing(record.id, { resume: false });
+      }
+
       if (created.length === 0) {
         return NextResponse.json(
           { error: ingestErrors[0] ?? 'Could not extract files from zip', skipped },
@@ -216,6 +234,7 @@ export async function POST(request: NextRequest) {
       buffer,
       mimeType,
       userNote,
+      extraMetadata: uploadBatchMeta,
     });
 
     if ('error' in ingested) {

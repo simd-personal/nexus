@@ -3,6 +3,7 @@ import { nestProjectsWithStats, getProjectFamilyIds } from '@/lib/projects/hiera
 import { computeProjectStatus, resolveProjectStatus } from '@/lib/projects/health';
 import { filterRelevantOpenActionItems } from '@/lib/relevance/action-items';
 import { getProjectIdsForPortfolioScope } from '@/lib/data/portfolio-scope';
+import { getActiveUploadBatches } from '@/lib/processing/upload-batch';
 import type { DashboardPortfolioScope } from '@/lib/projects/portfolio';
 import {
   ensureFreshAppData,
@@ -10,6 +11,7 @@ import {
   refreshDerivedRecords,
   sunnyUpdateStillValid,
 } from '@/lib/data/fresh-data';
+import { pruneOrphanedEntities } from '@/lib/files/purge-derived-content';
 import type {
   Project,
   ProjectWithStats,
@@ -348,6 +350,15 @@ export async function getSunnyUpdates(
   return limit ? validUpdates.slice(0, limit) : validUpdates;
 }
 
+export async function getPendingUploadBatches(
+  portfolioScope: DashboardPortfolioScope = 'work'
+) {
+  await ensureFreshAppData();
+  const supabase = await createClient();
+  const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
+  return getActiveUploadBatches(supabase, scopedProjectIds);
+}
+
 export async function getPendingInboundEmails(): Promise<InboundEmailEvent[]> {
   const supabase = await createClient();
   const {
@@ -481,10 +492,13 @@ export async function getProjectEntities(
   const supabase = await createClient();
   const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
 
+  await pruneOrphanedEntities(supabase, projectIds);
+
   const { data } = await supabase
     .from('entities')
     .select('*')
     .in('project_id', projectIds)
+    .not('source_file_id', 'is', null)
     .order('name');
   return data ?? [];
 }
