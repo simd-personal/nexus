@@ -380,7 +380,7 @@ export async function generateSunnyUpdate(
     why_it_matters: string;
     suggested_action: string;
   }>(
-    `${SUNNY_PERSONA}\n\nGenerate a Sunny update for the VP. Return JSON with title, summary, why_it_matters, suggested_action.\n\nFor summary, why_it_matters, and suggested_action:\n${PROSE_STYLE_GUIDE}`,
+    `${SUNNY_PERSONA}\n\nGenerate a Sunny update for the VP. Return JSON with title, summary, why_it_matters, suggested_action.\n\nDo not include file names, page numbers, or a Sources line in any field. Source documents are stored separately.\n\nFor summary, why_it_matters, and suggested_action:\n${PROSE_STYLE_GUIDE}`,
     `Project: ${projectName}\n\nChanges:\n${changes}`,
     OPENAI_MODELS.summary
   );
@@ -415,7 +415,7 @@ export async function generateBatchSunnyUpdate(
     why_it_matters: string;
     suggested_action: string;
   }>(
-    `${SUNNY_PERSONA}\n\nThe user uploaded ${files.length} files at once. Write ONE consolidated Sunny update for the VP — not separate updates per file. Synthesize cross-file themes, conflicts, and gaps. Return JSON with title, summary, why_it_matters, suggested_action.\n\nFor summary, why_it_matters, and suggested_action:\n${PROSE_STYLE_GUIDE}`,
+    `${SUNNY_PERSONA}\n\nThe user uploaded ${files.length} files at once. Write ONE consolidated Sunny update for the VP — not separate updates per file. Synthesize cross-file themes, conflicts, and gaps. Return JSON with title, summary, why_it_matters, suggested_action.\n\nDo not include file names, page numbers, or a Sources line in any field. Source documents are stored separately.\n\nFor summary, why_it_matters, and suggested_action:\n${PROSE_STYLE_GUIDE}`,
     `Project: ${projectName}\n\nFiles reviewed:\n${fileBriefs}`,
     OPENAI_MODELS.summary
   );

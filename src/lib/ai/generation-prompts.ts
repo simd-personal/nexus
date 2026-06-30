@@ -16,6 +16,7 @@ export const PROSE_STYLE_GUIDE = `Writing style:
 - Never use dashes of any kind: no hyphen bullets, no em dashes, no en dashes.
 - Connect ideas with complete sentences and commas or periods instead of lists.
 - Keep copy paste ready with no formatting symbols.
+- Never include file names, page numbers, or a Sources line. Source documents are attached separately.
 - For longer documents, put each section title on its own line, then write prose paragraphs below it. Separate sections with a blank line.`;
 
 /** @deprecated alias */
@@ -25,6 +26,32 @@ export const SUMMARY_STYLE_GUIDE = PROSE_STYLE_GUIDE;
 export function stripInlineCitations(text: string): string {
   if (!text) return text;
   return text.replace(/\[\d+\](?:\[\d+\])*/g, '');
+}
+
+/** Removes inline "Sources: file.pdf ..." blocks echoed into prose fields. */
+export function stripEmbeddedSourceReferences(text: string): string {
+  if (!text) return text;
+
+  let result = text;
+  const sourceWithContinuation =
+    /\bSources?\s*:[\s\S]*?\.\s+(?=(?:I|We|You|The|This|That|Until|It|They|There|These|Those|First|Second|Third|Next|Also|However|Review|Make|Confirm|Ask|Request|Treat|Say|Ensure|Before|After|Once|When|If|While|Although|Because|Since|Unless|For|In|At|On|As|An|A)\b)/i;
+
+  for (let attempt = 0; attempt < 10 && /\bSources?\s*:/i.test(result); attempt += 1) {
+    const trimmed = result.replace(sourceWithContinuation, '');
+    if (trimmed !== result) {
+      result = trimmed;
+      continue;
+    }
+    result = result.replace(/\bSources?\s*:[\s\S]*$/i, '');
+    break;
+  }
+
+  result = result.replace(
+    /\.\s*(?:[^.]+\.(?:pdf|docx?|xlsx?|txt|md|eml|png|jpe?g|webp|csv)(?:\s*,\s*[^.]*)*\.?\s*)+(?:pages?\s+\d+(?:\s+(?:to|through)\s+\d+)?\.?\s*)*/gi,
+    '.'
+  );
+
+  return result.replace(/\.\s*\./g, '.').replace(/\s+\./g, '.').trim();
 }
 
 /** Removes markdown asterisk emphasis so responses read as natural prose. */
@@ -41,7 +68,7 @@ export function stripEmphasis(text: string): string {
 export function formatNaturalSummary(text: string): string {
   if (!text) return text;
 
-  let result = stripEmphasis(stripInlineCitations(text))
+  let result = stripEmbeddedSourceReferences(stripEmphasis(stripInlineCitations(text)))
     .replace(/^#{1,6}\s+/gm, '')
     .replace(/^\s*[\-*•]\s+/gm, '')
     .replace(/^\s*\d+[.)]\s+/gm, '')

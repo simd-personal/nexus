@@ -6,6 +6,7 @@ import {
   isSubstantiveSource,
   PROSE_STYLE_GUIDE,
   stripEmphasis,
+  stripEmbeddedSourceReferences,
   stripInlineCitations,
   SUMMARY_STYLE_GUIDE,
 } from '@/lib/ai/generation-prompts';
@@ -64,6 +65,27 @@ describe('formatNaturalSummary', () => {
   it('preserves readable sentences without markdown symbols', () => {
     const clean = 'Denver expansion approved. Sarah owns the budget follow up.';
     expect(formatNaturalSummary(clean)).toBe(clean);
+  });
+});
+
+describe('stripEmbeddedSourceReferences', () => {
+  it('removes inline Sources blocks before narrative continues', () => {
+    const raw =
+      'Defense posture is active. Sources: Re Jaiden Gilbert.pdf, pages 1 to 4. Jaidon Gilbert doc.pdf. I would also request readable versions before evaluating settlement posture.';
+    expect(stripEmbeddedSourceReferences(raw)).toBe(
+      'Defense posture is active. I would also request readable versions before evaluating settlement posture.'
+    );
+  });
+
+  it('removes trailing Sources blocks', () => {
+    const raw =
+      'Make sure counsel has the parent statement. Sources: Jaidon Gilbert.Dhillon Statement.docx. Jaiden Gilbert formal letter.pdf.';
+    expect(stripEmbeddedSourceReferences(raw)).toBe('Make sure counsel has the parent statement.');
+  });
+
+  it('leaves clean prose unchanged', () => {
+    const clean = 'The uploaded materials support a strong accountability narrative.';
+    expect(stripEmbeddedSourceReferences(clean)).toBe(clean);
   });
 });
 
