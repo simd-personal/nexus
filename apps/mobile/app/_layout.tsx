@@ -3,6 +3,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { prefetchDashboard } from '@/lib/prefetch';
 import { stackDetailScreenOptions } from '@/navigation/stackHeaderOptions';
@@ -69,31 +70,18 @@ function AuthGate() {
   }, [loading, user, inAuth, router]);
 
   const showLoading =
-    loading ||
-    bootstrapping ||
-    (Boolean(user) && !warmupDone) ||
-    (Boolean(user) && inAuth);
+    loading || bootstrapping || (Boolean(user) && !warmupDone) || (Boolean(user) && inAuth);
 
   useEffect(() => {
     if (showLoading) return;
     void SplashScreen.hideAsync();
   }, [showLoading]);
 
-  if (showLoading) {
-    const signingIn = bootstrapping && !user;
-    return (
-      <LoadingScreen
-        message={loading ? 'Starting UpperDeck' : signingIn ? 'Signing in' : 'Welcome back'}
-        submessage={loading ? 'Restoring your session…' : signingIn ? 'Verifying your credentials…' : undefined}
-        progress={loading || signingIn ? null : prefetchProgress}
-        progressLabel={loading || signingIn ? undefined : prefetchLabel}
-      />
-    );
-  }
+  const signingIn = bootstrapping && !user;
 
   return (
     <>
-      <StatusBar style="dark" />
+      {!showLoading ? <StatusBar style="dark" /> : null}
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="login" options={{ animation: 'none' }} />
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
@@ -102,9 +90,28 @@ function AuthGate() {
         <Stack.Screen name="update/[id]" options={stackDetailScreenOptions('Sunny update')} />
         <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
       </Stack>
+      {showLoading ? (
+        <View style={styles.loadingOverlay} pointerEvents="auto">
+          <LoadingScreen
+            message={loading ? 'Starting UpperDeck' : signingIn ? 'Signing in' : 'Welcome back'}
+            submessage={
+              loading ? 'Restoring your session…' : signingIn ? 'Verifying your credentials…' : undefined
+            }
+            progress={loading || signingIn ? null : prefetchProgress}
+            progressLabel={loading || signingIn ? undefined : prefetchLabel}
+          />
+        </View>
+      ) : null}
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 999,
+  },
+});
 
 export default function RootLayout() {
   return (
