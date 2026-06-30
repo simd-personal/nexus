@@ -77,11 +77,11 @@ const FREE_LIMITS: Record<AiCost, CostLimits> = {
   generate: { perMinute: 6, perHour: 40 },
 };
 
-// Pro users get materially higher ceilings — these still stop runaway scripts.
+// Pro users get higher ceilings than free, but still bounded to stop scripted abuse.
 const PRO_LIMITS: Record<AiCost, CostLimits> = {
-  search: { perMinute: 60, perHour: 600 },
-  chat: { perMinute: 45, perHour: 500 },
-  generate: { perMinute: 20, perHour: 150 },
+  search: { perMinute: 30, perHour: 200 },
+  chat: { perMinute: 25, perHour: 180 },
+  generate: { perMinute: 15, perHour: 100 },
 };
 
 export function limitsForCost(cost: AiCost, isPro: boolean): CostLimits {

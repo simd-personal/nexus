@@ -8,7 +8,7 @@ import { useUploadProgress } from '@/lib/upload/use-upload-progress';
 import { uploadBatchSuccessMessage } from '@/lib/upload/user-messages';
 import { UploadingFilesIndicator } from '@/components/project/UploadingFilesIndicator';
 import { useProjectFileUpload } from '@/hooks/useProjectFileUpload';
-import type { ProjectFileSummary } from '@/lib/files/replace-content';
+import type { ProjectFileSummary } from '@/lib/upload/name-matching';
 import { Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';

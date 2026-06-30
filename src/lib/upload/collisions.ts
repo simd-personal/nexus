@@ -1,7 +1,7 @@
 import {
   findProjectFileByUploadName,
   type ProjectFileSummary,
-} from '@/lib/files/replace-content';
+} from '@/lib/upload/name-matching';
 import {
   getClientUploadSizeHint,
   kickFileProcessing,
@@ -10,6 +10,7 @@ import {
   type UploadFileResult,
 } from '@/lib/upload/client';
 
+export type { ProjectFileSummary } from '@/lib/upload/name-matching';
 export type UploadCollisionChoice = 'replace' | 'add' | 'cancel';
 
 export type UploadCollisionPrompt = {

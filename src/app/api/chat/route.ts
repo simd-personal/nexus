@@ -10,6 +10,7 @@ import {
   getBillingContextForUser,
 } from '@/lib/billing/limits';
 import { guardAiRequest } from '@/lib/security/guard';
+import { evaluatePreQueryGuard } from '@/lib/security/query-guard';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,6 +53,16 @@ export async function POST(request: NextRequest) {
         { error: quota.message, upgradeRequired: true },
         { status: 402 }
       );
+    }
+
+    const preGuard = await evaluatePreQueryGuard({
+      message,
+      supabase,
+      userId: user.id,
+      projectId: project_id,
+    });
+    if (!preGuard.allowed) {
+      return NextResponse.json({ error: preGuard.message, guardrail: preGuard.reason }, { status: 422 });
     }
 
     const { data: history } = await supabase

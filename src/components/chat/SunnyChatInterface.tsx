@@ -72,9 +72,9 @@ function chatDescription(mode: ChatMode): string {
     return 'Build and refine client operating playbooks from your project evidence. Conversations are saved automatically.';
   }
   if (mode === 'search') {
-    return 'Ask anything, create decks and emails, or search your materials. Pick programs and workstreams to narrow scope.';
+    return 'Search your uploaded materials, create decks and emails, or ask about your projects. Pick programs and workstreams to narrow scope.';
   }
-  return 'Ask anything or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.';
+  return 'Ask about your project materials or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.';
 }
 
 function cacheScopeKey(mode: ChatMode, projectId?: string, lockScope?: boolean): string {
@@ -1234,7 +1234,7 @@ export function SunnyChatInterface({
                         ? `Ask ${AI_EMPLOYEE_NAME} anything or request an executive brief...`
                         : 'Generate or refine an operating playbook...'
                       : mode === 'search'
-                        ? 'Ask anything about your projects...'
+                        ? 'Ask about your uploaded project materials...'
                         : `Message ${AI_EMPLOYEE_NAME}...`
                 }
                 rows={1}

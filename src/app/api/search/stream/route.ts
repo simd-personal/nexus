@@ -25,6 +25,7 @@ import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from 
 import { buildHistoryNote, loadSessionHistory } from '@/lib/chat/memory';
 import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
 import { guardAiRequest } from '@/lib/security/guard';
+import { evaluatePreQueryGuard } from '@/lib/security/query-guard';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
@@ -97,6 +98,35 @@ export async function POST(request: NextRequest) {
                 },
               }
             : {};
+
+        const preGuard = await evaluatePreQueryGuard({
+          message: query,
+          supabase,
+          userId: user.id,
+          scopedProjectIds,
+        });
+        if (!preGuard.allowed) {
+          if (!regenerate) {
+            await saveChatMessage(supabase, {
+              session_id: session.id,
+              project_id: sessionProjectId,
+              role: 'user',
+              content: query,
+              metadata: scopeMetadata,
+            });
+          }
+          for (const ch of preGuard.message) send({ event: 'token', data: { text: ch } });
+          send({ event: 'meta', data: { confidence: 'low', guardrail: preGuard.reason } });
+          await saveChatMessage(supabase, {
+            session_id: session.id,
+            project_id: sessionProjectId,
+            role: 'assistant',
+            content: preGuard.message,
+            metadata: { confidence: 'low', guardrail: preGuard.reason },
+          });
+          send({ event: 'done', data: { session_id: session.id } });
+          return;
+        }
 
         if (regenerate) {
           await deleteLastAssistantMessage(supabase, session.id);
@@ -283,6 +313,9 @@ export async function POST(request: NextRequest) {
         send({ event: 'status', data: { message: 'Composing answer...' } });
 
         const answerEngine = resolveEngine(model_preference, 'answer');
+        const relevanceResults = source_type
+          ? retrieved.filter((row) => row.source_type === source_type)
+          : retrieved;
         let fullText = '';
         const meta = await streamSearchAnswer(
           `${query}${historyNote}`,
@@ -296,7 +329,7 @@ export async function POST(request: NextRequest) {
             fullText += token;
             send({ event: 'token', data: { text: token } });
           },
-          { scopeInstruction, engine: answerEngine }
+          { scopeInstruction, engine: answerEngine, retrieved: relevanceResults }
         );
 
         send({

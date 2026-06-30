@@ -4,6 +4,8 @@ export type CheckoutPlanId = 'pro' | 'pro-annual';
 
 export const FREE_PROJECT_LIMIT = 1;
 export const FREE_CHAT_MESSAGES_PER_MONTH = 25;
+/** Soft monthly cap for Pro — prevents runaway scripted abuse. */
+export const PRO_CHAT_MESSAGES_PER_MONTH = 500;
 
 /** Stripe statuses that keep Pro access (including payment grace period). */
 export const PAID_SUBSCRIPTION_STATUSES = ['active', 'trialing', 'past_due'] as const;

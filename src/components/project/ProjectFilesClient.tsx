@@ -1,6 +1,7 @@
 'use client';
 
 import { FileRevisionBadge } from '@/components/project/FileRevisionPanel';
+import { FileActionsMenu } from '@/components/project/FileActionsMenu';
 import { FileProcessingProgress } from '@/components/project/FileProcessingProgress';
 import { FileViewerModal } from '@/components/project/FileViewerModal';
 import { isImageFileName } from '@/components/project/PhotoCaptureUpload';

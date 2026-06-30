@@ -8,21 +8,13 @@ import { buildUploadSizeMetadata } from '@/lib/upload/size-hints';
 import type { FileRecord } from '@/types/database';
 import { purgeFileDerivedContent } from '@/lib/files/purge-derived-content';
 
+export type { ProjectFileSummary } from '@/lib/upload/name-matching';
+export {
+  findProjectFileByUploadName,
+  normalizeUploadFileName,
+} from '@/lib/upload/name-matching';
+
 const BUCKET = () => process.env.SUPABASE_STORAGE_BUCKET || 'briefnexus-files';
-
-export type ProjectFileSummary = { id: string; file_name: string };
-
-export function normalizeUploadFileName(fileName: string): string {
-  return sanitizeUploadFileName(fileName).toLowerCase();
-}
-
-export function findProjectFileByUploadName(
-  files: ProjectFileSummary[],
-  uploadName: string
-): ProjectFileSummary | null {
-  const normalized = normalizeUploadFileName(uploadName);
-  return files.find((file) => normalizeUploadFileName(file.file_name) === normalized) ?? null;
-}
 
 async function loadFile(
   supabase: SupabaseClient,

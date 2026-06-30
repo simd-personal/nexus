@@ -41,12 +41,13 @@ export async function streamLongForm(
   systemPrompt: string,
   userPrompt: string,
   onToken: (token: string) => void,
-  model: string = CLAUDE_MODELS.playbook
+  model: string = CLAUDE_MODELS.playbook,
+  options?: { maxTokens?: number }
 ): Promise<string> {
   const anthropic = getAnthropic();
   const stream = anthropic.messages.stream({
     model,
-    max_tokens: CLAUDE_MAX_OUTPUT_TOKENS,
+    max_tokens: options?.maxTokens ?? CLAUDE_MAX_OUTPUT_TOKENS,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   });

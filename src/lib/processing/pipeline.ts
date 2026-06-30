@@ -28,6 +28,7 @@ import {
   type ProcessFileResult,
 } from '@/lib/processing/large-file';
 import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
+import { recomputeProjectStatus } from '@/lib/projects/health';
 import {
   finalizeFileReplacement,
   readPendingFileReplacement,

@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
-import { FREE_CHAT_MESSAGES_PER_MONTH, FREE_PROJECT_LIMIT } from '@/lib/billing/plans';
+import {
+  FREE_CHAT_MESSAGES_PER_MONTH,
+  FREE_PROJECT_LIMIT,
+  PRO_CHAT_MESSAGES_PER_MONTH,
+} from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
 
 export type BillingContext = Awaited<ReturnType<typeof getBillingContextForUser>>;
@@ -29,7 +33,7 @@ export async function getBillingContextForUser(userId: string) {
     isEnterprise,
     isPro,
     projectLimit: isPro ? null : FREE_PROJECT_LIMIT,
-    chatMessageLimit: isPro ? null : FREE_CHAT_MESSAGES_PER_MONTH,
+    chatMessageLimit: isPro ? PRO_CHAT_MESSAGES_PER_MONTH : FREE_CHAT_MESSAGES_PER_MONTH,
   };
 }
 
@@ -53,16 +57,16 @@ export async function checkChatQuota(
   billing?: BillingContext
 ): Promise<{ exceeded: boolean; message: string }> {
   const ctx = billing ?? (await getBillingContextForUser(userId));
-  if (ctx.isPro || ctx.chatMessageLimit === null) {
+  if (ctx.chatMessageLimit === null) {
     return { exceeded: false, message: '' };
   }
 
   const used = await countUserChatMessagesThisMonth(userId);
   if (used >= ctx.chatMessageLimit) {
-    return {
-      exceeded: true,
-      message: `You've used all ${ctx.chatMessageLimit} free Sunny messages this month. [Upgrade to Pro](/upgrade?plan=pro) for unlimited chat and projects.`,
-    };
+    const message = ctx.isPro
+      ? `You've reached the ${ctx.chatMessageLimit} Sunny messages included this month on Pro. Your limit resets on the 1st — contact support if you need a higher cap for your team.`
+      : `You've used all ${ctx.chatMessageLimit} free Sunny messages this month. [Upgrade to Pro](/upgrade?plan=pro) for more chat and projects.`;
+    return { exceeded: true, message };
   }
 
   return { exceeded: false, message: '' };

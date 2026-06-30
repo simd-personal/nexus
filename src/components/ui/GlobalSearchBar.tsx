@@ -19,7 +19,7 @@ export function GlobalSearchBar({
   className,
   projectId: projectIdProp,
   portfolioScope,
-  placeholder = 'Ask anything: meetings, decks, people, risks, decisions…',
+  placeholder = 'Search your materials: meetings, decks, people, risks, decisions…',
 }: GlobalSearchBarProps) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);

@@ -23,13 +23,25 @@ const baseContext = {
     {
       file_name: 'notes.md',
       source_type: 'note',
-      text: 'Denver expansion approved by the board.',
+      text: 'Denver expansion was approved by the board after the Q3 executive review and budget sign-off.',
     },
   ],
   criticalItems: [],
   timelineEvents: [],
-  projectSummary: 'Acme Q3 review in progress.',
+  projectSummary: 'Acme Q3 review in progress with leadership aligned on the Denver expansion timeline.',
 };
+
+const baseRetrieved = [
+  {
+    id: 'chunk-1',
+    project_id: 'project-1',
+    text: 'Denver expansion was approved by the board after the Q3 executive review and budget sign-off.',
+    metadata: {},
+    match_reason: 'Semantic match',
+    file_name: 'notes.md',
+    similarity: 0.82,
+  },
+];
 
 describe('streamSearchAnswer', () => {
   beforeEach(() => {
@@ -52,7 +64,7 @@ describe('streamSearchAnswer', () => {
       'What happened in Denver?',
       baseContext,
       (t) => tokens.push(t),
-      { engine: 'gpt' }
+      { engine: 'gpt', retrieved: baseRetrieved }
     );
 
     expect(mockStreamChat).toHaveBeenCalledOnce();
@@ -64,7 +76,10 @@ describe('streamSearchAnswer', () => {
   });
 
   it('streams Claude answers when engine is claude', async () => {
-    await streamSearchAnswer('Denver?', baseContext, () => {}, { engine: 'claude' });
+    await streamSearchAnswer('Denver?', baseContext, () => {}, {
+      engine: 'claude',
+      retrieved: baseRetrieved,
+    });
     expect(mockStreamLongForm).toHaveBeenCalledOnce();
     expect(mockStreamChat).not.toHaveBeenCalled();
   });
@@ -78,7 +93,7 @@ describe('streamSearchAnswer', () => {
     );
 
     expect(result.confidence).toBe('low');
-    expect(tokens.join('')).toContain('Not enough evidence');
+    expect(tokens.join('')).toContain('uploaded materials');
     expect(mockStreamChat).not.toHaveBeenCalled();
   });
 
@@ -92,7 +107,7 @@ describe('streamSearchAnswer', () => {
       'What happened in Denver?',
       baseContext,
       (t) => tokens.push(t),
-      { engine: 'gpt' }
+      { engine: 'gpt', retrieved: baseRetrieved }
     );
 
     expect(mockStreamChat).toHaveBeenCalledOnce();
@@ -105,6 +120,7 @@ describe('streamSearchAnswer', () => {
     await streamSearchAnswer('Denver?', baseContext, () => {}, {
       engine: 'gpt',
       scopeInstruction: 'Search scope: ONLY Acme project.',
+      retrieved: baseRetrieved,
     });
 
     const systemPrompt = mockStreamChat.mock.calls[0][0] as string;

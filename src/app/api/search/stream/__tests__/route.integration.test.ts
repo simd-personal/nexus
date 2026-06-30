@@ -13,6 +13,7 @@ const mockStreamSearchAnswer = vi.fn();
 const mockClassifyChatIntent = vi.fn();
 const mockLoadSessionHistory = vi.fn();
 const mockBuildProjectSummary = vi.fn();
+const mockEvaluatePreQueryGuard = vi.fn();
 
 vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(async () => ({
@@ -38,6 +39,10 @@ vi.mock('@/lib/ai/openai', () => ({
 
 vi.mock('@/lib/security/guard', () => ({
   guardAiRequest: (...args: unknown[]) => mockGuardAiRequest(...args),
+}));
+
+vi.mock('@/lib/security/query-guard', () => ({
+  evaluatePreQueryGuard: (...args: unknown[]) => mockEvaluatePreQueryGuard(...args),
 }));
 
 vi.mock('@/lib/billing/limits', () => ({
@@ -91,6 +96,7 @@ describe('POST /api/search/stream tenant isolation', () => {
       data: { user: { id: 'user-new', email: 'new@example.com' } },
     });
     mockGuardAiRequest.mockResolvedValue(null);
+    mockEvaluatePreQueryGuard.mockResolvedValue({ allowed: true, message: '' });
     mockCheckChatQuota.mockResolvedValue({ exceeded: false });
     mockGetBillingContext.mockResolvedValue({ isPro: false });
     mockCreateEmbedding.mockResolvedValue([0.1, 0.2]);
@@ -161,6 +167,7 @@ describe('POST /api/search/stream multi-project scope', () => {
       data: { user: { id: 'user-1', email: 'user@example.com' } },
     });
     mockGuardAiRequest.mockResolvedValue(null);
+    mockEvaluatePreQueryGuard.mockResolvedValue({ allowed: true, message: '' });
     mockCheckChatQuota.mockResolvedValue({ exceeded: false });
     mockGetBillingContext.mockResolvedValue({ isPro: true });
     mockCreateEmbedding.mockResolvedValue([0.1, 0.2]);

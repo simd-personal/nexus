@@ -22,7 +22,7 @@ import {
   uploadBatchSuccessMessage,
 } from '@/lib/upload/user-messages';
 import { useProjectFileUpload } from '@/hooks/useProjectFileUpload';
-import type { ProjectFileSummary } from '@/lib/files/replace-content';
+import type { ProjectFileSummary } from '@/lib/upload/name-matching';
 
 interface FileUploadProps {
   projectId: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findProjectFileByUploadName } from '@/lib/files/replace-content';
+import { findProjectFileByUploadName } from '@/lib/upload/name-matching';
 
 describe('upload collision matching', () => {
   it('finds the existing project file for a duplicate upload name', () => {

@@ -10,6 +10,7 @@ import { loadSessionHistory } from '@/lib/chat/memory';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
 import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
 import { guardAiRequest } from '@/lib/security/guard';
+import { evaluatePreQueryGuard } from '@/lib/security/query-guard';
 import { encodeSse } from '@/lib/sse';
 
 export async function POST(request: NextRequest) {
@@ -69,6 +70,34 @@ export async function POST(request: NextRequest) {
 
         send({ event: 'session', data: { session_id: session.id, title: session.title ?? undefined } });
 
+        const preGuard = await evaluatePreQueryGuard({
+          message,
+          supabase,
+          userId: user.id,
+          projectId: project_id,
+        });
+        if (!preGuard.allowed) {
+          if (!regenerate) {
+            await saveChatMessage(supabase, {
+              session_id: session.id,
+              project_id,
+              role: 'user',
+              content: message,
+            });
+          }
+          for (const ch of preGuard.message) send({ event: 'token', data: { text: ch } });
+          send({ event: 'meta', data: { confidence: 'low', guardrail: preGuard.reason } });
+          await saveChatMessage(supabase, {
+            session_id: session.id,
+            project_id,
+            role: 'assistant',
+            content: preGuard.message,
+            metadata: { confidence: 'low', guardrail: preGuard.reason },
+          });
+          send({ event: 'done', data: { session_id: session.id } });
+          return;
+        }
+
         if (regenerate) {
           await deleteLastAssistantMessage(supabase, session.id);
         } else {
@@ -109,6 +138,7 @@ export async function POST(request: NextRequest) {
           supabase,
           modelPreference: model_preference,
           userId: user.id,
+          retrieved,
           onStatus: (msg) => send({ event: 'status', data: { message: msg } }),
           onToken: (token) => {
             fullText += token;

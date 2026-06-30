@@ -15,6 +15,12 @@ import {
   STYLE_GUIDE,
   filterSubstantiveChunks,
 } from './generation-prompts';
+import {
+  ANSWER_SCOPE_RULE,
+  GUARDRAIL_MESSAGES,
+  checkRetrievalRelevance,
+} from '@/lib/security/query-guard';
+import type { RetrievedChunk } from '@/lib/search/retrieve';
 import type {
   Citation,
   ModelEngine,
@@ -23,13 +29,17 @@ import type {
   SunnyChatResponse,
 } from '@/types/database';
 
-const SUNNY_PERSONA = `You are Sunny, the AI employee inside UpperDeck. You act like an internal team member who has read every client meeting, email, deck, note, transcript, and file. You speak in clear, executive-friendly language. You never make unsupported claims. If the evidence is insufficient, say: "Not enough evidence in the uploaded materials." Always cite your sources when answering questions.`;
+const SUNNY_PERSONA = `You are Sunny, the AI employee inside UpperDeck. You act like an internal team member who has read every client meeting, email, deck, note, transcript, and file. You speak in clear, executive-friendly language. You never make unsupported claims. If the evidence is insufficient, say: "Not enough evidence in the uploaded materials." Always cite your sources when answering questions.
+
+${ANSWER_SCOPE_RULE}`;
 
 const SEARCH_STREAM_PERSONA = `${SUNNY_PERSONA}
 
 Adapt your response to what the user asked. Be direct and thorough.
 
 ${PROSE_STYLE_GUIDE}`;
+
+const ANSWER_MAX_OUTPUT_TOKENS = 2048;
 
 /**
  * Picks the engine for a task given the user's preference.
@@ -87,38 +97,66 @@ export async function streamSearchAnswer(
   query: string,
   context: AgentStreamContext,
   onToken: (token: string) => void,
-  options?: { scopeInstruction?: string | null; engine?: ModelEngine }
+  options?: {
+    scopeInstruction?: string | null;
+    engine?: ModelEngine;
+    retrieved?: RetrievedChunk[];
+  }
 ): Promise<Pick<SunnyChatResponse, 'citations' | 'confidence' | 'model'>> {
   const engine = options?.engine ?? 'gpt';
 
-  if (context.chunks.length === 0 && !context.projectSummary) {
-    const msg = 'Not enough evidence in the uploaded materials.';
+  const substantiveChunks = filterSubstantiveChunks(context.chunks);
+  const filteredContext = { ...context, chunks: substantiveChunks };
+
+  if (substantiveChunks.length === 0 && !context.projectSummary) {
+    const msg = GUARDRAIL_MESSAGES.lowRelevance;
     for (const char of msg) onToken(char);
     return { citations: [], confidence: 'low', model: engine };
   }
 
+  if (options?.retrieved) {
+    const relevance = checkRetrievalRelevance(options.retrieved, context.projectSummary);
+    if (relevance) {
+      for (const char of relevance.message) onToken(char);
+      return { citations: [], confidence: 'low', model: engine };
+    }
+  }
+
   const scopeNote = options?.scopeInstruction ? `\n\n${options.scopeInstruction}` : '';
   const system = `${SEARCH_STREAM_PERSONA}${scopeNote}`;
-  const userPrompt = `Context:\n${formatContext(context)}\n\nUser query: ${query}`;
+  const userPrompt = `Context:\n${formatContext(filteredContext)}\n\nUser query: ${query}`;
 
   let usedEngine = engine;
+  const captureToken = (token: string) => {
+    onToken(token);
+  };
+
   try {
     if (engine === 'claude') {
-      await streamLongForm(system, userPrompt, onToken, CLAUDE_MODELS.brief);
+      await streamLongForm(system, userPrompt, captureToken, CLAUDE_MODELS.brief, {
+        maxTokens: ANSWER_MAX_OUTPUT_TOKENS,
+      });
     } else {
-      await streamChatCompletion(system, userPrompt, onToken, OPENAI_MODELS.chat);
+      await streamChatCompletion(system, userPrompt, captureToken, OPENAI_MODELS.chat, {
+        maxCompletionTokens: ANSWER_MAX_OUTPUT_TOKENS,
+      });
     }
   } catch (error) {
     if (engine === 'gpt' && isOpenAIUnavailable(error)) {
       console.warn('[openai] Chat unavailable — falling back to Claude for search answer');
       usedEngine = 'claude';
-      await streamLongForm(system, userPrompt, onToken, CLAUDE_MODELS.brief);
+      await streamLongForm(system, userPrompt, captureToken, CLAUDE_MODELS.brief, {
+        maxTokens: ANSWER_MAX_OUTPUT_TOKENS,
+      });
     } else {
       throw error;
     }
   }
 
-  return { citations: buildCitations(context), confidence: 'high', model: usedEngine };
+  const confidence: SunnyChatResponse['confidence'] =
+    substantiveChunks.length > 0 || context.projectSummary ? 'high' : 'low';
+
+  return { citations: buildCitations(filteredContext), confidence, model: usedEngine };
 }
 
 export type CreateAction = Exclude<SunnyAgentAction, 'answer'>;
@@ -150,10 +188,12 @@ interface StreamAgentParams {
   supabase: SupabaseClient;
   modelPreference?: ModelPreference;
   userId: string;
+  retrieved?: RetrievedChunk[];
 }
 
 export async function runSunnyAgentStream(params: StreamAgentParams): Promise<SunnyChatResponse> {
-  const { message, context, project, chatHistory, onStatus, onToken, supabase, modelPreference, userId } = params;
+  const { message, context, project, chatHistory, onStatus, onToken, supabase, modelPreference, userId, retrieved } =
+    params;
 
   onStatus('Understanding your request...');
   const { action, instructions, email_version } = await classifyIntent(message, chatHistory);
@@ -162,7 +202,10 @@ export async function runSunnyAgentStream(params: StreamAgentParams): Promise<Su
     onStatus('Searching project materials...');
     const historyNote = buildHistoryNote(chatHistory);
     const engine = resolveEngine(modelPreference, 'answer');
-    const meta = await streamSearchAnswer(`${message}${historyNote}`, context, onToken, { engine });
+    const meta = await streamSearchAnswer(`${message}${historyNote}`, context, onToken, {
+      engine,
+      retrieved,
+    });
     return { answer: '', citations: meta.citations, confidence: meta.confidence, model: meta.model };
   }
 
