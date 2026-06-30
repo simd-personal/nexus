@@ -33,12 +33,14 @@ export function Button({
   label,
   onPress,
   variant = 'primary',
+  size = 'default',
   disabled,
   loading,
 }: {
   label: string;
   onPress: () => void;
   variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'default' | 'compact';
   disabled?: boolean;
   loading?: boolean;
 }) {
@@ -48,6 +50,7 @@ export function Button({
       disabled={disabled || loading}
       style={({ pressed }) => [
         styles.button,
+        size === 'compact' && styles.buttonCompact,
         variant === 'secondary' && styles.buttonSecondary,
         variant === 'ghost' && styles.buttonGhost,
         (disabled || loading) && styles.buttonDisabled,
@@ -60,6 +63,7 @@ export function Button({
         <Text
           style={[
             styles.buttonLabel,
+            size === 'compact' && styles.buttonLabelCompact,
             variant !== 'primary' && styles.buttonLabelSecondary,
             variant === 'ghost' && styles.buttonLabelGhost,
           ]}
@@ -150,6 +154,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
   },
+  buttonCompact: {
+    alignSelf: 'center',
+    minHeight: 40,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radius.full,
+    shadowColor: BRAND.accentDark,
+    shadowOpacity: 0.22,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
+  },
   buttonSecondary: {
     backgroundColor: '#EEF2FF',
   },
@@ -166,6 +181,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonLabelCompact: {
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
   buttonLabelSecondary: {
     color: BRAND.accent,

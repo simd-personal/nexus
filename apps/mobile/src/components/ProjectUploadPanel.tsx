@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { InlineNotice } from '@/components/InlineNotice';
 import { Button, Card } from '@/components/ui';
 import { replaceProjectFile, uploadProjectFile } from '@/lib/api';
 import { findFileByUploadName } from '@/lib/files';
@@ -26,6 +27,9 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
   const queryClient = useQueryClient();
   const [note, setNote] = useState('');
   const [pending, setPending] = useState<PendingUpload | null>(null);
+  const [notice, setNotice] = useState<{ message: string; variant: 'success' | 'error' } | null>(null);
+
+  const dismissNotice = useCallback(() => setNotice(null), []);
 
   async function invalidateProjectFiles() {
     await Promise.all([
@@ -43,9 +47,11 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
       setPending(null);
       setNote('');
       await invalidateProjectFiles();
-      Alert.alert('Uploaded', 'Sunny is processing your file.');
+      setNotice({ message: 'Uploaded — Sunny is processing your file.', variant: 'success' });
     },
-    onError: (error: Error) => Alert.alert('Upload failed', error.message),
+    onError: (error: Error) => {
+      setNotice({ message: error.message || 'Upload failed.', variant: 'error' });
+    },
   });
 
   const replaceMutation = useMutation({
@@ -55,9 +61,11 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
       setPending(null);
       setNote('');
       await invalidateProjectFiles();
-      Alert.alert('Replaced', 'Sunny is reprocessing the updated file.');
+      setNotice({ message: 'File replaced — Sunny is reprocessing it.', variant: 'success' });
     },
-    onError: (error: Error) => Alert.alert('Replace failed', error.message),
+    onError: (error: Error) => {
+      setNotice({ message: error.message || 'Replace failed.', variant: 'error' });
+    },
   });
 
   function performUpload(file: PendingUpload, replaceExistingId?: string) {
@@ -145,6 +153,10 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
       <Text style={styles.body}>
         Upload photos, PDFs, spreadsheets, and other files. Sunny will read them and surface updates.
       </Text>
+
+      {notice ? (
+        <InlineNotice message={notice.message} variant={notice.variant} onDismiss={dismissNotice} />
+      ) : null}
 
       <View style={styles.actions}>
         <UploadAction icon="camera-outline" label="Camera" onPress={() => void pickPhoto(true)} />

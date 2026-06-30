@@ -1,0 +1,7 @@
+# Keep EAS upload lean — native dirs are regenerated on the build server.
+apps/mobile/ios
+apps/mobile/android
+apps/mobile/node_modules
+node_modules
+.next
+.git

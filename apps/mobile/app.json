@@ -15,14 +15,22 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.upperdeck.app"
+      "bundleIdentifier": "dev.upperdeck.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSFaceIDUsageDescription": "UpperDeck uses Face ID for quick, secure sign-in."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B1220"
       },
-      "package": "dev.upperdeck.app"
+      "package": "dev.upperdeck.app",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -44,10 +52,30 @@
         }
       ],
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "UpperDeck uses Face ID for quick, secure sign-in."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "3704c57c-2034-4c8c-87cb-046327c304c3"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3704c57c-2034-4c8c-87cb-046327c304c3"
     }
   }
 }

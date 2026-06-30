@@ -5,11 +5,19 @@
   "main": "expo-router/entry",
   "scripts": {
     "env": "cd ../.. && npm run mobile:env",
+    "mobile:env": "npm run env",
+    "eas:env": "cd ../.. && npm run mobile:eas:env",
+    "mobile:eas:env": "npm run eas:env",
     "dev": "npm run env && expo start",
     "start": "expo start",
     "ios": "expo run:ios",
     "ios:rebuild": "expo prebuild --platform ios --clean && expo run:ios",
     "android": "expo run:android",
+    "build:preview": "npm run eas:env && npx eas-cli build --profile preview",
+    "build:preview:ios": "npm run eas:env && npx eas-cli build --profile preview --platform ios",
+    "build:preview:android": "npm run eas:env && npx eas-cli build --profile preview --platform android",
+    "build:preview:ios:only": "npx eas-cli build --profile preview --platform ios",
+    "device:register": "npx eas-cli device:create",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit"
   },
@@ -28,10 +36,12 @@
     "expo-image-picker": "~16.0.4",
     "expo-linear-gradient": "~14.0.2",
     "expo-linking": "~7.0.4",
+    "expo-local-authentication": "~14.0.1",
     "expo-router": "~4.0.16",
     "expo-secure-store": "~14.0.1",
     "expo-splash-screen": "~0.29.24",
     "expo-status-bar": "~2.0.1",
+    "expo-updates": "~0.27.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.9",
@@ -44,6 +54,7 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~18.3.12",
+    "eas-cli": "^16.32.0",
     "typescript": "^5.3.3"
   }
 }
