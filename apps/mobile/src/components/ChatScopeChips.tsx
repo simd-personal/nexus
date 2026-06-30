@@ -8,12 +8,18 @@ type ChatScopeChipsProps = {
   scope: ChatScope;
   projects: ProjectWithStats[];
   onScopeChange?: (scope: ChatScope) => void;
+  compact?: boolean;
 };
 
-export function ChatScopeChips({ scope, projects, onScopeChange }: ChatScopeChipsProps) {
+export function ChatScopeChips({
+  scope,
+  projects,
+  onScopeChange,
+  compact = false,
+}: ChatScopeChipsProps) {
   if (scope.kind === 'all') {
     return (
-      <View style={styles.row}>
+      <View style={[styles.row, compact && styles.rowCompact]}>
         <View style={styles.chipNeutral}>
           <Text style={styles.chipNeutralText}>All projects</Text>
         </View>
@@ -25,7 +31,8 @@ export function ChatScopeChips({ scope, projects, onScopeChange }: ChatScopeChip
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
+      style={styles.scroll}
+      contentContainerStyle={[styles.row, compact && styles.rowCompact]}
     >
       {scope.labels.map((label, index) => (
         <View key={`${label}-${index}`} style={styles.chip}>
@@ -48,12 +55,21 @@ export function ChatScopeChips({ scope, projects, onScopeChange }: ChatScopeChip
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
+  },
+  rowCompact: {
+    paddingHorizontal: 0,
+    paddingBottom: 0,
+    paddingTop: 0,
   },
   chipNeutral: {
     borderRadius: radius.full,

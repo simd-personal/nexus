@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { CitationsList } from '@/components/CitationsList';
 import { SunnyMark } from '@/components/SunnyMark';
 import { SunnyTypingIndicator } from '@/components/SunnyTypingIndicator';
+import { formatChatText } from '@/lib/chat-format';
 import type { Citation } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -22,13 +23,14 @@ type ChatMessageBubbleProps = {
 export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
   const isUser = message.role === 'user';
   const isStreaming = message.streaming === true;
-  const hasContent = message.content.trim().length > 0;
+  const body = formatChatText(message.content);
+  const hasContent = body.length > 0;
 
   if (isUser) {
     return (
       <View style={styles.userRow}>
         <View style={styles.userBubble}>
-          <Text style={styles.userText}>{message.content}</Text>
+          <Text style={styles.userText}>{body}</Text>
         </View>
       </View>
     );
@@ -52,7 +54,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
         </View>
         <View style={styles.assistantBubble}>
           {hasContent ? (
-            <Text style={styles.assistantText}>{message.content}</Text>
+            <Text style={styles.assistantText}>{body}</Text>
           ) : isStreaming ? (
             <SunnyTypingIndicator />
           ) : null}
@@ -68,36 +70,39 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
 
 const styles = StyleSheet.create({
   userRow: {
+    width: '100%',
     alignItems: 'flex-end',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   userBubble: {
-    maxWidth: '85%',
+    maxWidth: '82%',
     backgroundColor: BRAND.graphite,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     borderBottomLeftRadius: radius.xl,
     borderBottomRightRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   userText: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 21,
     color: '#fff',
   },
   assistantRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
+    width: '100%',
   },
   avatarWrap: {
     marginTop: 2,
   },
   assistantBody: {
     flex: 1,
-    maxWidth: '88%',
+    minWidth: 0,
+    maxWidth: '90%',
   },
   assistantHeader: {
     flexDirection: 'row',
@@ -131,12 +136,12 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius.xl,
     borderBottomLeftRadius: radius.xl,
     borderBottomRightRadius: radius.xl,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
   },
   assistantText: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 21,
     color: BRAND.graphite,
   },
   cursor: {
