@@ -352,7 +352,7 @@ export function GettingStartedClient({
       )}
 
       {step === 'project' && (
-        <Card>
+        <Card data-tour="create-project">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Step 1 · Set up your first project
           </h2>

@@ -185,7 +185,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="project-files">
       <ProjectUploadSection
         projectId={projectId}
         fileCount={files.length}
@@ -221,6 +221,10 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
           {actionError}
         </p>
       )}
+
+      <div data-tour="file-replace-tip" className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/50 px-3 py-2 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
+        Living doc updated elsewhere? Use <strong>Replace file</strong> on a row — Sunny diffs changes on the Changes tab.
+      </div>
 
       <div>
         <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">Uploaded Files</h2>

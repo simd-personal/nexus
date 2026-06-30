@@ -62,7 +62,7 @@ export default async function ProjectOverviewPage({
     : null;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="project-overview">
       {parentProject && (
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Workstream under{' '}

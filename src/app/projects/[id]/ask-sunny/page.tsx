@@ -15,6 +15,7 @@ export default async function AskSunnyPage({
   ]);
 
   return (
+    <div data-tour="project-ask-sunny">
     <PageGenerationChat
       userId={user.id}
       projectId={id}
@@ -23,5 +24,6 @@ export default async function AskSunnyPage({
       initialMessages={latestChat?.messages ?? []}
       initialSessionId={latestChat?.session.id}
     />
+    </div>
   );
 }

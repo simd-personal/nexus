@@ -63,6 +63,10 @@ export interface Profile {
   subscription_status: string | null;
   inbound_token: string | null;
   dashboard_portfolio: DashboardPortfolioScope;
+  product_tour_prompt_dismissed_at: string | null;
+  product_tour_part1_completed_at: string | null;
+  product_tour_completed_at: string | null;
+  product_tour_last_step: string | null;
   created_at: string;
 }
 

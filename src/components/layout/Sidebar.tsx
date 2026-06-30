@@ -84,6 +84,19 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
             <Link
               key={item.href}
               href={href}
+              data-tour={
+                item.href === '/dashboard'
+                  ? 'nav-dashboard'
+                  : item.href === '/projects'
+                    ? 'nav-projects'
+                    : item.href === '/updates'
+                      ? 'nav-updates'
+                      : item.href === '/sunny'
+                        ? 'nav-sunny'
+                        : item.href === '/action-items'
+                          ? 'nav-action-items'
+                          : undefined
+              }
               onClick={onMobileClose}
               onMouseEnter={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
               onFocus={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}

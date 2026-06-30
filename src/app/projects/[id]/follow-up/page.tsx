@@ -9,11 +9,13 @@ export default async function FollowUpPage({
   const { id } = await params;
 
   return (
+    <div data-tour="project-generate">
     <GenerateButton
       projectId={id}
       type="follow_up_email"
       label="Follow Up Email"
       description={`Draft a professional follow up email with ${AI_EMPLOYEE_NAME}. Choose short, detailed, or executive version.`}
     />
+    </div>
   );
 }
