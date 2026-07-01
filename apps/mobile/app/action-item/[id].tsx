@@ -30,6 +30,7 @@ export default function ActionItemDetailScreen() {
     queryKey: ['action-item', itemId],
     queryFn: () => fetchActionItem(itemId),
     enabled: Boolean(itemId),
+    retry: 2,
   });
 
   const mutation = useMutation({

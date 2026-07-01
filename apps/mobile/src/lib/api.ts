@@ -135,8 +135,15 @@ export function fetchActionItems(options?: {
   limit?: number;
   status?: ActionItem['status'];
 }) {
+  const params = new URLSearchParams();
+  if (options?.portfolio) params.set('portfolio', options.portfolio);
+  if (options?.limit) params.set('limit', String(options.limit));
+  params.set('status', options?.status ?? 'open');
+  const qs = params.toString();
+  const path = qs ? `/api/action-items?${qs}` : '/api/action-items';
+
   return apiJson<{ items: ActionItem[]; portfolio: DashboardPortfolioScope; status: ActionItem['status'] }>(
-    scopedListPath('/api/action-items', options)
+    path
   );
 }
 

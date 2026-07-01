@@ -13,14 +13,19 @@ export async function GET(
   const auth = await requireRequestAuth(request);
   if (auth.response) return auth.response;
 
-  const { id } = await context.params;
-  const item = await getActionItemById(id, auth.supabase);
+  try {
+    const { id } = await context.params;
+    const item = await getActionItemById(id, auth.supabase);
 
-  if (!item) {
-    return NextResponse.json({ error: 'Action item not found' }, { status: 404 });
+    if (!item) {
+      return NextResponse.json({ error: 'Action item not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ item });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to load action item';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  return NextResponse.json({ item });
 }
 
 export async function PATCH(

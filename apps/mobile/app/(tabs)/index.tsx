@@ -33,6 +33,8 @@ export default function HomeScreen() {
     queryFn: fetchDashboardPortfolioPreference,
   });
 
+  const scopeReady = portfolioQuery.isFetched;
+
   useEffect(() => {
     if (portfolioQuery.data?.scope) {
       setScope(portfolioQuery.data.scope);
@@ -42,14 +44,17 @@ export default function HomeScreen() {
   const statsQuery = useQuery({
     queryKey: ['dashboard-stats', scope],
     queryFn: () => fetchDashboardStats({ portfolio: scope }),
+    enabled: scopeReady,
   });
   const updatesQuery = useQuery({
     queryKey: ['dashboard-updates', scope],
     queryFn: () => fetchDashboardUpdates(5, { portfolio: scope }),
+    enabled: scopeReady,
   });
   const criticalQuery = useQuery({
     queryKey: ['home-critical', scope],
     queryFn: () => fetchCriticalItems(3, { portfolio: scope }),
+    enabled: scopeReady,
   });
 
   const stats = statsQuery.data?.stats;
@@ -61,13 +66,22 @@ export default function HomeScreen() {
   const actionQuery = useQuery({
     queryKey: ['home-action-items', scope, actionLimit],
     queryFn: () => fetchOpenActionItems(actionLimit, { portfolio: scope }),
-    enabled: actionLimit > 0,
+    enabled: scopeReady && actionLimit > 0,
+    retry: 2,
   });
 
   const scopeMutation = useMutation({
     mutationFn: updateDashboardPortfolioPreference,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['dashboard-portfolio'] });
+    onSuccess: async (_data, nextScope) => {
+      setScope(nextScope);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard-portfolio'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard-updates'] }),
+        queryClient.invalidateQueries({ queryKey: ['home-critical'] }),
+        queryClient.invalidateQueries({ queryKey: ['home-action-items'] }),
+        queryClient.invalidateQueries({ queryKey: ['action-items'] }),
+      ]);
     },
   });
 
@@ -81,11 +95,10 @@ export default function HomeScreen() {
   );
 
   const isInitialLoading =
-    (portfolioQuery.isLoading && !portfolioQuery.data) ||
+    !scopeReady ||
     (statsQuery.isLoading && !statsQuery.data) ||
     (updatesQuery.isLoading && !updatesQuery.data) ||
-    (criticalQuery.isLoading && !criticalQuery.data) ||
-    (actionLimit > 0 && actionQuery.isLoading && !actionQuery.data);
+    (criticalQuery.isLoading && !criticalQuery.data);
 
   const refreshAll = useCallback(async () => {
     setRefreshing(true);

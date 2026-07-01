@@ -37,6 +37,21 @@ async function resolveSupabase(supabase?: RequestSupabaseClient) {
   return supabase ?? (await createClient());
 }
 
+function mapActionItemRow(item: {
+  source_citations?: ActionItem['source_citations'];
+  matched_terms?: ActionItem['matched_terms'];
+  projects?: ActionItem['project'];
+  [key: string]: unknown;
+}): ActionItem {
+  const { projects, ...rest } = item;
+  return {
+    ...(rest as Omit<ActionItem, 'project' | 'source_citations' | 'matched_terms'>),
+    source_citations: item.source_citations ?? [],
+    matched_terms: item.matched_terms ?? [],
+    project: projects as ActionItem['project'],
+  };
+}
+
 async function enrichProjectStats(
   supabase: RequestSupabaseClient,
   project: Project
@@ -286,15 +301,12 @@ export async function getOpenActionItems(
 
   if (limit) query = query.limit(limit * 3);
 
-  const { data } = await query;
-  const items = filterRelevantOpenActionItems(
-    (data ?? []).map((item) => ({
-      ...item,
-      source_citations: item.source_citations ?? [],
-      matched_terms: item.matched_terms ?? [],
-      project: item.projects as ActionItem['project'],
-    }))
-  );
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Failed to load action items: ${error.message}`);
+  }
+
+  const items = filterRelevantOpenActionItems((data ?? []).map(mapActionItemRow));
 
   return limit ? items.slice(0, limit) : items;
 }
@@ -306,20 +318,18 @@ export async function getActionItemById(
   await ensureFreshAppData();
   const supabase = await resolveSupabase(supabaseClient);
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('action_items')
     .select('*, projects(client_name, project_name)')
     .eq('id', id)
     .maybeSingle();
 
+  if (error) {
+    throw new Error(`Failed to load action item: ${error.message}`);
+  }
   if (!data) return null;
 
-  return {
-    ...data,
-    source_citations: data.source_citations ?? [],
-    matched_terms: data.matched_terms ?? [],
-    project: data.projects as ActionItem['project'],
-  };
+  return mapActionItemRow(data);
 }
 
 export async function getActionItemsByStatus(
@@ -350,13 +360,12 @@ export async function getActionItemsByStatus(
     query = query.eq('applies_to_me', true);
   }
 
-  const { data } = await query;
-  return (data ?? []).map((item) => ({
-    ...item,
-    source_citations: item.source_citations ?? [],
-    matched_terms: item.matched_terms ?? [],
-    project: item.projects as ActionItem['project'],
-  }));
+  const { data, error } = await query;
+  if (error) {
+    throw new Error(`Failed to load action items: ${error.message}`);
+  }
+
+  return (data ?? []).map(mapActionItemRow);
 }
 
 export async function getSunnyUpdates(

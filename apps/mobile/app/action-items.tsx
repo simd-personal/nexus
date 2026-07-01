@@ -42,6 +42,8 @@ export default function ActionItemsScreen() {
     queryFn: fetchDashboardPortfolioPreference,
   });
 
+  const scopeReady = portfolioQuery.isFetched;
+
   useEffect(() => {
     if (portfolioQuery.data?.scope) {
       setScope(portfolioQuery.data.scope);
@@ -51,12 +53,20 @@ export default function ActionItemsScreen() {
   const itemsQuery = useQuery({
     queryKey: ['action-items', tab, scope],
     queryFn: () => fetchActionItems({ status: tab, portfolio: scope }),
+    enabled: scopeReady,
+    retry: 2,
   });
 
   const scopeMutation = useMutation({
     mutationFn: updateDashboardPortfolioPreference,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['dashboard-portfolio'] });
+    onSuccess: async (_data, nextScope) => {
+      setScope(nextScope);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['dashboard-portfolio'] }),
+        queryClient.invalidateQueries({ queryKey: ['action-items'] }),
+        queryClient.invalidateQueries({ queryKey: ['home-action-items'] }),
+        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
+      ]);
     },
   });
 
@@ -114,7 +124,7 @@ export default function ActionItemsScreen() {
             </View>
           }
         >
-          {itemsQuery.isLoading && items.length === 0 ? (
+          {(!scopeReady || itemsQuery.isLoading) && items.length === 0 ? (
             <EmptyState title="Loading action items" body="Fetching your follow-ups…" />
           ) : itemsQuery.isError ? (
             <EmptyState title="Could not load action items" body="Pull down to refresh and try again." />
