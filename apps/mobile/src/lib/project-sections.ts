@@ -43,17 +43,17 @@ export function resolveProjectSectionNavigation(
   projectId: string,
   targetSection: ProjectSectionKey,
   activeSection: ProjectSectionKey
-): { kind: 'noop' } | { kind: 'replace'; path: string } {
+): { kind: 'noop' } | { kind: 'navigate'; path: string } {
   if (targetSection === activeSection) return { kind: 'noop' };
-  return { kind: 'replace', path: projectSectionPathByKey(projectId, targetSection) };
+  return { kind: 'navigate', path: projectSectionPathByKey(projectId, targetSection) };
 }
 
 export function resolveProjectSectionBack(
   projectId: string,
   activeSection: ProjectSectionKey
-): { kind: 'exit' } | { kind: 'replace'; path: string } {
+): { kind: 'exit' } | { kind: 'navigate'; path: string } {
   if (activeSection === 'overview') return { kind: 'exit' };
-  return { kind: 'replace', path: projectOverviewPath(projectId) };
+  return { kind: 'navigate', path: projectOverviewPath(projectId) };
 }
 
 export function activeProjectSection(segments: string[]): ProjectSectionKey {

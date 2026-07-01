@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 const tabs = [
   { href: 'overview', label: 'Overview', shortLabel: 'Overview' },
   { href: 'files', label: 'Files', shortLabel: 'Files' },
-  { href: 'search', label: 'Search', shortLabel: 'Search' },
   { href: 'ask-sunny', label: 'Ask Sunny', shortLabel: 'Sunny' },
   { href: 'deck', label: 'Deck', shortLabel: 'Deck' },
   { href: 'critical-items', label: 'Critical Items', shortLabel: 'Critical' },

@@ -7,6 +7,7 @@ describe('projectIdFromPathname', () => {
     expect(projectIdFromPathname('/projects/abc')).toBe('abc');
     expect(projectIdFromPathname('/projects/abc/files')).toBe('abc');
     expect(projectIdFromPathname('/projects/abc/search')).toBe('abc');
+    expect(projectIdFromPathname('/projects/abc/ask-sunny')).toBe('abc');
   });
 
   it('returns undefined outside project routes', () => {
@@ -18,20 +19,17 @@ describe('projectIdFromPathname', () => {
 });
 
 describe('scopedAppHref', () => {
-  it('routes search and sunny links to the active project pages', () => {
-    expect(scopedAppHref('/projects/abc/files', '/search')).toBe('/projects/abc/search');
+  it('routes Ask Sunny to the active project page', () => {
     expect(scopedAppHref('/projects/abc/files', '/sunny')).toBe('/projects/abc/ask-sunny');
   });
 
   it('leaves global links unchanged off project pages without portfolio context', () => {
-    expect(scopedAppHref('/dashboard', '/search')).toBe('/search');
     expect(scopedAppHref('/dashboard', '/sunny')).toBe('/sunny');
-    expect(scopedAppHref('/updates', '/search')).toBe('/search');
   });
 
   it('carries portfolio context from aggregate pages onto chat routes', () => {
-    expect(scopedAppHref('/dashboard', '/search', { portfolioScope: 'personal' })).toBe(
-      '/search?portfolio=personal'
+    expect(scopedAppHref('/dashboard', '/sunny', { portfolioScope: 'personal' })).toBe(
+      '/sunny?portfolio=personal'
     );
     expect(scopedAppHref('/updates', '/sunny', { portfolioScope: 'all' })).toBe('/sunny?portfolio=all');
   });
@@ -43,15 +41,15 @@ describe('scopedAppHref', () => {
   });
 
   it('encodes project ids in project routes', () => {
-    expect(scopedAppHref('/projects/abc%2F123/overview', '/search')).toBe(
-      '/projects/abc%2F123/search'
+    expect(scopedAppHref('/projects/abc%2F123/overview', '/sunny')).toBe(
+      '/projects/abc%2F123/ask-sunny'
     );
   });
 });
 
-describe('sidebar search navigation flow', () => {
-  it('routes sidebar search to the project search page', () => {
+describe('sidebar Ask Sunny navigation flow', () => {
+  it('routes sidebar Ask Sunny to the project chat page', () => {
     const pathname = '/projects/ws-a/files';
-    expect(scopedAppHref(pathname, '/search')).toBe('/projects/ws-a/search');
+    expect(scopedAppHref(pathname, '/sunny')).toBe('/projects/ws-a/ask-sunny');
   });
 });

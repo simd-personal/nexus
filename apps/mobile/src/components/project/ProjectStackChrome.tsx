@@ -32,8 +32,8 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
 
   const goBack = useCallback(() => {
     const target = resolveProjectSectionBack(projectId, activeSection);
-    if (target.kind === 'replace') {
-      router.replace(target.path as `/project/${string}`);
+    if (target.kind === 'navigate') {
+      router.navigate(target.path as `/project/${string}`);
       return;
     }
     router.back();
@@ -43,8 +43,8 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
     useCallback(() => {
       const onHardwareBack = () => {
         const target = resolveProjectSectionBack(projectId, activeSection);
-        if (target.kind === 'replace') {
-          router.replace(target.path as `/project/${string}`);
+        if (target.kind === 'navigate') {
+          router.navigate(target.path as `/project/${string}`);
           return true;
         }
         return false;

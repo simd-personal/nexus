@@ -22,5 +22,5 @@ export function buildGlobalSearchHref(
     params.set('portfolio', opts.portfolio);
   }
 
-  return `/search?${params.toString()}`;
+  return `/sunny?${params.toString()}`;
 }

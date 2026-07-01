@@ -58,25 +58,24 @@ describe('Sidebar project-scoped navigation', () => {
     searchParamsState.value = new URLSearchParams();
   });
 
-  it('links Search to the global page when not inside a project', () => {
+  it('links Ask Sunny to the global page when not inside a project', () => {
     const html = renderToStaticMarkup(<Sidebar />);
-    expect(hrefForLabel(html, 'Search')).toBe('/search');
-    expect(hrefForLabel(html, 'Sunny Chat')).toBe('/sunny');
+    expect(hrefForLabel(html, 'Ask Sunny')).toBe('/sunny');
+    expect(hrefForLabel(html, 'Search')).toBeUndefined();
+    expect(hrefForLabel(html, 'Sunny Chat')).toBeUndefined();
   });
 
-  it('pre-selects the active project when Search is clicked from a project page', () => {
+  it('pre-selects the active project when Ask Sunny is clicked from a project page', () => {
     pathnameState.value = '/projects/proj-123/files';
     const html = renderToStaticMarkup(<Sidebar />);
-    expect(hrefForLabel(html, 'Search')).toBe('/projects/proj-123/search');
-    expect(hrefForLabel(html, 'Sunny Chat')).toBe('/projects/proj-123/ask-sunny');
+    expect(hrefForLabel(html, 'Ask Sunny')).toBe('/projects/proj-123/ask-sunny');
   });
 
-  it('carries dashboard portfolio context onto Search links', () => {
+  it('carries dashboard portfolio context onto Ask Sunny links', () => {
     pathnameState.value = '/dashboard';
     searchParamsState.value = new URLSearchParams('portfolio=personal');
     const html = renderToStaticMarkup(<Sidebar />);
-    expect(hrefForLabel(html, 'Search')).toBe('/search?portfolio=personal');
-    expect(hrefForLabel(html, 'Sunny Chat')).toBe('/sunny?portfolio=personal');
+    expect(hrefForLabel(html, 'Ask Sunny')).toBe('/sunny?portfolio=personal');
   });
 
   it('keeps other nav links unscoped inside a project', () => {

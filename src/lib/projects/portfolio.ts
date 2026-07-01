@@ -51,7 +51,7 @@ export function portfolioScopeHref(
 
 /** Carry dashboard portfolio context onto global chat/search routes. */
 export function globalChatScopeHref(
-  basePath: '/search' | '/sunny',
+  basePath: '/sunny',
   portfolioScope?: DashboardPortfolioScope | null
 ): string {
   if (!portfolioScope) return basePath;

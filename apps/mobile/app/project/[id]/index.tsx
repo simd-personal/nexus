@@ -96,7 +96,7 @@ export default function ProjectOverviewScreen() {
               <Text style={styles.sectionTitle}>Recent timeline</Text>
               <Pressable
                 onPress={() =>
-                  router.replace(projectSectionPathByKey(projectId, 'timeline') as `/project/${string}`)
+                  router.navigate(projectSectionPathByKey(projectId, 'timeline') as `/project/${string}`)
                 }
               >
                 <Text style={styles.viewAll}>View all</Text>
@@ -109,7 +109,7 @@ export default function ProjectOverviewScreen() {
               {files.length > 0 ? (
                 <Pressable
                   onPress={() =>
-                    router.replace(projectSectionPathByKey(projectId, 'files') as `/project/${string}`)
+                    router.navigate(projectSectionPathByKey(projectId, 'files') as `/project/${string}`)
                   }
                 >
                   <Text style={styles.viewAll}>View all</Text>
@@ -138,7 +138,7 @@ export default function ProjectOverviewScreen() {
               {(overviewQuery.data?.critical_items ?? []).length > 0 ? (
                 <Pressable
                   onPress={() =>
-                    router.replace(
+                    router.navigate(
                       projectSectionPathByKey(projectId, 'critical-items') as `/project/${string}`
                     )
                   }

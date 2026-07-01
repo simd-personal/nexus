@@ -39,8 +39,8 @@ describe('portfolio helpers', () => {
   });
 
   it('builds scoped chat hrefs', () => {
-    expect(globalChatScopeHref('/search', 'personal')).toBe('/search?portfolio=personal');
+    expect(globalChatScopeHref('/sunny', 'personal')).toBe('/sunny?portfolio=personal');
     expect(globalChatScopeHref('/sunny', 'all')).toBe('/sunny?portfolio=all');
-    expect(globalChatScopeHref('/search')).toBe('/search');
+    expect(globalChatScopeHref('/sunny')).toBe('/sunny');
   });
 });

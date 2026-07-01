@@ -22,8 +22,8 @@ export function ProjectSectionNav({ projectId }: ProjectSectionNavProps) {
 
   function navigate(section: ProjectSection) {
     const next = resolveProjectSectionNavigation(projectId, section.key, activeKey);
-    if (next.kind === 'replace') {
-      router.replace(next.path as `/project/${string}`);
+    if (next.kind === 'navigate') {
+      router.navigate(next.path as `/project/${string}`);
     }
   }
 

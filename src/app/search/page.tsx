@@ -1,42 +1,18 @@
-import { Suspense } from 'react';
-import { AppShellLayout } from '@/components/layout/AppShellLayout';
-import { GlobalChatPageClient } from '@/components/search/SearchPageClient';
-import { ChatLoadingShell } from '@/components/chat/ChatLoadingShell';
-import { getProjectsWithStats } from '@/lib/data/queries';
-import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
-import { AI_EMPLOYEE_NAME } from '@/lib/constants';
-import { requireUser } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
+/** Legacy route — global chat lives at /sunny. */
 export default async function SearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ portfolio?: string; q?: string }>;
+  searchParams: Promise<{ portfolio?: string; q?: string; project?: string }>;
 }) {
   const params = await searchParams;
-  const portfolioScope = await resolveActivePortfolioScope(params);
-  const [user, projects] = await Promise.all([requireUser(), getProjectsWithStats()]);
-
-  return (
-    <AppShellLayout>
-      <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
-        <div className="mb-4 shrink-0">
-          <h1 className="app-page-title text-xl sm:text-2xl">Search</h1>
-          <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
-            Chat with {AI_EMPLOYEE_NAME} across your projects. Select programs and workstreams to narrow scope.
-          </p>
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col">
-          <Suspense fallback={<ChatLoadingShell />}>
-            <GlobalChatPageClient
-              userId={user.id}
-              projects={projects}
-              defaultPortfolioScope={portfolioScope}
-            />
-          </Suspense>
-        </div>
-      </div>
-    </AppShellLayout>
-  );
+  const query = new URLSearchParams();
+  if (params.q) query.set('q', params.q);
+  if (params.project) query.set('project', params.project);
+  if (params.portfolio) query.set('portfolio', params.portfolio);
+  const suffix = query.toString();
+  redirect(suffix ? `/sunny?${suffix}` : '/sunny');
 }

@@ -41,13 +41,13 @@ describe('PROJECT_SECTIONS', () => {
     expect(projectSectionPathByKey('abc', 'overview')).toBe('/project/abc');
   });
 
-  it('replaces the current section instead of stacking pills', () => {
+  it('switches sections without stacking history', () => {
     expect(resolveProjectSectionNavigation('abc', 'timeline', 'overview')).toEqual({
-      kind: 'replace',
+      kind: 'navigate',
       path: '/project/abc/timeline',
     });
     expect(resolveProjectSectionNavigation('abc', 'ask-sunny', 'timeline')).toEqual({
-      kind: 'replace',
+      kind: 'navigate',
       path: '/project/abc/ask-sunny',
     });
     expect(resolveProjectSectionNavigation('abc', 'timeline', 'timeline')).toEqual({ kind: 'noop' });
@@ -55,7 +55,7 @@ describe('PROJECT_SECTIONS', () => {
 
   it('returns to overview before exiting the project', () => {
     expect(resolveProjectSectionBack('abc', 'timeline')).toEqual({
-      kind: 'replace',
+      kind: 'navigate',
       path: '/project/abc',
     });
     expect(resolveProjectSectionBack('abc', 'overview')).toEqual({ kind: 'exit' });

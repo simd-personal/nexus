@@ -130,7 +130,6 @@ async function main() {
     '/updates',
     '/critical-items',
     '/sunny',
-    '/search',
     '/settings',
   ];
 
@@ -163,7 +162,6 @@ async function main() {
       `/projects/${projectId}/deck`,
       `/projects/${projectId}/playbook`,
       `/projects/${projectId}/follow-up`,
-      `/projects/${projectId}/search`,
     ];
 
     for (const path of projectPages) {

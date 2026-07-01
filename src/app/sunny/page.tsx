@@ -20,7 +20,7 @@ export default async function SunnyChatPage({
     <AppShellLayout>
       <div className="flex min-h-0 flex-1 flex-col px-4 py-4">
         <div className="mb-4 shrink-0">
-          <h1 className="app-page-title text-xl sm:text-2xl">Chat with {AI_EMPLOYEE_NAME}</h1>
+          <h1 className="app-page-title text-xl sm:text-2xl">Ask {AI_EMPLOYEE_NAME}</h1>
           <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             Search your uploaded materials, create decks and emails, and ask about your projects. Select programs and workstreams to
             narrow scope.

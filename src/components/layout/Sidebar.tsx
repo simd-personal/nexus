@@ -7,7 +7,6 @@ import {
   FolderKanban,
   AlertTriangle,
   CheckSquare,
-  Search,
   Settings,
   LifeBuoy,
   X,
@@ -30,13 +29,12 @@ const navItems: Array<
   { href: '/updates', label: 'Sunny Updates', sunnyIcon: true },
   { href: '/critical-items', label: 'Critical Items', icon: AlertTriangle },
   { href: '/action-items', label: 'Action Items', icon: CheckSquare },
-  { href: '/sunny', label: 'Sunny Chat', sunnyIcon: true },
-  { href: '/search', label: 'Search', icon: Search },
+  { href: '/sunny', label: 'Ask Sunny', sunnyIcon: true },
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/support', label: 'Support', icon: LifeBuoy },
 ];
 
-const CHAT_NAV_HREFS = new Set(['/sunny', '/search']);
+const CHAT_NAV_HREFS = new Set(['/sunny']);
 
 function prefetchChatBundle() {
   void import('@/components/chat/SunnyChatInterface');

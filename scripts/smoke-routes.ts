@@ -30,7 +30,7 @@ async function main() {
 
   const routes = [
     '/dashboard',
-    '/search',
+    '/sunny',
     '/sunny',
     '/api/chat/sessions?type=search',
     '/api/search/stream',

@@ -19,12 +19,11 @@ export function scopedAppHref(
 ): string {
   const projectId = projectIdFromPathname(pathname);
   if (projectId) {
-    if (href === '/search') return `/projects/${projectId}/search`;
     if (href === '/sunny') return `/projects/${projectId}/ask-sunny`;
     return href;
   }
 
-  if (href === '/search' || href === '/sunny') {
+  if (href === '/sunny') {
     return globalChatScopeHref(href, options?.portfolioScope);
   }
 

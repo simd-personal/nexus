@@ -4,8 +4,9 @@ import { createEmbeddingOrNull } from '@/lib/ai/openai';
 import { formatStreamError } from '@/lib/ai/errors';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
 import { runSunnyAgentStream } from '@/lib/ai/stream-agent';
-import { retrieveForQuery, toSearchContext } from '@/lib/search/retrieve';
+import { retrieveForQuery } from '@/lib/search/retrieve';
 import { PROJECT_RETRIEVAL_LIMIT } from '@/lib/search/context-limits';
+import { chunksForAnswer } from '@/lib/search/scope';
 import { loadSessionHistory } from '@/lib/chat/memory';
 import { getOrCreateSession, saveChatMessage, deleteLastAssistantMessage } from '@/lib/chat/sessions';
 import { checkChatQuota, getBillingContextForUser } from '@/lib/billing/limits';
@@ -124,11 +125,32 @@ export async function POST(request: NextRequest) {
           ]);
 
         const context = {
-          chunks: toSearchContext(retrieved),
+          chunks: chunksForAnswer(retrieved, [project_id]),
           criticalItems: criticalItems ?? [],
           timelineEvents: timelineEvents ?? [],
           projectSummary: projectMeta?.last_summary ?? null,
         };
+
+        send({
+          event: 'results',
+          data: {
+            results: retrieved.slice(0, PROJECT_RETRIEVAL_LIMIT).map((r) => ({
+              id: r.id,
+              project_id: r.project_id,
+              file_id: r.file_id,
+              chunk_index: r.chunk_index ?? 0,
+              text: r.text,
+              metadata: r.metadata,
+              similarity: r.similarity,
+              rank: r.rank,
+              match_reason: r.match_reason,
+              file_name: r.file_name,
+              source_type: r.source_type,
+              client_name: r.client_name,
+              project_name: r.project_name,
+            })),
+          },
+        });
 
         let fullText = '';
         const response = await runSunnyAgentStream({
