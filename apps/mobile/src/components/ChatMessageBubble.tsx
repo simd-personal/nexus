@@ -1,4 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { CitationsList } from '@/components/CitationsList';
 import { SunnyMark } from '@/components/SunnyMark';
 import { SunnyTypingIndicator } from '@/components/SunnyTypingIndicator';
@@ -20,17 +23,53 @@ type ChatMessageBubbleProps = {
   message: ChatBubbleMessage;
 };
 
+function MessageCopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  if (!text.trim()) return null;
+
+  async function handleCopy() {
+    await Clipboard.setStringAsync(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Pressable
+      onPress={() => void handleCopy()}
+      style={styles.copyButton}
+      accessibilityRole="button"
+      accessibilityLabel={copied ? 'Copied to clipboard' : 'Copy message'}
+    >
+      <Ionicons
+        name={copied ? 'checkmark' : 'copy-outline'}
+        size={14}
+        color={BRAND.textMuted}
+      />
+      <Text style={styles.copyLabel}>{copied ? 'Copied' : 'Copy'}</Text>
+    </Pressable>
+  );
+}
+
 export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
   const isUser = message.role === 'user';
   const isStreaming = message.streaming === true;
   const body = formatChatText(message.content);
   const hasContent = body.length > 0;
+  const showCopy = hasContent && !isStreaming;
 
   if (isUser) {
     return (
       <View style={styles.userRow}>
-        <View style={styles.userBubble}>
-          <Text style={styles.userText}>{body}</Text>
+        <View style={styles.userColumn}>
+          <View style={styles.userBubble}>
+            <Text style={styles.userText}>{body}</Text>
+          </View>
+          {showCopy ? (
+            <View style={styles.userCopyRow}>
+              <MessageCopyButton text={body} />
+            </View>
+          ) : null}
         </View>
       </View>
     );
@@ -60,6 +99,7 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
           ) : null}
           {isStreaming && hasContent ? <View style={styles.cursor} /> : null}
         </View>
+        {showCopy ? <MessageCopyButton text={body} /> : null}
         {message.citations && message.citations.length > 0 && !isStreaming ? (
           <CitationsList citations={message.citations} projectId={message.projectId} />
         ) : null}
@@ -74,8 +114,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     marginBottom: spacing.sm,
   },
-  userBubble: {
+  userColumn: {
     maxWidth: '82%',
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  userBubble: {
     backgroundColor: BRAND.graphite,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
@@ -88,6 +132,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
     color: '#fff',
+  },
+  userCopyRow: {
+    alignSelf: 'flex-end',
   },
   assistantRow: {
     flexDirection: 'row',
@@ -142,6 +189,21 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
     color: BRAND.graphite,
+  },
+  copyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+    marginTop: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 6,
+    borderRadius: radius.md,
+  },
+  copyLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: BRAND.textMuted,
   },
   cursor: {
     marginTop: 4,

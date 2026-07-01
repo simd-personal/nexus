@@ -157,6 +157,11 @@ export function fetchProjects(options?: { portfolio?: DashboardPortfolioScope })
   );
 }
 
+/** Work + personal projects — use for project lists, Sunny scope, and file sharing. */
+export function fetchAllProjects() {
+  return fetchProjects({ portfolio: 'all' });
+}
+
 export function fetchProjectOverview(projectId: string) {
   return apiJson<ProjectOverviewResponse>(`/api/projects/${projectId}/overview`);
 }

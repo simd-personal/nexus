@@ -16,7 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   deleteProjectFile,
-  fetchProjects,
+  fetchAllProjects,
   moveProjectFile,
   patchProjectFile,
   removeProjectFile,
@@ -65,8 +65,8 @@ export function FileActionsSheet({
   const [error, setError] = useState('');
 
   const projectsQuery = useQuery({
-    queryKey: ['projects'],
-    queryFn: () => fetchProjects(),
+    queryKey: ['projects', 'all'],
+    queryFn: fetchAllProjects,
     enabled: visible && (mode === 'move' || mode === 'share'),
   });
 

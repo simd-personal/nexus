@@ -4,7 +4,7 @@ import {
   fetchDashboardStats,
   fetchDashboardUpdates,
   fetchOpenActionItems,
-  fetchProjects,
+  fetchAllProjects,
 } from '@/lib/api';
 
 export type PrefetchStep = {
@@ -44,7 +44,8 @@ export const DASHBOARD_PREFETCH_STEPS: PrefetchStep[] = [
   {
     id: 'projects',
     label: 'Loading your projects…',
-    run: (client) => client.prefetchQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() }),
+    run: (client) =>
+      client.prefetchQuery({ queryKey: ['projects', 'all'], queryFn: fetchAllProjects }),
   },
   {
     id: 'critical',

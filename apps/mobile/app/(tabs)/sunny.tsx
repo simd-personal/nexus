@@ -29,7 +29,7 @@ import { SunnyMark } from '@/components/SunnyMark';
 import { Screen } from '@/components/ui';
 import {
   fetchChatSession,
-  fetchProjects,
+  fetchAllProjects,
   fetchSearchChatSessions,
   streamSearchChat,
 } from '@/lib/api';
@@ -67,7 +67,7 @@ function toBubbleMessage(message: UiMessage, scope: ChatScope): ChatBubbleMessag
 
 export default function SunnyScreen() {
   const tabBarLift = useFloatingTabBarLift();
-  const projectsQuery = useQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() });
+  const projectsQuery = useQuery({ queryKey: ['projects', 'all'], queryFn: fetchAllProjects });
   const projects = projectsQuery.data?.projects ?? [];
   const [scope, setScope] = useState<ChatScope>({ kind: 'all' });
   const [scopeReady, setScopeReady] = useState(false);

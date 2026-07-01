@@ -8,7 +8,7 @@ import { RefreshableScroll } from '@/components/RefreshableScroll';
 import { TabScreenHeader } from '@/components/BrandHeader';
 import { HeaderActions, HeaderIconButton } from '@/components/ScreenHeader';
 import { EmptyState, Screen } from '@/components/ui';
-import { fetchProjects } from '@/lib/api';
+import { fetchAllProjects } from '@/lib/api';
 import { splitProjectsByPortfolio } from '@/lib/projects';
 import type { ProjectWithStats } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
@@ -43,7 +43,7 @@ function ProjectSection({
 export default function ProjectsScreen() {
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const query = useQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() });
+  const query = useQuery({ queryKey: ['projects', 'all'], queryFn: fetchAllProjects });
 
   const projects = query.data?.projects ?? [];
   const { work, personal } = useMemo(() => splitProjectsByPortfolio(projects), [projects]);
