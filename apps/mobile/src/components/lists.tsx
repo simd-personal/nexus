@@ -1,64 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { ActionItem, CriticalItem } from '@/lib/types';
-import { formatRelativeTime } from '@/lib/format';
+import type { CriticalItem } from '@/lib/types';
 import { Button, Card, SeverityBadge } from '@/components/ui';
 import { BRAND, radius, spacing } from '@/theme/colors';
-
-const KIND_LABELS: Record<string, string> = {
-  commitment: 'Commitment',
-  decision: 'Decision',
-  risk: 'Risk',
-};
-
-export function ActionItemRow({
-  item,
-  onDone,
-  onDismiss,
-  busy,
-}: {
-  item: ActionItem;
-  onDone?: () => void;
-  onDismiss?: () => void;
-  busy?: boolean;
-}) {
-  const kindLabel = item.item_kind ? KIND_LABELS[item.item_kind] ?? item.item_kind : null;
-
-  return (
-    <Card>
-      <View style={styles.header}>
-        <View style={styles.metaRow}>
-          {kindLabel ? (
-            <View style={styles.kindBadge}>
-              <Text style={styles.kindBadgeText}>{kindLabel}</Text>
-            </View>
-          ) : null}
-          <Text style={styles.timestamp}>{formatRelativeTime(item.created_at)}</Text>
-        </View>
-        {item.project ? (
-          <Text style={styles.project}>
-            {item.project.client_name} · {item.project.project_name}
-          </Text>
-        ) : null}
-      </View>
-      <Text style={styles.title}>{item.title}</Text>
-      {item.owner ? <Text style={styles.owner}>Owner: {item.owner}</Text> : null}
-      {(onDone || onDismiss) && item.status === 'open' ? (
-        <View style={styles.actions}>
-          {onDismiss ? (
-            <View style={styles.actionButton}>
-              <Button label="Not for me" variant="ghost" size="compact" onPress={onDismiss} disabled={busy} />
-            </View>
-          ) : null}
-          {onDone ? (
-            <View style={styles.actionButton}>
-              <Button label="Done" size="compact" onPress={onDone} disabled={busy} loading={busy} />
-            </View>
-          ) : null}
-        </View>
-      ) : null}
-    </Card>
-  );
-}
 
 export function CriticalItemRow({
   item,
@@ -148,33 +91,6 @@ export function ProjectRow({
 const styles = StyleSheet.create({
   header: {
     gap: spacing.xs,
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
-  },
-  kindBadge: {
-    borderRadius: radius.full,
-    backgroundColor: '#EEF2FF',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-  },
-  kindBadgeText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: BRAND.accent,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  timestamp: {
-    fontSize: 12,
-    color: BRAND.textMuted,
-  },
-  owner: {
-    fontSize: 13,
-    color: BRAND.textMuted,
   },
   project: {
     fontSize: 13,

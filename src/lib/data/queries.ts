@@ -299,13 +299,37 @@ export async function getOpenActionItems(
   return limit ? items.slice(0, limit) : items;
 }
 
+export async function getActionItemById(
+  id: string,
+  supabaseClient?: RequestSupabaseClient
+): Promise<ActionItem | null> {
+  await ensureFreshAppData();
+  const supabase = await resolveSupabase(supabaseClient);
+
+  const { data } = await supabase
+    .from('action_items')
+    .select('*, projects(client_name, project_name)')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (!data) return null;
+
+  return {
+    ...data,
+    source_citations: data.source_citations ?? [],
+    matched_terms: data.matched_terms ?? [],
+    project: data.projects as ActionItem['project'],
+  };
+}
+
 export async function getActionItemsByStatus(
   status: Exclude<ActionItem['status'], 'open'>,
   limit = 50,
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<ActionItem[]> {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   if (scopedProjectIds?.length === 0) return [];
 

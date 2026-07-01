@@ -1,9 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
+import { getActionItemById } from '@/lib/data/queries';
 import { requireRequestAuth } from '@/lib/supabase/request-auth';
 import type { ActionItemStatus } from '@/types/database';
 
 const ALLOWED_STATUSES = new Set<ActionItemStatus>(['open', 'in_progress', 'done', 'cancelled']);
+
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
+
+  const { id } = await context.params;
+  const item = await getActionItemById(id, auth.supabase);
+
+  if (!item) {
+    return NextResponse.json({ error: 'Action item not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ item });
+}
 
 export async function PATCH(
   request: NextRequest,

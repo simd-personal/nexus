@@ -1,8 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { ActionItemRow, CriticalItemRow } from '@/components/lists';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActionItemPreviewRow } from '@/components/ActionItemCard';
+import { CriticalItemRow } from '@/components/lists';
 import { PortfolioScopeBar } from '@/components/PortfolioScopeBar';
 import { RefreshableScroll, SectionHeader } from '@/components/RefreshableScroll';
 import { TabScreenHeader } from '@/components/BrandHeader';
@@ -16,17 +17,15 @@ import {
   fetchDashboardStats,
   fetchDashboardUpdates,
   fetchOpenActionItems,
-  updateActionItemStatus,
   updateDashboardPortfolioPreference,
 } from '@/lib/api';
 import type { DashboardPortfolioScope } from '@/lib/types';
-import { spacing } from '@/theme/colors';
+import { spacing, BRAND } from '@/theme/colors';
 
 export default function HomeScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
-  const [busyActionId, setBusyActionId] = useState<string | null>(null);
   const [scope, setScope] = useState<DashboardPortfolioScope>('work');
 
   const portfolioQuery = useQuery({
@@ -72,24 +71,6 @@ export default function HomeScreen() {
     },
   });
 
-  const actionMutation = useMutation({
-    mutationFn: ({
-      id,
-      status,
-      applies_to_me,
-    }: {
-      id: string;
-      status: 'done' | 'cancelled';
-      applies_to_me?: boolean;
-    }) => updateActionItemStatus(id, status, applies_to_me !== undefined ? { applies_to_me } : undefined),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['home-action-items'] }),
-        queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] }),
-      ]);
-    },
-  });
-
   const handleScopeChange = useCallback(
     (next: DashboardPortfolioScope) => {
       if (next === scope) return;
@@ -124,18 +105,6 @@ export default function HomeScreen() {
   const updates = updatesQuery.data?.updates ?? [];
   const criticalItems = criticalQuery.data?.items ?? [];
   const actionItems = actionQuery.data?.items ?? [];
-
-  const handleActionStatus = useCallback(
-    async (id: string, status: 'done' | 'cancelled', applies_to_me?: boolean) => {
-      setBusyActionId(id);
-      try {
-        await actionMutation.mutateAsync({ id, status, applies_to_me });
-      } finally {
-        setBusyActionId(null);
-      }
-    },
-    [actionMutation]
-  );
 
   const attentionSubtitle = useMemo(() => {
     if (showBoth) return 'Critical findings first, then your follow-ups.';
@@ -206,19 +175,23 @@ export default function HomeScreen() {
                 ) : (
                   <>
                     {actionItems.map((item) => (
-                      <ActionItemRow
+                      <ActionItemPreviewRow
                         key={item.id}
                         item={item}
-                        busy={busyActionId === item.id}
-                        onDone={() => handleActionStatus(item.id, 'done')}
-                        onDismiss={() => handleActionStatus(item.id, 'cancelled', false)}
+                        onPress={() => router.push(`/action-item/${item.id}`)}
                       />
                     ))}
-                    {actionTotal > actionItems.length ? (
-                      <Text style={styles.moreHint}>
-                        {actionTotal - actionItems.length} more open{' '}
-                        {actionTotal - actionItems.length === 1 ? 'follow-up' : 'follow-ups'}.
-                      </Text>
+                    {actionTotal > 0 ? (
+                      <Pressable
+                        onPress={() => router.push('/action-items')}
+                        style={({ pressed }) => [styles.viewAllLink, pressed && styles.viewAllLinkPressed]}
+                      >
+                        <Text style={styles.viewAllText}>
+                          {actionTotal > actionItems.length
+                            ? `View all ${actionTotal} follow-ups`
+                            : 'View all action items'}
+                        </Text>
+                      </Pressable>
                     ) : null}
                   </>
                 )}
@@ -270,11 +243,20 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: spacing.sm,
   },
-  moreHint: {
+  viewAllLink: {
+    alignSelf: 'center',
     marginTop: -4,
     marginBottom: spacing.sm,
-    fontSize: 13,
-    color: '#6B7280',
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+  },
+  viewAllLinkPressed: {
+    opacity: 0.7,
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: BRAND.accent,
     textAlign: 'center',
   },
   error: {

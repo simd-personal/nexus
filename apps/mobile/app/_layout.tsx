@@ -60,6 +60,8 @@ function AuthGate() {
         <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="project/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="update/[id]" options={stackDetailScreenOptions('Sunny update')} />
+        <Stack.Screen name="action-item/[id]" options={stackDetailScreenOptions('Action item')} />
+        <Stack.Screen name="action-items" options={stackDetailScreenOptions('Your action items')} />
         <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
       </Stack>
       {showLoading ? (

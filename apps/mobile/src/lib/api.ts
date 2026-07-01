@@ -73,11 +73,12 @@ function withPortfolioQuery(path: string, portfolio?: DashboardPortfolioScope) {
 
 function scopedListPath(
   basePath: string,
-  options?: { portfolio?: DashboardPortfolioScope; limit?: number }
+  options?: { portfolio?: DashboardPortfolioScope; limit?: number; status?: ActionItem['status'] }
 ) {
   const params = new URLSearchParams();
   if (options?.portfolio) params.set('portfolio', options.portfolio);
   if (options?.limit) params.set('limit', String(options.limit));
+  if (options?.status) params.set('status', options.status);
   const qs = params.toString();
   return qs ? `${basePath}?${qs}` : basePath;
 }
@@ -126,9 +127,21 @@ export function fetchOpenActionItems(
   limit?: number,
   options?: { portfolio?: DashboardPortfolioScope }
 ) {
-  return apiJson<{ items: ActionItem[]; portfolio: DashboardPortfolioScope }>(
-    scopedListPath('/api/action-items', { ...options, limit })
+  return fetchActionItems({ ...options, limit, status: 'open' });
+}
+
+export function fetchActionItems(options?: {
+  portfolio?: DashboardPortfolioScope;
+  limit?: number;
+  status?: ActionItem['status'];
+}) {
+  return apiJson<{ items: ActionItem[]; portfolio: DashboardPortfolioScope; status: ActionItem['status'] }>(
+    scopedListPath('/api/action-items', options)
   );
+}
+
+export function fetchActionItem(id: string) {
+  return apiJson<{ item: ActionItem }>(`/api/action-items/${id}`);
 }
 
 export function fetchProjects(options?: { portfolio?: DashboardPortfolioScope }) {
