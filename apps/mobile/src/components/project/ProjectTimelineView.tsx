@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
-import { Card, EmptyState } from '@/components/ui';
+import { EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/format';
+import { compactTimelineSummary } from '@/lib/timeline-summary';
 import type { TimelineEvent } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -37,14 +38,6 @@ const EVENT_LABELS: Record<string, string> = {
   file_replaced: 'Replaced',
 };
 
-function formatEventDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
-}
-
 export function ProjectTimelineView({ events }: { events: TimelineEvent[] }) {
   if (!events.length) {
     return (
@@ -66,28 +59,20 @@ export function ProjectTimelineView({ events }: { events: TimelineEvent[] }) {
           <View key={event.id} style={styles.row}>
             <View style={styles.rail}>
               <View style={styles.iconShell}>
-                <Ionicons name={icon} size={16} color={BRAND.accent} />
+                <Ionicons name={icon} size={14} color={BRAND.accent} />
               </View>
               {!isLast ? <View style={styles.line} /> : null}
             </View>
 
             <View style={styles.cardWrap}>
-              <Card>
-                <View style={styles.metaRow}>
-                  <Text style={styles.date}>{formatEventDate(event.created_at)}</Text>
-                  <Text style={styles.dot}>·</Text>
-                  <Text style={styles.relative}>{formatRelativeTime(event.created_at)}</Text>
-                </View>
-                <View style={styles.typePill}>
-                  <Text style={styles.typePillText}>{label}</Text>
-                </View>
-                <Text style={styles.title}>{event.title}</Text>
-                {event.description ? (
-                  <Text style={styles.description} numberOfLines={6}>
-                    {event.description}
-                  </Text>
-                ) : null}
-              </Card>
+              <View style={styles.compactCard}>
+                <Text style={styles.meta} numberOfLines={1}>
+                  {label} · {formatRelativeTime(event.created_at)}
+                </Text>
+                <Text style={styles.summary} numberOfLines={2}>
+                  {compactTimelineSummary(event)}
+                </Text>
+              </View>
             </View>
           </View>
         );
@@ -98,7 +83,7 @@ export function ProjectTimelineView({ events }: { events: TimelineEvent[] }) {
 
 const styles = StyleSheet.create({
   wrap: {
-    gap: spacing.sm,
+    gap: spacing.xs,
   },
   row: {
     flexDirection: 'row',
@@ -110,14 +95,14 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   rail: {
-    width: 32,
+    width: 28,
     alignItems: 'center',
     paddingTop: 2,
   },
   iconShell: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(37, 99, 235, 0.1)',
@@ -127,57 +112,29 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     width: 2,
-    marginTop: 6,
+    marginTop: 4,
     backgroundColor: '#E5E7EB',
     borderRadius: 1,
-    minHeight: 20,
+    minHeight: 12,
   },
-  metaRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: 8,
-  },
-  date: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: BRAND.graphite,
-  },
-  relative: {
-    fontSize: 12,
-    color: BRAND.textMuted,
-  },
-  dot: {
-    fontSize: 12,
-    color: '#CBD5E1',
-  },
-  typePill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-    backgroundColor: '#F8FAFC',
+  compactCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: radius.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E5E7EB',
-    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  typePillText: {
+  meta: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '600',
     color: BRAND.textMuted,
-    textTransform: 'capitalize',
+    marginBottom: 4,
   },
-  title: {
-    fontSize: 15,
-    fontWeight: '700',
+  summary: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
     color: BRAND.graphite,
-    lineHeight: 21,
-  },
-  description: {
-    marginTop: 6,
-    fontSize: 14,
-    lineHeight: 21,
-    color: '#475569',
   },
 });

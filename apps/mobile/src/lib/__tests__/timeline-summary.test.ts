@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest';
+import { compactTimelineSummary, truncateTimelineText } from '../timeline-summary';
+import type { TimelineEvent } from '../types';
+
+function event(partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'event_type' | 'title'>): TimelineEvent {
+  return {
+    id: '1',
+    project_id: 'p1',
+    description: null,
+    source_file_id: null,
+    metadata: {},
+    created_at: '2026-06-30T12:00:00.000Z',
+    ...partial,
+  };
+}
+
+describe('truncateTimelineText', () => {
+  it('flattens whitespace and truncates long text', () => {
+    const long = 'Line one.\n\nLine two with extra detail that keeps going for a while.';
+    expect(truncateTimelineText(long, 30)).toBe('Line one. Line two with extra…');
+  });
+});
+
+describe('compactTimelineSummary', () => {
+  it('shows only the file name for uploads', () => {
+    expect(
+      compactTimelineSummary(
+        event({
+          event_type: 'file_upload',
+          title: 'Uploaded: RMC060226OwningArea (4).xlsx',
+          description: 'The export is a Support Environment custom items extract created by Kim Hollman.',
+        })
+      )
+    ).toBe('RMC060226OwningArea (4).xlsx');
+  });
+
+  it('truncates sunny summaries to a short preview', () => {
+    const summary = compactTimelineSummary(
+      event({
+        event_type: 'sunny_summary',
+        title: 'Sunny summarized: notes.txt',
+        description:
+          'The export is a Support Environment custom items extract created by Kim Hollman on June 2, 2026, with 1,574 records across owning areas and departments.',
+      })
+    );
+
+    expect(summary.length).toBeLessThanOrEqual(96);
+    expect(summary.startsWith('The export is a Support Environment')).toBe(true);
+    expect(summary.endsWith('…')).toBe(true);
+  });
+
+  it('keeps action items concise with source file', () => {
+    expect(
+      compactTimelineSummary(
+        event({
+          event_type: 'action_item',
+          title: '7 action item(s) extracted',
+          description: 'From pasted-email-1782855751035.txt',
+        })
+      )
+    ).toBe('7 action item(s) extracted · pasted-email-1782855751035.txt');
+  });
+});
