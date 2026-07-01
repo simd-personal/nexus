@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { extractSearchTerms, textMatchesTerms } from './terms';
+import { excerptFileTextForQuery } from './file-excerpt';
 
 type ProjectRef = { client_name: string; project_name: string };
 
@@ -161,7 +162,7 @@ async function fetchSupplementalContent(
       id: `file-text-${file.id}`,
       project_id: file.project_id,
       file_id: file.id,
-      text: text.slice(0, 4000),
+      text: excerptFileTextForQuery(text, file.file_name, terms),
       metadata: { file_name: file.file_name, source_type: file.source_type },
       match_reason: 'File content match',
       file_name: file.file_name,

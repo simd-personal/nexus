@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { sampleTextForAnalysis } from '@/lib/processing/text-sampling';
 import type { PageGenerationContext } from '@/lib/ai/page-generation';
 
 export async function getProjectContext(projectId: string, supabase: Awaited<ReturnType<typeof createClient>>) {
@@ -23,12 +24,32 @@ export async function getProjectContext(projectId: string, supabase: Awaited<Ret
       text: c.text,
       file_name: fileMap.get(c.file_id)?.file_name ?? 'Unknown',
       source_type: fileMap.get(c.file_id)?.source_type,
-      metadata: c.metadata as Record<string, unknown>,
+      metadata: { ...((c.metadata as Record<string, unknown>) ?? {}), file_id: c.file_id },
     })),
     criticalItems: criticalItems ?? [],
     timelineEvents: timelineEvents ?? [],
     projectSummary: project?.last_summary ?? null,
   };
+
+  const chunkedFileIds = new Set((recentChunks ?? []).map((c) => c.file_id));
+  const { data: extractedFiles } = await supabase
+    .from('files')
+    .select('id, file_name, source_type, extracted_text, status')
+    .eq('project_id', projectId)
+    .not('extracted_text', 'is', null)
+    .in('status', ['processing', 'processed']);
+
+  for (const file of extractedFiles ?? []) {
+    if (chunkedFileIds.has(file.id)) continue;
+    const extracted = file.extracted_text?.trim();
+    if (!extracted) continue;
+    context.chunks.push({
+      text: sampleTextForAnalysis(extracted, file.file_name, 12_000),
+      file_name: file.file_name,
+      source_type: file.source_type,
+      metadata: { file_id: file.id, indexing: file.status === 'processing' },
+    });
+  }
 
   return { project, context };
 }
