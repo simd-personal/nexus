@@ -27,7 +27,7 @@ export default function ProjectTimelineScreen() {
           />
         }
       >
-        <ProjectTimelineView events={timelineQuery.data?.events ?? []} />
+        <ProjectTimelineView events={timelineQuery.data?.events ?? []} expandable />
       </ScrollView>
     </Screen>
   );

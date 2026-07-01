@@ -1,8 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/format';
-import { compactTimelineSummary } from '@/lib/timeline-summary';
+import {
+  compactTimelineSummary,
+  timelineEventDetail,
+  timelineEventIsExpandable,
+} from '@/lib/timeline-summary';
 import type { TimelineEvent } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -38,7 +44,85 @@ const EVENT_LABELS: Record<string, string> = {
   file_replaced: 'Replaced',
 };
 
-export function ProjectTimelineView({ events }: { events: TimelineEvent[] }) {
+type ProjectTimelineViewProps = {
+  events: TimelineEvent[];
+  expandable?: boolean;
+};
+
+type TimelineEventCardProps = {
+  event: TimelineEvent;
+  label: string;
+  expanded: boolean;
+  expandable: boolean;
+  onToggle: () => void;
+};
+
+function TimelineEventCard({
+  event,
+  label,
+  expanded,
+  expandable,
+  onToggle,
+}: TimelineEventCardProps) {
+  const summary = expanded ? timelineEventDetail(event) : compactTimelineSummary(event);
+  const showChevron = expandable;
+
+  const content = (
+    <>
+      <View style={styles.metaRow}>
+        <Text style={styles.meta} numberOfLines={1}>
+          {label} · {formatRelativeTime(event.created_at)}
+        </Text>
+        {showChevron ? (
+          <Ionicons
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={14}
+            color={BRAND.textMuted}
+            style={styles.chevron}
+          />
+        ) : null}
+      </View>
+      <Text style={styles.summary} numberOfLines={expanded ? undefined : 3}>
+        {summary}
+      </Text>
+    </>
+  );
+
+  if (!expandable) {
+    return <View style={styles.compactCard}>{content}</View>;
+  }
+
+  return (
+    <Pressable
+      onPress={onToggle}
+      style={({ pressed }) => [styles.compactCard, pressed && styles.compactCardPressed]}
+      accessibilityRole="button"
+      accessibilityState={{ expanded }}
+      accessibilityLabel={`${label}. ${summary}`}
+    >
+      {content}
+    </Pressable>
+  );
+}
+
+export function ProjectTimelineView({ events, expandable = false }: ProjectTimelineViewProps) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => setExpandedIds(new Set());
+    }, [])
+  );
+
+  function toggleExpanded(eventId: string) {
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(eventId)) next.delete(eventId);
+      else next.add(eventId);
+      return next;
+    });
+  }
+
   if (!events.length) {
     return (
       <EmptyState
@@ -54,6 +138,8 @@ export function ProjectTimelineView({ events }: { events: TimelineEvent[] }) {
         const icon = EVENT_ICONS[event.event_type] ?? 'ellipse-outline';
         const label = EVENT_LABELS[event.event_type] ?? event.event_type.replace(/_/g, ' ');
         const isLast = index === events.length - 1;
+        const canExpand = expandable && timelineEventIsExpandable(event);
+        const isExpanded = expandedIds.has(event.id);
 
         return (
           <View key={event.id} style={styles.row}>
@@ -65,14 +151,13 @@ export function ProjectTimelineView({ events }: { events: TimelineEvent[] }) {
             </View>
 
             <View style={styles.cardWrap}>
-              <View style={styles.compactCard}>
-                <Text style={styles.meta} numberOfLines={1}>
-                  {label} · {formatRelativeTime(event.created_at)}
-                </Text>
-                <Text style={styles.summary} numberOfLines={2}>
-                  {compactTimelineSummary(event)}
-                </Text>
-              </View>
+              <TimelineEventCard
+                event={event}
+                label={label}
+                expanded={isExpanded}
+                expandable={canExpand}
+                onToggle={() => toggleExpanded(event.id)}
+              />
             </View>
           </View>
         );
@@ -125,11 +210,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
+  compactCardPressed: {
+    opacity: 0.92,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+    marginBottom: 4,
+  },
   meta: {
+    flex: 1,
     fontSize: 11,
     fontWeight: '600',
     color: BRAND.textMuted,
-    marginBottom: 4,
+  },
+  chevron: {
+    marginTop: 1,
   },
   summary: {
     fontSize: 13,

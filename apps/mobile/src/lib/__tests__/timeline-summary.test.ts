@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { compactTimelineSummary, truncateTimelineText } from '../timeline-summary';
+import {
+  compactTimelineSummary,
+  timelineEventDetail,
+  timelineEventIsExpandable,
+  truncateTimelineText,
+} from '../timeline-summary';
 import type { TimelineEvent } from '../types';
 
 function event(partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'event_type' | 'title'>): TimelineEvent {
@@ -44,7 +49,7 @@ describe('compactTimelineSummary', () => {
       })
     );
 
-    expect(summary.length).toBeLessThanOrEqual(96);
+    expect(summary.length).toBeLessThanOrEqual(120);
     expect(summary.startsWith('The export is a Support Environment')).toBe(true);
     expect(summary.endsWith('…')).toBe(true);
   });
@@ -59,5 +64,48 @@ describe('compactTimelineSummary', () => {
         })
       )
     ).toBe('7 action item(s) extracted · pasted-email-1782855751035.txt');
+  });
+});
+
+describe('timelineEventDetail', () => {
+  it('returns the full flattened message for expansion', () => {
+    const fullDescription =
+      'The meeting notes show the team is working through final Epic go live issues, with immediate coordination across sites.';
+    expect(
+      timelineEventDetail(
+        event({
+          event_type: 'sunny_summary',
+          title: 'Sunny summarized: notes.txt',
+          description: fullDescription,
+        })
+      )
+    ).toBe(fullDescription);
+  });
+});
+
+describe('timelineEventIsExpandable', () => {
+  it('marks long summaries as expandable', () => {
+    expect(
+      timelineEventIsExpandable(
+        event({
+          event_type: 'sunny_summary',
+          title: 'Sunny summarized: notes.txt',
+          description:
+            'The meeting notes show the team is working through final Epic go live issues, with immediate coordination across sites and follow ups planned.',
+        })
+      )
+    ).toBe(true);
+  });
+
+  it('does not expand short upload names', () => {
+    expect(
+      timelineEventIsExpandable(
+        event({
+          event_type: 'file_upload',
+          title: 'Uploaded: notes.txt',
+          description: 'Short note',
+        })
+      )
+    ).toBe(false);
   });
 });

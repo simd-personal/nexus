@@ -1,6 +1,6 @@
 import type { TimelineEvent } from '@/lib/types';
 
-const MAX_SUMMARY_LENGTH = 96;
+const MAX_SUMMARY_LENGTH = 120;
 
 function flattenText(text: string): string {
   return text
@@ -39,4 +39,34 @@ export function compactTimelineSummary(event: TimelineEvent): string {
 
   if (description) return truncateTimelineText(description);
   return truncateTimelineText(title);
+}
+
+export function timelineEventDetail(event: TimelineEvent): string {
+  const { event_type, title, description } = event;
+
+  if (event_type === 'file_upload') {
+    if (/^Uploaded \d+ files?$/i.test(title)) return flattenText(title);
+    const fileName = title.replace(/^Uploaded:\s*/i, '').trim();
+    return flattenText(fileName || title);
+  }
+
+  if (event_type === 'sunny_summary') {
+    if (description) return flattenText(description);
+    return flattenText(title.replace(/^Sunny summarized:\s*/i, ''));
+  }
+
+  if (event_type === 'action_item') {
+    const from = description?.replace(/^From\s+/i, '').trim();
+    if (from) return flattenText(`${title} · ${from}`);
+    return flattenText(title);
+  }
+
+  if (description) return flattenText(description);
+  return flattenText(title);
+}
+
+export function timelineEventIsExpandable(event: TimelineEvent): boolean {
+  const compact = compactTimelineSummary(event);
+  const full = timelineEventDetail(event);
+  return full.length > compact.length || compact.endsWith('…');
 }
