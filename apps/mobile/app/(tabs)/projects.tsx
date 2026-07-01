@@ -59,8 +59,8 @@ export default function ProjectsScreen() {
   }, [query]);
 
   return (
-    <SwipeTabView current="projects">
     <Screen>
+    <SwipeTabView current="projects">
       <RefreshableScroll
         refreshing={refreshing}
         onRefresh={refresh}
@@ -115,8 +115,8 @@ export default function ProjectsScreen() {
           </>
         )}
       </RefreshableScroll>
-    </Screen>
     </SwipeTabView>
+    </Screen>
   );
 }
 

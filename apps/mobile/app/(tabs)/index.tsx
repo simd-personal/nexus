@@ -128,8 +128,8 @@ export default function HomeScreen() {
   }, [showBoth, criticalTotal, actionTotal]);
 
   return (
-    <SwipeTabView current="index">
     <Screen>
+    <SwipeTabView current="index">
       <RefreshableScroll
         refreshing={refreshing}
         onRefresh={refreshAll}
@@ -247,8 +247,8 @@ export default function HomeScreen() {
           <Text style={styles.error}>Could not refresh dashboard. Pull down to try again.</Text>
         ) : null}
       </RefreshableScroll>
-    </Screen>
     </SwipeTabView>
+    </Screen>
   );
 }
 

@@ -45,8 +45,8 @@ export default function CriticalScreen() {
   const items = query.data?.items ?? [];
 
   return (
-    <SwipeTabView current="critical">
     <Screen>
+    <SwipeTabView current="critical">
       <RefreshableScroll
         refreshing={refreshing}
         onRefresh={refresh}
@@ -73,8 +73,8 @@ export default function CriticalScreen() {
 
         {query.isError ? <Text style={styles.error}>Could not load critical items.</Text> : null}
       </RefreshableScroll>
-    </Screen>
     </SwipeTabView>
+    </Screen>
   );
 }
 

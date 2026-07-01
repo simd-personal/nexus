@@ -352,8 +352,8 @@ export default function SunnyScreen() {
   }
 
   return (
-    <SwipeTabView current="sunny">
     <Screen>
+    <SwipeTabView current="sunny">
       <View style={styles.shell}>
         <TabScreenHeader
           compactBrand
@@ -496,8 +496,8 @@ export default function SunnyScreen() {
           </View>
         </View>
       </View>
-    </Screen>
     </SwipeTabView>
+    </Screen>
   );
 }
 
