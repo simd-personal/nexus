@@ -10,6 +10,7 @@ import { TabScreenHeader } from '@/components/BrandHeader';
 import { HeaderActions, HeaderIconButton } from '@/components/ScreenHeader';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { SunnyUpdatePreviewCard } from '@/components/SunnyUpdateCard';
+import { SwipeTabView } from '@/components/SwipeTabView';
 import { EmptyState, Screen, StatPill } from '@/components/ui';
 import {
   fetchCriticalItems,
@@ -127,6 +128,7 @@ export default function HomeScreen() {
   }, [showBoth, criticalTotal, actionTotal]);
 
   return (
+    <SwipeTabView current="index">
     <Screen>
       <RefreshableScroll
         refreshing={refreshing}
@@ -152,6 +154,11 @@ export default function HomeScreen() {
           <DashboardSkeleton />
         ) : (
           <>
+            <PortfolioScopeBar
+              scope={scope}
+              onScopeChange={handleScopeChange}
+              disabled={scopeMutation.isPending}
+            />
             <View style={styles.statsGrid}>
               <StatPill label="Critical" value={criticalTotal} tone="danger" />
               <StatPill label="New (24h)" value={stats?.newUpdatesCount ?? 0} tone="accent" />
@@ -218,11 +225,6 @@ export default function HomeScreen() {
               />
             ) : null}
 
-            <PortfolioScopeBar
-              scope={scope}
-              onScopeChange={handleScopeChange}
-              disabled={scopeMutation.isPending}
-            />
             <SectionHeader title="Sunny updates" count={updates.length || undefined} />
             {updates.length === 0 ? (
               <EmptyState
@@ -246,6 +248,7 @@ export default function HomeScreen() {
         ) : null}
       </RefreshableScroll>
     </Screen>
+    </SwipeTabView>
   );
 }
 

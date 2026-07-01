@@ -8,6 +8,7 @@ import { RefreshableScroll } from '@/components/RefreshableScroll';
 import { TabScreenHeader } from '@/components/BrandHeader';
 import { HeaderActions, HeaderIconButton } from '@/components/ScreenHeader';
 import { EmptyState, Screen } from '@/components/ui';
+import { SwipeTabView } from '@/components/SwipeTabView';
 import { fetchAllProjects } from '@/lib/api';
 import { splitProjectsByPortfolio } from '@/lib/projects';
 import type { ProjectWithStats } from '@/lib/types';
@@ -58,6 +59,7 @@ export default function ProjectsScreen() {
   }, [query]);
 
   return (
+    <SwipeTabView current="projects">
     <Screen>
       <RefreshableScroll
         refreshing={refreshing}
@@ -114,6 +116,7 @@ export default function ProjectsScreen() {
         )}
       </RefreshableScroll>
     </Screen>
+    </SwipeTabView>
   );
 }
 

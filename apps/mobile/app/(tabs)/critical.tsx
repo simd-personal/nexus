@@ -5,6 +5,7 @@ import { CriticalItemRow } from '@/components/lists';
 import { RefreshableScroll } from '@/components/RefreshableScroll';
 import { TabScreenHeader } from '@/components/BrandHeader';
 import { EmptyState, Screen } from '@/components/ui';
+import { SwipeTabView } from '@/components/SwipeTabView';
 import { fetchCriticalItems, updateCriticalItemStatus } from '@/lib/api';
 
 export default function CriticalScreen() {
@@ -44,6 +45,7 @@ export default function CriticalScreen() {
   const items = query.data?.items ?? [];
 
   return (
+    <SwipeTabView current="critical">
     <Screen>
       <RefreshableScroll
         refreshing={refreshing}
@@ -72,6 +74,7 @@ export default function CriticalScreen() {
         {query.isError ? <Text style={styles.error}>Could not load critical items.</Text> : null}
       </RefreshableScroll>
     </Screen>
+    </SwipeTabView>
   );
 }
 

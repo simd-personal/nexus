@@ -45,11 +45,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="critical"
+        name="projects"
         options={{
-          title: 'Critical',
+          title: 'Projects',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon routeName="critical" focused={focused} color={color} />
+            <TabBarIcon routeName="projects" focused={focused} color={color} />
           ),
         }}
       />
@@ -65,11 +65,11 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="projects"
+        name="critical"
         options={{
-          title: 'Projects',
+          title: 'Critical',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon routeName="projects" focused={focused} color={color} />
+            <TabBarIcon routeName="critical" focused={focused} color={color} />
           ),
         }}
       />

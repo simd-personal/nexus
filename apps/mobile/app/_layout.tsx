@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { stackDetailScreenOptions } from '@/navigation/stackHeaderOptions';
 import { AppProviders } from '@/providers/AppProviders';
@@ -93,6 +94,9 @@ function AuthGate() {
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 999,
@@ -104,10 +108,12 @@ export default function RootLayout() {
   useFonts(JAKARTA_FONTS);
 
   return (
-    <AuthProvider>
-      <AppProviders>
-        <AuthGate />
-      </AppProviders>
-    </AuthProvider>
+    <GestureHandlerRootView style={styles.root}>
+      <AuthProvider>
+        <AppProviders>
+          <AuthGate />
+        </AppProviders>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
