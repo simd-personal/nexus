@@ -1,8 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { Sparkles, ClipboardList } from 'lucide-react';
+import { isProjectSectionVisible, type ProjectNavVisibility } from '@upperdeck/shared/project-nav';
 import { cn } from '@/lib/utils';
 
 const tabs = [
@@ -12,18 +14,35 @@ const tabs = [
   { href: 'deck', label: 'Deck', shortLabel: 'Deck' },
   { href: 'critical-items', label: 'Critical Items', shortLabel: 'Critical' },
   { href: 'timeline', label: 'Timeline', shortLabel: 'Timeline' },
-  { href: 'playbook', label: 'Playbook', shortLabel: 'Playbook' },
+  { href: 'playbook', label: 'Playbook', shortLabel: 'Playbook', coach: true },
   { href: 'follow-up', label: 'Follow Up Email', shortLabel: 'Follow Up' },
 ];
 
-export function ProjectNav({ projectId }: { projectId: string }) {
+export function ProjectNav({
+  projectId,
+  visibility,
+}: {
+  projectId: string;
+  visibility: ProjectNavVisibility;
+}) {
   const pathname = usePathname();
+  const router = useRouter();
   const basePath = `/projects/${projectId}`;
+  const visibleTabs = tabs.filter((tab) => isProjectSectionVisible(tab.href, visibility));
+
+  useEffect(() => {
+    function onProjectUpdated() {
+      router.refresh();
+    }
+
+    window.addEventListener('project-files-uploaded', onProjectUpdated);
+    return () => window.removeEventListener('project-files-uploaded', onProjectUpdated);
+  }, [router]);
 
   return (
     <div className="border-b border-gray-200 bg-white dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
       <nav className="project-nav-scroll flex gap-1 overflow-x-auto px-4 sm:px-6">
-        {tabs.map((tab) => {
+        {visibleTabs.map((tab) => {
           const href = `${basePath}/${tab.href}`;
           const isActive = pathname === href || (tab.href === 'overview' && pathname === basePath);
           return (
@@ -38,7 +57,13 @@ export function ProjectNav({ projectId }: { projectId: string }) {
               )}
             >
               <span className="inline-flex items-center gap-1.5">
-                {'ai' in tab && tab.ai ? (
+                {'coach' in tab && tab.coach ? (
+                  <ClipboardList
+                    className="h-3.5 w-3.5 shrink-0 text-emerald-700 dark:text-emerald-300"
+                    strokeWidth={2.25}
+                    aria-hidden
+                  />
+                ) : 'ai' in tab && tab.ai ? (
                   <Sparkles
                     className="h-3.5 w-3.5 shrink-0 text-[var(--brand-accent)]"
                     strokeWidth={2.25}

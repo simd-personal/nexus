@@ -135,7 +135,7 @@ export function DataSecurityPanel({
           </h2>
           {!compact ? (
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              What happens to client documents you upload, for every account tier.
+              What happens to client documents when you upload them.
             </p>
           ) : null}
         </div>

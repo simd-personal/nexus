@@ -29,6 +29,12 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
 
   const title = overviewQuery.data?.project?.project_name ?? 'Project';
   const client = overviewQuery.data?.project?.client_name;
+  const navVisibility = overviewQuery.data?.nav
+    ? {
+        showTimeline: overviewQuery.data.nav.show_timeline,
+        showCriticalItems: overviewQuery.data.nav.show_critical_items,
+      }
+    : undefined;
 
   const goBack = useCallback(() => {
     const target = resolveProjectSectionBack(projectId, activeSection);
@@ -86,7 +92,7 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
 
         <View style={styles.sideSlot} />
       </View>
-      <ProjectSectionNav projectId={projectId} />
+      <ProjectSectionNav projectId={projectId} visibility={navVisibility} />
     </View>
   );
 }

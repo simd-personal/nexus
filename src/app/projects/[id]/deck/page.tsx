@@ -1,5 +1,7 @@
-import { GenerateButton } from '@/components/project/GenerateButton';
-import { AI_EMPLOYEE_NAME } from '@/lib/constants';
+import { DeckWorkspace } from '@/components/project/DeckWorkspace';
+import { getProject } from '@/lib/data/queries';
+import { parseProjectDeckStyle } from '@/lib/projects/deck-style';
+import { notFound } from 'next/navigation';
 
 export default async function DeckPage({
   params,
@@ -7,14 +9,10 @@ export default async function DeckPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const project = await getProject(id);
+  if (!project) notFound();
 
   return (
-    <GenerateButton
-      projectId={id}
-      type="deck"
-      label="Presentation Deck"
-      description={`${AI_EMPLOYEE_NAME} generates a client-ready presentation outline from your project materials using ChatGPT.`}
-      instructionsPlaceholder="e.g. Q3 board review deck, 8 slides, focus on risks and next steps..."
-    />
+    <DeckWorkspace projectId={id} initialDeckStyle={parseProjectDeckStyle(project.deck_style)} />
   );
 }

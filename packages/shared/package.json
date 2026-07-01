@@ -11,6 +11,8 @@
     "./mobile": "./src/mobile.ts",
     "./chat-scope": "./src/chat-scope.ts",
     "./timeline-summary": "./src/timeline-summary.ts",
-    "./data-security": "./src/data-security.ts"
+    "./data-security": "./src/data-security.ts",
+    "./copy": "./src/copy.ts",
+    "./project-nav": "./src/project-nav.ts"
   }
 }

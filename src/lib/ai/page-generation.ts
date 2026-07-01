@@ -180,7 +180,8 @@ export async function generatePageDeck(
   projectName: string,
   clientName: string,
   context: PageGenerationContext,
-  instructions?: string
+  instructions?: string,
+  deckStyleSection?: string | null
 ): Promise<string> {
   const filtered = {
     ...context,
@@ -191,6 +192,9 @@ export async function generatePageDeck(
     `${SUNNY_PERSONA}\n\n${PAGE_DECK_PROMPT}`,
     [
       `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${formatContext(filtered)}`,
+      deckStyleSection?.trim()
+        ? `\nCompany deck template and style guidance:\n${deckStyleSection.trim()}`
+        : '',
       instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
     ].join(''),
     OPENAI_MODELS.generation

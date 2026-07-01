@@ -7,6 +7,7 @@ import {
   resolveScopeProjectIds,
   type ChatScope,
 } from '@upperdeck/shared/chat-scope';
+import { SUNNY_AUTHORITY_TAGLINE } from '@upperdeck/shared/copy';
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -400,6 +401,9 @@ export default function SunnyScreen() {
                 <Text style={styles.emptyTitle}>
                   {canChat ? `Ask about ${scopeSummary.toLowerCase()}` : 'Add a project to begin'}
                 </Text>
+                {canChat ? (
+                  <Text style={styles.authorityTagline}>{SUNNY_AUTHORITY_TAGLINE}</Text>
+                ) : null}
                 <Text style={styles.emptyChat}>
                   Search your uploaded materials or ask about risks, follow-ups, and what changed
                   recently.
@@ -563,6 +567,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: BRAND.graphite,
     textAlign: 'center',
+  },
+  authorityTagline: {
+    fontFamily: Platform.select({ ios: 'Georgia', android: 'serif', default: 'serif' }),
+    fontSize: 11,
+    fontWeight: '500',
+    letterSpacing: 2.2,
+    textTransform: 'uppercase',
+    color: '#5c6470',
+    textAlign: 'center',
+    maxWidth: 320,
   },
   emptyChat: {
     textAlign: 'center',

@@ -1,10 +1,11 @@
-'use client';
-
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { LoadingState } from '@/components/ui/EmptyState';
 import { formatNaturalProse } from '@/lib/ai/generation-prompts';
+import { openAIGenerationModelLabel } from '@/lib/ai/model-display';
 import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { AI_EMPLOYEE_NAME } from '@/lib/constants';
 
@@ -14,6 +15,7 @@ interface GenerateButtonProps {
   label: string;
   description?: string;
   instructionsPlaceholder?: string;
+  deckStyleConfigured?: boolean;
 }
 
 export function GenerateButton({
@@ -22,12 +24,16 @@ export function GenerateButton({
   label,
   description,
   instructionsPlaceholder = 'Tell Sunny what to focus on, tone, audience, or format...',
+  deckStyleConfigured = false,
 }: GenerateButtonProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [content, setContent] = useState<string | null>(null);
   const [title, setTitle] = useState<string | null>(null);
+  const [savedFileName, setSavedFileName] = useState<string | null>(null);
   const [version, setVersion] = useState<'short' | 'detailed' | 'executive'>('detailed');
   const [instructions, setInstructions] = useState('');
+  const generationModel = openAIGenerationModelLabel();
 
   async function handleGenerate() {
     setLoading(true);
@@ -46,6 +52,11 @@ export function GenerateButton({
       if (data.data) {
         setContent(formatNaturalProse(data.data.content));
         setTitle(data.data.title);
+        setSavedFileName(type === 'deck' ? (data.data.saved_file_name ?? null) : null);
+        if (type === 'deck' && data.data.saved_file_id) {
+          router.refresh();
+          window.dispatchEvent(new CustomEvent('project-files-uploaded'));
+        }
       } else {
         setContent(data.error ?? 'Generation failed. Please try again.');
       }
@@ -87,7 +98,17 @@ export function GenerateButton({
             className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Generated with GPT 5 High. Natural prose, ready to copy and paste.
+            {type === 'deck' ? (
+              <>
+                Generated with {generationModel}.
+                {deckStyleConfigured
+                  ? ' Using your saved company template and deck guidance.'
+                  : ' Add a company template above for on-brand output.'}{' '}
+                Each run saves an outline to Files automatically.
+              </>
+            ) : (
+              <>Generated with {generationModel}. Natural prose, ready to copy and paste.</>
+            )}
           </p>
         </div>
         <Button onClick={handleGenerate} loading={loading}>
@@ -97,12 +118,28 @@ export function GenerateButton({
       </Card>
 
       {loading && (
-        <LoadingState message={`${AI_EMPLOYEE_NAME} is generating with GPT 5 High...`} sunny />
+        <LoadingState
+          message={
+            type === 'deck'
+              ? `${AI_EMPLOYEE_NAME} is building your deck with ${generationModel}...`
+              : `${AI_EMPLOYEE_NAME} is generating with ${generationModel}...`
+          }
+          sunny
+        />
       )}
 
       {content && (
         <Card className="mt-6">
           {title && <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">{title}</h3>}
+          {type === 'deck' && savedFileName ? (
+            <p className="mb-4 text-sm text-emerald-800 dark:text-emerald-200">
+              Saved to Files as{' '}
+              <Link href={`/projects/${projectId}/files`} className="font-medium underline underline-offset-2">
+                {savedFileName}
+              </Link>
+              .
+            </p>
+          ) : null}
           <div className="text-sm leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-normal">
             {content}
           </div>

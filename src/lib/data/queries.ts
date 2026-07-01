@@ -624,6 +624,29 @@ export async function getProjectTimeline(
   return data ?? [];
 }
 
+export async function getProjectNavVisibility(
+  projectId: string,
+  options?: { supabase?: RequestSupabaseClient }
+): Promise<{ showTimeline: boolean; showCriticalItems: boolean }> {
+  const supabase = await resolveSupabase(options?.supabase);
+
+  const [timeline, critical] = await Promise.all([
+    supabase
+      .from('timeline_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId),
+    supabase
+      .from('critical_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', projectId),
+  ]);
+
+  return {
+    showTimeline: (timeline.count ?? 0) > 0,
+    showCriticalItems: (critical.count ?? 0) > 0,
+  };
+}
+
 export async function getProjectEntities(
   projectId: string,
   options?: { includeSubProjects?: boolean }

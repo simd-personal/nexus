@@ -116,6 +116,7 @@ export interface Project {
   watch_keywords: string[];
   my_role: string | null;
   portfolio: ProjectPortfolio;
+  deck_style?: unknown;
   created_at: string;
   updated_at: string;
 }

@@ -51,15 +51,15 @@ export const DATA_SECURITY_ALL_USERS: DataSecuritySection = {
     'We do not sell your content or use it for advertising.',
   ],
   commitment:
-    'Every UpperDeck account, whether Free, Pro, or Enterprise, runs on the same secure storage stack. Your content remains yours.',
+    'Your uploads stay private to your workspace. You own your content and can delete it anytime.',
 };
 
 export const DATA_SECURITY_PRO_ADDITIONS: DataSecuritySection = {
   title: 'Pro data handling',
-  intro: 'Pro unlocks more Sunny usage and projects; your storage and privacy protections are the same enterprise-grade foundation.',
+  intro: 'Pro unlocks more Sunny usage and projects. Storage and privacy protections stay the same.',
   badges: [],
   bullets: [
-    'Same private storage, encryption, and tenant isolation as every account.',
+    'Same private storage, encryption, and tenant isolation from day one.',
     'Higher usage limits do not change who can access your files. Still only you (and your org admins on Enterprise).',
   ],
 };

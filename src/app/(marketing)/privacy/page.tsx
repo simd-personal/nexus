@@ -115,8 +115,8 @@ export default function PrivacyPage() {
           </p>
           <p>
             API keys for AI and payment providers are kept server-side. Organization tenants may
-            enable additional safeguards such as PHI redaction during file processing. Every account
-            tier, whether Free, Pro, or Enterprise, uses the same secure storage foundation.
+            enable additional safeguards such as PHI redaction during file processing. All
+            workspaces use the same private storage foundation; uploads stay scoped to your projects.
           </p>
 
           <h2>Data retention & account deletion</h2>

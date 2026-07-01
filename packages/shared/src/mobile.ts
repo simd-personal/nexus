@@ -113,6 +113,10 @@ export interface MobileProjectOverviewResponse {
     action_item_count: number;
   } | null;
   critical_items: MobileCriticalItem[];
+  nav: {
+    show_timeline: boolean;
+    show_critical_items: boolean;
+  };
 }
 
 export interface MobileProjectFile {

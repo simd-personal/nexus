@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import {
-  Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, Download, Trash2, Cpu, ArrowDown, RefreshCw, X, ListOrdered,
+  Send, Square, Plus, MessageSquare, Copy, Check, Sparkles, ChevronLeft, ChevronRight, ChevronDown, Download, Trash2, Cpu, ArrowDown, RefreshCw, X, ListOrdered,
 } from 'lucide-react';
 import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import { Button } from '@/components/ui/Button';
@@ -36,6 +36,7 @@ import {
   type ChatScope,
 } from '@/lib/chat/scope';
 import { sessionMatchesChatScope } from '@upperdeck/shared/chat-scope';
+import { SUNNY_AUTHORITY_TAGLINE } from '@upperdeck/shared/copy';
 import { ChatScopeChips, ChatScopePicker } from '@/components/chat/ChatScopePicker';
 import type {
   ChatMessage,
@@ -46,10 +47,22 @@ import type {
   SunnyChatArtifact,
   ProjectWithStats,
 } from '@/types/database';
+import { PlaybookCoachMark } from '@/components/playbook/PlaybookCoachMark';
+import {
+  type ChatMode,
+  chatDescription,
+  chatSuggestions,
+  chatTitle,
+  getChatModePresentation,
+} from '@/lib/chat/mode-presentation';
+import {
+  engineBadgeLabel,
+  modelSelectorHint,
+  modelSelectorOptions,
+  modelSelectorPillLabel,
+} from '@/lib/ai/model-display';
 import { chatShellClassName } from '@/lib/chat/shell';
 import { cn } from '@/lib/utils';
-
-type ChatMode = 'project' | 'search' | 'brief' | 'playbook';
 
 function isProjectScopedMode(mode: ChatMode): boolean {
   return mode === 'project' || mode === 'brief' || mode === 'playbook';
@@ -59,24 +72,9 @@ function isPageGenerationMode(mode: ChatMode): boolean {
   return mode === 'brief' || mode === 'playbook';
 }
 
-function chatTitle(mode: ChatMode): string {
-  if (mode === 'search') return `Chat with ${AI_EMPLOYEE_NAME}`;
-  if (mode === 'brief') return `Ask ${AI_EMPLOYEE_NAME}`;
-  if (mode === 'playbook') return 'Operating Playbook';
-  return `Chat with ${AI_EMPLOYEE_NAME}`;
-}
-
-function chatDescription(mode: ChatMode): string {
-  if (mode === 'brief') {
-    return `Ask questions, generate executive briefs, and refine answers from your project materials. Conversations are saved automatically.`;
-  }
-  if (mode === 'playbook') {
-    return 'Build and refine client operating playbooks from your project evidence. Conversations are saved automatically.';
-  }
-  if (mode === 'search') {
-    return 'Search your uploaded materials, create decks and emails, or ask about your projects. Pick programs and workstreams to narrow scope.';
-  }
-  return 'Ask about your project materials or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.';
+function chatAuthorityTagline(mode: ChatMode): string | null {
+  if (mode === 'brief' || mode === 'playbook') return null;
+  return SUNNY_AUTHORITY_TAGLINE;
 }
 
 function cacheScopeKey(
@@ -836,37 +834,11 @@ export function SunnyChatInterface({
     };
   }, [initialQuery]);
 
-  const suggestions =
-    mode === 'search'
-      ? [
-          'Tell me everything in the latest Q3 review',
-          'Find staffing concerns across all projects',
-          'Who mentioned vendor consolidation?',
-          'Summarize critical items this week',
-        ]
-      : mode === 'brief'
-        ? [
-            'Generate an executive brief from project materials',
-            'Focus on risks and recommended next steps',
-            'Make the brief shorter and more executive',
-            'Highlight what changed recently',
-          ]
-        : mode === 'playbook'
-          ? [
-              'Build an operating playbook from project materials',
-              'Include follow up cadence and owner actions',
-              'Emphasize client concerns and operational risks',
-              'Make it shorter for a VP read',
-            ]
-          : [
-              'Draft a follow up email about staffing concerns',
-              'Create a Q3 review deck for the board',
-              'What are the critical issues?',
-              'Pull out action items and add them',
-            ];
+  const suggestions = chatSuggestions(mode);
+  const presentation = getChatModePresentation(mode);
 
   return (
-    <div className={chatShellClassName(embedded)}>
+    <div className={chatShellClassName(embedded, presentation.workspaceClass)}>
       {sidebarOpen && (
         <button
           type="button"
@@ -935,7 +907,14 @@ export function SunnyChatInterface({
 
       {/* Main chat */}
       <div className="flex min-h-0 flex-1 flex-col min-w-0">
-        <div className="flex shrink-0 items-center gap-2 border-b border-gray-100 bg-white px-4 py-2 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
+        <div
+          className={cn(
+            'flex shrink-0 items-center gap-2 border-b px-4 py-2',
+            presentation.useCoachBranding
+              ? 'playbook-workspace-header border-emerald-200/80 bg-emerald-50/70 dark:border-emerald-900/40 dark:bg-emerald-950/20'
+              : 'border-gray-100 bg-white dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]'
+          )}
+        >
           <button
             type="button"
             onClick={() => {
@@ -946,11 +925,22 @@ export function SunnyChatInterface({
           >
             {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           </button>
-          <SunnyAvatar size="sm" animate={isStreaming ? 'work' : 'idle'} />
-          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{AI_EMPLOYEE_NAME}</span>
+          {presentation.useCoachBranding ? (
+            <PlaybookCoachMark size="sm" />
+          ) : (
+            <SunnyAvatar size="sm" animate={isStreaming ? 'work' : 'idle'} />
+          )}
+          <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            {presentation.useCoachBranding ? presentation.headerTitle : AI_EMPLOYEE_NAME}
+          </span>
           {mode !== 'search' && projectName && (
             <span className="text-xs text-gray-400 dark:text-gray-500 truncate">· {projectName}</span>
           )}
+          {presentation.useCoachBranding ? (
+            <span className="hidden rounded-full border border-emerald-200 bg-white/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-200 sm:inline">
+              Gameplan
+            </span>
+          ) : null}
           <div className="ml-auto flex items-center gap-2">
             {mode === 'search' && projects && projects.length > 0 && (
               <ChatScopePicker
@@ -960,26 +950,34 @@ export function SunnyChatInterface({
                 lockScope={lockScope || !onScopeChange}
               />
             )}
-            <div
-              className="flex items-center gap-2 rounded-lg border border-gray-200 dark:border-[var(--ud-cloud)] bg-gray-50 dark:bg-[var(--ud-stone)] px-2.5 py-1.5 shadow-sm"
-              title="Auto routes Q&A to ChatGPT and document creation to Claude"
+            <label
+              className="relative flex cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)]"
+              title={modelSelectorHint(modelPreference)}
             >
-              <Cpu className="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
-              <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">Model</span>
+              <Cpu className="pointer-events-none h-4 w-4 shrink-0 text-gray-500 dark:text-gray-400" aria-hidden />
+              <span className="pointer-events-none whitespace-nowrap text-xs font-medium text-gray-600 dark:text-gray-300">
+                Model
+              </span>
+              <span className="pointer-events-none max-w-[11rem] truncate text-xs font-semibold text-gray-900 sm:max-w-none dark:text-gray-100">
+                {modelSelectorPillLabel(modelPreference)}
+              </span>
+              <ChevronDown
+                className="pointer-events-none h-3.5 w-3.5 shrink-0 text-gray-500 dark:text-gray-400"
+                aria-hidden
+              />
               <select
                 value={modelPreference}
                 onChange={(e) => setModelPreference(e.target.value as ModelPreference)}
                 aria-label="Choose AI model"
-                className="text-xs font-semibold text-gray-900 dark:text-gray-100 border-0 bg-transparent py-0 pl-1 pr-6 cursor-pointer focus:outline-none focus:ring-0 appearance-none bg-[length:12px] bg-[right_0_center] bg-no-repeat"
-                style={{
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                }}
+                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
               >
-                <option value="auto">Auto</option>
-                <option value="gpt">ChatGPT</option>
-                <option value="claude">Claude</option>
+                {modelSelectorOptions().map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
-            </div>
+            </label>
           </div>
         </div>
 
@@ -1004,14 +1002,23 @@ export function SunnyChatInterface({
           className="relative min-h-0 flex-1 overflow-y-auto overscroll-y-contain [overflow-anchor:auto]"
         >
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-            {messages.length === 0 && (
+            {messages.length === 0 && (() => {
+              const authorityTagline = chatAuthorityTagline(mode);
+              return (
               <div className="text-center py-12">
                 <div className="mx-auto mb-4 flex justify-center">
-                  <SunnyAvatar size="xl" animate="wave" />
+                  {presentation.useCoachBranding ? (
+                    <PlaybookCoachMark size="xl" />
+                  ) : (
+                    <SunnyAvatar size="xl" animate="wave" />
+                  )}
                 </div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  {chatTitle(mode)}
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
+                  {chatTitle(mode, AI_EMPLOYEE_NAME)}
                 </h2>
+                {authorityTagline ? (
+                  <p className="sunny-authority-tagline mb-2">{authorityTagline}</p>
+                ) : null}
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
                   {chatDescription(mode)}
                 </p>
@@ -1021,14 +1028,19 @@ export function SunnyChatInterface({
                       key={s}
                       type="button"
                       onClick={() => submitMessage(s)}
-                      className="text-xs px-3 py-2 bg-gray-100 dark:bg-[var(--ud-cloud)] rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[var(--ud-slate)]/30 dark:bg-[var(--ud-cloud)] transition-colors"
+                      className={cn(
+                        'text-xs px-3 py-2 rounded-xl transition-colors',
+                        presentation.suggestionChipClass ||
+                          'bg-gray-100 dark:bg-[var(--ud-cloud)] text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-[var(--ud-slate)]/30'
+                      )}
                     >
                       {s}
                     </button>
                   ))}
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {messages.map((msg) => {
               const artifact = msg.metadata?.artifact as SunnyChatArtifact | undefined;
@@ -1069,15 +1081,21 @@ export function SunnyChatInterface({
                 <div key={msg.id} className={cn('group flex gap-3', msg.role === 'user' ? 'justify-end' : 'justify-start')}>
                   {msg.role === 'assistant' && (
                     <div className="shrink-0 mt-0.5">
-                      <SunnyAvatar size="sm" animate={streaming ? 'work' : 'none'} />
+                      {presentation.useCoachBranding ? (
+                        <PlaybookCoachMark size="sm" />
+                      ) : (
+                        <SunnyAvatar size="sm" animate={streaming ? 'work' : 'none'} />
+                      )}
                     </div>
                   )}
                   <div className={cn('max-w-[85%]', msg.role === 'user' && 'order-first')}>
                     {msg.role === 'assistant' && (
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{AI_EMPLOYEE_NAME}</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                          {presentation.useCoachBranding ? presentation.assistantLabel : AI_EMPLOYEE_NAME}
+                        </span>
                         {model && (
-                          <Badge variant="neutral">{model === 'claude' ? 'Claude' : 'ChatGPT'}</Badge>
+                          <Badge variant="neutral">{engineBadgeLabel(model)}</Badge>
                         )}
                       </div>
                     )}
@@ -1249,7 +1267,7 @@ export function SunnyChatInterface({
                     : isPageGenerationMode(mode)
                       ? mode === 'brief'
                         ? `Ask ${AI_EMPLOYEE_NAME} anything or request an executive brief...`
-                        : 'Generate or refine an operating playbook...'
+                        : presentation.composerPlaceholder || 'Generate or refine an operating playbook...'
                       : mode === 'search'
                         ? 'Ask about your uploaded project materials...'
                         : `Message ${AI_EMPLOYEE_NAME}...`

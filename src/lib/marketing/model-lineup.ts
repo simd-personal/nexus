@@ -1,21 +1,10 @@
-import { CLAUDE_MODELS } from '@/lib/ai/claude';
-import { OPENAI_MODELS } from '@/lib/ai/openai';
-
-/** User-facing names for model IDs configured in the AI layer. */
-const MARKETING_MODEL_LABELS: Record<string, string> = {
-  'gpt-5.5': 'GPT-5.5',
-  'claude-opus-4-8': 'Claude Opus 4.8',
-};
-
-function labelForModelId(modelId: string): string {
-  return MARKETING_MODEL_LABELS[modelId] ?? modelId;
-}
+import { claudeDocumentModelLabel, openAIChatModelLabel } from '@/lib/ai/model-display';
 
 /** Primary chat/generation models Sunny uses today — update CLAUDE_MODELS / OPENAI_MODELS to refresh marketing copy. */
 export function getActiveMarketingModels(): { openai: string; anthropic: string } {
   return {
-    openai: labelForModelId(OPENAI_MODELS.chat),
-    anthropic: labelForModelId(CLAUDE_MODELS.brief),
+    openai: openAIChatModelLabel(),
+    anthropic: claudeDocumentModelLabel(),
   };
 }
 

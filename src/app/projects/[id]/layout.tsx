@@ -4,7 +4,7 @@ import { AppShellLayout } from '@/components/layout/AppShellLayout';
 import { ProjectLayoutClient } from '@/components/project/ProjectLayoutClient';
 import { ProjectNav } from '@/components/project/ProjectNav';
 import { StatusBadge } from '@/components/ui/Badge';
-import { getProject, getParentProject } from '@/lib/data/queries';
+import { getProject, getParentProject, getProjectNavVisibility } from '@/lib/data/queries';
 
 export default async function ProjectLayout({
   children,
@@ -19,6 +19,7 @@ export default async function ProjectLayout({
   if (!project) notFound();
 
   const parentProject = await getParentProject(project);
+  const navVisibility = await getProjectNavVisibility(id);
 
   return (
     <AppShellLayout>
@@ -46,7 +47,7 @@ export default async function ProjectLayout({
             </div>
           </div>
           <div className="shrink-0">
-            <ProjectNav projectId={id} />
+            <ProjectNav projectId={id} visibility={navVisibility} />
           </div>
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden p-4 sm:p-6 lg:p-8">{children}</div>
         </div>

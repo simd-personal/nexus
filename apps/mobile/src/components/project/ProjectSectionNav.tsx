@@ -8,17 +8,24 @@ import {
   resolveProjectSectionNavigation,
   type ProjectSection,
 } from '@/lib/project-sections';
+import type { ProjectNavVisibility } from '@upperdeck/shared/project-nav';
+import { filterProjectSections } from '@upperdeck/shared/project-nav';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
 type ProjectSectionNavProps = {
   projectId: string;
+  visibility?: ProjectNavVisibility;
 };
 
-export function ProjectSectionNav({ projectId }: ProjectSectionNavProps) {
+export function ProjectSectionNav({ projectId, visibility }: ProjectSectionNavProps) {
   const router = useRouter();
   const segments = useSegments();
   const scrollRef = useRef<ScrollView>(null);
   const activeKey = activeProjectSection(segments as string[]);
+  const sections = filterProjectSections(
+    PROJECT_SECTIONS,
+    visibility ?? { showTimeline: false, showCriticalItems: false }
+  );
 
   function navigate(section: ProjectSection) {
     const next = resolveProjectSectionNavigation(projectId, section.key, activeKey);
@@ -35,7 +42,7 @@ export function ProjectSectionNav({ projectId }: ProjectSectionNavProps) {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.row}
       >
-        {PROJECT_SECTIONS.map((section) => {
+        {sections.map((section) => {
           const active = section.key === activeKey;
           return (
             <Pressable

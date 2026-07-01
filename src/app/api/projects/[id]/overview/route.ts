@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getProject,
   getProjectCriticalItems,
+  getProjectNavVisibility,
   getProjectsWithStats,
 } from '@/lib/data/queries';
 import { requireRequestAuth } from '@/lib/supabase/request-auth';
@@ -20,9 +21,10 @@ export async function GET(
   }
 
   const includeSubProjects = !project.parent_project_id;
-  const [criticalItems, projectsWithStats] = await Promise.all([
+  const [criticalItems, projectsWithStats, navVisibility] = await Promise.all([
     getProjectCriticalItems(id, { includeSubProjects, supabase: auth.supabase }),
     getProjectsWithStats({ supabase: auth.supabase }),
+    getProjectNavVisibility(id, { supabase: auth.supabase }),
   ]);
 
   const statsProject =
@@ -41,5 +43,9 @@ export async function GET(
         }
       : null,
     critical_items: criticalItems.slice(0, 5),
+    nav: {
+      show_timeline: navVisibility.showTimeline,
+      show_critical_items: navVisibility.showCriticalItems,
+    },
   });
 }
