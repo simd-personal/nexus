@@ -5,7 +5,6 @@ export type ProjectSectionKey =
   | 'overview'
   | 'files'
   | 'timeline'
-  | 'search'
   | 'ask-sunny'
   | 'deck'
   | 'critical-items'
@@ -23,7 +22,6 @@ export const PROJECT_SECTIONS: ProjectSection[] = [
   { key: 'overview', label: 'Overview', segment: '', icon: 'grid-outline' },
   { key: 'files', label: 'Files', segment: 'files', icon: 'document-text-outline' },
   { key: 'timeline', label: 'Timeline', segment: 'timeline', icon: 'time-outline' },
-  { key: 'search', label: 'Search', segment: 'search', icon: 'search-outline' },
   { key: 'ask-sunny', label: 'Sunny', segment: 'ask-sunny', icon: 'sunny-outline' },
   { key: 'deck', label: 'Deck', segment: 'deck', icon: 'easel-outline' },
   { key: 'critical-items', label: 'Critical', segment: 'critical-items', icon: 'warning-outline' },
