@@ -3,7 +3,7 @@
  * Output is natural prose with no asterisks or dashes.
  */
 import { streamLongForm as streamClaudeLongForm, CLAUDE_MODELS } from '@/lib/ai/claude';
-import { isOpenAIUnavailable } from '@/lib/ai/errors';
+import { withOpenAIFallback } from '@/lib/ai/fallback';
 import { chatCompletion, generateLongForm, streamLongForm, structuredExtraction, OPENAI_MODELS } from '@/lib/ai/openai';
 import { resolveEngine } from '@/lib/ai/stream-agent';
 import {
@@ -237,18 +237,14 @@ async function streamWithEngine(
       options?.highReasoning ? { reasoningEffort: 'high' } : undefined
     );
 
-  try {
-    if (engine === 'claude') {
-      return { text: await runClaude(), engine: 'claude' };
-    }
-    return { text: await runGpt(), engine: 'gpt' };
-  } catch (error) {
-    if (engine === 'gpt' && isOpenAIUnavailable(error)) {
-      console.warn('[openai] Page generation unavailable — falling back to Claude');
-      return { text: await runClaude(), engine: 'claude' };
-    }
-    throw error;
+  if (engine === 'claude') {
+    return { text: await runClaude(), engine: 'claude' };
   }
+  return withOpenAIFallback<{ text: string; engine: ModelEngine }>({
+    label: 'Page generation',
+    primary: async () => ({ text: await runGpt(), engine: 'gpt' }),
+    fallback: async () => ({ text: await runClaude(), engine: 'claude' }),
+  });
 }
 
 /** Streaming executive brief for Sunny Brief page chat */

@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { streamChatCompletion, OPENAI_MODELS } from './openai';
 import { streamLongForm, CLAUDE_MODELS } from './claude';
-import { isOpenAIUnavailable } from '@/lib/ai/errors';
+import { withOpenAIFallback } from '@/lib/ai/fallback';
 import { classifyIntent, type SunnyAgentAction } from './agent';
 import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
 import { fitChunksToBudget } from './context-budget';
@@ -131,26 +131,25 @@ export async function streamSearchAnswer(
     onToken(token);
   };
 
-  try {
-    if (engine === 'claude') {
-      await streamLongForm(system, userPrompt, captureToken, CLAUDE_MODELS.brief, {
-        maxTokens: ANSWER_MAX_OUTPUT_TOKENS,
-      });
-    } else {
-      await streamChatCompletion(system, userPrompt, captureToken, OPENAI_MODELS.chat, {
-        maxCompletionTokens: ANSWER_MAX_OUTPUT_TOKENS,
-      });
-    }
-  } catch (error) {
-    if (engine === 'gpt' && isOpenAIUnavailable(error)) {
-      console.warn('[openai] Chat unavailable — falling back to Claude for search answer');
-      usedEngine = 'claude';
-      await streamLongForm(system, userPrompt, captureToken, CLAUDE_MODELS.brief, {
-        maxTokens: ANSWER_MAX_OUTPUT_TOKENS,
-      });
-    } else {
-      throw error;
-    }
+  const streamClaudeAnswer = () =>
+    streamLongForm(system, userPrompt, captureToken, CLAUDE_MODELS.brief, {
+      maxTokens: ANSWER_MAX_OUTPUT_TOKENS,
+    });
+
+  if (engine === 'claude') {
+    await streamClaudeAnswer();
+  } else {
+    await withOpenAIFallback<string>({
+      label: 'Chat (search answer)',
+      primary: () =>
+        streamChatCompletion(system, userPrompt, captureToken, OPENAI_MODELS.chat, {
+          maxCompletionTokens: ANSWER_MAX_OUTPUT_TOKENS,
+        }),
+      fallback: () => {
+        usedEngine = 'claude';
+        return streamClaudeAnswer();
+      },
+    });
   }
 
   const confidence: SunnyChatResponse['confidence'] =
@@ -266,15 +265,11 @@ export async function executeCreateStream(params: ExecuteCreateParams): Promise<
     model: string = CLAUDE_MODELS.playbook
   ) => {
     if (engine === 'gpt') {
-      try {
-        return await streamChatCompletion(system, user, onToken, OPENAI_MODELS.summary);
-      } catch (error) {
-        if (isOpenAIUnavailable(error)) {
-          console.warn('[openai] Chat unavailable — falling back to Claude for generation');
-          return streamLongForm(system, user, onToken, model);
-        }
-        throw error;
-      }
+      return withOpenAIFallback<string>({
+        label: 'Chat (generation)',
+        primary: () => streamChatCompletion(system, user, onToken, OPENAI_MODELS.summary),
+        fallback: () => streamLongForm(system, user, onToken, model),
+      });
     }
     return streamLongForm(system, user, onToken, model);
   };

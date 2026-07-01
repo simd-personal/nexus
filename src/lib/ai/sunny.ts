@@ -1,6 +1,6 @@
 import { chatCompletion, structuredExtraction, OPENAI_MODELS } from './openai';
 import { generateLongForm, generateStructured, CLAUDE_MODELS } from './claude';
-import { isOpenAIUnavailable } from '@/lib/ai/errors';
+import { withOpenAIFallback, PROCESSING_RETRY } from '@/lib/ai/fallback';
 import {
   DECK_SYSTEM_PROMPT,
   STYLE_GUIDE,
@@ -112,29 +112,29 @@ async function answerFromContext(
   const system = `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing. Return JSON with: answer, confidence, suggested_next_step (optional), citation_indices (array of source numbers used).`;
   const user = `Context:\n${contextText}\n\nUser query: ${question}`;
 
-  let result: {
+  type SearchResult = {
     answer: string;
     confidence: 'high' | 'medium' | 'low';
     suggested_next_step?: string;
     citation_indices: number[];
   };
 
-  try {
-    result = await structuredExtraction(system, user, OPENAI_MODELS.chat);
-  } catch (error) {
-    if (!isOpenAIUnavailable(error)) throw error;
-    console.warn('[openai] Search answer unavailable — falling back to Claude');
-    const text = await generateLongForm(
-      `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing.`,
-      user,
-      CLAUDE_MODELS.brief
-    );
-    result = {
-      answer: text,
-      confidence: 'high',
-      citation_indices: buildCitations(context).map((_, i) => i + 1).slice(0, 3),
-    };
-  }
+  const result = await withOpenAIFallback<SearchResult>({
+    label: 'Search answer',
+    primary: () => structuredExtraction<SearchResult>(system, user, OPENAI_MODELS.chat),
+    fallback: async () => {
+      const text = await generateLongForm(
+        `${persona}\n\nAnswer using ONLY the provided context. Match the user's intent and phrasing.`,
+        user,
+        CLAUDE_MODELS.brief
+      );
+      return {
+        answer: text,
+        confidence: 'high',
+        citation_indices: buildCitations(context).map((_, i) => i + 1).slice(0, 3),
+      };
+    },
+  });
 
   const citations = (result.citation_indices ?? [])
     .map((i) => buildCitations(context)[i - 1])
@@ -188,7 +188,7 @@ export async function detectCriticalItems(
   suggested_owner?: string;
   suggested_next_action?: string;
 }>> {
-  const result = await structuredExtraction<{ items: Array<{
+  type CriticalItemsResult = { items: Array<{
     title: string;
     summary: string;
     severity: string;
@@ -196,11 +196,17 @@ export async function detectCriticalItems(
     sunny_reasoning: string;
     suggested_owner?: string;
     suggested_next_action?: string;
-  }> }>(
-    `${SUNNY_PERSONA}\n\nAnalyze the new content against existing project materials. Detect: client risks, contradictions, missed follow-ups, urgent concerns, ownership gaps, timeline conflicts, and broken processes. Only flag items with clear evidence. Return JSON: { "items": [...] } with severity (low/medium/high/critical) and category (conflict/risk/missed_follow_up/client_concern/ownership_gap/timeline_issue/broken_process).\n\nFor summary, sunny_reasoning, and suggested_next_action fields:\n${PROSE_STYLE_GUIDE}`,
-    `New content from "${fileName}":\n${sampleTextForAnalysis(newContent, fileName, 6000)}\n\nExisting project context:\n${existingContent.slice(0, 6000)}`,
-    OPENAI_MODELS.criticalDetection
-  );
+  }> };
+
+  const system = `${SUNNY_PERSONA}\n\nAnalyze the new content against existing project materials. Detect: client risks, contradictions, missed follow-ups, urgent concerns, ownership gaps, timeline conflicts, and broken processes. Only flag items with clear evidence. Return JSON: { "items": [...] } with severity (low/medium/high/critical) and category (conflict/risk/missed_follow_up/client_concern/ownership_gap/timeline_issue/broken_process).\n\nFor summary, sunny_reasoning, and suggested_next_action fields:\n${PROSE_STYLE_GUIDE}`;
+  const user = `New content from "${fileName}":\n${sampleTextForAnalysis(newContent, fileName, 6000)}\n\nExisting project context:\n${existingContent.slice(0, 6000)}`;
+
+  const result = await withOpenAIFallback<CriticalItemsResult>({
+    label: 'Critical-item detection',
+    retry: PROCESSING_RETRY,
+    primary: () => structuredExtraction<CriticalItemsResult>(system, user, OPENAI_MODELS.criticalDetection),
+    fallback: () => generateStructured<CriticalItemsResult>(system, user, CLAUDE_MODELS.strategy),
+  });
 
   return (result.items ?? []).map((item) => ({
     ...item,
@@ -216,11 +222,16 @@ export async function extractEntities(text: string, fileName = 'document'): Prom
   type: string;
   name: string;
 }>> {
-  const result = await structuredExtraction<{ entities: Array<{ type: string; name: string }> }>(
-    'Extract named entities from the text. Return JSON: { "entities": [{ "type": "person|facility|organization|topic|date", "name": "..." }] }',
-    sampleTextForAnalysis(text, fileName, 8000),
-    OPENAI_MODELS.extraction
-  );
+  type EntitiesResult = { entities: Array<{ type: string; name: string }> };
+  const system = 'Extract named entities from the text. Return JSON: { "entities": [{ "type": "person|facility|organization|topic|date", "name": "..." }] }';
+  const user = sampleTextForAnalysis(text, fileName, 8000);
+
+  const result = await withOpenAIFallback<EntitiesResult>({
+    label: 'Entity extraction',
+    retry: PROCESSING_RETRY,
+    primary: () => structuredExtraction<EntitiesResult>(system, user, OPENAI_MODELS.extraction),
+    fallback: () => generateStructured<EntitiesResult>(system, user, CLAUDE_MODELS.strategy),
+  });
   return result.entities ?? [];
 }
 
@@ -322,12 +333,13 @@ export async function extractActionItems(
     ? `\n\nAccount watchlist (only surface items relevant to this person or these terms):\n${context.watchlistPrompt}`
     : '';
 
-  const result = await structuredExtraction<{
+  type ActionItemsResult = {
     action_items?: unknown;
     items?: unknown;
     tasks?: unknown;
-  }>(
-    `Extract follow-ups from the text that are relevant to the account holder or their watchlist terms.
+  };
+
+  const system = `Extract follow-ups from the text that are relevant to the account holder or their watchlist terms.
 ${watchlistSection}
 
 Rules:
@@ -352,21 +364,30 @@ Return JSON only:
     }
   ]
 }
-Every item MUST have a non-empty "title" string. Do not use "action", "task", or other keys instead of "title".`,
-    `From "${fileName}":\n${sampleTextForAnalysis(text, fileName, 12000)}`,
-    OPENAI_MODELS.extraction
-  );
+Every item MUST have a non-empty "title" string. Do not use "action", "task", or other keys instead of "title".`;
+  const user = `From "${fileName}":\n${sampleTextForAnalysis(text, fileName, 12000)}`;
+
+  const result = await withOpenAIFallback<ActionItemsResult>({
+    label: 'Action-item extraction',
+    retry: PROCESSING_RETRY,
+    primary: () => structuredExtraction<ActionItemsResult>(system, user, OPENAI_MODELS.extraction),
+    fallback: () => generateStructured<ActionItemsResult>(system, user, CLAUDE_MODELS.strategy),
+  });
 
   const raw = result.action_items ?? result.items ?? result.tasks ?? [];
   return normalizeActionItems(raw);
 }
 
 export async function summarizeContent(text: string, fileName: string): Promise<string> {
-  const raw = await chatCompletion(
-    `${SUNNY_PERSONA}\n\nSummarize this content in 2-3 executive-friendly sentences.\n\n${PROSE_STYLE_GUIDE}`,
-    `File: ${fileName}\n\n${sampleTextForAnalysis(text, fileName, 12000)}`,
-    OPENAI_MODELS.summary
-  );
+  const system = `${SUNNY_PERSONA}\n\nSummarize this content in 2-3 executive-friendly sentences.\n\n${PROSE_STYLE_GUIDE}`;
+  const user = `File: ${fileName}\n\n${sampleTextForAnalysis(text, fileName, 12000)}`;
+
+  const raw = await withOpenAIFallback<string>({
+    label: 'Content summary',
+    retry: PROCESSING_RETRY,
+    primary: () => chatCompletion(system, user, OPENAI_MODELS.summary),
+    fallback: () => generateLongForm(system, user, CLAUDE_MODELS.brief),
+  });
   return formatNaturalSummary(raw);
 }
 

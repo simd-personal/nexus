@@ -1,5 +1,6 @@
 import { createServiceClient } from '@/lib/supabase/admin';
 import { createEmbeddings, transcribeAudio } from '@/lib/ai/openai';
+import { withRetry, PROCESSING_RETRY } from '@/lib/ai/fallback';
 import {
   detectCriticalItems,
   extractEntities,
@@ -195,7 +196,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
 
       if (options.buffer) {
         if (AUDIO_EXTENSIONS.includes(ext)) {
-          text = await transcribeAudio(options.buffer, fileName);
+          text = await withRetry(() => transcribeAudio(options.buffer!, fileName), PROCESSING_RETRY);
           metadata = { ...metadata, transcribed: true, source_type: 'transcript' };
         } else if (isProcessable(fileName)) {
           if (ext === '.xlsx' || ext === '.xls') {
@@ -381,7 +382,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
       // Embedding already complete — jump to analysis
     } else for (let i = startIndex; i < textChunks.length; i += batchSize) {
       const batch = textChunks.slice(i, i + batchSize);
-      const embeddings = await createEmbeddings(batch.map((c) => c.text));
+      const embeddings = await withRetry(() => createEmbeddings(batch.map((c) => c.text)), PROCESSING_RETRY);
 
       const chunkRows = batch.map((chunk, j) => ({
         project_id: projectId,

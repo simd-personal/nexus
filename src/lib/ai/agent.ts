@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { structuredExtraction, OPENAI_MODELS } from './openai';
 import { generateStructured, CLAUDE_MODELS } from './claude';
-import { isOpenAIUnavailable } from '@/lib/ai/errors';
+import { withOpenAIFallback } from '@/lib/ai/fallback';
 import {
   askSunny,
   generateSunnyBrief,
@@ -74,21 +74,17 @@ export async function classifyIntent(
   const system = `${AGENT_PERSONA}\n\nClassify the latest user message. Return JSON: { "action": "...", "instructions": "optional focus/tone/refinement", "email_version": "short|detailed|executive" }`;
   const user = `Recent chat:\n${historySnippet || '(none)'}\n\nLatest message: ${message}`;
 
-  try {
-    return await structuredExtraction<{
-      action: SunnyAgentAction;
-      instructions?: string;
-      email_version?: 'short' | 'detailed' | 'executive';
-    }>(system, user, OPENAI_MODELS.extraction);
-  } catch (error) {
-    if (!isOpenAIUnavailable(error)) throw error;
-    console.warn('[openai] Intent classification unavailable — falling back to Claude');
-    return generateStructured<{
-      action: SunnyAgentAction;
-      instructions?: string;
-      email_version?: 'short' | 'detailed' | 'executive';
-    }>(system, user, CLAUDE_MODELS.strategy);
-  }
+  type IntentResult = {
+    action: SunnyAgentAction;
+    instructions?: string;
+    email_version?: 'short' | 'detailed' | 'executive';
+  };
+
+  return withOpenAIFallback<IntentResult>({
+    label: 'Intent classification',
+    primary: () => structuredExtraction<IntentResult>(system, user, OPENAI_MODELS.extraction),
+    fallback: () => generateStructured<IntentResult>(system, user, CLAUDE_MODELS.strategy),
+  });
 }
 
 function contextAsText(context: RetrievedContext): string {
