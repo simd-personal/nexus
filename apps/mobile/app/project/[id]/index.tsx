@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AskSunnyProjectCard } from '@/components/AskSunnyProjectCard';
 import { FileActionsSheet } from '@/components/FileActionsSheet';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
@@ -71,6 +72,11 @@ export default function ProjectDetailScreen() {
               <StatPill label="Critical" value={stats?.critical_item_count ?? 0} tone="danger" />
               <StatPill label="Actions" value={stats?.action_item_count ?? 0} />
             </View>
+
+            <AskSunnyProjectCard
+              projectId={projectId}
+              projectName={`${project.client_name} · ${project.project_name}`}
+            />
 
             <ProjectUploadPanel projectId={projectId} existingFiles={files} />
 

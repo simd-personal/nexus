@@ -34,6 +34,36 @@ export function findProjectInTree(
   return null;
 }
 
+export function initialScopeForProject(
+  projects: MobileProjectWithStats[],
+  projectId: string,
+  fallbackLabel?: string
+): ChatScope {
+  const node = findProjectInTree(projects, projectId);
+  if (!node) {
+    return {
+      kind: 'selected',
+      projectIds: [projectId],
+      labels: [fallbackLabel ?? projectId],
+    };
+  }
+
+  const children = node.sub_projects ?? [];
+  if (children.length > 0) {
+    return {
+      kind: 'selected',
+      projectIds: getProjectFamilyIds(node, children),
+      labels: [`${projectLabel(node)} · all workstreams`],
+    };
+  }
+
+  return {
+    kind: 'selected',
+    projectIds: [node.id],
+    labels: [projectLabel(node)],
+  };
+}
+
 export function scopeFromPortfolio(
   projects: MobileProjectWithStats[],
   portfolio: 'work' | 'personal'

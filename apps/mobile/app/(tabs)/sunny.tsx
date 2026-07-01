@@ -2,10 +2,12 @@ import { Feather } from '@expo/vector-icons';
 import {
   ALL_PROJECTS_SCOPE,
   formatScopeSummary,
+  initialScopeForProject,
   resolveScopeProjectIds,
   type ChatScope,
 } from '@upperdeck/shared/chat-scope';
 import { useQuery } from '@tanstack/react-query';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -33,6 +35,7 @@ import {
   fetchSearchChatSessions,
   streamSearchChat,
 } from '@/lib/api';
+import { consumePendingSunnyProjectId } from '@/lib/sunny-navigation';
 import type { ChatMessage } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -84,6 +87,9 @@ export default function SunnyScreen() {
   const scopeRef = useRef(scope);
   scopeRef.current = scope;
   const scopeInitialized = useRef(false);
+  const skipInitialHistoryRef = useRef(false);
+  const shouldFocusInputRef = useRef(false);
+  const inputRef = useRef<TextInput>(null);
   const [footerHeight, setFooterHeight] = useState(96);
   const [keyboardInset, setKeyboardInset] = useState(0);
 
@@ -122,9 +128,37 @@ export default function SunnyScreen() {
 
   useEffect(() => {
     if (projects.length === 0 || scopeReady) return;
-    setScope(ALL_PROJECTS_SCOPE);
+
+    const pendingId = consumePendingSunnyProjectId();
+    if (pendingId) {
+      setScope(initialScopeForProject(projects, pendingId));
+      skipInitialHistoryRef.current = true;
+      shouldFocusInputRef.current = true;
+    } else {
+      setScope(ALL_PROJECTS_SCOPE);
+    }
     setScopeReady(true);
   }, [projects, scopeReady]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (projects.length === 0) return;
+
+      const pendingId = consumePendingSunnyProjectId();
+      if (!pendingId) return;
+
+      setScope(initialScopeForProject(projects, pendingId));
+      shouldFocusInputRef.current = true;
+    }, [projects])
+  );
+
+  useEffect(() => {
+    if (!shouldFocusInputRef.current || !scopeReady) return;
+
+    shouldFocusInputRef.current = false;
+    const timer = setTimeout(() => inputRef.current?.focus(), 400);
+    return () => clearTimeout(timer);
+  }, [scope, scopeReady]);
 
   const loadSearchHistory = useCallback(async () => {
     setLoadingHistory(true);
@@ -150,7 +184,10 @@ export default function SunnyScreen() {
     if (!scopeReady) return;
     if (!scopeInitialized.current) {
       scopeInitialized.current = true;
-      void loadSearchHistory();
+      if (!skipInitialHistoryRef.current) {
+        void loadSearchHistory();
+      }
+      skipInitialHistoryRef.current = false;
       return;
     }
 
@@ -387,6 +424,7 @@ export default function SunnyScreen() {
             <View style={styles.composer}>
               <View style={styles.composerShell}>
                 <TextInput
+                  ref={inputRef}
                   value={input}
                   onChangeText={setInput}
                   placeholder={

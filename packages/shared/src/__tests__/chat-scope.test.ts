@@ -4,6 +4,7 @@ import {
   buildChatScope,
   formatScopeSummary,
   getPortfolioCheckState,
+  initialScopeForProject,
   projectLabel,
   removeScopeLabel,
   resolveScopeProjectIds,
@@ -41,6 +42,19 @@ const tree: MobileProjectWithStats[] = [
 ];
 
 describe('shared chat-scope', () => {
+  it('builds initial scope for a single project', () => {
+    const scope = initialScopeForProject(tree, 'solo');
+    expect(resolveScopeProjectIds(scope)).toEqual(['solo']);
+    if (scope.kind === 'selected') {
+      expect(scope.labels).toEqual(['Beta · Strategy']);
+    }
+  });
+
+  it('expands program scope to all workstreams', () => {
+    const scope = initialScopeForProject(tree, 'program');
+    expect(resolveScopeProjectIds(scope)?.sort()).toEqual(['program', 'ws-a', 'ws-b'].sort());
+  });
+
   it('formats project labels', () => {
     expect(projectLabel(tree[1])).toBe('Beta · Strategy');
   });
