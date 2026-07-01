@@ -162,22 +162,62 @@ export async function uploadProjectFile(
       return { ok: false, error: sizeGuard.error };
     }
 
-    const formData = new FormData();
-    formData.append('project_id', projectId);
-    formData.append('file', file, sanitizeUploadFileName(file.name));
-    if (options?.userNote?.trim()) {
-      formData.append('user_note', options.userNote.trim());
-    }
-    if (options?.uploadBatchId && (options.uploadBatchTotal ?? 0) > 1) {
-      formData.append('upload_batch_id', options.uploadBatchId);
-      formData.append('upload_batch_total', String(options.uploadBatchTotal));
-    }
+    const fileName = sanitizeUploadFileName(file.name);
+    const contentType = file.type || 'application/octet-stream';
+    const isBatch = Boolean(options?.uploadBatchId && (options.uploadBatchTotal ?? 0) > 1);
 
-    const res = await fetch('/api/upload', {
+    // 1) Ask the server for a signed upload URL so the file can go straight to
+    //    storage, bypassing the serverless request-body size limit.
+    const signRes = await fetch('/api/upload/sign', {
       method: 'POST',
-      body: formData,
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'same-origin',
       redirect: 'manual',
+      body: JSON.stringify({
+        project_id: projectId,
+        file_name: fileName,
+        content_type: contentType,
+        size: file.size,
+      }),
+    });
+
+    const signData = (await parseUploadResponse(signRes)) as {
+      error?: string;
+      bucket?: string;
+      path?: string;
+      token?: string;
+    };
+
+    if (signData.error || !signRes.ok || !signData.bucket || !signData.path || !signData.token) {
+      return { ok: false, error: signData.error ?? 'Could not start upload' };
+    }
+
+    // 2) Upload the bytes directly to Supabase Storage.
+    const { createClient } = await import('@/lib/supabase/client');
+    const { error: storageError } = await createClient()
+      .storage.from(signData.bucket)
+      .uploadToSignedUrl(signData.path, signData.token, file, { contentType });
+
+    if (storageError) {
+      return { ok: false, error: storageError.message || 'Upload to storage failed' };
+    }
+
+    // 3) Register the uploaded object (metadata only — no body limit here).
+    const res = await fetch('/api/upload/finalize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      redirect: 'manual',
+      body: JSON.stringify({
+        project_id: projectId,
+        storage_path: signData.path,
+        file_name: fileName,
+        content_type: contentType,
+        size: file.size,
+        user_note: options?.userNote?.trim() || undefined,
+        upload_batch_id: isBatch ? options?.uploadBatchId : undefined,
+        upload_batch_total: isBatch ? options?.uploadBatchTotal : undefined,
+      }),
     });
 
     const data = await parseUploadResponse(res);

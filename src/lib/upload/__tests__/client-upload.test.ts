@@ -5,24 +5,50 @@ import {
   UPLOAD_PROGRESS_START,
 } from '@/lib/upload/progress-events';
 
-describe('uploadProjectFile', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+const uploadToSignedUrl = vi.fn().mockResolvedValue({ error: null });
 
-  it('returns ok when API succeeds', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
+vi.mock('@/lib/supabase/client', () => ({
+  createClient: () => ({
+    storage: {
+      from: () => ({ uploadToSignedUrl }),
+    },
+  }),
+}));
+
+/** Mocks the sign → finalize round-trip the upload client now performs. */
+function stubUploadFetch(finalize: { ok?: boolean; status?: number; body?: unknown } = {}) {
+  return vi.fn((input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input.toString();
+    if (url.includes('/api/upload/sign')) {
+      return Promise.resolve({
         ok: true,
         status: 200,
         headers: { get: () => 'application/json' },
-        json: async () => ({ data: { id: 'file-1' } }),
-      })
-    );
+        json: async () => ({ bucket: 'files', path: 'proj-1/123-notes.md', token: 'tok' }),
+      });
+    }
+    return Promise.resolve({
+      ok: finalize.ok ?? true,
+      status: finalize.status ?? 200,
+      headers: { get: () => 'application/json' },
+      json: async () => finalize.body ?? { data: { id: 'file-1' } },
+    });
+  });
+}
+
+describe('uploadProjectFile', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    uploadToSignedUrl.mockClear();
+  });
+
+  it('returns ok when API succeeds', async () => {
+    vi.stubGlobal('fetch', stubUploadFetch());
 
     const result = await uploadProjectFile('proj-1', new File(['# Hi'], 'notes.md', { type: 'text/markdown' }));
     expect(result.ok).toBe(true);
+    expect(result.fileId).toBe('file-1');
+    expect(uploadToSignedUrl).toHaveBeenCalledOnce();
   });
 
   it('surfaces 401 session errors without parsing HTML', async () => {
@@ -60,15 +86,7 @@ describe('uploadProjectFile', () => {
   it('emits one start and one end event per single upload', async () => {
     const dispatchEvent = vi.fn();
     vi.stubGlobal('window', { dispatchEvent });
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ data: { id: 'file-1' } }),
-      })
-    );
+    vi.stubGlobal('fetch', stubUploadFetch());
 
     await uploadProjectFile('proj-1', new File(['x'], 'x.md'));
 
@@ -80,20 +98,13 @@ describe('uploadProjectFile', () => {
 describe('uploadProjectFiles', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    uploadToSignedUrl.mockClear();
   });
 
   it('emits one batch start and end event for multiple files', async () => {
     const dispatchEvent = vi.fn();
     vi.stubGlobal('window', { dispatchEvent });
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        headers: { get: () => 'application/json' },
-        json: async () => ({ data: { id: 'file-1' } }),
-      })
-    );
+    vi.stubGlobal('fetch', stubUploadFetch());
 
     await uploadProjectFiles('proj-1', [
       new File(['a'], 'a.md'),
