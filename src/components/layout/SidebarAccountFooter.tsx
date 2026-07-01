@@ -59,7 +59,7 @@ export function SidebarAccountFooter({ account: initialAccount = null }: { accou
     (loadState === 'error' ? 'Session unavailable' : 'Loading…');
 
   return (
-    <div className="border-t border-gray-100 p-4 dark:border-[var(--ud-cloud)]">
+    <div className="border-t border-[var(--app-border-faint)] p-4">
       <div className="mb-2 flex items-center gap-3 px-3 py-2">
         <AccountAvatar name={displayName} />
         <div className="min-w-0">

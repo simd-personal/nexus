@@ -9,7 +9,7 @@ interface CardProps {
 export function Card({ children, className, padding = true }: CardProps) {
   return (
     <div className={cn(
-      'rounded-xl border border-[var(--ud-mist)] bg-white shadow-sm dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]',
+      'app-card',
       padding && 'p-6',
       className
     )}>

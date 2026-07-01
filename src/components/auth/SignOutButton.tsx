@@ -22,11 +22,11 @@ export function SignOutButton({ variant = 'sidebar', className }: SignOutButtonP
         aria-label="Sign out"
         className={cn(
           variant === 'sidebar' &&
-            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-[var(--ud-cloud)] dark:hover:text-gray-100',
+            'flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium text-[var(--app-text-muted)] transition-colors hover:bg-[var(--app-hover)] hover:text-[var(--app-text)]',
           variant === 'settings' &&
-            'inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-cloud)] dark:text-gray-100 dark:hover:bg-[var(--ud-slate)]/30',
+            'inline-flex items-center gap-2 rounded-lg border border-[var(--btn-secondary-border)] bg-[var(--btn-secondary-bg)] px-4 py-2 text-sm font-medium text-[var(--btn-secondary-text)] transition-colors hover:bg-[var(--btn-secondary-bg-hover)]',
           variant === 'icon' &&
-            'flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-[var(--ud-cloud)]',
+            'flex h-10 w-10 items-center justify-center rounded-lg text-[var(--app-text-muted)] hover:bg-[var(--app-hover)] hover:text-[var(--app-text)]',
           className
         )}
       >

@@ -22,12 +22,12 @@ export default async function SunnyUpdatesPage({
 
   return (
     <AppShellLayout>
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
         <div className="mb-6 flex items-center gap-3">
           <SunnyAvatar size="md" animate="idle" />
           <div>
             <h1 className="app-page-title text-2xl">{AI_EMPLOYEE_NAME} Updates</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-[var(--app-text-muted)]">
               What changed, what matters, and what needs your attention
             </p>
           </div>

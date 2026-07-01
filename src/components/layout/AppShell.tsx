@@ -40,12 +40,12 @@ export function AppShell({
 
   return (
     <ProductTourProvider>
-    <div className="flex min-h-[100dvh] flex-col bg-[var(--ud-stone)]">
-      <header className="fixed inset-x-0 top-0 z-40 flex min-h-14 items-center gap-3 border-b border-[var(--ud-cloud)] bg-white px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] dark:border-[var(--brand-border)] dark:bg-[var(--brand-bg-secondary)] lg:hidden">
+    <div className="flex min-h-[100dvh] flex-col bg-[var(--app-canvas)]">
+      <header className="fixed inset-x-0 top-0 z-40 flex min-h-14 items-center gap-3 border-b border-[var(--app-border)] bg-[var(--app-sidebar)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-[var(--ud-cloud)]"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-[var(--app-text-muted)] hover:bg-[var(--app-hover)]"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5" />

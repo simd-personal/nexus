@@ -10,7 +10,7 @@ import { FileText, Mail, Calendar, AlertTriangle, CheckSquare } from 'lucide-rea
 
 export function ProjectCard({ project }: { project: ProjectWithStats }) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="app-card-hover">
       <div className="flex items-start justify-between mb-3 gap-2">
         <div className="min-w-0">
           <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{project.project_name}</h3>

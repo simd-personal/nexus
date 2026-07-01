@@ -59,10 +59,10 @@ export default async function DashboardPage({
 
   return (
     <AppShellLayout>
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="mb-4 sm:mb-6">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+        <div className="mb-5 sm:mb-7">
           <h1 className="app-page-title text-xl sm:text-2xl">Dashboard</h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{TAGLINE}</p>
+          <p className="mt-1 text-sm text-[var(--app-text-muted)]">{TAGLINE}</p>
         </div>
 
         <PortfolioScopeHeader
@@ -112,7 +112,7 @@ export default async function DashboardPage({
             </Link>
           </div>
           {projects.length === 0 ? (
-            <div className="rounded-xl border border-gray-200 bg-white py-12 text-center dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-mist)]">
+            <div className="app-card py-12 text-center">
               <p className="mb-4 text-gray-500 dark:text-gray-400">
                 No {portfolioScope === 'all' ? '' : `${dashboardScopeLabel(portfolioScope).toLowerCase()} `}
                 projects in this view.

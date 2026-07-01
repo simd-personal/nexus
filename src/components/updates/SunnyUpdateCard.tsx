@@ -12,10 +12,13 @@ import Link from 'next/link';
 import type { ActiveUploadBatch, PendingIndexingFile } from '@/lib/processing/upload-batch';
 import { IndexingStatusList } from '@/components/updates/IndexingBatchCard';
 
+const COPYABLE_INSET_CLASS =
+  'mt-3 rounded-xl border border-[var(--app-border)] bg-[var(--app-surface-muted)] p-4';
+
 function CopyableSection({
   label,
   text,
-  className = 'mt-3 rounded-lg bg-gray-50 p-3 dark:bg-[var(--ud-stone)]',
+  className = COPYABLE_INSET_CLASS,
 }: {
   label: string;
   text: string;
@@ -37,8 +40,8 @@ function CopyableSection({
       className={`group w-full text-left transition-opacity hover:opacity-90 ${className}`}
       aria-label={copied ? `${label} copied` : `Copy ${label}`}
     >
-      <div className="mb-1 flex items-center justify-between gap-3">
-        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <p className="app-eyebrow">{label}</p>
         <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300">
           {copied ? (
             <>
@@ -87,11 +90,7 @@ export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
           )}
 
           {update.suggested_action && (
-            <CopyableSection
-              label="Suggested action"
-              text={update.suggested_action}
-              className="mt-3"
-            />
+            <CopyableSection label="Suggested action" text={update.suggested_action} />
           )}
 
           <CitationsList citations={update.source_citations} projectId={update.project_id} />
@@ -121,7 +120,7 @@ export function SunnyUpdatesList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <IndexingStatusList batches={pendingBatches} files={pendingFiles} />
       {updates.map((update) => (
         <SunnyUpdateCard key={update.id} update={update} />

@@ -65,7 +65,7 @@ export function ProjectNav({
                   />
                 ) : 'ai' in tab && tab.ai ? (
                   <Sparkles
-                    className="h-3.5 w-3.5 shrink-0 text-[var(--brand-accent)]"
+                    className="sunny-sparkle h-3.5 w-3.5 shrink-0 text-[var(--brand-accent)]"
                     strokeWidth={2.25}
                     aria-hidden
                   />

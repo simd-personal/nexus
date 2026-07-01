@@ -20,16 +20,36 @@ import { useThemePreferences } from '@/hooks/useThemePreferences';
 import { portfolioScopeFromSearchParams, scopedAppHref } from '@/lib/projects/path-context';
 import type { AccountSummary } from '@/lib/account/summary';
 
-const navItems: Array<
-  | { href: string; label: string; icon: LucideIcon }
-  | { href: string; label: string; sunnyIcon: true }
-> = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/updates', label: 'Sunny Updates', sunnyIcon: true },
-  { href: '/critical-items', label: 'Critical Items', icon: AlertTriangle },
-  { href: '/action-items', label: 'Action Items', icon: CheckSquare },
-  { href: '/sunny', label: 'Ask Sunny', sunnyIcon: true },
+type NavItem =
+  | { href: string; label: string; icon: LucideIcon; tour?: string }
+  | { href: string; label: string; sunnyIcon: true; tour?: string };
+
+type NavGroup = { label?: string; items: NavItem[] };
+
+const navGroups: NavGroup[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, tour: 'nav-dashboard' },
+      { href: '/sunny', label: 'Ask Sunny', sunnyIcon: true, tour: 'nav-sunny' },
+    ],
+  },
+  {
+    label: 'Workspace',
+    items: [
+      { href: '/projects', label: 'Projects', icon: FolderKanban, tour: 'nav-projects' },
+      { href: '/updates', label: 'Sunny Updates', sunnyIcon: true, tour: 'nav-updates' },
+    ],
+  },
+  {
+    label: 'Needs attention',
+    items: [
+      { href: '/critical-items', label: 'Critical Items', icon: AlertTriangle },
+      { href: '/action-items', label: 'Action Items', icon: CheckSquare, tour: 'nav-action-items' },
+    ],
+  },
+];
+
+const footerNavItems: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
   { href: '/support', label: 'Support', icon: LifeBuoy },
 ];
@@ -52,19 +72,46 @@ export function Sidebar({ mobileOpen = false, onMobileClose, account = null }: S
   const portfolioScope = portfolioScopeFromSearchParams(searchParams);
   const { darkMode } = useThemePreferences();
 
+  const renderLink = (item: NavItem) => {
+    const href = scopedAppHref(pathname, item.href, { portfolioScope });
+    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+    const Icon = 'icon' in item ? item.icon : null;
+    return (
+      <Link
+        key={item.href}
+        href={href}
+        data-tour={item.tour}
+        onClick={onMobileClose}
+        onMouseEnter={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
+        onFocus={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
+        className={cn(
+          'app-nav-link flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium transition-colors',
+          isActive && 'app-nav-active'
+        )}
+      >
+        {'sunnyIcon' in item ? (
+          <SunnyAvatar size="xs" />
+        ) : (
+          Icon && <Icon className="app-nav-icon h-[18px] w-[18px] shrink-0 text-[var(--app-text-subtle)]" />
+        )}
+        {item.label}
+      </Link>
+    );
+  };
+
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-[var(--ud-cloud)] bg-white transition-transform duration-200 ease-in-out dark:border-[var(--brand-border)] dark:bg-[var(--brand-bg-secondary)]',
+        'app-sidebar fixed left-0 top-0 z-50 flex h-screen w-60 flex-col border-r transition-transform duration-200 ease-in-out',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0'
       )}
     >
-      <div className="relative border-b border-[var(--ud-mist)] p-6">
+      <div className="app-sidebar-brand relative flex h-14 items-center border-b px-4">
         <button
           type="button"
           onClick={onMobileClose}
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-[var(--ud-cloud)] lg:hidden"
+          className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-[var(--app-text-muted)] hover:bg-[var(--app-hover)] lg:hidden"
           aria-label="Close menu"
         >
           <X className="h-4 w-4" />
@@ -74,48 +121,18 @@ export function Sidebar({ mobileOpen = false, onMobileClose, account = null }: S
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-        {navItems.map((item) => {
-          const href = scopedAppHref(pathname, item.href, { portfolioScope });
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-          const Icon = 'icon' in item ? item.icon : null;
-          return (
-            <Link
-              key={item.href}
-              href={href}
-              data-tour={
-                item.href === '/dashboard'
-                  ? 'nav-dashboard'
-                  : item.href === '/projects'
-                    ? 'nav-projects'
-                    : item.href === '/updates'
-                      ? 'nav-updates'
-                      : item.href === '/sunny'
-                        ? 'nav-sunny'
-                        : item.href === '/action-items'
-                          ? 'nav-action-items'
-                          : undefined
-              }
-              onClick={onMobileClose}
-              onMouseEnter={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
-              onFocus={CHAT_NAV_HREFS.has(item.href) ? prefetchChatBundle : undefined}
-              className={cn(
-                'app-nav-link flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                isActive
-                  ? 'app-nav-active'
-                  : 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100'
-              )}
-            >
-              {'sunnyIcon' in item ? (
-                <SunnyAvatar size="xs" />
-              ) : (
-                Icon && <Icon className="h-4 w-4 shrink-0" />
-              )}
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        {navGroups.map((group, idx) => (
+          <div key={group.label ?? `group-${idx}`} className="space-y-0.5">
+            {group.label && <p className="app-nav-section-label">{group.label}</p>}
+            {group.items.map(renderLink)}
+          </div>
+        ))}
       </nav>
+
+      <div className="space-y-0.5 border-t border-[var(--app-border-faint)] px-3 py-3">
+        {footerNavItems.map(renderLink)}
+      </div>
 
       <SidebarAccountFooter account={account} />
     </aside>
