@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import * as Clipboard from 'expo-clipboard';
 import { useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
-import { Button, Card } from '@/components/ui';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Card } from '@/components/ui';
 import { fetchAccountInbound, fetchProjectInbound } from '@/lib/api';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -59,45 +59,38 @@ export function EmailForwardPanel(props: EmailForwardPanelProps) {
         <Text style={styles.loading}>Loading forwarding address…</Text>
       ) : (
         <>
-          <Text style={styles.label}>
-            {props.mode === 'project' ? 'Project inbox' : 'Your smart inbox'}
-          </Text>
-          <View style={styles.addressRow}>
+          <View style={styles.addressHeader}>
+            <Text style={styles.label}>
+              {props.mode === 'project' ? 'Project inbox' : 'Your smart inbox'}
+            </Text>
+            <View style={styles.copyHint}>
+              <Ionicons
+                name={copied ? 'checkmark' : 'copy-outline'}
+                size={14}
+                color={copied ? BRAND.accent : BRAND.textMuted}
+              />
+              <Text style={[styles.copyHintText, copied && styles.copyHintTextCopied]}>
+                {copied ? 'Copied' : 'Tap to copy'}
+              </Text>
+            </View>
+          </View>
+
+          <Pressable
+            onPress={() => void copyAddress()}
+            style={({ pressed }) => [styles.addressRow, pressed && styles.addressRowPressed]}
+            accessibilityRole="button"
+            accessibilityLabel={copied ? 'Address copied' : 'Copy forwarding address'}
+          >
             <Text selectable style={styles.address}>
               {info.address}
             </Text>
-          </View>
-          <Button
-            label={copied ? 'Copied' : 'Copy address'}
-            variant="secondary"
-            onPress={() => void copyAddress()}
-          />
+          </Pressable>
 
-          <View style={styles.tipBox}>
-            {props.mode === 'project' ? (
-              <>
-                <Text style={styles.tipText}>
-                  In Outlook or Mail, forward an email to this address. Sunny saves the message and
-                  attachments to this project automatically.
-                </Text>
-                <Text style={styles.tipHint}>
-                  Using your smart inbox instead? Add{' '}
-                  <Text style={styles.tipCode}>{info.subject_hint}</Text> to the subject.
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.tipText}>
-                  Forward any email to your smart inbox. Include the client and project in the
-                  subject, e.g. <Text style={styles.tipCode}>{info.subject_hint}</Text>
-                </Text>
-                <Text style={styles.tipHint}>
-                  For one project every time, use that project&apos;s inbox address on the project
-                  screen instead — no subject matching needed.
-                </Text>
-              </>
-            )}
-          </View>
+          <Text style={styles.tipText}>
+            {props.mode === 'project'
+              ? 'Forward from Outlook or Mail — Sunny saves the message and attachments here automatically.'
+              : `Forward any email here. Include client and project in the subject, e.g. ${info.subject_hint}.`}
+          </Text>
         </>
       )}
     </Card>
@@ -132,13 +125,33 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: BRAND.textMuted,
   },
-  label: {
+  addressHeader: {
     marginTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  label: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: BRAND.textMuted,
+  },
+  copyHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexShrink: 0,
+  },
+  copyHintText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: BRAND.textMuted,
+  },
+  copyHintTextCopied: {
+    color: BRAND.accent,
   },
   addressRow: {
     marginTop: spacing.xs,
@@ -148,33 +161,20 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E5E7EB',
   },
+  addressRowPressed: {
+    opacity: 0.88,
+  },
   address: {
     fontSize: 14,
     lineHeight: 20,
     color: BRAND.graphite,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
-  tipBox: {
-    marginTop: spacing.sm,
-    padding: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: '#F8FAFC',
-    gap: spacing.sm,
-  },
   tipText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: '#475569',
-  },
-  tipHint: {
+    marginTop: spacing.sm,
     fontSize: 13,
     lineHeight: 18,
     color: BRAND.textMuted,
-  },
-  tipCode: {
-    fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
-    fontSize: 12,
-    color: BRAND.graphite,
   },
   loading: {
     marginTop: spacing.sm,
