@@ -10,7 +10,7 @@ import {
 } from '@/lib/project-sections';
 import type { ProjectNavVisibility } from '@upperdeck/shared/project-nav';
 import { filterProjectSections } from '@upperdeck/shared/project-nav';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 type ProjectSectionNavProps = {
   projectId: string;
@@ -77,7 +77,7 @@ export function ProjectSectionNav({ projectId, visibility }: ProjectSectionNavPr
 
 const styles = StyleSheet.create({
   wrap: {
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
   },
   row: {
     flexDirection: 'row',
@@ -94,13 +94,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 9,
     borderRadius: radius.full,
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
   },
   pillActive: {
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-    borderColor: 'rgba(37, 99, 235, 0.25)',
+    backgroundColor: APP.btnSecondaryBg,
+    borderColor: APP.borderStrong,
   },
   pillPressed: {
     opacity: 0.88,
@@ -108,9 +108,9 @@ const styles = StyleSheet.create({
   pillLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   pillLabelActive: {
-    color: BRAND.accent,
+    color: APP.text,
   },
 });

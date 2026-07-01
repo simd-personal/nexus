@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { ComponentProps } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { BRAND, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 export function ScreenHeader({
   title,
@@ -64,7 +64,7 @@ export function HeaderIconButton({
       accessibilityLabel={label}
     >
       {icon ? (
-        <Ionicons name={icon} size={iconSize} color={BRAND.graphite} />
+        <Ionicons name={icon} size={iconSize} color={APP.text} />
       ) : (
         <Text style={styles.iconBtnLabel}>{label}</Text>
       )}
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
   },
   row: {
     flexDirection: 'row',
@@ -97,14 +97,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
     letterSpacing: -0.6,
     lineHeight: 32,
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 21,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   actionsSlot: {
     flexShrink: 0,
@@ -113,12 +113,12 @@ const styles = StyleSheet.create({
   iconBtn: {
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    shadowColor: '#0E1115',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    borderColor: APP.border,
+    shadowColor: '#111418',
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
     shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
@@ -133,6 +133,6 @@ const styles = StyleSheet.create({
   iconBtnLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
 });

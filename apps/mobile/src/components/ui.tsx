@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type ScreenProps = {
   children: React.ReactNode;
@@ -58,7 +58,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : BRAND.accent} />
+        <ActivityIndicator color={variant === 'primary' ? APP.btnPrimaryText : APP.textMuted} />
       ) : (
         <Text
           style={[
@@ -125,31 +125,36 @@ export function SeverityBadge({ severity }: { severity: string }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: radius.lg,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
     gap: spacing.sm,
+    shadowColor: '#111418',
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
     letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 15,
     lineHeight: 22,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   button: {
-    backgroundColor: BRAND.accent,
-    borderRadius: radius.md,
-    minHeight: 48,
+    backgroundColor: APP.btnPrimaryBg,
+    borderRadius: radius.sm,
+    minHeight: 46,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.md,
@@ -158,15 +163,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     minHeight: 40,
     paddingHorizontal: spacing.lg,
-    borderRadius: radius.full,
-    shadowColor: BRAND.accentDark,
-    shadowOpacity: 0.22,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
   },
   buttonSecondary: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: APP.btnSecondaryBorder,
   },
   buttonGhost: {
     backgroundColor: 'transparent',
@@ -175,35 +176,35 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   buttonPressed: {
-    opacity: 0.85,
+    opacity: 0.88,
   },
   buttonLabel: {
-    color: '#fff',
-    fontSize: 16,
+    color: APP.btnPrimaryText,
+    fontSize: 15,
     fontWeight: '600',
   },
   buttonLabelCompact: {
-    fontSize: 15,
-    letterSpacing: 0.2,
+    fontSize: 14,
+    letterSpacing: 0.1,
   },
   buttonLabelSecondary: {
-    color: BRAND.accent,
+    color: APP.btnSecondaryText,
   },
   buttonLabelGhost: {
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   statPill: {
     width: '48%',
     flexGrow: 1,
-    backgroundColor: '#fff',
-    borderRadius: radius.lg,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    shadowColor: '#0E1115',
+    borderColor: APP.border,
+    shadowColor: '#111418',
     shadowOpacity: 0.04,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
     elevation: 1,
   },
   statPillDanger: {
@@ -212,17 +213,17 @@ const styles = StyleSheet.create({
   },
   statPillAccent: {
     borderLeftWidth: 3,
-    borderLeftColor: BRAND.accent,
+    borderLeftColor: APP.accent,
   },
   statValue: {
     fontSize: 24,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   statLabel: {
     marginTop: 4,
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   empty: {
     padding: spacing.lg,
@@ -232,12 +233,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   emptyBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     textAlign: 'center',
   },
   badge: {
@@ -253,12 +254,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#FEF3C7',
   },
   badgeNeutral: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: APP.btnSecondaryBg,
   },
   badgeText: {
     fontSize: 12,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
     textTransform: 'capitalize',
   },
 });
