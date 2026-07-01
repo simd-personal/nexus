@@ -49,7 +49,7 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
       setPending(null);
       setNote('');
       await invalidateProjectFiles();
-      setNotice({ message: 'Uploaded — Sunny is processing your file.', variant: 'success' });
+      setNotice({ message: 'Uploaded. Sunny is processing your file.', variant: 'success' });
     },
     onError: (error: Error) => {
       setNotice({ message: error.message || 'Upload failed.', variant: 'error' });
@@ -63,7 +63,7 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
       setPending(null);
       setNote('');
       await invalidateProjectFiles();
-      setNotice({ message: 'File replaced — Sunny is reprocessing it.', variant: 'success' });
+      setNotice({ message: 'File replaced. Sunny is reprocessing it.', variant: 'success' });
     },
     onError: (error: Error) => {
       setNotice({ message: error.message || 'Replace failed.', variant: 'error' });
@@ -224,6 +224,14 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
           <Button label="Cancel" variant="ghost" onPress={() => setPending(null)} />
         </View>
       ) : null}
+
+      <View style={styles.securityNote}>
+        <Ionicons name="lock-closed-outline" size={14} color="#047857" />
+        <Text style={styles.securityText}>
+          Files upload to encrypted private storage scoped to your account. Sunny reads them only to
+          answer your questions, not to train models.
+        </Text>
+      </View>
     </Card>
   );
 }
@@ -343,5 +351,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: BRAND.graphite,
     minHeight: 44,
+  },
+  securityNote: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    borderRadius: radius.lg,
+    backgroundColor: '#ECFDF5',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#A7F3D0',
+    padding: spacing.sm,
+  },
+  securityText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 17,
+    color: '#065F46',
   },
 });

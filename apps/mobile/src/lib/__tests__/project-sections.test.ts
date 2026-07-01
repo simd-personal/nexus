@@ -13,8 +13,8 @@ describe('PROJECT_SECTIONS', () => {
     expect(PROJECT_SECTIONS.map((section) => section.key)).toEqual([
       'overview',
       'files',
-      'timeline',
       'ask-sunny',
+      'timeline',
       'critical-items',
       'follow-up',
     ]);

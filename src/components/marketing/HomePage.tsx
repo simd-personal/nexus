@@ -15,6 +15,7 @@ import { Testimonials } from '@/components/marketing/fun/Testimonials';
 import { AI_EMPLOYEE_NAME, BRAND_TAGLINE, SUNNY_HERO_LINE, TAGLINE } from '@/lib/constants';
 import { loginHref } from '@/lib/auth/login-url';
 import { HOME_WOW_POINTS, HOME_WORKFLOW_STEPS } from '@/lib/marketing/homepage';
+import { PricingFeatureList, PricingModelsDisclaimer } from '@/components/marketing/PricingFeatureList';
 import { B2C_PRICING, pricingButtonClass } from '@/lib/marketing/pricing';
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
@@ -48,7 +49,7 @@ export function HomePage() {
               <span className="fun-gradient-text">Onboard {AI_EMPLOYEE_NAME}.</span>
             </h1>
             <p className="marketing-hero-body">{SUNNY_HERO_LINE}</p>
-            <p className="marketing-hero-body mt-4">{TAGLINE}</p>
+            <p className="marketing-hero-tagline">{TAGLINE}</p>
 
             <ul className="marketing-hero-highlights" aria-label="Key benefits">
               {HOME_WOW_POINTS.map((point) => (
@@ -202,14 +203,7 @@ export function HomePage() {
                     <span className="text-sm marketing-text">{tier.period}</span>
                   </div>
                   <p className="mt-3 text-sm marketing-text">{tier.description}</p>
-                  <ul className="mt-6 space-y-3">
-                    {tier.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-sm marketing-text">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
+                  <PricingFeatureList features={tier.features} />
                   {tier.id !== 'free' && (
                   <Link
                     href={tier.ctaHref}
@@ -224,7 +218,9 @@ export function HomePage() {
             ))}
           </div>
 
-          <p className="mt-8 text-center text-sm marketing-text">
+          <PricingModelsDisclaimer className="mx-auto mt-6 max-w-2xl text-center" />
+
+          <p className="mt-6 text-center text-sm marketing-text">
             Free plan needs no credit card. Paid plans cancel the same day with no refunds.{' '}
             <Link href="/pricing" className="marketing-inline-link">
               Full pricing details

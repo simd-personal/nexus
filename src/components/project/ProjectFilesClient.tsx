@@ -222,8 +222,11 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
         </p>
       )}
 
-      <div data-tour="file-replace-tip" className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/50 px-3 py-2 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
-        Living doc updated elsewhere? Use <strong>Replace file</strong> on a row — Sunny diffs changes on the Changes tab.
+      <div data-tour="file-replace-tip" className="rounded-lg border border-dashed border-emerald-200 bg-emerald-50/50 px-3 py-2.5 text-xs leading-relaxed text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-200">
+        <strong>Already have a file here, but you saved a newer version somewhere else?</strong>{' '}
+        In the list below, open the menu on that file, choose <strong>Replace file</strong>, and upload
+        the updated copy. Sunny compares old vs new. Open the file and check the{' '}
+        <strong>Changes</strong> tab to see what changed.
       </div>
 
       <div>

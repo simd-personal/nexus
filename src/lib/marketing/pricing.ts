@@ -1,4 +1,11 @@
 import { loginHref } from '@/lib/auth/login-url';
+import {
+  LATEST_MODELS_FEATURE,
+  LATEST_MODELS_PRO_FEATURE,
+  type PricingFeature,
+} from '@/lib/marketing/model-lineup';
+
+export type { PricingFeature };
 
 export type PricingTier = {
   id: string;
@@ -9,7 +16,7 @@ export type PricingTier = {
   cta: string;
   ctaHref: string;
   highlighted?: boolean;
-  features: string[];
+  features: PricingFeature[];
 };
 
 /** B2C freemium + Pro */
@@ -26,7 +33,7 @@ export const B2C_PRICING: PricingTier[] = [
       '1 active client project',
       'Upload meetings, decks, emails & notes',
       'Sunny, your AI employee (25 messages / month)',
-      'Latest AI models on every plan',
+      LATEST_MODELS_FEATURE,
       'Basic brief & timeline views',
       'Email signup & password recovery',
     ],
@@ -43,7 +50,7 @@ export const B2C_PRICING: PricingTier[] = [
     features: [
       'Unlimited client projects',
       'Unlimited Sunny, your AI employee across all projects',
-      'Latest GPT & Claude models included',
+      LATEST_MODELS_PRO_FEATURE,
       'Critical items & follow up detection',
       'Semantic search across all files',
       'Audio transcription & PDF processing',

@@ -18,8 +18,8 @@ export default function ProjectLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Overview' }} />
       <Tabs.Screen name="files" options={{ title: 'Files' }} />
+      <Tabs.Screen name="ask-sunny" options={{ title: 'Ask Sunny' }} />
       <Tabs.Screen name="timeline" options={{ title: 'Timeline' }} />
-      <Tabs.Screen name="ask-sunny" options={{ title: 'Sunny' }} />
       <Tabs.Screen name="critical-items" options={{ title: 'Critical' }} />
       <Tabs.Screen name="follow-up" options={{ title: 'Follow Up' }} />
     </Tabs>

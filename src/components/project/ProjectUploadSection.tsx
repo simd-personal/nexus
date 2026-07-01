@@ -5,6 +5,7 @@ import { ChevronUp, Plus } from 'lucide-react';
 import { EmailForwardCard } from '@/components/project/EmailForwardCard';
 import { PhotoCaptureUpload } from '@/components/project/PhotoCaptureUpload';
 import { FileUploadCenter } from '@/components/project/FileUpload';
+import { DataSecurityPanel } from '@/components/security/DataSecurityPanel';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 
@@ -61,15 +62,17 @@ export function ProjectUploadSection({
         </div>
       )}
       <EmailForwardCard projectId={projectId} />
-      <PhotoCaptureUpload
-        projectId={projectId}
-        onUploadComplete={onUploadComplete}
-        onMessage={onMessage}
-      />
       <FileUploadCenter
         projectId={projectId}
         existingFiles={existingFiles}
         onUploadComplete={onUploadComplete}
+        sidePanel={
+          <PhotoCaptureUpload
+            projectId={projectId}
+            onUploadComplete={onUploadComplete}
+            onMessage={onMessage}
+          />
+        }
       />
       {uploadMessage && (
         <p
@@ -78,6 +81,7 @@ export function ProjectUploadSection({
           {uploadMessage}
         </p>
       )}
+      <DataSecurityPanel variant="upload" />
     </div>
   );
 }

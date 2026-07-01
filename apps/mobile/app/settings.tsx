@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
+import { MobileDataSecurityCard } from '@/components/MobileDataSecurityCard';
 import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Card, Screen } from '@/components/ui';
 import { fetchAccountSummary } from '@/lib/api';
@@ -83,6 +84,8 @@ export default function SettingsScreen() {
 
         <EmailForwardPanel mode="account" />
 
+        <MobileDataSecurityCard />
+
         <Card>
           <Text style={styles.cardLabel}>Session</Text>
           <Text style={styles.cardHint}>End your session on this device.</Text>
@@ -90,11 +93,10 @@ export default function SettingsScreen() {
         </Card>
 
         <Card>
-          <Text style={styles.cardLabel}>Security & privacy</Text>
+          <Text style={styles.cardLabel}>More settings</Text>
           <View style={styles.bulletList}>
-            <Text style={styles.bullet}>• API keys stay server-side and are never exposed to the app</Text>
-            <Text style={styles.bullet}>• Row Level Security limits data to authorized users</Text>
-            <Text style={styles.bullet}>• Use the web app for password changes and billing</Text>
+            <Text style={styles.bullet}>• Password, billing, and enterprise controls are in the web app</Text>
+            <Text style={styles.bullet}>• Visit upperdeck.dev/settings on desktop for the full security panel</Text>
           </View>
         </Card>
       </ScrollView>

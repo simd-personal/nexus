@@ -12,9 +12,15 @@ type PhotoCaptureUploadProps = {
   projectId: string;
   onUploadComplete?: () => void;
   onMessage?: (message: string) => void;
+  className?: string;
 };
 
-export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: PhotoCaptureUploadProps) {
+export function PhotoCaptureUpload({
+  projectId,
+  onUploadComplete,
+  onMessage,
+  className,
+}: PhotoCaptureUploadProps) {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -60,10 +66,10 @@ export function PhotoCaptureUpload({ projectId, onUploadComplete, onMessage }: P
   }
 
   return (
-    <Card>
+    <Card className={cn('h-full', className)}>
       <CardHeader
         title="Photos"
-        description="Capture or upload pictures for this project only. Sunny never guesses which project a photo belongs to."
+        description="Snap or upload pictures with optional context. They are always saved to this project."
       />
       <div className="flex flex-wrap gap-2">
         <label className="inline-flex min-h-11 cursor-pointer touch-manipulation">

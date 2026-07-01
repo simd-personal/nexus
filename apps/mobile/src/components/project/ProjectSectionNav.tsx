@@ -53,7 +53,9 @@ export function ProjectSectionNav({ projectId }: ProjectSectionNavProps) {
               <Ionicons
                 name={section.icon}
                 size={15}
-                color={active ? BRAND.accent : BRAND.textMuted}
+                color={
+                  active || section.key === 'ask-sunny' ? BRAND.accent : BRAND.textMuted
+                }
               />
               <Text style={[styles.pillLabel, active && styles.pillLabelActive]}>
                 {section.label}

@@ -13,6 +13,7 @@ import { SignOutButton } from '@/components/auth/SignOutButton';
 import { ProfileForm } from '@/components/settings/ProfileForm';
 import { DashboardPortfolioSettingsCard } from '@/components/settings/DashboardPortfolioSettings';
 import { ProductTourSettingsCard } from '@/components/settings/ProductTourSettings';
+import { DataSecurityPanel } from '@/components/security/DataSecurityPanel';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
 import { getDashboardPortfolioPreference } from '@/lib/data/queries';
 import { planDisplayName } from '@/lib/billing/plans';
@@ -148,16 +149,16 @@ export default async function SettingsPage({
         </Card>
 
         <Card className="mt-6">
-          <CardHeader title="Security & Privacy" description="Current safeguards" />
+          <DataSecurityPanel isPro={isPro} isEnterprise={isEnterprise} />
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader title="Security & Privacy" description="Additional safeguards" />
           <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
             <li>Free personal accounts include email confirmation and password reset</li>
             <li>Organization tenants are sold via quote for admin access, audit trail, and PHI options</li>
             <li>Healthcare tenants can enable PHI redaction during file processing</li>
             <li>API keys are server side only and never exposed to the browser</li>
-            <li>Row Level Security limits data access to authorized users</li>
-            <li className="text-amber-700 dark:text-amber-400">
-              HIPAA compliance for production healthcare use still requires legal review, BAAs, and audit controls beyond this MVP layer.
-            </li>
           </ul>
         </Card>
 

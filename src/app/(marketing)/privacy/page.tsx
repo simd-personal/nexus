@@ -106,11 +106,17 @@ export default function PrivacyPage() {
             sensitivity or legality of user-submitted content.
           </p>
 
-          <h2>Data storage & security</h2>
+          <h2 id="data-storage">Data storage & security</h2>
           <p>
-            Data is stored in Supabase (PostgreSQL and object storage) with row-level security
-            policies. API keys for AI and payment providers are kept server-side. Organization
-            tenants may enable additional safeguards such as PHI redaction during file processing.
+            Data is stored in Supabase (PostgreSQL and private object storage on AWS) with row-level
+            security policies. Original uploads live in a private bucket, not a public URL.
+            Traffic is encrypted in transit (TLS). Data at rest inherits cloud-provider encryption
+            from our infrastructure partners.
+          </p>
+          <p>
+            API keys for AI and payment providers are kept server-side. Organization tenants may
+            enable additional safeguards such as PHI redaction during file processing. Every account
+            tier, whether Free, Pro, or Enterprise, uses the same secure storage foundation.
           </p>
 
           <h2>Data retention & account deletion</h2>
@@ -121,7 +127,7 @@ export default function PrivacyPage() {
           <p>
             When you delete your UpperDeck account, we permanently erase your personal information,
             project content, uploaded files, chat history, and related metadata from our databases
-            and storage. We do not keep copies for recovery or marketing—deleted accounts are treated
+            and storage. We do not keep copies for recovery or marketing. Deleted accounts are treated
             as if they never existed.
           </p>
           <p>

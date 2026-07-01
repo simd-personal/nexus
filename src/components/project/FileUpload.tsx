@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, Mail, StickyNote, Mic } from 'lucide-react';
+import { UploadSecurityTooltip } from '@/components/security/UploadSecurityTooltip';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -28,13 +29,14 @@ interface FileUploadProps {
   projectId: string;
   existingFiles?: ProjectFileSummary[];
   onUploadComplete?: () => void;
+  sidePanel?: React.ReactNode;
 }
 
-export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }: FileUploadProps) {
+export function FileUploadCenter({ projectId, existingFiles, onUploadComplete, sidePanel }: FileUploadProps) {
   const dragDepth = useRef(0);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [pasteMode, setPasteMode] = useState<'email' | 'meeting' | 'transcript' | 'note' | null>(null);
+  const [pasteMode, setPasteMode] = useState<'email' | 'meeting' | 'transcript' | 'note'>('email');
   const [pasteText, setPasteText] = useState('');
   const [message, setMessage] = useState('');
   const uploadProgress = useUploadProgress();
@@ -85,7 +87,7 @@ export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }:
   }, [uploadFiles, onUploadComplete]);
 
   const uploadPastedText = useCallback(async () => {
-    if (!pasteText.trim() || !pasteMode) return;
+    if (!pasteText.trim()) return;
     setUploading(true);
     setMessage('');
     notifyUploadStart([{ name: `Pasted ${pasteMode.replace('_', ' ')}` }]);
@@ -111,7 +113,6 @@ export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }:
       } else {
         setMessage(pastedContentSuccessMessage());
         setPasteText('');
-        setPasteMode(null);
         onUploadComplete?.();
         if (data.data?.id) {
           kickFileProcessing(data.data.id);
@@ -159,11 +160,18 @@ export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }:
   return (
     <div className="space-y-6">
       {collisionDialog}
-      <Card>
-        <CardHeader
-          title="Upload Center"
-          description="Files upload to this project workspace only. Open the project first, then upload or capture."
-        />
+      <div
+        className={cn(
+          'grid gap-6',
+          sidePanel && 'lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-start'
+        )}
+      >
+        <Card className={sidePanel ? 'h-full' : undefined}>
+          <CardHeader
+            title="Upload Center"
+            description="Documents, decks, email exports, audio, and archives for this project."
+            action={<UploadSecurityTooltip />}
+          />
 
         <div
           onDragEnter={handleDragEnter}
@@ -217,7 +225,9 @@ export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }:
             {message}
           </p>
         )}
-      </Card>
+        </Card>
+        {sidePanel}
+      </div>
 
       <Card>
         <CardHeader title="Paste Content" description="Paste emails, meeting notes, or transcripts" />
@@ -229,24 +239,22 @@ export function FileUploadCenter({ projectId, existingFiles, onUploadComplete }:
           <PasteButton icon={FileText} label="Note" active={pasteMode === 'note'} onClick={() => setPasteMode('note')} />
         </div>
 
-        {pasteMode && (
-          <div>
-            <textarea
-              value={pasteText}
-              onChange={(e) => setPasteText(e.target.value)}
-              placeholder={`Paste your ${pasteMode.replace('_', ' ')} content here...`}
-              className="w-full h-40 p-3 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300"
-            />
-            <div className="flex gap-2 mt-3">
-              <Button onClick={uploadPastedText} loading={isUploading} disabled={!pasteText.trim()}>
-                Upload to Sunny
-              </Button>
-              <Button variant="ghost" onClick={() => { setPasteMode(null); setPasteText(''); }}>
-                Cancel
-              </Button>
-            </div>
+        <div>
+          <textarea
+            value={pasteText}
+            onChange={(e) => setPasteText(e.target.value)}
+            placeholder={`Paste your ${pasteMode.replace('_', ' ')} content here...`}
+            className="w-full h-40 p-3 border border-gray-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-gray-300 dark:border-[var(--ud-cloud)] dark:bg-[var(--ud-stone)] dark:text-gray-100"
+          />
+          <div className="flex gap-2 mt-3">
+            <Button onClick={uploadPastedText} loading={isUploading} disabled={!pasteText.trim()}>
+              Upload to Sunny
+            </Button>
+            <Button variant="ghost" onClick={() => setPasteText('')} disabled={!pasteText.trim() || isUploading}>
+              Clear
+            </Button>
           </div>
-        )}
+        </div>
       </Card>
     </div>
   );

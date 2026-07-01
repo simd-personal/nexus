@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Check } from 'lucide-react';
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
 import { LegalPolicyLinks } from '@/components/marketing/LegalPolicyLinks';
+import { PricingFeatureList, PricingModelsDisclaimer } from '@/components/marketing/PricingFeatureList';
 import { B2B_CAPABILITIES, B2C_PRICING, pricingButtonClass } from '@/lib/marketing/pricing';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
@@ -45,14 +46,7 @@ export default function PricingPage() {
                   </span>
                   <span className="text-sm marketing-text">{tier.period}</span>
                 </p>
-                <ul className="mt-6 space-y-3">
-                  {tier.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2.5 text-sm marketing-text">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-accent)]" strokeWidth={2.5} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                <PricingFeatureList features={tier.features} />
                 {tier.id !== 'free' && (
                 <Link
                   href={tier.ctaHref}
@@ -66,7 +60,9 @@ export default function PricingPage() {
             ))}
           </div>
 
-          <LegalPolicyLinks className="mt-8 text-center text-xs marketing-text" />
+          <PricingModelsDisclaimer className="mx-auto mt-8 max-w-2xl text-center" />
+
+          <LegalPolicyLinks className="mt-6 text-center text-xs marketing-text" />
         </div>
       </section>
 

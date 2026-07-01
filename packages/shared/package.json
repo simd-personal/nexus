@@ -10,6 +10,7 @@
     "./format": "./src/format.ts",
     "./mobile": "./src/mobile.ts",
     "./chat-scope": "./src/chat-scope.ts",
-    "./timeline-summary": "./src/timeline-summary.ts"
+    "./timeline-summary": "./src/timeline-summary.ts",
+    "./data-security": "./src/data-security.ts"
   }
 }

@@ -973,6 +973,16 @@ html.dark .docx-preview td {
   text-wrap: pretty;
 }
 
+.marketing-hero-tagline {
+  margin-top: 0.75rem;
+  max-width: 34rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  font-style: italic;
+  color: var(--marketing-muted);
+  text-wrap: pretty;
+}
+
 .marketing-hero-highlights {
   margin-top: 2rem;
   display: flex;
@@ -1400,6 +1410,12 @@ html.dark .docx-preview td {
 }
 
 .marketing-text-muted {
+  color: var(--marketing-muted);
+}
+
+.marketing-pricing-feature-models {
+  font-size: 0.8125rem;
+  font-style: italic;
   color: var(--marketing-muted);
 }
 
