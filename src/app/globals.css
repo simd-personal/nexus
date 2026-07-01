@@ -579,6 +579,59 @@ html.dark .docx-preview td {
   to { transform: rotate(360deg); }
 }
 
+/* ---------- Sign-in / sign-up loading overlay ---------- */
+.auth-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(11, 18, 32, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: auth-loading-in 0.25s ease both;
+}
+
+@keyframes auth-loading-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.auth-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.auth-loading-title {
+  margin-top: 0.75rem;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #f8fafc;
+}
+
+.auth-loading-sub {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: rgba(248, 250, 252, 0.72);
+}
+
+.auth-loading-spinner {
+  display: block;
+  margin-top: 0.75rem;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #ffffff;
+}
+
 /* Post-signup / post-sign-in entry splash */
 .auth-onboarding {
   position: fixed;

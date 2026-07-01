@@ -220,6 +220,7 @@ export default function LoginPageClient({
 }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const [message, setMessage] = useState(initialMessage ?? '');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
@@ -341,7 +342,12 @@ export default function LoginPageClient({
               )}
 
               {mode === 'signin' && (
-                <form action="/api/auth/sign-in" method="POST" className="mt-6 space-y-4">
+                <form
+                  action="/api/auth/sign-in"
+                  method="POST"
+                  className="mt-6 space-y-4"
+                  onSubmit={() => setNavigating(true)}
+                >
                   <input type="hidden" name="redirect" value={signInRedirect} />
                   {checkoutPlan && <input type="hidden" name="plan" value={checkoutPlan} />}
                   <FormField
@@ -392,7 +398,12 @@ export default function LoginPageClient({
               )}
 
               {mode === 'signup' && (
-                <form action="/api/auth/sign-up" method="POST" className="mt-6 space-y-4">
+                <form
+                  action="/api/auth/sign-up"
+                  method="POST"
+                  className="mt-6 space-y-4"
+                  onSubmit={() => setNavigating(true)}
+                >
                   {checkoutPlan && <input type="hidden" name="plan" value={checkoutPlan} />}
                   <FormField id="fullName" name="fullName" label="Full name" required autoComplete="name" placeholder="Your name" />
                   <FormField
@@ -473,6 +484,23 @@ export default function LoginPageClient({
           </div>
         </div>
       </div>
+
+      {navigating && (
+        <div className="auth-loading-overlay" role="status" aria-live="polite">
+          <div className="auth-loading-card">
+            <SunnyMascot animate="float" />
+            <p className="auth-loading-title">
+              {mode === 'signup' ? 'Creating your account' : 'Signing you in'}
+            </p>
+            <p className="auth-loading-sub">
+              {mode === 'signup'
+                ? 'Setting up your workspace…'
+                : 'Getting your workspace ready…'}
+            </p>
+            <span className="auth-spinner auth-loading-spinner" aria-hidden />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
