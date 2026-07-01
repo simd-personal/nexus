@@ -3,8 +3,8 @@ import { getFileExtension, isProcessable } from '@/lib/constants';
 import { sanitizeUploadFileName } from '@/lib/upload/client';
 
 export const ZIP_MAX_ENTRIES = 75;
-export const ZIP_MAX_UNCOMPRESSED_BYTES = 200 * 1024 * 1024; // 200 MB
-export const ZIP_MAX_ENTRY_BYTES = 100 * 1024 * 1024; // 100 MB per file
+export const ZIP_MAX_UNCOMPRESSED_BYTES = 400 * 1024 * 1024; // 400 MB
+export const ZIP_MAX_ENTRY_BYTES = 200 * 1024 * 1024; // 200 MB per file
 
 export interface ZipExtractedEntry {
   name: string;

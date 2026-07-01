@@ -7,7 +7,7 @@ import {
 } from '@/lib/upload/limits';
 
 describe('upload limits', () => {
-  it('allows files up to 100 MB', () => {
+  it('allows files up to 200 MB', () => {
     expect(validateUploadByteSize(MAX_SINGLE_UPLOAD_BYTES, 'file').ok).toBe(true);
     expect(validateUploadByteSize(MAX_SINGLE_UPLOAD_BYTES + 1, 'file').ok).toBe(false);
   });

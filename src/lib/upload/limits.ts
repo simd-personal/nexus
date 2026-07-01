@@ -1,5 +1,5 @@
-export const MAX_SINGLE_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
-export const MAX_ZIP_UPLOAD_BYTES = 100 * 1024 * 1024;
+export const MAX_SINGLE_UPLOAD_BYTES = 200 * 1024 * 1024; // 200 MB
+export const MAX_ZIP_UPLOAD_BYTES = 200 * 1024 * 1024;
 export const MAX_PASTED_TEXT_BYTES = 2 * 1024 * 1024; // 2 MB
 
 export const UPLOAD_RATE_LIMIT_FREE = { max: 30, windowSec: 3600 };
