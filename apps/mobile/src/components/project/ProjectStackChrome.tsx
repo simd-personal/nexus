@@ -1,10 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter, useSegments } from 'expo-router';
+import { useCallback } from 'react';
+import { BackHandler, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProjectSectionNav } from '@/components/project/ProjectSectionNav';
 import { fetchProjectOverview } from '@/lib/api';
+import { activeProjectSection, resolveProjectSectionBack } from '@/lib/project-sections';
 import { BRAND, spacing } from '@/theme/colors';
 
 type ProjectStackChromeProps = {
@@ -15,7 +18,9 @@ const SIDE_SLOT_WIDTH = 44;
 
 export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
   const router = useRouter();
+  const segments = useSegments();
   const insets = useSafeAreaInsets();
+  const activeSection = activeProjectSection(segments as string[]);
   const overviewQuery = useQuery({
     queryKey: ['project-overview', projectId],
     queryFn: () => fetchProjectOverview(projectId),
@@ -25,11 +30,36 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
   const title = overviewQuery.data?.project?.project_name ?? 'Project';
   const client = overviewQuery.data?.project?.client_name;
 
+  const goBack = useCallback(() => {
+    const target = resolveProjectSectionBack(projectId, activeSection);
+    if (target.kind === 'replace') {
+      router.replace(target.path as `/project/${string}`);
+      return;
+    }
+    router.back();
+  }, [activeSection, projectId, router]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const onHardwareBack = () => {
+        const target = resolveProjectSectionBack(projectId, activeSection);
+        if (target.kind === 'replace') {
+          router.replace(target.path as `/project/${string}`);
+          return true;
+        }
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onHardwareBack);
+      return () => subscription.remove();
+    }, [activeSection, projectId, router])
+  );
+
   return (
     <View style={[styles.wrap, { paddingTop: insets.top }]}>
       <View style={styles.titleRow}>
         <Pressable
-          onPress={() => router.back()}
+          onPress={goBack}
           hitSlop={10}
           style={({ pressed }) => [styles.sideSlot, pressed && styles.sideSlotPressed]}
           accessibilityRole="button"

@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   PROJECT_SECTIONS,
   activeProjectSection,
-  projectSectionPath,
+  resolveProjectSectionNavigation,
   type ProjectSection,
 } from '@/lib/project-sections';
 import { BRAND, radius, spacing } from '@/theme/colors';
@@ -21,7 +21,10 @@ export function ProjectSectionNav({ projectId }: ProjectSectionNavProps) {
   const activeKey = activeProjectSection(segments as string[]);
 
   function navigate(section: ProjectSection) {
-    router.push(projectSectionPath(projectId, section) as `/project/${string}`);
+    const next = resolveProjectSectionNavigation(projectId, section.key, activeKey);
+    if (next.kind === 'replace') {
+      router.replace(next.path as `/project/${string}`);
+    }
   }
 
   return (

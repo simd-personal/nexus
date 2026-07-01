@@ -25,8 +25,35 @@ export const PROJECT_SECTIONS: ProjectSection[] = [
   { key: 'follow-up', label: 'Follow Up', segment: 'follow-up', icon: 'mail-outline' },
 ];
 
+export function projectOverviewPath(projectId: string): string {
+  return `/project/${projectId}`;
+}
+
 export function projectSectionPath(projectId: string, section: ProjectSection): string {
-  return section.segment ? `/project/${projectId}/${section.segment}` : `/project/${projectId}`;
+  return section.segment ? `/project/${projectId}/${section.segment}` : projectOverviewPath(projectId);
+}
+
+export function projectSectionPathByKey(projectId: string, key: ProjectSectionKey): string {
+  const section = PROJECT_SECTIONS.find((item) => item.key === key);
+  if (!section) return projectOverviewPath(projectId);
+  return projectSectionPath(projectId, section);
+}
+
+export function resolveProjectSectionNavigation(
+  projectId: string,
+  targetSection: ProjectSectionKey,
+  activeSection: ProjectSectionKey
+): { kind: 'noop' } | { kind: 'replace'; path: string } {
+  if (targetSection === activeSection) return { kind: 'noop' };
+  return { kind: 'replace', path: projectSectionPathByKey(projectId, targetSection) };
+}
+
+export function resolveProjectSectionBack(
+  projectId: string,
+  activeSection: ProjectSectionKey
+): { kind: 'exit' } | { kind: 'replace'; path: string } {
+  if (activeSection === 'overview') return { kind: 'exit' };
+  return { kind: 'replace', path: projectOverviewPath(projectId) };
 }
 
 export function activeProjectSection(segments: string[]): ProjectSectionKey {

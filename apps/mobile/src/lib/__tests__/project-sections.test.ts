@@ -3,6 +3,9 @@ import {
   PROJECT_SECTIONS,
   activeProjectSection,
   projectSectionPath,
+  projectSectionPathByKey,
+  resolveProjectSectionBack,
+  resolveProjectSectionNavigation,
 } from '../project-sections';
 
 describe('PROJECT_SECTIONS', () => {
@@ -31,5 +34,30 @@ describe('PROJECT_SECTIONS', () => {
     expect(activeProjectSection(['project', 'abc'])).toBe('overview');
     expect(activeProjectSection(['project', 'abc', 'deck'])).toBe('overview');
     expect(activeProjectSection(['project', 'abc', 'playbook'])).toBe('overview');
+  });
+
+  it('builds paths by section key', () => {
+    expect(projectSectionPathByKey('abc', 'timeline')).toBe('/project/abc/timeline');
+    expect(projectSectionPathByKey('abc', 'overview')).toBe('/project/abc');
+  });
+
+  it('replaces the current section instead of stacking pills', () => {
+    expect(resolveProjectSectionNavigation('abc', 'timeline', 'overview')).toEqual({
+      kind: 'replace',
+      path: '/project/abc/timeline',
+    });
+    expect(resolveProjectSectionNavigation('abc', 'ask-sunny', 'timeline')).toEqual({
+      kind: 'replace',
+      path: '/project/abc/ask-sunny',
+    });
+    expect(resolveProjectSectionNavigation('abc', 'timeline', 'timeline')).toEqual({ kind: 'noop' });
+  });
+
+  it('returns to overview before exiting the project', () => {
+    expect(resolveProjectSectionBack('abc', 'timeline')).toEqual({
+      kind: 'replace',
+      path: '/project/abc',
+    });
+    expect(resolveProjectSectionBack('abc', 'overview')).toEqual({ kind: 'exit' });
   });
 });

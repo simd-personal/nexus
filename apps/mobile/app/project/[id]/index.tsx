@@ -12,6 +12,7 @@ import { ProjectUploadPanel } from '@/components/ProjectUploadPanel';
 import { CriticalItemRow } from '@/components/lists';
 import { EmptyState, Screen, StatPill, Subtitle } from '@/components/ui';
 import { fetchProjectFiles, fetchProjectOverview, fetchProjectTimeline } from '@/lib/api';
+import { projectSectionPathByKey } from '@/lib/project-sections';
 import type { CriticalItem, ProjectFile } from '@/lib/types';
 import { BRAND, spacing } from '@/theme/colors';
 
@@ -93,7 +94,11 @@ export default function ProjectOverviewScreen() {
 
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent timeline</Text>
-              <Pressable onPress={() => router.push(`/project/${projectId}/timeline`)}>
+              <Pressable
+                onPress={() =>
+                  router.replace(projectSectionPathByKey(projectId, 'timeline') as `/project/${string}`)
+                }
+              >
                 <Text style={styles.viewAll}>View all</Text>
               </Pressable>
             </View>
@@ -102,7 +107,11 @@ export default function ProjectOverviewScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent files</Text>
               {files.length > 0 ? (
-                <Pressable onPress={() => router.push(`/project/${projectId}/files`)}>
+                <Pressable
+                  onPress={() =>
+                    router.replace(projectSectionPathByKey(projectId, 'files') as `/project/${string}`)
+                  }
+                >
                   <Text style={styles.viewAll}>View all</Text>
                 </Pressable>
               ) : null}
@@ -127,7 +136,13 @@ export default function ProjectOverviewScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Critical items</Text>
               {(overviewQuery.data?.critical_items ?? []).length > 0 ? (
-                <Pressable onPress={() => router.push(`/project/${projectId}/critical-items`)}>
+                <Pressable
+                  onPress={() =>
+                    router.replace(
+                      projectSectionPathByKey(projectId, 'critical-items') as `/project/${string}`
+                    )
+                  }
+                >
                   <Text style={styles.viewAll}>View all</Text>
                 </Pressable>
               ) : null}
