@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ProjectFile } from '@/lib/types';
 import { fileStatusLabel, fileStatusTone } from '@/lib/files';
 import { formatFileUploadTime } from '@/lib/format';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type ProjectFileRowProps = {
   file: ProjectFile;
@@ -28,7 +28,7 @@ export function ProjectFileRow({ file, onPress, onActions }: ProjectFileRowProps
       style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
     >
       <View style={styles.iconWrap}>
-        <Feather name="file-text" size={20} color={BRAND.accent} />
+        <Feather name="file-text" size={20} color={APP.textMuted} />
       </View>
       <View style={styles.body}>
         <Text style={styles.name} numberOfLines={2}>
@@ -60,7 +60,7 @@ export function ProjectFileRow({ file, onPress, onActions }: ProjectFileRowProps
         style={styles.moreBtn}
         accessibilityLabel={`Actions for ${file.file_name}`}
       >
-        <Feather name="more-horizontal" size={20} color="#6B7280" />
+        <Feather name="more-horizontal" size={20} color={APP.textMuted} />
       </Pressable>
     </Pressable>
   );
@@ -71,20 +71,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,
-    backgroundColor: '#fff',
-    borderRadius: radius.lg,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
   },
   rowPressed: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: APP.surfaceMuted,
   },
   iconWrap: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 15,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   metaRow: {
     flexDirection: 'row',
@@ -114,11 +114,11 @@ const styles = StyleSheet.create({
   },
   meta: {
     fontSize: 12,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   note: {
     fontSize: 12,
-    color: '#6B7280',
+    color: APP.textMuted,
     lineHeight: 18,
   },
   shared: {

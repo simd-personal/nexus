@@ -10,7 +10,7 @@ import {
   timelineEventIsExpandable,
 } from '@/lib/timeline-summary';
 import type { TimelineEvent } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 const EVENT_ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   meeting: 'calendar-outline',
@@ -77,7 +77,7 @@ function TimelineEventCard({
           <Ionicons
             name={expanded ? 'chevron-up' : 'chevron-down'}
             size={14}
-            color={BRAND.textMuted}
+            color={APP.textMuted}
             style={styles.chevron}
           />
         ) : null}
@@ -145,7 +145,7 @@ export function ProjectTimelineView({ events, expandable = false }: ProjectTimel
           <View key={event.id} style={styles.row}>
             <View style={styles.rail}>
               <View style={styles.iconShell}>
-                <Ionicons name={icon} size={14} color={BRAND.accent} />
+                <Ionicons name={icon} size={14} color={APP.textMuted} />
               </View>
               {!isLast ? <View style={styles.line} /> : null}
             </View>
@@ -190,23 +190,23 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+    backgroundColor: APP.btnSecondaryBg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(37, 99, 235, 0.18)',
+    borderColor: APP.border,
   },
   line: {
     flex: 1,
     width: 2,
     marginTop: 4,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: APP.border,
     borderRadius: 1,
     minHeight: 12,
   },
   compactCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: radius.md,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 11,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   chevron: {
     marginTop: 1,
@@ -233,6 +233,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '500',
-    color: BRAND.graphite,
+    color: APP.text,
   },
 });

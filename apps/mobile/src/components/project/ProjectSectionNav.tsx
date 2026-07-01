@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useSegments } from 'expo-router';
-import { useRef } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { type ComponentProps, useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
   PROJECT_SECTIONS,
   activeProjectSection,
@@ -16,6 +16,50 @@ type ProjectSectionNavProps = {
   projectId: string;
   visibility?: ProjectNavVisibility;
 };
+
+/** Gently twinkling sparkle for the Ask Sunny tab — mirrors the web `.sunny-sparkle`. */
+function TwinkleSparkle({
+  name,
+  size,
+  color,
+}: {
+  name: ComponentProps<typeof Ionicons>['name'];
+  size: number;
+  color: string;
+}) {
+  const [progress] = useState(() => new Animated.Value(0));
+
+  useEffect(() => {
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(progress, {
+          toValue: 1,
+          duration: 1300,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(progress, {
+          toValue: 0,
+          duration: 1300,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [progress]);
+
+  const scale = progress.interpolate({ inputRange: [0, 1], outputRange: [1, 1.18] });
+  const opacity = progress.interpolate({ inputRange: [0, 1], outputRange: [0.88, 1] });
+  const rotate = progress.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '12deg'] });
+
+  return (
+    <Animated.View style={{ opacity, transform: [{ scale }, { rotate }] }}>
+      <Ionicons name={name} size={size} color={color} />
+    </Animated.View>
+  );
+}
 
 export function ProjectSectionNav({ projectId, visibility }: ProjectSectionNavProps) {
   const router = useRouter();
@@ -57,13 +101,15 @@ export function ProjectSectionNav({ projectId, visibility }: ProjectSectionNavPr
               accessibilityState={{ selected: active }}
               accessibilityLabel={section.label}
             >
-              <Ionicons
-                name={section.icon}
-                size={15}
-                color={
-                  active || section.key === 'ask-sunny' ? BRAND.accent : BRAND.textMuted
-                }
-              />
+              {section.key === 'ask-sunny' ? (
+                <TwinkleSparkle name={section.icon} size={15} color={BRAND.accent} />
+              ) : (
+                <Ionicons
+                  name={section.icon}
+                  size={15}
+                  color={active ? BRAND.accent : BRAND.textMuted}
+                />
+              )}
               <Text style={[styles.pillLabel, active && styles.pillLabelActive]}>
                 {section.label}
               </Text>

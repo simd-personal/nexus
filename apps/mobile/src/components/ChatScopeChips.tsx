@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { removeScopeLabel, type ChatScope } from '@upperdeck/shared/chat-scope';
 import type { ProjectWithStats } from '@/lib/types';
-import { radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type ChatScopeChipsProps = {
   scope: ChatScope;
@@ -45,7 +45,7 @@ export function ChatScopeChips({
               hitSlop={6}
               accessibilityLabel={`Remove ${label} from scope`}
             >
-              <Feather name="x" size={12} color="#6B7280" />
+              <Feather name="x" size={12} color={APP.textMuted} />
             </Pressable>
           ) : null}
         </View>
@@ -74,14 +74,14 @@ const styles = StyleSheet.create({
   chipNeutral: {
     borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#F9FAFB',
+    borderColor: APP.border,
+    backgroundColor: APP.surfaceMuted,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   chipNeutralText: {
     fontSize: 12,
-    color: '#4B5563',
+    color: APP.textMuted,
   },
   chip: {
     flexDirection: 'row',
@@ -90,14 +90,14 @@ const styles = StyleSheet.create({
     maxWidth: 220,
     borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(124,108,240,0.25)',
-    backgroundColor: 'rgba(124,108,240,0.08)',
+    borderColor: APP.btnSecondaryBorder,
+    backgroundColor: APP.btnSecondaryBg,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   chipText: {
     flexShrink: 1,
     fontSize: 12,
-    color: '#374151',
+    color: APP.text,
   },
 });

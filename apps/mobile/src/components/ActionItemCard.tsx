@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button, Card } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/format';
 import type { ActionItem } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 const KIND_LABELS: Record<string, string> = {
   commitment: 'Commitment',
@@ -60,7 +60,7 @@ export function ActionItemPreviewRow({
             </Text>
             {item.owner ? <Text style={styles.owner}>Owner: {item.owner}</Text> : null}
           </View>
-          <Ionicons name="chevron-forward" size={18} color={BRAND.textMuted} />
+          <Ionicons name="chevron-forward" size={18} color={APP.textMuted} />
         </View>
       </Card>
     </Pressable>
@@ -158,33 +158,33 @@ const styles = StyleSheet.create({
   },
   kindBadge: {
     borderRadius: radius.full,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   kindBadgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: BRAND.accent,
+    color: APP.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   statusBadge: {
     borderRadius: radius.full,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.btnSecondaryBg,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   statusBadgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
+    color: APP.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   timestamp: {
     fontSize: 12,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   project: {
     fontSize: 13,
@@ -192,29 +192,29 @@ const styles = StyleSheet.create({
   },
   owner: {
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   dueDate: {
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     marginTop: spacing.xs,
   },
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   detailTitle: {
     fontSize: 22,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
     lineHeight: 28,
   },
   description: {
     marginTop: spacing.md,
     fontSize: 15,
     lineHeight: 22,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   actions: {
     gap: spacing.sm,

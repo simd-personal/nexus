@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card } from '@/components/ui';
 import { fetchAccountInbound, fetchProjectInbound } from '@/lib/api';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 type EmailForwardPanelProps =
   | { mode: 'project'; projectId: string }
@@ -45,7 +45,7 @@ export function EmailForwardPanel(props: EmailForwardPanelProps) {
     <Card>
       <View style={styles.headerRow}>
         <View style={styles.headerIcon}>
-          <Ionicons name="mail-outline" size={20} color={BRAND.accent} />
+          <Ionicons name="mail-outline" size={20} color={APP.textMuted} />
         </View>
         <View style={styles.headerText}>
           <Text style={styles.title}>{title}</Text>
@@ -67,7 +67,7 @@ export function EmailForwardPanel(props: EmailForwardPanelProps) {
               <Ionicons
                 name={copied ? 'checkmark' : 'copy-outline'}
                 size={14}
-                color={copied ? BRAND.accent : BRAND.textMuted}
+                color={copied ? BRAND.accent : APP.textMuted}
               />
               <Text style={[styles.copyHintText, copied && styles.copyHintTextCopied]}>
                 {copied ? 'Copied' : 'Tap to copy'}
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
   },
   headerText: {
     flex: 1,
@@ -118,12 +118,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   description: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   addressHeader: {
     marginTop: spacing.sm,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
-    color: BRAND.textMuted,
+    color: APP.textSubtle,
   },
   copyHint: {
     flexDirection: 'row',
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   copyHintText: {
     fontSize: 11,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   copyHintTextCopied: {
     color: BRAND.accent,
@@ -156,10 +156,10 @@ const styles = StyleSheet.create({
   addressRow: {
     marginTop: spacing.xs,
     padding: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: BRAND.stone,
+    borderRadius: radius.sm,
+    backgroundColor: APP.surfaceMuted,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
   },
   addressRowPressed: {
     opacity: 0.88,
@@ -167,19 +167,19 @@ const styles = StyleSheet.create({
   address: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.graphite,
+    color: APP.text,
     fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' }),
   },
   tipText: {
     marginTop: spacing.sm,
     fontSize: 13,
     lineHeight: 18,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   loading: {
     marginTop: spacing.sm,
     fontSize: 14,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   error: {
     marginTop: spacing.sm,

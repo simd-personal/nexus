@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SunnyMark } from '@/components/SunnyMark';
 import { Card } from '@/components/ui';
 import { openSunnyForProject } from '@/lib/sunny-navigation';
-import { BRAND, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 export function AskSunnyProjectCard({
   projectId,
@@ -38,7 +38,7 @@ export function AskSunnyProjectCard({
               Chat about {projectName} with evidence from this project&apos;s files.
             </Text>
           </View>
-          <Ionicons name="chevron-forward" size={20} color={BRAND.textMuted} />
+          <Ionicons name="chevron-forward" size={20} color={APP.textMuted} />
         </View>
       </Card>
     </Pressable>
@@ -72,11 +72,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   body: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
 });

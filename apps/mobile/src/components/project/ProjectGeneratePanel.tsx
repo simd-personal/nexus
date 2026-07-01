@@ -6,7 +6,7 @@ import { InlineNotice } from '@/components/InlineNotice';
 import { Button, Card } from '@/components/ui';
 import { generateProjectContent } from '@/lib/api';
 import type { ProjectGenerateType } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type ProjectGeneratePanelProps = {
   projectId: string;
@@ -90,7 +90,7 @@ export function ProjectGeneratePanel({
           value={instructions}
           onChangeText={setInstructions}
           placeholder="Optional instructions for Sunny…"
-          placeholderTextColor={BRAND.textMuted}
+          placeholderTextColor={APP.textSubtle}
           style={styles.input}
           multiline
         />
@@ -127,13 +127,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   description: {
     marginTop: 4,
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   pillRow: {
     flexDirection: 'row',
@@ -145,32 +145,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: radius.full,
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
   },
   versionPillActive: {
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-    borderColor: 'rgba(37, 99, 235, 0.25)',
+    backgroundColor: APP.btnSecondaryBg,
+    borderColor: APP.borderStrong,
   },
   versionPillText: {
     fontSize: 12,
     fontWeight: '700',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   versionPillTextActive: {
-    color: BRAND.accent,
+    color: APP.text,
   },
   input: {
     marginTop: spacing.md,
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#D1D5DB',
-    borderRadius: radius.md,
+    borderColor: APP.borderStrong,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
     fontSize: 15,
-    color: BRAND.graphite,
+    color: APP.text,
     minHeight: 88,
     textAlignVertical: 'top',
   },
@@ -185,11 +185,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   resultBody: {
     fontSize: 15,
     lineHeight: 23,
-    color: '#334155',
+    color: APP.text,
   },
 });

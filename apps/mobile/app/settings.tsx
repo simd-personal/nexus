@@ -8,7 +8,7 @@ import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/Scre
 import { Button, Card, Screen } from '@/components/ui';
 import { fetchAccountSummary } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
-import { BRAND, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 function SettingsRow({
   icon,
@@ -24,13 +24,13 @@ function SettingsRow({
   const content = (
     <View style={styles.row}>
       <View style={styles.rowIcon}>
-        <Ionicons name={icon} size={20} color={BRAND.accent} />
+        <Ionicons name={icon} size={20} color={APP.textMuted} />
       </View>
       <View style={styles.rowText}>
         <Text style={styles.rowTitle}>{title}</Text>
         {description ? <Text style={styles.rowDescription}>{description}</Text> : null}
       </View>
-      {onPress ? <Ionicons name="chevron-forward" size={18} color={BRAND.textMuted} /> : null}
+      {onPress ? <Ionicons name="chevron-forward" size={18} color={APP.textMuted} /> : null}
     </View>
   );
 
@@ -113,14 +113,14 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: BRAND.textMuted,
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   cardHint: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   row: {
     flexDirection: 'row',
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
   },
   rowText: {
     flex: 1,
@@ -142,12 +142,12 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 15,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   rowDescription: {
     fontSize: 13,
     lineHeight: 18,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   bulletList: {
     gap: 8,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   bullet: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#475569',
+    color: APP.textMuted,
   },
   pressed: {
     opacity: 0.75,

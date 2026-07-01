@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View, type ViewStyle } from 'react-native';
-import { BRAND, radius } from '@/theme/colors';
+import { radius } from '@/theme/colors';
 
 export function SkeletonBlock({
   height,
@@ -51,7 +51,7 @@ export function DashboardSkeleton() {
 
 const styles = StyleSheet.create({
   block: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: 'rgba(17, 20, 24, 0.08)',
     borderRadius: radius.md,
   },
   dashboard: {

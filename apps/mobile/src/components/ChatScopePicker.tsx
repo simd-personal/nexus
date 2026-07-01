@@ -19,7 +19,7 @@ import {
   type TreeCheckState,
 } from '@upperdeck/shared/chat-scope';
 import type { ProjectWithStats } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 function ScopeCheckBox({
   state,
@@ -79,7 +79,7 @@ function ScopeTreeNode({
         <Feather
           name={children.length > 0 ? 'folder' : depth > 0 ? 'git-branch' : 'folder'}
           size={14}
-          color="#9CA3AF"
+          color={APP.textSubtle}
         />
         <Text style={styles.treeLabel} numberOfLines={1}>
           {label}
@@ -202,11 +202,11 @@ export function ChatScopePicker({
         accessibilityRole="button"
         accessibilityLabel="Choose project scope"
       >
-        <Feather name="folder" size={14} color="#9CA3AF" />
+        <Feather name="folder" size={14} color={APP.textSubtle} />
         <Text style={styles.triggerLabel} numberOfLines={1}>
           {formatScopeSummary(scope)}
         </Text>
-        <Feather name="chevron-down" size={14} color="#9CA3AF" />
+        <Feather name="chevron-down" size={14} color={APP.textSubtle} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
@@ -216,7 +216,7 @@ export function ChatScopePicker({
             <View style={styles.sheetHeader}>
               <Text style={styles.sheetTitle}>Project scope</Text>
               <Pressable onPress={() => setPickerOpen(false)} hitSlop={8}>
-                <Feather name="x" size={20} color="#6B7280" />
+                <Feather name="x" size={20} color={APP.textMuted} />
               </Pressable>
             </View>
 
@@ -276,20 +276,20 @@ const styles = StyleSheet.create({
     gap: 6,
     maxWidth: 240,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    borderRadius: radius.md,
-    backgroundColor: '#fff',
+    borderColor: APP.border,
+    borderRadius: radius.sm,
+    backgroundColor: APP.surface,
     paddingHorizontal: 10,
     paddingVertical: 8,
   },
   triggerPressed: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: APP.surfaceMuted,
   },
   triggerLabel: {
     flex: 1,
     fontSize: 12,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   backdrop: {
     flex: 1,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     width: '100%',
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     paddingHorizontal: spacing.md,
   },
   sheetHeader: {
@@ -313,27 +313,27 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   allRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 10,
   },
   allRowActive: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.btnSecondaryBg,
   },
   allLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.border,
     marginVertical: spacing.sm,
   },
   treeList: {
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
   portfolioSectionTitle: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#9CA3AF',
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     paddingHorizontal: spacing.sm,
@@ -358,19 +358,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.sm,
     paddingVertical: 10,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: APP.surfaceMuted,
   },
   portfolioRowLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   portfolioEmpty: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: APP.textSubtle,
     paddingHorizontal: spacing.sm,
     paddingBottom: spacing.xs,
   },
@@ -385,47 +385,47 @@ const styles = StyleSheet.create({
   treeRowNested: {
     marginLeft: spacing.md,
     borderLeftWidth: StyleSheet.hairlineWidth,
-    borderLeftColor: '#E5E7EB',
+    borderLeftColor: APP.border,
     paddingLeft: spacing.md,
   },
   treeLabel: {
     flex: 1,
     fontSize: 12,
-    color: '#1F2937',
+    color: APP.text,
   },
   workstreamCount: {
     fontSize: 10,
-    color: '#9CA3AF',
+    color: APP.textSubtle,
   },
   checkbox: {
     width: 16,
     height: 16,
     borderRadius: 4,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#D1D5DB',
-    backgroundColor: '#fff',
+    borderColor: APP.borderStrong,
+    backgroundColor: APP.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    borderColor: BRAND.graphite,
-    backgroundColor: BRAND.graphite,
+    borderColor: APP.btnPrimaryBg,
+    backgroundColor: APP.btnPrimaryBg,
   },
   checkMark: {
-    color: '#fff',
+    color: APP.btnPrimaryText,
     fontSize: 10,
     lineHeight: 12,
     fontWeight: '700',
   },
   doneBtn: {
     marginTop: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: BRAND.graphite,
+    borderRadius: radius.sm,
+    backgroundColor: APP.btnPrimaryBg,
     paddingVertical: 14,
     alignItems: 'center',
   },
   doneBtnText: {
-    color: '#fff',
+    color: APP.btnPrimaryText,
     fontSize: 15,
     fontWeight: '600',
   },

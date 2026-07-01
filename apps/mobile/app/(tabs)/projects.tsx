@@ -11,7 +11,7 @@ import { EmptyState, Screen } from '@/components/ui';
 import { fetchAllProjects } from '@/lib/api';
 import { splitProjectsByPortfolio } from '@/lib/projects';
 import type { ProjectWithStats } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 function ProjectSection({
   title,
@@ -84,13 +84,13 @@ export default function ProjectsScreen() {
           onPress={() => router.push('/project/new')}
         >
           <View style={styles.createIcon}>
-            <Ionicons name="add" size={24} color={BRAND.accent} />
+            <Ionicons name="add" size={24} color={APP.text} />
           </View>
           <View style={styles.createText}>
             <Text style={styles.createTitle}>New project</Text>
             <Text style={styles.createBody}>Set up a work or personal project, then add materials.</Text>
           </View>
-          <Ionicons name="chevron-forward" size={18} color={BRAND.textMuted} />
+          <Ionicons name="chevron-forward" size={18} color={APP.textMuted} />
         </Pressable>
 
         {projects.length === 0 && !query.isLoading ? (
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#9CA3AF',
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     paddingHorizontal: 2,
@@ -139,11 +139,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: '#fff',
-    borderRadius: radius.lg,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
     marginBottom: spacing.xs,
   },
   createCardPressed: {
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
   },
   createText: {
     flex: 1,
@@ -164,11 +164,11 @@ const styles = StyleSheet.create({
   createTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   createBody: {
     fontSize: 13,
     lineHeight: 18,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
 });

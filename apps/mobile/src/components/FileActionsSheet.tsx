@@ -25,7 +25,7 @@ import {
   shareProjectFile,
 } from '@/lib/api';
 import type { ProjectFile, ProjectWithStats } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type DialogMode = 'rename' | 'note' | 'move' | 'share' | 'remove' | null;
 
@@ -216,7 +216,7 @@ export function FileActionsSheet({
               danger
             />
             <ActionRow icon="trash" label="Delete file permanently" onPress={() => void handleDelete()} danger />
-            {submitting ? <ActivityIndicator style={{ marginTop: spacing.sm }} color={BRAND.graphite} /> : null}
+            {submitting ? <ActivityIndicator style={{ marginTop: spacing.sm }} color={APP.text} /> : null}
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <Pressable onPress={closeAll} style={styles.cancelBtn}>
               <Text style={styles.cancelText}>Cancel</Text>
@@ -244,7 +244,7 @@ export function FileActionsSheet({
                 value={value}
                 onChangeText={setValue}
                 placeholder={mode === 'rename' ? 'New file name' : 'Optional context for Sunny'}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={APP.textSubtle}
                 style={mode === 'note' ? styles.textArea : styles.input}
                 multiline={mode === 'note'}
               />
@@ -253,7 +253,7 @@ export function FileActionsSheet({
             {(mode === 'move' || mode === 'share') && (
               <ScrollView style={styles.projectList}>
                 {projectsQuery.isLoading ? (
-                  <ActivityIndicator color={BRAND.graphite} />
+                  <ActivityIndicator color={APP.text} />
                 ) : (
                   otherProjects.map((project) => {
                     const active = targetProjectId === project.id;
@@ -317,7 +317,7 @@ function ActionRow({
 }) {
   return (
     <Pressable onPress={onPress} style={styles.actionRow}>
-      <Feather name={icon} size={18} color={danger ? '#DC2626' : BRAND.graphite} />
+      <Feather name={icon} size={18} color={danger ? '#DC2626' : APP.text} />
       <Text style={[styles.actionLabel, danger && styles.actionLabelDanger]}>{label}</Text>
     </Pressable>
   );
@@ -330,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.35)',
   },
   sheet: {
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingHorizontal: spacing.md,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
   fileName: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#6B7280',
+    color: APP.textMuted,
     marginBottom: spacing.sm,
   },
   actionRow: {
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     fontSize: 16,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   actionLabelDanger: {
     color: '#DC2626',
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 16,
     fontWeight: '600',
-    color: BRAND.accent,
+    color: APP.textMuted,
   },
   error: {
     color: '#DC2626',
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   dialog: {
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderRadius: radius.xl,
     padding: spacing.lg,
     gap: spacing.sm,
@@ -386,30 +386,30 @@ const styles = StyleSheet.create({
   dialogTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   dialogSubtitle: {
     fontSize: 13,
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#D1D5DB',
-    borderRadius: radius.md,
+    borderColor: APP.borderStrong,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
     fontSize: 15,
-    color: BRAND.graphite,
+    color: APP.text,
     marginTop: spacing.sm,
   },
   textArea: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#D1D5DB',
-    borderRadius: radius.md,
+    borderColor: APP.borderStrong,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
     fontSize: 15,
-    color: BRAND.graphite,
+    color: APP.text,
     minHeight: 100,
     textAlignVertical: 'top',
     marginTop: spacing.sm,
@@ -421,19 +421,19 @@ const styles = StyleSheet.create({
   projectOption: {
     paddingVertical: 12,
     paddingHorizontal: spacing.sm,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
   },
   projectOptionActive: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.btnSecondaryBg,
   },
   projectOptionText: {
     fontSize: 14,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   removeHint: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#4B5563',
+    color: APP.textMuted,
     marginTop: spacing.sm,
   },
   dialogActions: {
@@ -448,15 +448,15 @@ const styles = StyleSheet.create({
   },
   dialogBtnText: {
     fontSize: 15,
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   dialogBtnPrimary: {
-    backgroundColor: BRAND.graphite,
-    borderRadius: radius.md,
+    backgroundColor: APP.btnPrimaryBg,
+    borderRadius: radius.sm,
   },
   dialogBtnPrimaryText: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#fff',
+    color: APP.btnPrimaryText,
   },
 });

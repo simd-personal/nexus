@@ -7,7 +7,7 @@ import {
   type CitationDisplay,
 } from '@/lib/citation-display';
 import type { Citation } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type CitationsListProps = {
   citations: Citation[];
@@ -45,7 +45,7 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
 
           const chip = (
             <View style={styles.chip}>
-              <Feather name="file-text" size={12} color={BRAND.textMuted} style={styles.icon} />
+              <Feather name="file-text" size={12} color={APP.textMuted} style={styles.icon} />
               <View style={styles.textCol}>
                 <Text style={styles.fileName} numberOfLines={1}>
                   {display.fileName}
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
@@ -110,8 +110,8 @@ const styles = StyleSheet.create({
     maxWidth: '100%',
     borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
+    borderColor: APP.border,
+    backgroundColor: APP.surface,
     paddingVertical: 7,
     paddingLeft: 10,
     paddingRight: 10,
@@ -132,22 +132,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     lineHeight: 16,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   projectLabel: {
     fontSize: 10,
     lineHeight: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   pageBadge: {
     borderRadius: radius.full,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.btnSecondaryBg,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   pageBadgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
+    color: APP.textMuted,
   },
 });

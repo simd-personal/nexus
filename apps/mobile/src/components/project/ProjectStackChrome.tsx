@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ProjectSectionNav } from '@/components/project/ProjectSectionNav';
 import { fetchProjectOverview } from '@/lib/api';
 import { activeProjectSection, resolveProjectSectionBack } from '@/lib/project-sections';
-import { BRAND, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 type ProjectStackChromeProps = {
   projectId: string;
@@ -74,7 +74,7 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
           <Ionicons
             name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'}
             size={24}
-            color={BRAND.graphite}
+            color={APP.text}
             style={Platform.OS === 'ios' ? styles.chevron : undefined}
           />
         </Pressable>
@@ -99,9 +99,9 @@ export function ProjectStackChrome({ projectId }: ProjectStackChromeProps) {
 
 const styles = StyleSheet.create({
   wrap: {
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E8E6E1',
+    borderBottomColor: APP.borderFaint,
   },
   titleRow: {
     flexDirection: 'row',
@@ -132,13 +132,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
     textAlign: 'center',
   },
   client: {
     fontSize: 12,
     fontWeight: '500',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     textAlign: 'center',
   },
 });

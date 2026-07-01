@@ -40,7 +40,7 @@ import { consumePendingSunnyProjectId } from '@/lib/sunny-navigation';
 import { cacheScopeChat } from '@/lib/sunny-chat-cache';
 import { fetchScopeChatHistory } from '@/lib/sunny-chat-history';
 import type { ChatMessage } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 const SUGGESTIONS = [
   'What are the critical issues?',
@@ -392,7 +392,7 @@ export default function SunnyScreen() {
           >
             {loadingHistory ? (
               <View style={styles.emptyWrap}>
-                <ActivityIndicator color={BRAND.graphite} />
+                <ActivityIndicator color={APP.text} />
                 <Text style={styles.emptyChat}>Loading conversation…</Text>
               </View>
             ) : !hasMessages ? (
@@ -443,7 +443,7 @@ export default function SunnyScreen() {
           >
             {status ? (
               <View style={styles.statusRow}>
-                {streaming ? <ActivityIndicator size="small" color="#9CA3AF" /> : null}
+                {streaming ? <ActivityIndicator size="small" color={APP.textSubtle} /> : null}
                 <Text style={styles.status}>{status}</Text>
               </View>
             ) : null}
@@ -461,7 +461,7 @@ export default function SunnyScreen() {
                         ? 'Ask about your uploaded project materials…'
                         : 'Create a project first'
                   }
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={APP.textSubtle}
                   style={styles.input}
                   multiline
                   editable={canChat && !streaming}
@@ -502,7 +502,7 @@ const styles = StyleSheet.create({
   shell: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: '#fff',
+    backgroundColor: APP.canvas,
   },
   scopeSection: {
     flexShrink: 0,
@@ -510,9 +510,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
-    backgroundColor: '#fff',
+    backgroundColor: APP.canvas,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: APP.borderFaint,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
@@ -520,21 +520,21 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
-    backgroundColor: '#fff',
+    backgroundColor: APP.canvas,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: APP.borderFaint,
   },
   scopeLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#9CA3AF',
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
   emptyHint: {
     flex: 1,
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     textAlign: 'right',
   },
   chatColumn: {
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
   chatArea: {
     flex: 1,
     minHeight: 0,
-    backgroundColor: '#fff',
+    backgroundColor: APP.canvas,
   },
   messages: {
     flexGrow: 1,
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 17,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
     textAlign: 'center',
   },
   authorityTagline: {
@@ -579,7 +579,7 @@ const styles = StyleSheet.create({
   },
   emptyChat: {
     textAlign: 'center',
-    color: '#6B7280',
+    color: APP.textMuted,
     fontSize: 14,
     lineHeight: 20,
     maxWidth: 320,
@@ -593,20 +593,22 @@ const styles = StyleSheet.create({
     maxWidth: 360,
   },
   suggestionChip: {
-    borderRadius: radius.lg,
-    backgroundColor: '#F3F4F6',
+    borderRadius: radius.md,
+    backgroundColor: APP.btnSecondaryBg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: APP.border,
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
   suggestionChipPressed: {
-    backgroundColor: '#E5E7EB',
+    backgroundColor: APP.btnSecondaryBgPressed,
   },
   suggestionChipDisabled: {
     opacity: 0.5,
   },
   suggestionText: {
     fontSize: 12,
-    color: '#4B5563',
+    color: APP.text,
     textAlign: 'center',
   },
   statusRow: {
@@ -618,16 +620,16 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: APP.textSubtle,
   },
   footer: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#FAF9F6',
+    backgroundColor: APP.canvas,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: APP.borderFaint,
   },
   composer: {
     paddingHorizontal: spacing.md,
@@ -638,9 +640,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
     borderRadius: radius.full,
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     paddingLeft: spacing.md,
     paddingRight: 6,
     paddingVertical: 6,
@@ -658,27 +660,27 @@ const styles = StyleSheet.create({
     paddingRight: spacing.sm,
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.graphite,
+    color: APP.text,
     backgroundColor: 'transparent',
   },
   sendBtn: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: BRAND.accent,
+    backgroundColor: APP.btnPrimaryBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sendBtnDisabled: {
-    backgroundColor: '#94A3E8',
-    opacity: 0.55,
+    backgroundColor: APP.borderStrong,
+    opacity: 0.7,
   },
   sendBtnPressed: {
     opacity: 0.85,
   },
   composerHint: {
     fontSize: 10,
-    color: '#9CA3AF',
+    color: APP.textSubtle,
     textAlign: 'center',
     marginTop: spacing.sm,
   },

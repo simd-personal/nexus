@@ -5,7 +5,7 @@ import {
   DATA_SECURITY_ENTERPRISE_ADDITIONS,
 } from '@upperdeck/shared/data-security';
 import { Card } from '@/components/ui';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 function SecurityBadge({
   label,
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: BRAND.textMuted,
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: spacing.sm,
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   intro: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.graphite,
+    color: APP.text,
     marginBottom: spacing.md,
   },
   badgeGrid: {
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   bullet: {
     fontSize: 13,
     lineHeight: 18,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   commitment: {
     fontSize: 12,
@@ -126,13 +126,13 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#E5E7EB',
+    borderTopColor: APP.border,
     gap: spacing.xs,
   },
   enterpriseTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
     marginBottom: 4,
   },
 });

@@ -8,7 +8,7 @@ import {
 } from '@/components/ActionItemCard';
 import { Button, Screen } from '@/components/ui';
 import { fetchActionItem, updateActionItemStatus } from '@/lib/api';
-import { spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 async function invalidateActionItemQueries(queryClient: ReturnType<typeof useQueryClient>) {
   await Promise.all([
@@ -111,12 +111,12 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#0E1115',
+    color: APP.text,
   },
   errorBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#64748B',
+    color: APP.textMuted,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },

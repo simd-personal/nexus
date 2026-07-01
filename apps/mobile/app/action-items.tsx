@@ -12,7 +12,7 @@ import {
   updateDashboardPortfolioPreference,
 } from '@/lib/api';
 import type { ActionItem, DashboardPortfolioScope } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type ActionItemTab = ActionItem['status'];
 
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   tabs: {
     flexDirection: 'row',
@@ -166,18 +166,18 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.btnSecondaryBg,
   },
   tabActive: {
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnPrimaryBg,
   },
   tabLabel: {
     fontSize: 13,
     fontWeight: '500',
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   tabLabelActive: {
-    color: BRAND.accent,
+    color: APP.btnPrimaryText,
     fontWeight: '600',
   },
 });

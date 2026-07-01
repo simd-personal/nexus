@@ -5,7 +5,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/format';
 import type { SunnyUpdate } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, spacing } from '@/theme/colors';
 
 function CopyableCallout({ label, text }: { label: string; text: string }) {
   const [copied, setCopied] = useState(false);
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
     lineHeight: 22,
   },
   metaRow: {
@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   timestamp: {
     fontSize: 12,
     fontWeight: '500',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   project: {
     fontSize: 13,
@@ -169,12 +169,12 @@ const styles = StyleSheet.create({
   summaryPreview: {
     fontSize: 14,
     lineHeight: 21,
-    color: '#64748B',
+    color: APP.textMuted,
   },
   summaryFull: {
     fontSize: 15,
     lineHeight: 23,
-    color: '#334155',
+    color: APP.text,
   },
   readMore: {
     fontSize: 13,
@@ -183,9 +183,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   callout: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: radius.md,
-    padding: spacing.sm,
+    backgroundColor: APP.surfaceMuted,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: APP.border,
+    padding: spacing.md,
     gap: 4,
   },
   calloutPressed: {
@@ -206,40 +208,40 @@ const styles = StyleSheet.create({
   copyHintText: {
     fontSize: 11,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   copyHintTextCopied: {
     color: BRAND.accent,
   },
   calloutLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textSubtle,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
   },
   calloutBody: {
     fontSize: 14,
     lineHeight: 21,
-    color: '#334155',
+    color: APP.text,
   },
   citations: {
     gap: spacing.sm,
   },
   citationItem: {
     borderLeftWidth: 2,
-    borderLeftColor: '#E5E7EB',
+    borderLeftColor: APP.border,
     paddingLeft: spacing.sm,
     gap: 2,
   },
   citationName: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   citationSnippet: {
     fontSize: 13,
     lineHeight: 19,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
 });

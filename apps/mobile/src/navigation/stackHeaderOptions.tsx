@@ -1,19 +1,19 @@
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import { BRAND } from '@/theme/colors';
+import { APP } from '@/theme/colors';
 
 export const themedStackScreenOptions: NativeStackNavigationOptions = {
   headerShown: true,
   headerBackVisible: true,
   headerBackButtonDisplayMode: 'minimal',
-  headerTintColor: BRAND.graphite,
+  headerTintColor: APP.text,
   headerStyle: {
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
   },
   headerShadowVisible: false,
   headerTitleStyle: {
     fontWeight: '600',
     fontSize: 17,
-    color: BRAND.graphite,
+    color: APP.text,
   },
 };
 

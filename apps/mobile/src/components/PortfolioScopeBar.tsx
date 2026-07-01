@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { DashboardPortfolioScope } from '@/lib/types';
-import { BRAND, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 const OPTIONS: { value: DashboardPortfolioScope; label: string }[] = [
   { value: 'work', label: 'Work' },
@@ -63,31 +63,26 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 2,
-    borderColor: '#D1D5DB',
+    borderColor: APP.borderStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioActive: {
-    borderColor: BRAND.accent,
-    backgroundColor: '#EFF6FF',
-    shadowColor: BRAND.accent,
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 0 },
+    borderColor: APP.text,
   },
   radioDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: BRAND.accent,
+    backgroundColor: APP.text,
   },
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   labelActive: {
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
 });

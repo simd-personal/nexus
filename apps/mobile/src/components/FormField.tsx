@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 export function FormField({
   label,
@@ -14,7 +14,7 @@ export function FormField({
       <Text style={styles.label}>{label}</Text>
       {hint ? <Text style={styles.hint}>{hint}</Text> : null}
       <TextInput
-        placeholderTextColor={BRAND.textMuted}
+        placeholderTextColor={APP.textSubtle}
         {...inputProps}
         style={[styles.input, inputProps.multiline && styles.inputMultiline, inputProps.style]}
       />
@@ -29,22 +29,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   hint: {
     fontSize: 12,
     lineHeight: 17,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#D1D5DB',
-    borderRadius: radius.md,
+    borderColor: APP.borderStrong,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 14,
     fontSize: 16,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   inputMultiline: {
     minHeight: 88,

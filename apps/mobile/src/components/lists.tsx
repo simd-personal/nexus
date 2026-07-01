@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { CriticalItem } from '@/lib/types';
 import { Button, Card, SeverityBadge } from '@/components/ui';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 export function CriticalItemRow({
   item,
@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   titleDanger: {
     color: '#B91C1C',
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   summary: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   actions: {
     flexDirection: 'row',
@@ -118,11 +118,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   projectRow: {
-    backgroundColor: '#fff',
-    borderRadius: radius.lg,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     padding: spacing.md,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -143,31 +143,31 @@ const styles = StyleSheet.create({
   },
   portfolioBadge: {
     borderRadius: radius.full,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   portfolioBadgePersonal: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: APP.btnSecondaryBg,
   },
   portfolioBadgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: BRAND.accent,
+    color: APP.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   portfolioBadgeTextPersonal: {
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   client: {
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   projectName: {
     fontSize: 16,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   projectMeta: {
     alignItems: 'flex-end',
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   status: {
     fontSize: 12,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     textTransform: 'capitalize',
   },
 });

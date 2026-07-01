@@ -15,7 +15,7 @@ import { FormField } from '@/components/FormField';
 import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Screen } from '@/components/ui';
 import { ApiError, createProject } from '@/lib/api';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 export default function NewProjectScreen() {
   const router = useRouter();
@@ -173,23 +173,23 @@ const styles = StyleSheet.create({
   portfolioOption: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
   },
   portfolioOptionActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: BRAND.accent,
+    backgroundColor: APP.btnSecondaryBg,
+    borderColor: APP.borderStrong,
   },
   portfolioLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   portfolioLabelActive: {
-    color: BRAND.accent,
+    color: APP.text,
   },
   error: {
     color: BRAND.danger,

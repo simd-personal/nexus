@@ -2,8 +2,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -21,7 +19,7 @@ import {
   type BiometricAvailability,
 } from '@/lib/biometric-auth';
 import { useAuth } from '@/providers/AuthProvider';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 export default function LoginScreen() {
   const { signIn, signInWithBiometric, setBootstrapping } = useAuth();
@@ -89,16 +87,14 @@ export default function LoginScreen() {
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <KeyboardAvoidingView
+      <ScrollView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-        >
           <View style={styles.hero}>
             <View style={styles.logoWrap}>
               <UpperDeckLogo size="md" />
@@ -126,7 +122,7 @@ export default function LoginScreen() {
                 onChangeText={setEmail}
                 onSubmitEditing={() => passwordRef.current?.focus()}
                 placeholder="you@company.com"
-                placeholderTextColor={BRAND.textMuted}
+                placeholderTextColor={APP.textSubtle}
                 style={styles.input}
               />
             </View>
@@ -150,7 +146,7 @@ export default function LoginScreen() {
                   if (email && password && !submitting) void handleSignIn();
                 }}
                 placeholder="Password"
-                placeholderTextColor={BRAND.textMuted}
+                placeholderTextColor={APP.textSubtle}
                 style={styles.input}
               />
             </View>
@@ -187,7 +183,7 @@ export default function LoginScreen() {
                     <Ionicons
                       name={biometric.label === 'Face ID' ? 'scan-outline' : 'finger-print-outline'}
                       size={20}
-                      color={BRAND.accent}
+                      color={APP.text}
                     />
                     <Text style={styles.biometricLabel}>
                       {biometricLoading ? 'Verifying…' : `Continue with ${biometric.label}`}
@@ -201,8 +197,7 @@ export default function LoginScreen() {
               ) : null}
             </View>
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+      </ScrollView>
     </Screen>
   );
 }
@@ -212,6 +207,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: spacing.lg,
+    paddingBottom: spacing.xl,
     justifyContent: 'center',
     gap: spacing.xl,
   },
@@ -223,14 +219,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   formCard: {
-    backgroundColor: '#fff',
-    borderRadius: radius.lg,
+    backgroundColor: APP.surface,
+    borderRadius: 14,
     padding: spacing.lg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
     gap: spacing.md,
-    shadowColor: BRAND.graphite,
-    shadowOpacity: 0.06,
+    shadowColor: '#111418',
+    shadowOpacity: 0.05,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
@@ -238,7 +234,7 @@ const styles = StyleSheet.create({
   formTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
     letterSpacing: -0.2,
   },
   field: {
@@ -247,19 +243,19 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.textMuted,
+    color: APP.textSubtle,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
   },
   input: {
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.surfaceMuted,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    borderRadius: radius.md,
+    borderColor: APP.border,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 13,
     fontSize: 17,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   error: {
     color: BRAND.danger,
@@ -273,7 +269,7 @@ const styles = StyleSheet.create({
   },
   dividerText: {
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     fontWeight: '500',
   },
   biometricButton: {
@@ -283,10 +279,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: 10,
     paddingHorizontal: spacing.md,
-    borderRadius: radius.full,
-    backgroundColor: '#EEF2FF',
+    borderRadius: radius.sm,
+    backgroundColor: APP.btnSecondaryBg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#C7D2FE',
+    borderColor: APP.btnSecondaryBorder,
   },
   biometricButtonDisabled: {
     opacity: 0.55,
@@ -297,11 +293,11 @@ const styles = StyleSheet.create({
   biometricLabel: {
     fontSize: 15,
     fontWeight: '600',
-    color: BRAND.accent,
+    color: APP.btnSecondaryText,
   },
   biometricHint: {
     fontSize: 13,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     textAlign: 'center',
   },
 });

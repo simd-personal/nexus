@@ -1,3 +1,4 @@
+import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -7,6 +8,11 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { stackDetailScreenOptions } from '@/navigation/stackHeaderOptions';
 import { AppProviders } from '@/providers/AppProviders';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
+import { JAKARTA_FONTS, installJakartaFont } from '@/theme/fonts';
+
+// Default all Text/TextInput to Plus Jakarta Sans via defaultProps (safe under
+// the New Architecture — no render patching). Applied before first render.
+installJakartaFont();
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* Splash may already be hidden in dev fast refresh. */
@@ -94,6 +100,9 @@ const styles = StyleSheet.create({
 });
 
 export default function RootLayout() {
+  // Load the font assets; rendering is not blocked so routing always mounts.
+  useFonts(JAKARTA_FONTS);
+
   return (
     <AuthProvider>
       <AppProviders>

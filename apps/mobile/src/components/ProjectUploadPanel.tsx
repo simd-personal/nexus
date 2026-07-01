@@ -10,7 +10,7 @@ import { replaceProjectFile, uploadProjectFile } from '@/lib/api';
 import { findFileByUploadName } from '@/lib/files';
 import { prepareUploadFile } from '@/lib/prepare-upload-file';
 import type { ProjectFile } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type PendingUpload = {
   uri: string;
@@ -200,7 +200,7 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
             <Image source={{ uri: pending.uri }} style={styles.preview} />
           ) : (
             <View style={styles.filePreview}>
-              <Ionicons name="document-text-outline" size={28} color={BRAND.accent} />
+              <Ionicons name="document-text-outline" size={28} color={APP.textMuted} />
               <Text style={styles.fileName} numberOfLines={2}>
                 {pending.fileName}
               </Text>
@@ -211,7 +211,7 @@ export function ProjectUploadPanel({ projectId, existingFiles = [] }: ProjectUpl
             value={note}
             onChangeText={setNote}
             placeholder="Optional note for Sunny…"
-            placeholderTextColor={BRAND.textMuted}
+            placeholderTextColor={APP.textSubtle}
             style={styles.noteInput}
             multiline
           />
@@ -260,7 +260,7 @@ function UploadAction({
       accessibilityLabel={label}
     >
       <View style={styles.actionIcon}>
-        <Ionicons name={icon} size={22} color={BRAND.accent} />
+        <Ionicons name={icon} size={22} color={APP.textMuted} />
       </View>
       <Text style={styles.actionLabel}>{label}</Text>
     </Pressable>
@@ -271,12 +271,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   body: {
     fontSize: 14,
     lineHeight: 20,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
   actions: {
     flexDirection: 'row',
@@ -288,10 +288,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: spacing.sm,
-    borderRadius: radius.lg,
-    backgroundColor: BRAND.stone,
+    borderRadius: 14,
+    backgroundColor: APP.surfaceMuted,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
+    borderColor: APP.border,
   },
   actionPressed: {
     opacity: 0.85,
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   preparing: {
     fontSize: 14,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     textAlign: 'center',
   },
   actionIcon: {
@@ -310,12 +310,12 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EEF2FF',
+    backgroundColor: APP.btnSecondaryBg,
   },
   actionLabel: {
     fontSize: 13,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   pending: {
     marginTop: spacing.md,
@@ -324,32 +324,32 @@ const styles = StyleSheet.create({
   preview: {
     width: '100%',
     height: 200,
-    borderRadius: radius.lg,
-    backgroundColor: '#E5E7EB',
+    borderRadius: 14,
+    backgroundColor: APP.btnSecondaryBg,
   },
   filePreview: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: BRAND.stone,
+    borderRadius: 14,
+    backgroundColor: APP.surfaceMuted,
   },
   fileName: {
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
   },
   noteInput: {
-    backgroundColor: '#fff',
+    backgroundColor: APP.surface,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#D1D5DB',
-    borderRadius: radius.md,
+    borderColor: APP.borderStrong,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
     paddingVertical: 12,
     fontSize: 15,
-    color: BRAND.graphite,
+    color: APP.text,
     minHeight: 44,
   },
   securityNote: {

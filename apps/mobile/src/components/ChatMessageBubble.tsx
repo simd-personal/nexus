@@ -7,7 +7,7 @@ import { SunnyMark } from '@/components/SunnyMark';
 import { SunnyTypingIndicator } from '@/components/SunnyTypingIndicator';
 import { formatChatText } from '@/lib/chat-format';
 import type { Citation } from '@/lib/types';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 export type ChatBubbleMessage = {
   id: string;
@@ -162,26 +162,26 @@ const styles = StyleSheet.create({
   assistantName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   modelBadge: {
     borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
+    borderColor: APP.border,
+    backgroundColor: APP.surface,
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
   modelBadgeText: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#6B7280',
+    color: APP.textMuted,
   },
   assistantBubble: {
     alignSelf: 'stretch',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#F3F4F6',
-    backgroundColor: BRAND.stone,
+    borderColor: APP.border,
+    backgroundColor: APP.surfaceMuted,
     borderTopLeftRadius: radius.sm,
     borderTopRightRadius: radius.xl,
     borderBottomLeftRadius: radius.xl,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   assistantText: {
     fontSize: 15,
     lineHeight: 21,
-    color: BRAND.graphite,
+    color: APP.text,
     flexShrink: 1,
   },
   copyButton: {

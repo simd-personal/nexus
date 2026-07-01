@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { UpperDeckLogo } from '@/components/UpperDeckLogo';
-import { BRAND, spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 type BrandHeaderProps = {
   /** Shown under the wordmark on the home screen — matches web sidebar. */
@@ -55,9 +55,9 @@ export function TabScreenHeader({
 
 const styles = StyleSheet.create({
   stack: {
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E8E6E1',
+    borderBottomColor: APP.borderFaint,
   },
   wrap: {
     flexDirection: 'row',
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
   },
   wrapCompact: {
     paddingTop: spacing.xs,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   tagline: {
     fontSize: 12,
-    color: '#6B7280',
+    color: APP.textMuted,
     letterSpacing: 0.1,
   },
   actions: {
@@ -92,18 +92,18 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
     paddingBottom: spacing.md,
     gap: 4,
-    backgroundColor: BRAND.cream,
+    backgroundColor: APP.canvas,
   },
   pageTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: BRAND.graphite,
+    color: APP.text,
     letterSpacing: -0.5,
     lineHeight: 30,
   },
   pageSubtitle: {
     fontSize: 15,
     lineHeight: 21,
-    color: BRAND.textMuted,
+    color: APP.textMuted,
   },
 });

@@ -4,7 +4,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-nat
 import { SunnyUpdateDetailCard } from '@/components/SunnyUpdateCard';
 import { Button, Screen } from '@/components/ui';
 import { fetchSunnyUpdate } from '@/lib/api';
-import { spacing } from '@/theme/colors';
+import { APP, spacing } from '@/theme/colors';
 
 export default function SunnyUpdateDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,12 +61,12 @@ const styles = StyleSheet.create({
   errorTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#0E1115',
+    color: APP.text,
   },
   errorBody: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#64748B',
+    color: APP.textMuted,
     textAlign: 'center',
     marginBottom: spacing.sm,
   },

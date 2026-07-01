@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { fetchFilePreview, type FilePreviewResponse } from '@/lib/api';
-import { BRAND, radius, spacing } from '@/theme/colors';
+import { APP, radius, spacing } from '@/theme/colors';
 
 type FilePreviewModalProps = {
   fileId: string | null;
@@ -36,7 +36,7 @@ export function FilePreviewModal({ fileId, visible, onClose }: FilePreviewModalP
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.header}>
           <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
-            <Feather name="x" size={22} color={BRAND.graphite} />
+            <Feather name="x" size={22} color={APP.text} />
           </Pressable>
           <Text style={styles.title} numberOfLines={2}>
             {preview?.fileName ?? 'Preview'}
@@ -46,7 +46,7 @@ export function FilePreviewModal({ fileId, visible, onClose }: FilePreviewModalP
 
         {previewQuery.isLoading ? (
           <View style={styles.centered}>
-            <ActivityIndicator color={BRAND.graphite} />
+            <ActivityIndicator color={APP.text} />
             <Text style={styles.loadingText}>Loading preview…</Text>
           </View>
         ) : previewQuery.error ? (
@@ -73,7 +73,7 @@ function PreviewBody({ preview }: { preview: FilePreviewResponse }) {
   if (preview.viewType === 'pdf' && preview.url) {
     return (
       <View style={styles.centered}>
-        <Ionicons name="document-text-outline" size={48} color={BRAND.accent} />
+        <Ionicons name="document-text-outline" size={48} color={APP.textMuted} />
         <Text style={styles.openHint}>Open this PDF in your device viewer.</Text>
         <Pressable
           onPress={() => void Linking.openURL(preview.url!)}
@@ -134,7 +134,7 @@ function PreviewBody({ preview }: { preview: FilePreviewResponse }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: APP.canvas,
   },
   header: {
     flexDirection: 'row',
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: APP.border,
   },
   closeBtn: {
     width: 40,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
-    color: BRAND.graphite,
+    color: APP.text,
     textAlign: 'center',
   },
   centered: {
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   loadingText: {
-    color: BRAND.textMuted,
+    color: APP.textMuted,
     fontSize: 14,
   },
   errorText: {
@@ -184,18 +184,18 @@ const styles = StyleSheet.create({
   },
   openHint: {
     fontSize: 15,
-    color: '#6B7280',
+    color: APP.textMuted,
     textAlign: 'center',
     lineHeight: 22,
   },
   openBtn: {
-    backgroundColor: BRAND.graphite,
-    borderRadius: radius.lg,
+    backgroundColor: APP.btnPrimaryBg,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.lg,
     paddingVertical: 12,
   },
   openBtnText: {
-    color: '#fff',
+    color: APP.btnPrimaryText,
     fontWeight: '600',
     fontSize: 15,
   },
@@ -205,19 +205,19 @@ const styles = StyleSheet.create({
   textBody: {
     fontSize: 14,
     lineHeight: 22,
-    color: BRAND.graphite,
+    color: APP.text,
   },
   sheetRow: {
     flexDirection: 'row',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: APP.border,
   },
   sheetCell: {
     width: 120,
     padding: 8,
     fontSize: 12,
-    color: BRAND.graphite,
+    color: APP.text,
     borderRightWidth: StyleSheet.hairlineWidth,
-    borderRightColor: '#E5E7EB',
+    borderRightColor: APP.border,
   },
 });
