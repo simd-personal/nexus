@@ -1,9 +1,45 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card } from '@/components/ui';
 import { formatRelativeTime } from '@/lib/format';
 import type { SunnyUpdate } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
+
+function CopyableCallout({ label, text }: { label: string; text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    await Clipboard.setStringAsync(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <Pressable
+      onPress={() => void handleCopy()}
+      style={({ pressed }) => [styles.callout, pressed && styles.calloutPressed]}
+      accessibilityRole="button"
+      accessibilityLabel={copied ? `${label} copied` : `Copy ${label}`}
+    >
+      <View style={styles.calloutHeader}>
+        <Text style={styles.calloutLabel}>{label}</Text>
+        <View style={styles.copyHint}>
+          <Ionicons
+            name={copied ? 'checkmark' : 'copy-outline'}
+            size={14}
+            color={copied ? BRAND.accent : BRAND.textMuted}
+          />
+          <Text style={[styles.copyHintText, copied && styles.copyHintTextCopied]}>
+            {copied ? 'Copied' : 'Tap to copy'}
+          </Text>
+        </View>
+      </View>
+      <Text style={styles.calloutBody}>{text}</Text>
+    </Pressable>
+  );
+}
 
 function UpdateMeta({ update }: { update: SunnyUpdate }) {
   return (
@@ -70,17 +106,11 @@ export function SunnyUpdateDetailCard({ update }: { update: SunnyUpdate }) {
       <Text style={styles.summaryFull}>{update.summary}</Text>
 
       {update.why_it_matters ? (
-        <View style={styles.callout}>
-          <Text style={styles.calloutLabel}>Why it matters</Text>
-          <Text style={styles.calloutBody}>{update.why_it_matters}</Text>
-        </View>
+        <CopyableCallout label="Why it matters" text={update.why_it_matters} />
       ) : null}
 
       {update.suggested_action ? (
-        <View style={styles.callout}>
-          <Text style={styles.calloutLabel}>Suggested action</Text>
-          <Text style={styles.calloutBody}>{update.suggested_action}</Text>
-        </View>
+        <CopyableCallout label="Suggested action" text={update.suggested_action} />
       ) : null}
 
       {update.source_citations?.length ? (
@@ -157,6 +187,29 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: spacing.sm,
     gap: 4,
+  },
+  calloutPressed: {
+    opacity: 0.92,
+  },
+  calloutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  copyHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    flexShrink: 0,
+  },
+  copyHintText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: BRAND.textMuted,
+  },
+  copyHintTextCopied: {
+    color: BRAND.accent,
   },
   calloutLabel: {
     fontSize: 12,

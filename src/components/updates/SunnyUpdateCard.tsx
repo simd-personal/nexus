@@ -1,3 +1,7 @@
+'use client';
+
+import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { CitationsList } from '@/components/ui/Citations';
 import { formatNaturalSummary } from '@/lib/ai/generation-prompts';
@@ -7,6 +11,52 @@ import { SunnyAvatar } from '@/components/brand/SunnyAvatar';
 import Link from 'next/link';
 import type { ActiveUploadBatch, PendingIndexingFile } from '@/lib/processing/upload-batch';
 import { IndexingStatusList } from '@/components/updates/IndexingBatchCard';
+
+function CopyableSection({
+  label,
+  text,
+  className = 'mt-3 rounded-lg bg-gray-50 p-3 dark:bg-[var(--ud-stone)]',
+}: {
+  label: string;
+  text: string;
+  className?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const formatted = formatNaturalSummary(text);
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(formatted);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => void handleCopy()}
+      className={`group w-full text-left transition-opacity hover:opacity-90 ${className}`}
+      aria-label={copied ? `${label} copied` : `Copy ${label}`}
+    >
+      <div className="mb-1 flex items-center justify-between gap-3">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
+        <span className="inline-flex shrink-0 items-center gap-1 text-[11px] font-semibold text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300">
+          {copied ? (
+            <>
+              <Check className="h-3.5 w-3.5" />
+              Copied
+            </>
+          ) : (
+            <>
+              <Copy className="h-3.5 w-3.5" />
+              Tap to copy
+            </>
+          )}
+        </span>
+      </div>
+      <p className="text-sm text-gray-700 dark:text-gray-300">{formatted}</p>
+    </button>
+  );
+}
 
 export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
   return (
@@ -33,17 +83,15 @@ export function SunnyUpdateCard({ update }: { update: SunnyUpdate }) {
           <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">{formatNaturalSummary(update.summary)}</p>
 
           {update.why_it_matters && (
-            <div className="mt-3 rounded-lg bg-gray-50 p-3 dark:bg-[var(--ud-stone)]">
-              <p className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Why it matters</p>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{formatNaturalSummary(update.why_it_matters)}</p>
-            </div>
+            <CopyableSection label="Why it matters" text={update.why_it_matters} />
           )}
 
           {update.suggested_action && (
-            <div className="mt-3">
-              <p className="mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Suggested action</p>
-              <p className="text-sm text-gray-700 dark:text-gray-300">{formatNaturalSummary(update.suggested_action)}</p>
-            </div>
+            <CopyableSection
+              label="Suggested action"
+              text={update.suggested_action}
+              className="mt-3"
+            />
           )}
 
           <CitationsList citations={update.source_citations} projectId={update.project_id} />
