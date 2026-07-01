@@ -1,12 +1,11 @@
-import { NextResponse } from 'next/server';
-import { getAccountSummary } from '@/lib/account/summary';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAccountSummaryForUser } from '@/lib/account/summary';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
-export async function GET() {
-  const summary = await getAccountSummary();
+export async function GET(request: NextRequest) {
+  const auth = await requireRequestAuth(request);
+  if (auth.response) return auth.response;
 
-  if (!summary) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  return NextResponse.json(summary);
+  const summary = await getAccountSummaryForUser(auth.supabase, auth.user);
+  return NextResponse.json(summary, { headers: { 'Cache-Control': 'no-store' } });
 }

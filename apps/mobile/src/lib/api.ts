@@ -177,6 +177,15 @@ export function fetchProjectInbound(projectId: string) {
   return apiJson<InboundInfo>(`/api/projects/${projectId}/inbound`);
 }
 
+export type AccountSummary = {
+  displayName: string;
+  subtitle: string;
+};
+
+export function fetchAccountSummary() {
+  return apiJson<AccountSummary>('/api/account');
+}
+
 export function fetchAccountInbound() {
   return apiJson<InboundInfo>('/api/account/inbound');
 }

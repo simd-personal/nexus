@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
 
   const items = await getOpenActionItems(
     Number.isFinite(limit) && limit! > 0 ? limit : undefined,
-    portfolioScope
+    portfolioScope,
+    auth.supabase
   );
 
   return NextResponse.json({ items, portfolio: portfolioScope });

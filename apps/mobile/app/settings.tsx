@@ -1,9 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
 import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Card, Screen } from '@/components/ui';
+import { fetchAccountSummary } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
 import { BRAND, spacing } from '@/theme/colors';
 
@@ -43,6 +45,18 @@ function SettingsRow({
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const accountQuery = useQuery({
+    queryKey: ['account-summary'],
+    queryFn: fetchAccountSummary,
+  });
+
+  const displayName =
+    accountQuery.data?.displayName ??
+    user?.user_metadata?.full_name?.trim() ??
+    user?.email?.split('@')[0] ??
+    'Your account';
+  const accountSubtitle = accountQuery.data?.subtitle;
+  const email = user?.email ?? '';
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
@@ -60,8 +74,10 @@ export default function SettingsScreen() {
           <Text style={styles.cardLabel}>Account</Text>
           <SettingsRow
             icon="person-outline"
-            title={user?.email ?? 'Signed in'}
-            description="Your UpperDeck account email"
+            title={displayName}
+            description={
+              [accountSubtitle, email].filter(Boolean).join(' · ') || 'UpperDeck account'
+            }
           />
         </Card>
 

@@ -265,10 +265,11 @@ export async function getCriticalItems(
 
 export async function getOpenActionItems(
   limit?: number,
-  portfolioScope: DashboardPortfolioScope = 'work'
+  portfolioScope: DashboardPortfolioScope = 'work',
+  supabaseClient?: RequestSupabaseClient
 ): Promise<ActionItem[]> {
   await ensureFreshAppData();
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(supabaseClient);
   const scopedProjectIds = await getProjectIdsForPortfolioScope(supabase, portfolioScope);
   if (scopedProjectIds?.length === 0) return [];
 
