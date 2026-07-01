@@ -9,6 +9,7 @@ import { resolveEngine } from '@/lib/ai/stream-agent';
 import {
   BRIEF_SYSTEM_PROMPT,
   EMAIL_SYSTEM_PROMPT,
+  EXECUTIVE_ONE_PAGER_PROMPT,
   PAGE_DECK_PROMPT,
   PLAYBOOK_SYSTEM_PROMPT,
   PROSE_STYLE_GUIDE,
@@ -147,6 +148,24 @@ export async function generatePageFollowUpEmail(
 
   const raw = await generateLongForm(
     `${SUNNY_PERSONA}\n\n${EMAIL_SYSTEM_PROMPT}\n\n${versionGuide[version]}`,
+    [
+      `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${formatContext(context)}`,
+      instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',
+    ].join(''),
+    OPENAI_MODELS.generation
+  );
+  return formatNaturalProse(raw);
+}
+
+/** ChatGPT — quick executive one-pager for dashboard updates */
+export async function generatePageExecutiveOnePager(
+  projectName: string,
+  clientName: string,
+  context: PageGenerationContext,
+  instructions?: string
+): Promise<string> {
+  const raw = await generateLongForm(
+    `${SUNNY_PERSONA}\n\n${EXECUTIVE_ONE_PAGER_PROMPT}`,
     [
       `Client: ${clientName}\nProject: ${projectName}\n\nEvidence:\n${formatContext(context)}`,
       instructions?.trim() ? `\nUser instructions:\n${instructions.trim()}` : '',

@@ -208,6 +208,21 @@ Draft a professional follow up email ready to send. No citation numbers and no i
 
 ${PROSE_STYLE_GUIDE}`;
 
+export const EXECUTIVE_ONE_PAGER_PROMPT = `You are Sunny, the AI employee inside UpperDeck.
+
+Generate a quick executive one-pager update for leadership. Keep it scannable and under 350 words total.
+
+Use exactly these section titles on their own lines, each followed by one or two short prose sentences:
+Headline
+Current Status
+What Changed
+Top Risks or Blockers
+Recommended Next Move
+
+Write for a busy executive who needs the gist in under a minute. No citation numbers, file names, bullets, or internal tooling notes.
+
+${PROSE_STYLE_GUIDE}`;
+
 export const PAGE_DECK_PROMPT = `You are Sunny, the AI employee inside UpperDeck.
 
 Generate a client ready presentation outline as natural prose. For each slide, write the slide title on its own line, then one or two prose sentences covering the key points. Do not use markdown, bullets, asterisks, or dashes.

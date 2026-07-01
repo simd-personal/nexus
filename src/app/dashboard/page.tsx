@@ -3,6 +3,7 @@ import { SunnyCard } from '@/components/dashboard/SunnyCard';
 import { ProjectCard } from '@/components/dashboard/ProjectCard';
 import { DashboardAttentionPanel } from '@/components/dashboard/DashboardAttentionPanel';
 import { DashboardUpdatesPanel } from '@/components/dashboard/DashboardUpdatesPanel';
+import { ExecutiveOnePagerPanel } from '@/components/dashboard/ExecutiveOnePagerPanel';
 import { PendingInboundInbox } from '@/components/dashboard/PendingInboundInbox';
 import { PortfolioScopeHeader } from '@/components/dashboard/PortfolioScopeHeader';
 import {
@@ -90,6 +91,8 @@ export default async function DashboardPage({
         </div>
 
         <DashboardUpdatesPanel portfolioScope={portfolioScope} initialFeed={updatesFeed} />
+
+        <ExecutiveOnePagerPanel portfolioScope={portfolioScope} projects={projects} />
 
         <div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
