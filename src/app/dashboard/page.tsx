@@ -59,7 +59,7 @@ export default async function DashboardPage({
 
   return (
     <AppShellLayout>
-      <div className="mx-auto max-w-5xl p-4 sm:p-6">
+      <div className="max-w-5xl p-4 sm:p-6">
         <div className="mb-4 sm:mb-5">
           <h1 className="app-page-title text-xl sm:text-2xl">Dashboard</h1>
           <p className="mt-1 text-sm text-[var(--app-text-muted)]">{TAGLINE}</p>
