@@ -36,21 +36,35 @@ export function HeaderIconButton({
   label,
   onPress,
   icon,
+  compact = false,
 }: {
   label: string;
   onPress: () => void;
   icon?: ComponentProps<typeof Ionicons>['name'];
+  /** Slightly smaller touch target for native stack headers. */
+  compact?: boolean;
 }) {
+  const dimension = compact ? 36 : 44;
+  const iconSize = compact ? 20 : 22;
+
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={4}
-      style={({ pressed }) => [styles.iconBtn, pressed && styles.iconBtnPressed]}
+      hitSlop={compact ? 6 : 4}
+      style={({ pressed }) => [
+        styles.iconBtn,
+        {
+          width: dimension,
+          height: dimension,
+          borderRadius: dimension / 2,
+        },
+        pressed && styles.iconBtnPressed,
+      ]}
       accessibilityRole="button"
       accessibilityLabel={label}
     >
       {icon ? (
-        <Ionicons name={icon} size={22} color={BRAND.graphite} />
+        <Ionicons name={icon} size={iconSize} color={BRAND.graphite} />
       ) : (
         <Text style={styles.iconBtnLabel}>{label}</Text>
       )}
@@ -97,9 +111,6 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   iconBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',

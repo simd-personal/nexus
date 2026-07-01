@@ -1,7 +1,7 @@
-import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import { Platform, Pressable, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+import { HeaderIconButton } from '@/components/ScreenHeader';
 import { BRAND } from '@/theme/colors';
 
 export const themedStackScreenOptions: NativeStackNavigationOptions = {
@@ -19,19 +19,14 @@ export const themedStackScreenOptions: NativeStackNavigationOptions = {
   },
   headerLeft: ({ canGoBack }) =>
     canGoBack ? (
-      <Pressable
-        onPress={() => router.back()}
-        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        style={styles.backButton}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <Ionicons
-          name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'}
-          size={Platform.OS === 'ios' ? 28 : 24}
-          color={BRAND.graphite}
+      <View style={styles.headerSideSlot}>
+        <HeaderIconButton
+          compact
+          label="Go back"
+          icon={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'}
+          onPress={() => router.back()}
         />
-      </Pressable>
+      </View>
     ) : null,
 };
 
@@ -47,11 +42,10 @@ export function stackDetailScreenOptions(
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    marginLeft: Platform.OS === 'ios' ? 2 : 4,
-    width: 44,
+  headerSideSlot: {
     height: 44,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingLeft: Platform.OS === 'ios' ? 8 : 4,
   },
 });
