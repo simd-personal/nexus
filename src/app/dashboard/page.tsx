@@ -59,8 +59,8 @@ export default async function DashboardPage({
 
   return (
     <AppShellLayout>
-      <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
-        <div className="mb-5 sm:mb-7">
+      <div className="mx-auto max-w-5xl p-4 sm:p-6">
+        <div className="mb-4 sm:mb-5">
           <h1 className="app-page-title text-xl sm:text-2xl">Dashboard</h1>
           <p className="mt-1 text-sm text-[var(--app-text-muted)]">{TAGLINE}</p>
         </div>
@@ -77,7 +77,7 @@ export default async function DashboardPage({
         <PendingInboundInbox emails={pendingInboundEmails} projects={allProjects} />
 
         <div key={portfolioScope} className="contents">
-        <div className="mb-6 grid grid-cols-1 gap-6 sm:mb-8 lg:grid-cols-3 lg:items-stretch">
+        <div className="mb-5 grid grid-cols-1 gap-4 sm:mb-6 lg:grid-cols-3 lg:items-stretch">
           <div className="flex lg:col-span-1">
             <SunnyCard
               criticalCount={stats.criticalCount}

@@ -75,7 +75,7 @@ export function DashboardUpdatesPanel({
   }, [indexingActive, refreshFeed]);
 
   return (
-    <div className="mb-6 sm:mb-8">
+    <div className="mb-5 sm:mb-6">
       <div className="mb-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Sunny Updates</h2>

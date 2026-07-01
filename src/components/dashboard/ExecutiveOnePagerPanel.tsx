@@ -160,7 +160,7 @@ export function ExecutiveOnePagerPanel({
   }
 
   return (
-    <section className="mb-6 sm:mb-8">
+    <section className="mb-5 sm:mb-6">
       <div className={`overflow-hidden rounded-2xl border p-5 sm:p-6 ${dashboardPanelClassName}`}>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
