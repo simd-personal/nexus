@@ -1,16 +1,18 @@
 import { ImageResponse } from 'next/og';
 import { APP_DOMAIN, APP_NAME, BRAND_TAGLINE } from '@/lib/constants';
 import { BRAND } from '@/lib/brand/colors';
+import { BRAND_FONT_FAMILY } from '@/lib/brand/typography';
 import { OG_IMAGE_ALT } from '@/lib/marketing/seo';
 
 export { OG_IMAGE_ALT };
+export const OG_FONT_FAMILY = BRAND_FONT_FAMILY;
 export const OG_IMAGE_SIZE = { width: 1200, height: 630 };
 
-async function loadSpaceGrotesk(weight: 500 | 600 | 700) {
-  const url = `https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@${weight}&display=swap`;
+async function loadPlusJakartaSans(weight: 500 | 600 | 700) {
+  const url = `https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@${weight}&display=swap`;
   const css = await fetch(url).then((res) => res.text());
   const match = css.match(/src: url\((.+?)\) format\('(opentype|truetype|woff2)'\)/);
-  if (!match) throw new Error(`Failed to load Space Grotesk ${weight}`);
+  if (!match) throw new Error(`Failed to load Plus Jakarta Sans ${weight}`);
   return fetch(match[1]).then((res) => res.arrayBuffer());
 }
 
@@ -63,9 +65,9 @@ export async function renderOgImage({
   compact = false,
 }: OgImageOptions = {}) {
   const [fontMedium, fontSemibold, fontBold] = await Promise.all([
-    loadSpaceGrotesk(500),
-    loadSpaceGrotesk(600),
-    loadSpaceGrotesk(700),
+    loadPlusJakartaSans(500),
+    loadPlusJakartaSans(600),
+    loadPlusJakartaSans(700),
   ]);
 
   const iconSize = compact ? 96 : 120;
@@ -131,7 +133,7 @@ export async function renderOgImage({
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
               <span
                 style={{
-                  fontFamily: 'Space Grotesk',
+                  fontFamily: OG_FONT_FAMILY,
                   fontSize: titleSize,
                   fontWeight: 700,
                   color: BRAND.text,
@@ -142,7 +144,7 @@ export async function renderOgImage({
               </span>
               <span
                 style={{
-                  fontFamily: 'Space Grotesk',
+                  fontFamily: OG_FONT_FAMILY,
                   fontSize: titleSize * 0.72,
                   fontWeight: 500,
                   color: BRAND.textSecondary,
@@ -154,7 +156,7 @@ export async function renderOgImage({
             </div>
             <span
               style={{
-                fontFamily: 'Space Grotesk',
+                fontFamily: OG_FONT_FAMILY,
                 fontSize: taglineSize,
                 fontWeight: 500,
                 color: BRAND.text,
@@ -173,7 +175,7 @@ export async function renderOgImage({
             position: 'absolute',
             bottom: compact ? 36 : 48,
             right: compact ? 48 : 72,
-            fontFamily: 'Space Grotesk',
+            fontFamily: OG_FONT_FAMILY,
             fontSize: domainSize,
             fontWeight: 600,
             color: BRAND.border,
@@ -188,9 +190,9 @@ export async function renderOgImage({
       width,
       height,
       fonts: [
-        { name: 'Space Grotesk', data: fontMedium, weight: 500, style: 'normal' },
-        { name: 'Space Grotesk', data: fontSemibold, weight: 600, style: 'normal' },
-        { name: 'Space Grotesk', data: fontBold, weight: 700, style: 'normal' },
+        { name: OG_FONT_FAMILY, data: fontMedium, weight: 500, style: 'normal' },
+        { name: OG_FONT_FAMILY, data: fontSemibold, weight: 600, style: 'normal' },
+        { name: OG_FONT_FAMILY, data: fontBold, weight: 700, style: 'normal' },
       ],
     }
   );

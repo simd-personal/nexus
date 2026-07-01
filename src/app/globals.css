@@ -51,18 +51,22 @@ html.warmth body::after {
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-space-grotesk);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
 }
 
 .font-display {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .line-clamp-2 {
@@ -330,11 +334,11 @@ html.dark .docx-preview td {
 }
 
 .auth-hero-title {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: clamp(2rem, 3.5vw, 2.75rem);
-  font-weight: 600;
-  line-height: 1.12;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: -0.02em;
   color: var(--ud-graphite);
 }
 
@@ -356,7 +360,7 @@ html.dark .docx-preview td {
 .auth-mode-tabs {
   display: inline-flex;
   padding: 0.25rem;
-  border-radius: 0.875rem;
+  border-radius: 1rem;
   background: #f1f5f9;
   border: 1px solid #e2e8f0;
 }
@@ -381,10 +385,10 @@ html.dark .docx-preview td {
 }
 
 .auth-form-title {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.75rem;
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--ud-graphite);
 }
 
@@ -406,7 +410,7 @@ html.dark .docx-preview td {
 
 .auth-input {
   width: 100%;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   border: 1px solid #cbd5e1;
   background: #fff;
   padding: 0.75rem 0.875rem;
@@ -769,7 +773,7 @@ html.dark .docx-preview td {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   background: var(--ud-gradient);
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
@@ -787,7 +791,7 @@ html.dark .docx-preview td {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   border: 1px solid var(--ud-cloud);
   background: #fff;
   padding: 0.625rem 1.25rem;
@@ -809,7 +813,7 @@ html.dark .docx-preview td {
   justify-content: center;
   gap: 0.5rem;
   overflow: hidden;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   border: 1px solid rgba(180, 138, 26, 0.5);
   padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
@@ -948,11 +952,11 @@ html.dark .docx-preview td {
 }
 
 .marketing-hero-title {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: clamp(1.875rem, 4.2vw, 3.25rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.22;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   color: var(--ud-graphite);
   text-wrap: balance;
 }
@@ -984,11 +988,11 @@ html.dark .docx-preview td {
 }
 
 .sunny-authority-tagline {
-  font-family: var(--font-cinzel), 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: 0.01em;
   color: #5c6470;
   text-wrap: pretty;
 }
@@ -1212,9 +1216,9 @@ html.dark .playbook-suggestion-chip:hover {
 
 .marketing-hero-stat-value {
   margin-top: 0.375rem;
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.75rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--ud-graphite);
@@ -1303,9 +1307,9 @@ html.dark .playbook-suggestion-chip:hover {
 }
 
 .marketing-section-title {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: clamp(1.625rem, 4vw, 2.5rem);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.22;
   letter-spacing: -0.015em;
   color: var(--ud-graphite);
@@ -1366,17 +1370,18 @@ html.dark .playbook-suggestion-chip:hover {
 }
 
 .marketing-feature-card {
-  border-radius: 1.25rem;
+  border-radius: 1.375rem;
   border: 1px solid var(--ud-mist);
   background: #fff;
   padding: 1.75rem;
-  box-shadow: 0 4px 20px rgba(14, 17, 21, 0.04);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 28px rgba(14, 17, 21, 0.05);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .marketing-feature-card:hover {
   border-color: var(--ud-cloud);
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.08);
+  box-shadow: 0 12px 36px rgba(37, 99, 235, 0.1);
+  transform: translateY(-1px);
 }
 
 .marketing-compare-card {
@@ -1791,7 +1796,7 @@ html.dark .playbook-suggestion-chip:hover {
 }
 
 .fun-step-num {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
   background: var(--ud-gradient);
@@ -2312,9 +2317,9 @@ html.dark .playbook-suggestion-chip:hover {
 }
 
 .aud-panel-title {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: var(--ud-graphite);
@@ -2375,7 +2380,7 @@ html.dark .playbook-suggestion-chip:hover {
 .spd-name-hot { color: var(--ud-graphite); }
 
 .spd-time {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 700;
   font-size: 1.125rem;
 }
@@ -2497,8 +2502,8 @@ html.dark .app-main {
 }
 
 .app-page-title {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
-  font-weight: 600;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--ud-graphite);
 }

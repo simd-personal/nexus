@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Space_Grotesk, Cinzel } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import Script from 'next/script';
 import './globals.css';
@@ -10,21 +10,11 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 import { ThemeRouteSync } from '@/components/theme/ThemeRouteSync';
 import { THEME_BOOTSTRAP_SCRIPT } from '@/lib/theme/preferences';
 
-const inter = Inter({
-  variable: '--font-inter',
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-jakarta',
   subsets: ['latin'],
-});
-
-const spaceGrotesk = Space_Grotesk({
-  variable: '--font-space-grotesk',
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
-
-const cinzel = Cinzel({
-  variable: '--font-cinzel',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['300', '400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 });
 
 export const metadata: Metadata = {
@@ -96,7 +86,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} ${cinzel.variable} antialiased`}>
+      <body className={`${plusJakartaSans.variable} antialiased`}>
         <Script id="upperdeck-theme-bootstrap" strategy="beforeInteractive">
           {THEME_BOOTSTRAP_SCRIPT}
         </Script>

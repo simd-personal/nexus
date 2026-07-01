@@ -57,6 +57,7 @@ import {
 } from '@/lib/chat/mode-presentation';
 import {
   engineBadgeLabel,
+  isModelEngine,
   modelSelectorHint,
   modelSelectorOptions,
   modelSelectorPillLabel,
@@ -1047,7 +1048,7 @@ export function SunnyChatInterface({
               const actionsTaken = msg.metadata?.actions_taken as string[] | undefined;
               const results = msg.metadata?.results as SearchResult[] | undefined;
               const streaming = msg.metadata?.streaming === true;
-              const model = msg.metadata?.model as string | undefined;
+              const model = msg.metadata?.model;
               // Cached messages drop artifact.content from localStorage to save space,
               // so a restored deck/doc can arrive without content — never parse it blindly.
               const artifactContent = typeof artifact?.content === 'string' ? artifact.content : '';
@@ -1094,7 +1095,7 @@ export function SunnyChatInterface({
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                           {presentation.useCoachBranding ? presentation.assistantLabel : AI_EMPLOYEE_NAME}
                         </span>
-                        {model && (
+                        {isModelEngine(model) && (
                           <Badge variant="neutral">{engineBadgeLabel(model)}</Badge>
                         )}
                       </div>

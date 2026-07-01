@@ -69,3 +69,7 @@ export function engineBadgeLabel(engine: ModelEngine): string {
     ? `Claude · ${claudeDocumentModelLabel()}`
     : `ChatGPT · ${openAIChatModelLabel()}`;
 }
+
+export function isModelEngine(value: unknown): value is ModelEngine {
+  return value === 'gpt' || value === 'claude';
+}

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   claudeDocumentModelLabel,
   engineBadgeLabel,
+  isModelEngine,
   modelSelectorOptions,
   modelSelectorPillLabel,
   openAIChatModelLabel,
@@ -31,5 +32,12 @@ describe('model-display', () => {
     expect(modelSelectorPillLabel('auto')).toBe('Auto');
     expect(modelSelectorPillLabel('gpt')).toBe('ChatGPT · GPT-5.5');
     expect(modelSelectorPillLabel('claude')).toBe('Claude · Claude Opus 4.8');
+  });
+
+  it('guards model engine badges', () => {
+    expect(isModelEngine('gpt')).toBe(true);
+    expect(isModelEngine('claude')).toBe(true);
+    expect(isModelEngine('auto')).toBe(false);
+    expect(isModelEngine(undefined)).toBe(false);
   });
 });
