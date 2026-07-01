@@ -3,6 +3,7 @@ import {
   fetchCriticalItems,
   fetchDashboardStats,
   fetchDashboardUpdates,
+  fetchOpenActionItems,
   fetchProjects,
 } from '@/lib/api';
 
@@ -32,13 +33,22 @@ export const DASHBOARD_PREFETCH_STEPS: PrefetchStep[] = [
       client.prefetchQuery({ queryKey: ['home-critical'], queryFn: () => fetchCriticalItems(3) }),
   },
   {
+    id: 'home-actions',
+    label: 'Loading action items…',
+    run: (client) =>
+      client.prefetchQuery({
+        queryKey: ['home-action-items', 5],
+        queryFn: () => fetchOpenActionItems(5),
+      }),
+  },
+  {
     id: 'projects',
     label: 'Loading your projects…',
     run: (client) => client.prefetchQuery({ queryKey: ['projects'], queryFn: () => fetchProjects() }),
   },
   {
     id: 'critical',
-    label: 'Indexing action items…',
+    label: 'Indexing critical items…',
     run: (client) =>
       client.prefetchQuery({ queryKey: ['critical-items'], queryFn: () => fetchCriticalItems() }),
   },

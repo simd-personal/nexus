@@ -30,6 +30,8 @@ export interface MobileProject {
 
 export type MobileProjectWithStats = MobileProject;
 
+export type ActionItemStatus = 'open' | 'in_progress' | 'done' | 'cancelled';
+
 export interface MobileCriticalItem {
   id: string;
   project_id: string;
@@ -41,6 +43,22 @@ export interface MobileCriticalItem {
   sunny_reasoning: string | null;
   suggested_next_action: string | null;
   source_citations: Citation[];
+  project?: { client_name: string; project_name: string };
+}
+
+export interface MobileActionItem {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  owner: string | null;
+  due_date: string | null;
+  status: ActionItemStatus;
+  applies_to_me: boolean;
+  item_kind: string | null;
+  matched_terms: string[];
+  source_citations: Citation[];
+  created_at: string;
   project?: { client_name: string; project_name: string };
 }
 

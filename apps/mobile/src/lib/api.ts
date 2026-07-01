@@ -7,6 +7,7 @@ import {
 } from '@/lib/chat-stream';
 import { supabase } from '@/lib/supabase';
 import type {
+  ActionItem,
   ChatMessage,
   ChatSession,
   CriticalItem,
@@ -64,24 +65,48 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-const MOBILE_PORTFOLIO_SCOPE: DashboardPortfolioScope = 'all';
-
-function withPortfolioQuery(path: string, portfolio: DashboardPortfolioScope = MOBILE_PORTFOLIO_SCOPE) {
+function withPortfolioQuery(path: string, portfolio?: DashboardPortfolioScope) {
+  if (!portfolio) return path;
   const separator = path.includes('?') ? '&' : '?';
   return `${path}${separator}portfolio=${portfolio}`;
 }
 
+function scopedListPath(
+  basePath: string,
+  options?: { portfolio?: DashboardPortfolioScope; limit?: number }
+) {
+  const params = new URLSearchParams();
+  if (options?.portfolio) params.set('portfolio', options.portfolio);
+  if (options?.limit) params.set('limit', String(options.limit));
+  const qs = params.toString();
+  return qs ? `${basePath}?${qs}` : basePath;
+}
+
+/** Uses the signed-in user's saved dashboard scope (same as web) when portfolio is omitted. */
+export function fetchDashboardPortfolioPreference() {
+  return apiJson<{ scope: DashboardPortfolioScope }>('/api/me/dashboard-portfolio');
+}
+
+export function updateDashboardPortfolioPreference(scope: DashboardPortfolioScope) {
+  return apiJson<{ success: boolean }>('/api/me/dashboard-portfolio', {
+    method: 'POST',
+    body: JSON.stringify({ scope }),
+  });
+}
+
 export function fetchDashboardStats(options?: { portfolio?: DashboardPortfolioScope }) {
-  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
-  return apiJson<{ stats: DashboardStats; portfolio: string }>(withPortfolioQuery('/api/dashboard/stats', portfolio));
+  return apiJson<{ stats: DashboardStats; portfolio: DashboardPortfolioScope }>(
+    withPortfolioQuery('/api/dashboard/stats', options?.portfolio)
+  );
 }
 
 export function fetchDashboardUpdates(
   limit = 5,
   options?: { portfolio?: DashboardPortfolioScope }
 ) {
-  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
-  return apiJson<DashboardUpdatesFeed>(withPortfolioQuery(`/api/dashboard/updates?limit=${limit}`, portfolio));
+  return apiJson<DashboardUpdatesFeed>(
+    withPortfolioQuery(`/api/dashboard/updates?limit=${limit}`, options?.portfolio)
+  );
 }
 
 export function fetchSunnyUpdate(id: string) {
@@ -92,16 +117,23 @@ export function fetchCriticalItems(
   limit?: number,
   options?: { portfolio?: DashboardPortfolioScope }
 ) {
-  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
-  const params = new URLSearchParams({ portfolio });
-  if (limit) params.set('limit', String(limit));
-  return apiJson<{ items: CriticalItem[] }>(`/api/critical-items?${params.toString()}`);
+  return apiJson<{ items: CriticalItem[]; portfolio: DashboardPortfolioScope }>(
+    scopedListPath('/api/critical-items', { ...options, limit })
+  );
+}
+
+export function fetchOpenActionItems(
+  limit?: number,
+  options?: { portfolio?: DashboardPortfolioScope }
+) {
+  return apiJson<{ items: ActionItem[]; portfolio: DashboardPortfolioScope }>(
+    scopedListPath('/api/action-items', { ...options, limit })
+  );
 }
 
 export function fetchProjects(options?: { portfolio?: DashboardPortfolioScope }) {
-  const portfolio = options?.portfolio ?? MOBILE_PORTFOLIO_SCOPE;
-  return apiJson<{ projects: ProjectWithStats[]; portfolio: string }>(
-    withPortfolioQuery('/api/projects', portfolio)
+  return apiJson<{ projects: ProjectWithStats[]; portfolio: DashboardPortfolioScope }>(
+    withPortfolioQuery('/api/projects', options?.portfolio)
   );
 }
 
@@ -113,6 +145,17 @@ export function updateCriticalItemStatus(itemId: string, status: 'acknowledged' 
   return apiJson<{ success: boolean }>(`/api/critical-items/${itemId}`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),
+  });
+}
+
+export function updateActionItemStatus(
+  itemId: string,
+  status: ActionItem['status'],
+  options?: { applies_to_me?: boolean }
+) {
+  return apiJson<{ success: boolean }>(`/api/action-items/${itemId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status, ...options }),
   });
 }
 

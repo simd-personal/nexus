@@ -1,4 +1,5 @@
 import type {
+  MobileActionItem as ActionItem,
   MobileChatMessage as ChatMessage,
   MobileChatSession as ChatSession,
   MobileCriticalItem as CriticalItem,
@@ -15,6 +16,7 @@ import type {
 } from '@upperdeck/shared/mobile';
 
 export type {
+  ActionItem,
   ChatMessage,
   ChatSession,
   Citation,
