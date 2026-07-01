@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { formatRelativeTime } from '../format';
+import { formatRelativeTime, formatUploadDate } from '../format';
+
+describe('formatUploadDate', () => {
+  it('formats an ISO timestamp as a readable calendar date', () => {
+    expect(formatUploadDate('2026-03-15T12:00:00.000Z')).toBe('Mar 15, 2026');
+  });
+});
 
 describe('formatRelativeTime', () => {
   const now = new Date('2026-06-30T12:00:00.000Z');

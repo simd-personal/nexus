@@ -2,7 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ProjectFile } from '@/lib/types';
 import { fileStatusLabel, fileStatusTone } from '@/lib/files';
-import { formatRelativeTime } from '@/lib/format';
+import { formatUploadDate } from '@/lib/format';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
 type ProjectFileRowProps = {
@@ -40,7 +40,7 @@ export function ProjectFileRow({ file, onPress, onActions }: ProjectFileRowProps
               {fileStatusLabel(file.status)}
             </Text>
           </View>
-          <Text style={styles.meta}>{formatRelativeTime(file.created_at)}</Text>
+          <Text style={styles.meta}>Uploaded {formatUploadDate(file.created_at)}</Text>
         </View>
         {file.user_note ? (
           <Text style={styles.note} numberOfLines={2}>

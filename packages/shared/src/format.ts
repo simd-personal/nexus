@@ -1,3 +1,9 @@
+/** Calendar date for when a file was uploaded (always shows month, day, year). */
+export function formatUploadDate(date: string | Date): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
 export function formatRelativeTime(date: string | Date, now: Date = new Date()): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   const diffMs = now.getTime() - d.getTime();
