@@ -9,6 +9,7 @@
     "./brand": "./src/brand.ts",
     "./format": "./src/format.ts",
     "./mobile": "./src/mobile.ts",
-    "./chat-scope": "./src/chat-scope.ts"
+    "./chat-scope": "./src/chat-scope.ts",
+    "./timeline-summary": "./src/timeline-summary.ts"
   }
 }

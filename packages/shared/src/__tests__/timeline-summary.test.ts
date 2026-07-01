@@ -5,16 +5,13 @@ import {
   timelineEventIsExpandable,
   truncateTimelineText,
 } from '../timeline-summary';
-import type { TimelineEvent } from '../types';
+import type { TimelineSummaryEvent } from '../timeline-summary';
 
-function event(partial: Partial<TimelineEvent> & Pick<TimelineEvent, 'event_type' | 'title'>): TimelineEvent {
+function event(
+  partial: Partial<TimelineSummaryEvent> & Pick<TimelineSummaryEvent, 'event_type' | 'title'>
+): TimelineSummaryEvent {
   return {
-    id: '1',
-    project_id: 'p1',
     description: null,
-    source_file_id: null,
-    metadata: {},
-    created_at: '2026-06-30T12:00:00.000Z',
     ...partial,
   };
 }
