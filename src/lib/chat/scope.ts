@@ -337,6 +337,83 @@ export function toggleNodeChecked(
   return next;
 }
 
+const PORTFOLIO_SCOPE_LABELS: Record<string, ProjectPortfolio> = {
+  'Work projects': 'work',
+  'Personal projects': 'personal',
+};
+
+export function splitProjectsByPortfolio(projects: ProjectWithStats[]) {
+  const work: ProjectWithStats[] = [];
+  const personal: ProjectWithStats[] = [];
+
+  for (const project of projects) {
+    if ((project.portfolio ?? 'work') === 'personal') personal.push(project);
+    else work.push(project);
+  }
+
+  return { work, personal };
+}
+
+function collectPortfolioNodeIds(
+  projects: ProjectWithStats[],
+  portfolio: ProjectPortfolio
+): string[] {
+  const ids: string[] = [];
+
+  function visit(node: ProjectWithStats) {
+    if ((node.portfolio ?? 'work') === portfolio) ids.push(node.id);
+    for (const child of node.sub_projects ?? []) visit(child);
+  }
+
+  for (const root of projects) visit(root);
+  return ids;
+}
+
+export function getPortfolioCheckState(
+  projects: ProjectWithStats[],
+  portfolio: ProjectPortfolio,
+  checkedIds: Set<string>
+): TreeCheckState {
+  const ids = collectPortfolioNodeIds(projects, portfolio);
+  if (ids.length === 0) return 'unchecked';
+
+  const checkedCount = ids.filter((id) => checkedIds.has(id)).length;
+  if (checkedCount === 0) return 'unchecked';
+  if (checkedCount === ids.length) return 'checked';
+  return 'indeterminate';
+}
+
+export function togglePortfolioChecked(
+  projects: ProjectWithStats[],
+  portfolio: ProjectPortfolio,
+  checkedIds: Set<string>
+): Set<string> {
+  const shouldCheck = getPortfolioCheckState(projects, portfolio, checkedIds) !== 'checked';
+  const next = new Set(checkedIds);
+
+  function visit(node: ProjectWithStats) {
+    if ((node.portfolio ?? 'work') === portfolio) {
+      if (shouldCheck) next.add(node.id);
+      else next.delete(node.id);
+    }
+    for (const child of node.sub_projects ?? []) visit(child);
+  }
+
+  for (const root of projects) visit(root);
+  return next;
+}
+
+function removePortfolioFromNode(
+  node: ProjectWithStats,
+  portfolio: ProjectPortfolio,
+  checked: Set<string>
+): void {
+  if ((node.portfolio ?? 'work') === portfolio) checked.delete(node.id);
+  for (const child of node.sub_projects ?? []) {
+    removePortfolioFromNode(child, portfolio, checked);
+  }
+}
+
 export function removeScopeLabel(
   projects: ProjectWithStats[],
   scope: ChatScope,
@@ -345,6 +422,14 @@ export function removeScopeLabel(
   if (scope.kind === 'all') return scope;
 
   const checked = checkedIdsFromScope(projects, scope);
+  const portfolio = PORTFOLIO_SCOPE_LABELS[label];
+  if (portfolio) {
+    for (const root of projects) {
+      removePortfolioFromNode(root, portfolio, checked);
+    }
+    return buildChatScope(projects, checked);
+  }
+
   for (const root of projects) {
     removeLabelFromNode(root, label, checked);
   }

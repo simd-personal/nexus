@@ -8,9 +8,12 @@ import {
   checkedIdsFromScope,
   formatScopeSummary,
   getNodeCheckState,
+  getPortfolioCheckState,
   projectLabel,
   removeScopeLabel,
+  splitProjectsByPortfolio,
   toggleNodeChecked,
+  togglePortfolioChecked,
   type ChatScope,
   type TreeCheckState,
 } from '@/lib/chat/scope';
@@ -144,6 +147,73 @@ function ScopeTreeNode({
   );
 }
 
+function PortfolioScopeSection({
+  title,
+  portfolio,
+  projects,
+  allProjects,
+  checkedIds,
+  expandedIds,
+  onToggleExpand,
+  onToggleCheck,
+  onTogglePortfolio,
+  lockScope,
+}: {
+  title: string;
+  portfolio: 'work' | 'personal';
+  projects: ProjectWithStats[];
+  allProjects: ProjectWithStats[];
+  checkedIds: Set<string>;
+  expandedIds: Set<string>;
+  onToggleExpand: (id: string) => void;
+  onToggleCheck: (node: ProjectWithStats) => void;
+  onTogglePortfolio: () => void;
+  lockScope?: boolean;
+}) {
+  const portfolioState = getPortfolioCheckState(allProjects, portfolio, checkedIds);
+  const portfolioLabel = portfolio === 'work' ? 'Work projects' : 'Personal projects';
+
+  return (
+    <div className="space-y-0.5">
+      <p className="px-2 pt-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+        {title}
+      </p>
+      <button
+        type="button"
+        onClick={onTogglePortfolio}
+        disabled={lockScope}
+        className="flex w-full items-center gap-2 rounded-lg bg-gray-50 px-2 py-2 text-left hover:bg-gray-100 disabled:opacity-50 dark:bg-[var(--ud-stone)] dark:hover:bg-[var(--ud-cloud)]"
+      >
+        <CheckBox
+          state={portfolioState}
+          onChange={onTogglePortfolio}
+          disabled={lockScope}
+          label={portfolioLabel}
+        />
+        <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{portfolioLabel}</span>
+      </button>
+      {projects.length === 0 ? (
+        <p className="px-2 pb-1 text-xs text-gray-400 dark:text-gray-500">
+          No {title.toLowerCase()} projects yet
+        </p>
+      ) : (
+        projects.map((project) => (
+          <ScopeTreeNode
+            key={project.id}
+            node={project}
+            depth={0}
+            checkedIds={checkedIds}
+            expandedIds={expandedIds}
+            onToggleExpand={onToggleExpand}
+            onToggleCheck={onToggleCheck}
+            lockScope={lockScope}
+          />
+        ))
+      )}
+    </div>
+  );
+}
+
 export function ChatScopeChips({
   scope,
   projects,
@@ -225,6 +295,8 @@ export function ChatScopePicker({
     setOpen(false);
   };
 
+  const { work, personal } = splitProjectsByPortfolio(projects);
+
   return (
     <div ref={containerRef} className={cn('relative', className)}>
       {!lockScope && (
@@ -257,25 +329,49 @@ export function ChatScopePicker({
             <span className="font-medium text-gray-800 dark:text-gray-200">All projects</span>
           </button>
           <div className="my-2 border-t border-gray-100 dark:border-[var(--ud-cloud)]" />
-          <div className="max-h-72 space-y-0.5 overflow-y-auto">
-            {projects.map((project) => (
-              <ScopeTreeNode
-                key={project.id}
-                node={project}
-                depth={0}
-                checkedIds={checkedIds}
-                expandedIds={expandedIds}
-                onToggleExpand={(id) =>
-                  setExpandedIds((current) => {
-                    const next = new Set(current);
-                    if (next.has(id)) next.delete(id);
-                    else next.add(id);
-                    return next;
-                  })
-                }
-                onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
-              />
-            ))}
+          <div className="max-h-72 space-y-3 overflow-y-auto">
+            <PortfolioScopeSection
+              title="Work"
+              portfolio="work"
+              projects={work}
+              allProjects={projects}
+              checkedIds={checkedIds}
+              expandedIds={expandedIds}
+              onToggleExpand={(id) =>
+                setExpandedIds((current) => {
+                  const next = new Set(current);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                })
+              }
+              onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
+              onTogglePortfolio={() =>
+                applyCheckedIds(togglePortfolioChecked(projects, 'work', checkedIds))
+              }
+              lockScope={lockScope}
+            />
+            <PortfolioScopeSection
+              title="Personal"
+              portfolio="personal"
+              projects={personal}
+              allProjects={projects}
+              checkedIds={checkedIds}
+              expandedIds={expandedIds}
+              onToggleExpand={(id) =>
+                setExpandedIds((current) => {
+                  const next = new Set(current);
+                  if (next.has(id)) next.delete(id);
+                  else next.add(id);
+                  return next;
+                })
+              }
+              onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
+              onTogglePortfolio={() =>
+                applyCheckedIds(togglePortfolioChecked(projects, 'personal', checkedIds))
+              }
+              lockScope={lockScope}
+            />
           </div>
         </div>
       )}

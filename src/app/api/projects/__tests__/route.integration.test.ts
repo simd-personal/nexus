@@ -27,8 +27,16 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
 
+const mockGetProjectsWithStats = vi.fn();
+const mockGetDashboardPortfolioPreference = vi.fn();
+
+vi.mock('@/lib/data/queries', () => ({
+  getProjectsWithStats: (...args: unknown[]) => mockGetProjectsWithStats(...args),
+  getDashboardPortfolioPreference: (...args: unknown[]) => mockGetDashboardPortfolioPreference(...args),
+}));
+
 import { requireRequestAuth } from '@/lib/supabase/request-auth';
-import { POST } from '@/app/api/projects/route';
+import { GET, POST } from '@/app/api/projects/route';
 
 describe('POST /api/projects', () => {
   beforeEach(() => {
@@ -77,5 +85,50 @@ describe('POST /api/projects', () => {
     const response = await POST(request);
     expect(response.status).toBe(401);
     expect(mockCreateProjectForUser).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /api/projects', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(requireRequestAuth).mockResolvedValue({
+      user: { id: 'user-1' } as never,
+      supabase: {} as never,
+      response: null,
+    });
+    mockGetDashboardPortfolioPreference.mockResolvedValue('work');
+    mockGetProjectsWithStats.mockResolvedValue([
+      { id: 'work-1', portfolio: 'work', client_name: 'Acme', project_name: 'Rollout' },
+      { id: 'personal-1', portfolio: 'personal', client_name: 'Home', project_name: 'Renovation' },
+    ]);
+  });
+
+  it('returns all portfolios when portfolio=all is requested', async () => {
+    const request = new NextRequest('http://localhost:3000/api/projects?portfolio=all');
+
+    const response = await GET(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.portfolio).toBe('all');
+    expect(mockGetProjectsWithStats).toHaveBeenCalledWith({
+      portfolio: 'all',
+      supabase: {},
+    });
+    expect(body.projects).toHaveLength(2);
+  });
+
+  it('returns 401 when unauthenticated', async () => {
+    vi.mocked(requireRequestAuth).mockResolvedValue({
+      user: null,
+      supabase: null,
+      response: new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }) as never,
+    });
+
+    const request = new NextRequest('http://localhost:3000/api/projects?portfolio=all');
+    const response = await GET(request);
+
+    expect(response.status).toBe(401);
+    expect(mockGetProjectsWithStats).not.toHaveBeenCalled();
   });
 });

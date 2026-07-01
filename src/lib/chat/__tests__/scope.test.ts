@@ -5,6 +5,7 @@ import {
   checkedIdsFromScope,
   formatScopeSummary,
   getNodeCheckState,
+  getPortfolioCheckState,
   initialScopeForProject,
   parseProjectIdsFromSearchParams,
   projectLabel,
@@ -17,6 +18,8 @@ import {
   scopeFromUrlProjects,
   scopesEqual,
   toggleNodeChecked,
+  togglePortfolioChecked,
+  splitProjectsByPortfolio,
 } from '@/lib/chat/scope';
 import type { ProjectWithStats } from '@/types/database';
 
@@ -131,6 +134,60 @@ describe('chat scope', () => {
     const scope = scopeFromPortfolio(mixed, 'personal');
     expect(resolveScopeProjectIds(scope)).toEqual(['personal-1']);
     expect(scope.kind === 'selected' && scope.labels).toEqual(['Personal projects']);
+  });
+
+  it('removes portfolio scope labels from chips', () => {
+    const mixed = [
+      ...tree,
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+    const scope = scopeFromPortfolio(mixed, 'personal');
+    expect(removeScopeLabel(mixed, scope, 'Personal projects')).toEqual(ALL_PROJECTS_SCOPE);
+  });
+
+  it('toggles portfolio check state', () => {
+    const mixed = [
+      project({ id: 'work-1', portfolio: 'work' }),
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+    const checked = togglePortfolioChecked(mixed, 'personal', new Set());
+    expect(getPortfolioCheckState(mixed, 'personal', checked)).toBe('checked');
+    expect(checked.has('personal-1')).toBe(true);
+  });
+
+  it('selects and deselects individual personal projects in the Sunny picker', () => {
+    const mixed = [
+      project({ id: 'work-1', portfolio: 'work' }),
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+      project({ id: 'personal-2', client_name: 'Home', project_name: 'Garden', portfolio: 'personal' }),
+    ];
+
+    const checked = toggleNodeChecked(mixed[1]!, new Set());
+    const scope = buildChatScope(mixed, checked);
+    expect(resolveScopeProjectIds(scope)).toEqual(['personal-1']);
+
+    const cleared = toggleNodeChecked(mixed[1]!, checked);
+    expect(buildChatScope(mixed, cleared)).toEqual(ALL_PROJECTS_SCOPE);
+  });
+
+  it('removes one personal project chip while keeping the other selected', () => {
+    const mixed = [
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+      project({ id: 'personal-2', client_name: 'Home', project_name: 'Garden', portfolio: 'personal' }),
+    ];
+    const scope = buildChatScope(mixed, new Set(['personal-1', 'personal-2']));
+    const next = removeScopeLabel(mixed, scope, 'Home · Renovation');
+    expect(resolveScopeProjectIds(next)).toEqual(['personal-2']);
+  });
+
+  it('splits projects for Work and Personal Sunny dropdown sections', () => {
+    const mixed = [
+      project({ id: 'work-1', portfolio: 'work' }),
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+    const { work, personal } = splitProjectsByPortfolio(mixed);
+    expect(work.map((item) => item.id)).toEqual(['work-1']);
+    expect(personal.map((item) => item.id)).toEqual(['personal-1']);
   });
 
   it('labels unknown URL project ids', () => {

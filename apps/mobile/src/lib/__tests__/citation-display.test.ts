@@ -1,4 +1,5 @@
-import { formatCitationDisplay } from '@/lib/citation-display';
+import { describe, expect, it } from 'vitest';
+import { formatCitationDisplay } from '../citation-display';
 
 describe('formatCitationDisplay', () => {
   it('extracts the file name from scoped search labels', () => {

@@ -3,12 +3,13 @@ import {
   ALL_PROJECTS_SCOPE,
   formatScopeSummary,
   initialScopeForProject,
+  normalizeProjectPortfolios,
   resolveScopeProjectIds,
   type ChatScope,
 } from '@upperdeck/shared/chat-scope';
 import { useQuery } from '@tanstack/react-query';
 import { useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
@@ -71,7 +72,10 @@ function toBubbleMessage(message: UiMessage, scope: ChatScope): ChatBubbleMessag
 export default function SunnyScreen() {
   const tabBarLift = useFloatingTabBarLift();
   const projectsQuery = useQuery({ queryKey: ['projects', 'all'], queryFn: fetchAllProjects });
-  const projects = projectsQuery.data?.projects ?? [];
+  const projects = useMemo(
+    () => normalizeProjectPortfolios(projectsQuery.data?.projects ?? []),
+    [projectsQuery.data?.projects]
+  );
   const [scope, setScope] = useState<ChatScope>({ kind: 'all' });
   const [scopeReady, setScopeReady] = useState(false);
   const [sessionId, setSessionId] = useState<string | undefined>();

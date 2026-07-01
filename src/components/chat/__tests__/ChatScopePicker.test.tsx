@@ -5,6 +5,7 @@ import {
   ALL_PROJECTS_SCOPE,
   buildChatScope,
   initialScopeForProject,
+  splitProjectsByPortfolio,
   type ChatScope,
 } from '@/lib/chat/scope';
 import type { ProjectWithStats } from '@/types/database';
@@ -96,6 +97,16 @@ describe('ChatScopePicker', () => {
       />
     );
     expect(html).not.toContain('All projects');
+  });
+
+  it('groups personal projects separately for the picker tree', () => {
+    const mixed = [
+      ...tree,
+      project({ id: 'personal-1', client_name: 'Home', project_name: 'Renovation', portfolio: 'personal' }),
+    ];
+    const { work, personal } = splitProjectsByPortfolio(mixed);
+    expect(work.map((item) => item.id)).toEqual(['program', 'solo']);
+    expect(personal.map((item) => item.id)).toEqual(['personal-1']);
   });
 });
 

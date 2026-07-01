@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -9,6 +9,7 @@ import {
   formatScopeSummary,
   getNodeCheckState,
   getPortfolioCheckState,
+  normalizeProjectPortfolios,
   projectLabel,
   removeScopeLabel,
   splitProjectsByPortfolio,
@@ -166,11 +167,16 @@ export function ChatScopePicker({
   const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set());
+  const scopeProjects = useMemo(() => normalizeProjectPortfolios(projects), [projects]);
+  const { work, personal } = useMemo(
+    () => splitProjectsByPortfolio(scopeProjects),
+    [scopeProjects]
+  );
 
   useEffect(() => {
     if (!open) return;
-    setCheckedIds(checkedIdsFromScope(projects, scope));
-  }, [open, projects, scope]);
+    setCheckedIds(checkedIdsFromScope(scopeProjects, scope));
+  }, [open, scopeProjects, scope]);
 
   function setPickerOpen(next: boolean) {
     setOpen(next);
@@ -179,7 +185,7 @@ export function ChatScopePicker({
 
   function applyCheckedIds(next: Set<string>) {
     setCheckedIds(next);
-    onScopeChange(buildChatScope(projects, next));
+    onScopeChange(buildChatScope(scopeProjects, next));
   }
 
   function selectAllProjects() {
@@ -187,8 +193,6 @@ export function ChatScopePicker({
     onScopeChange(ALL_PROJECTS_SCOPE);
     setPickerOpen(false);
   }
-
-  const { work, personal } = splitProjectsByPortfolio(projects);
 
   return (
     <>
@@ -235,22 +239,22 @@ export function ChatScopePicker({
                 title="Work"
                 portfolio="work"
                 projects={work}
-                allProjects={projects}
+                allProjects={scopeProjects}
                 checkedIds={checkedIds}
                 onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
                 onTogglePortfolio={() =>
-                  applyCheckedIds(togglePortfolioChecked(projects, 'work', checkedIds))
+                  applyCheckedIds(togglePortfolioChecked(scopeProjects, 'work', checkedIds))
                 }
               />
               <PortfolioScopeSection
                 title="Personal"
                 portfolio="personal"
                 projects={personal}
-                allProjects={projects}
+                allProjects={scopeProjects}
                 checkedIds={checkedIds}
                 onToggleCheck={(node) => applyCheckedIds(toggleNodeChecked(node, checkedIds))}
                 onTogglePortfolio={() =>
-                  applyCheckedIds(togglePortfolioChecked(projects, 'personal', checkedIds))
+                  applyCheckedIds(togglePortfolioChecked(scopeProjects, 'personal', checkedIds))
                 }
               />
             </ScrollView>
@@ -333,7 +337,9 @@ const styles = StyleSheet.create({
     marginVertical: spacing.sm,
   },
   treeList: {
-    maxHeight: 360,
+    flexGrow: 1,
+    flexShrink: 1,
+    maxHeight: 420,
   },
   portfolioSection: {
     gap: spacing.xs,

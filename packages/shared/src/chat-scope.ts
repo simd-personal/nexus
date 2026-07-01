@@ -281,12 +281,32 @@ export function togglePortfolioChecked(
   return next;
 }
 
+export function normalizeProjectPortfolios(
+  projects: MobileProjectWithStats[]
+): MobileProjectWithStats[] {
+  function normalizeNode(
+    node: MobileProjectWithStats,
+    inherited: 'work' | 'personal'
+  ): MobileProjectWithStats {
+    const portfolio = node.portfolio ?? inherited;
+    const children = node.sub_projects ?? [];
+    if (children.length === 0) {
+      return portfolio === node.portfolio ? node : { ...node, portfolio };
+    }
+
+    const sub_projects = children.map((child) => normalizeNode(child, portfolio));
+    return { ...node, portfolio, sub_projects };
+  }
+
+  return projects.map((project) => normalizeNode(project, project.portfolio ?? 'work'));
+}
+
 export function splitProjectsByPortfolio(projects: MobileProjectWithStats[]) {
   const work: MobileProjectWithStats[] = [];
   const personal: MobileProjectWithStats[] = [];
 
   for (const project of projects) {
-    if (project.portfolio === 'personal') personal.push(project);
+    if ((project.portfolio ?? 'work') === 'personal') personal.push(project);
     else work.push(project);
   }
 
