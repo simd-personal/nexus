@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -49,7 +49,6 @@ export default function ProjectFilesScreen() {
 
   return (
     <Screen edges={['left', 'right', 'bottom']}>
-      <Stack.Screen options={{ title: project ? `${project.project_name} files` : 'Files' }} />
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={

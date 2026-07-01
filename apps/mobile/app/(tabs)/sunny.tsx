@@ -33,10 +33,11 @@ import { Screen } from '@/components/ui';
 import {
   fetchChatSession,
   fetchAllProjects,
-  fetchSearchChatSessions,
   streamSearchChat,
 } from '@/lib/api';
 import { consumePendingSunnyProjectId } from '@/lib/sunny-navigation';
+import { cacheScopeChat } from '@/lib/sunny-chat-cache';
+import { fetchScopeChatHistory } from '@/lib/sunny-chat-history';
 import type { ChatMessage } from '@/lib/types';
 import { BRAND, radius, spacing } from '@/theme/colors';
 
@@ -90,6 +91,11 @@ export default function SunnyScreen() {
   const stickToBottomRef = useRef(true);
   const scopeRef = useRef(scope);
   scopeRef.current = scope;
+  const sessionIdRef = useRef<string | undefined>(sessionId);
+  sessionIdRef.current = sessionId;
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  const previousScopeRef = useRef<ChatScope | null>(null);
   const scopeInitialized = useRef(false);
   const skipInitialHistoryRef = useRef(false);
   const shouldFocusInputRef = useRef(false);
@@ -164,21 +170,20 @@ export default function SunnyScreen() {
     return () => clearTimeout(timer);
   }, [scope, scopeReady]);
 
-  const loadSearchHistory = useCallback(async () => {
+  const loadScopeChat = useCallback(async (targetScope: ChatScope) => {
     setLoadingHistory(true);
-    setSessionId(undefined);
-    setMessages([]);
     setStatus(null);
+    abortRef.current?.abort();
+    setStreaming(false);
 
     try {
-      const { sessions } = await fetchSearchChatSessions();
-      if (sessions.length === 0) return;
-
-      const { session, messages: history } = await fetchChatSession(sessions[0].id);
-      setSessionId(session.id);
-      setMessages(history);
+      const restored = await fetchScopeChatHistory(targetScope);
+      setSessionId(restored.sessionId);
+      setMessages(restored.messages);
+      cacheScopeChat(targetScope, restored);
     } catch {
-      // keep empty state
+      setSessionId(undefined);
+      setMessages([]);
     } finally {
       setLoadingHistory(false);
     }
@@ -186,21 +191,32 @@ export default function SunnyScreen() {
 
   useEffect(() => {
     if (!scopeReady) return;
+
     if (!scopeInitialized.current) {
       scopeInitialized.current = true;
+      previousScopeRef.current = scope;
       if (!skipInitialHistoryRef.current) {
-        void loadSearchHistory();
+        void loadScopeChat(scope);
       }
       skipInitialHistoryRef.current = false;
       return;
     }
 
-    abortRef.current?.abort();
-    setStreaming(false);
-    setSessionId(undefined);
-    setMessages([]);
-    setStatus(null);
-  }, [scope, scopeReady, loadSearchHistory]);
+    if (previousScopeRef.current) {
+      cacheScopeChat(previousScopeRef.current, {
+        sessionId: sessionIdRef.current,
+        messages: messagesRef.current,
+      });
+    }
+
+    previousScopeRef.current = scope;
+    void loadScopeChat(scope);
+  }, [scope, scopeReady, loadScopeChat]);
+
+  useEffect(() => {
+    if (!scopeReady || loadingHistory || streaming) return;
+    cacheScopeChat(scope, { sessionId, messages });
+  }, [scope, scopeReady, sessionId, messages, loadingHistory, streaming]);
 
   const sendMessage = useCallback(
     async (text: string) => {
@@ -286,14 +302,18 @@ export default function SunnyScreen() {
 
               setMessages((prev) => {
                 const assistant = prev.find((item) => item.id === assistantId);
+                const next = prev.map((item) =>
+                  item.id === assistantId ? { ...item, streaming: false } : item
+                );
+                cacheScopeChat(scopeRef.current, { sessionId: id, messages: next });
+
                 if (assistant && !assistant.content.trim()) {
                   void fetchChatSession(id).then(({ messages: saved }) => {
                     setMessages(saved);
+                    cacheScopeChat(scopeRef.current, { sessionId: id, messages: saved });
                   });
                 }
-                return prev.map((item) =>
-                  item.id === assistantId ? { ...item, streaming: false } : item
-                );
+                return next;
               });
             },
           },

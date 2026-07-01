@@ -77,6 +77,10 @@ export const AUDIO_EXTENSIONS = ['.mp3', '.m4a', '.wav'];
 
 export const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp'];
 
+export function isImageFileName(fileName: string): boolean {
+  return IMAGE_EXTENSIONS.includes(getFileExtension(fileName));
+}
+
 export const TRANSCRIPT_EXTENSIONS = ['.vtt', '.srt'];
 
 export const MIME_TO_SOURCE: Record<string, SourceType> = {

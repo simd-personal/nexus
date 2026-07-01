@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import {
   generatePageBrief,
   generatePageDeck,
@@ -8,14 +7,13 @@ import {
   formatBriefAsProse,
 } from '@/lib/ai/page-generation';
 import { getProjectContext } from '@/lib/generate/context';
+import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const auth = await requireRequestAuth(request);
+    if (auth.response) return auth.response;
+    const { supabase } = auth;
 
     const { project_id, type, version, instructions } = await request.json();
     if (!project_id || !type) {

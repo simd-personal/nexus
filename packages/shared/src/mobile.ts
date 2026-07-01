@@ -102,6 +102,7 @@ export interface MobileChatMessage {
   content: string;
   citations?: Citation[];
   created_at: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MobileProjectOverviewResponse {
@@ -131,4 +132,38 @@ export interface MobileInboundInfo {
   subject_hint: string;
   client_name?: string;
   project_name?: string;
+}
+
+export type MobileTimelineEventType =
+  | 'meeting'
+  | 'file_upload'
+  | 'email'
+  | 'note'
+  | 'sunny_summary'
+  | 'critical_item'
+  | 'action_item'
+  | 'playbook'
+  | 'follow_up_email'
+  | 'contradiction'
+  | 'file_moved'
+  | 'file_shared'
+  | 'file_replaced';
+
+export interface MobileTimelineEvent {
+  id: string;
+  project_id: string;
+  event_type: MobileTimelineEventType;
+  title: string;
+  description: string | null;
+  source_file_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export type ProjectGenerateType = 'brief' | 'playbook' | 'follow_up_email' | 'deck';
+
+export interface ProjectGenerateResponse {
+  title: string;
+  content: string;
+  type: string;
 }

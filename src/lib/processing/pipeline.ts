@@ -12,7 +12,12 @@ import {
   parseEmailBody,
   isInsubstantialExtractedText,
 } from '@/lib/processing/extract';
-import { isProcessable, AUDIO_EXTENSIONS, getFileExtension } from '@/lib/constants';
+import {
+  isProcessable,
+  AUDIO_EXTENSIONS,
+  getFileExtension,
+  isImageFileName,
+} from '@/lib/constants';
 import { parseSpreadsheetBuffer } from '@/lib/processing/spreadsheet';
 import { normalizeEntityName } from '@/lib/utils';
 import { redactPhi, redactPhiPages } from '@/lib/compliance/phi-redact';
@@ -48,6 +53,7 @@ interface ProcessFileOptions {
   sourceType: SourceType;
   buffer?: Buffer;
   pastedText?: string;
+  userNote?: string | null;
   resume?: boolean;
 }
 
@@ -167,6 +173,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
     let pages: Array<{ pageNumber: number; text: string }> | undefined;
     let sheets: Array<{ name: string; rows: string[][] }> | undefined;
     const ext = getFileExtension(fileName);
+    const isImage = isImageFileName(fileName);
     const resolvedSourceType =
       ext === '.xlsx' || ext === '.xls' ? 'csv' : sourceType;
 
@@ -232,7 +239,45 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         }
       }
 
-      if (isInsubstantialExtractedText(text, pages?.length)) {
+      if (isImage && options.userNote?.trim()) {
+        const note = options.userNote.trim();
+        text = text.trim() ? `${text.trim()}\n\n[Photo note]\n${note}` : note;
+        metadata = { ...metadata, user_note_included: true };
+      }
+
+      if (isInsubstantialExtractedText(text, pages?.length, { image: isImage })) {
+        if (isImage) {
+          await supabase
+            .from('files')
+            .update({
+              status: 'uploaded_unprocessed',
+              metadata: {
+                ...metadata,
+                image_only: true,
+                page_count: pages?.length,
+              },
+            })
+            .eq('id', fileId);
+
+          await supabase.from('timeline_events').insert({
+            project_id: projectId,
+            event_type: 'file_upload',
+            title: `Uploaded: ${fileName}`,
+            description:
+              'Photo stored — Sunny could not read text in the image. Add a note and reprocess, or upload a clearer photo.',
+            source_file_id: fileId,
+          });
+
+          await report({
+            stage: 'complete',
+            percent: 100,
+            label: 'Photo stored',
+            detail:
+              'No readable text found in this photo. Add a note to the file and tap Reprocess, or upload a clearer image.',
+          });
+          return { completed: false, stage: 'unsupported' };
+        }
+
         await supabase
           .from('files')
           .update({

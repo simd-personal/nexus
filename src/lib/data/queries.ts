@@ -611,9 +611,9 @@ export async function getProjectActionItems(
 
 export async function getProjectTimeline(
   projectId: string,
-  options?: { includeSubProjects?: boolean }
+  options?: { includeSubProjects?: boolean; supabase?: RequestSupabaseClient }
 ): Promise<TimelineEvent[]> {
-  const supabase = await createClient();
+  const supabase = await resolveSupabase(options?.supabase);
   const projectIds = await resolveProjectScopeIds(supabase, projectId, options?.includeSubProjects);
 
   const { data } = await supabase

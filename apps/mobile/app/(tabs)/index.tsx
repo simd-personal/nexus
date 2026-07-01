@@ -134,7 +134,7 @@ export default function HomeScreen() {
         header={
           <TabScreenHeader
             compactBrand={false}
-            title="Executive Dashboard"
+            title="Dashboard"
             subtitle={attentionSubtitle}
             rightAction={
               <HeaderActions>

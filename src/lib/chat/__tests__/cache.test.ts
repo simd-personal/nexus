@@ -23,9 +23,10 @@ describe('chatCacheKey', () => {
     expect(userA).not.toBe(userB);
   });
 
-  it('supports a fixed global search cache bucket', () => {
-    expect(chatCacheKey('user-a', 'search', 'global')).toBe('user-a:search:global');
-    expect(chatCacheKey('user-a', 'search', 'global')).not.toBe(chatCacheKey('user-a', 'search', 'proj-1'));
+  it('uses different cache buckets per search scope', () => {
+    expect(chatCacheKey('user-a', 'search', 'all')).toBe('user-a:search:all');
+    expect(chatCacheKey('user-a', 'search', 'proj-1')).toBe('user-a:search:proj-1');
+    expect(chatCacheKey('user-a', 'search', 'proj-1,proj-2')).toBe('user-a:search:proj-1,proj-2');
   });
 });
 
@@ -137,18 +138,18 @@ describe('schedulePersistMessageCache', () => {
     const cache = {
       s1: [{ id: 'm1', session_id: 's1', project_id: '', role: 'user' as const, content: 'hi', created_at: '', citations: [], metadata: {} }],
     };
-    schedulePersistMessageCache('user-a:search:global', cache);
+    schedulePersistMessageCache('user-a:search:all', cache);
     expect(storage.size).toBe(0);
     vi.advanceTimersByTime(300);
-    expect(storage.has('briefnexus-chat-msgs:user-a:search:global')).toBe(true);
+    expect(storage.has('briefnexus-chat-msgs:user-a:search:all')).toBe(true);
   });
 
   it('flushes pending writes immediately', () => {
     const cache = {
       s1: [{ id: 'm1', session_id: 's1', project_id: '', role: 'user' as const, content: 'hi', created_at: '', citations: [], metadata: {} }],
     };
-    schedulePersistMessageCache('user-a:search:global', cache);
-    flushPersistMessageCache('user-a:search:global');
-    expect(storage.has('briefnexus-chat-msgs:user-a:search:global')).toBe(true);
+    schedulePersistMessageCache('user-a:search:all', cache);
+    flushPersistMessageCache('user-a:search:all');
+    expect(storage.has('briefnexus-chat-msgs:user-a:search:all')).toBe(true);
   });
 });

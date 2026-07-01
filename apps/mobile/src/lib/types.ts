@@ -11,6 +11,9 @@ import type {
   MobileProjectOverviewResponse as ProjectOverviewResponse,
   MobileProjectWithStats as ProjectWithStats,
   MobileSunnyUpdate as SunnyUpdate,
+  MobileTimelineEvent as TimelineEvent,
+  ProjectGenerateResponse,
+  ProjectGenerateType,
   DashboardPortfolioScope,
   Citation,
 } from '@upperdeck/shared/mobile';
@@ -27,7 +30,10 @@ export type {
   InboundInfo,
   Project,
   ProjectFile,
+  ProjectGenerateResponse,
+  ProjectGenerateType,
   ProjectOverviewResponse,
   ProjectWithStats,
   SunnyUpdate,
+  TimelineEvent,
 };

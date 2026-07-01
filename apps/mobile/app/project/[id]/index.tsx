@@ -1,4 +1,4 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -7,14 +7,15 @@ import { FileActionsSheet } from '@/components/FileActionsSheet';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
 import { ProjectFileRow } from '@/components/ProjectFileRow';
+import { ProjectTimelineView } from '@/components/project/ProjectTimelineView';
 import { ProjectUploadPanel } from '@/components/ProjectUploadPanel';
 import { CriticalItemRow } from '@/components/lists';
 import { EmptyState, Screen, StatPill, Subtitle } from '@/components/ui';
-import { fetchProjectFiles, fetchProjectOverview } from '@/lib/api';
+import { fetchProjectFiles, fetchProjectOverview, fetchProjectTimeline } from '@/lib/api';
 import type { CriticalItem, ProjectFile } from '@/lib/types';
 import { BRAND, spacing } from '@/theme/colors';
 
-export default function ProjectDetailScreen() {
+export default function ProjectOverviewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const projectId = typeof id === 'string' ? id : '';
@@ -35,25 +36,36 @@ export default function ProjectDetailScreen() {
     enabled: Boolean(projectId),
   });
 
+  const timelineQuery = useQuery({
+    queryKey: ['project-timeline', projectId],
+    queryFn: () => fetchProjectTimeline(projectId),
+    enabled: Boolean(projectId),
+  });
+
   const project = overviewQuery.data?.project;
   const stats = overviewQuery.data?.stats;
   const files = filesQuery.data?.files ?? [];
+  const timelinePreview = (timelineQuery.data?.events ?? []).slice(0, 3);
 
   async function refreshAll() {
-    await Promise.all([overviewQuery.refetch(), filesQuery.refetch()]);
+    await Promise.all([
+      overviewQuery.refetch(),
+      filesQuery.refetch(),
+      timelineQuery.refetch(),
+    ]);
   }
 
   async function invalidateFiles() {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['project-files', projectId] }),
       queryClient.invalidateQueries({ queryKey: ['project-overview', projectId] }),
+      queryClient.invalidateQueries({ queryKey: ['project-timeline', projectId] }),
       queryClient.invalidateQueries({ queryKey: ['projects'] }),
     ]);
   }
 
   return (
     <Screen edges={['left', 'right', 'bottom']}>
-      <Stack.Screen options={{ title: project?.project_name ?? 'Project' }} />
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -62,10 +74,7 @@ export default function ProjectDetailScreen() {
       >
         {project ? (
           <>
-            <View style={styles.header}>
-              <Text style={styles.client}>{project.client_name}</Text>
-              <Subtitle>{project.last_summary ?? 'No summary yet. Add files and Sunny will summarize.'}</Subtitle>
-            </View>
+            <Subtitle>{project.last_summary ?? 'No summary yet. Add files and Sunny will summarize.'}</Subtitle>
 
             <View style={styles.statsRow}>
               <StatPill label="Files" value={stats?.file_count ?? 0} />
@@ -81,6 +90,14 @@ export default function ProjectDetailScreen() {
             <ProjectUploadPanel projectId={projectId} existingFiles={files} />
 
             <EmailForwardPanel mode="project" projectId={projectId} />
+
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Recent timeline</Text>
+              <Pressable onPress={() => router.push(`/project/${projectId}/timeline`)}>
+                <Text style={styles.viewAll}>View all</Text>
+              </Pressable>
+            </View>
+            <ProjectTimelineView events={timelinePreview} />
 
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Recent files</Text>
@@ -107,7 +124,14 @@ export default function ProjectDetailScreen() {
               ))
             )}
 
-            <Text style={styles.sectionTitle}>Critical items</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Critical items</Text>
+              {(overviewQuery.data?.critical_items ?? []).length > 0 ? (
+                <Pressable onPress={() => router.push(`/project/${projectId}/critical-items`)}>
+                  <Text style={styles.viewAll}>View all</Text>
+                </Pressable>
+              ) : null}
+            </View>
             {(overviewQuery.data?.critical_items ?? []).length === 0 ? (
               <EmptyState title="No critical items" body="Sunny has not flagged issues for this project." />
             ) : (
@@ -148,14 +172,6 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     gap: spacing.md,
     paddingBottom: spacing.xl,
-  },
-  header: {
-    gap: spacing.xs,
-  },
-  client: {
-    fontSize: 14,
-    color: BRAND.textMuted,
-    fontWeight: '600',
   },
   statsRow: {
     flexDirection: 'row',

@@ -16,9 +16,12 @@ import type {
   InboundInfo,
   Project,
   ProjectFile,
+  ProjectGenerateResponse,
+  ProjectGenerateType,
   ProjectOverviewResponse,
   ProjectWithStats,
   SunnyUpdate,
+  TimelineEvent,
   DashboardPortfolioScope,
 } from '@/lib/types';
 
@@ -164,6 +167,30 @@ export function fetchAllProjects() {
 
 export function fetchProjectOverview(projectId: string) {
   return apiJson<ProjectOverviewResponse>(`/api/projects/${projectId}/overview`);
+}
+
+export function fetchProjectTimeline(projectId: string) {
+  return apiJson<{ events: TimelineEvent[] }>(`/api/projects/${projectId}/timeline`);
+}
+
+export function fetchProjectCriticalItems(projectId: string) {
+  return apiJson<{ items: CriticalItem[] }>(`/api/projects/${projectId}/critical-items`);
+}
+
+export function generateProjectContent(
+  projectId: string,
+  type: ProjectGenerateType,
+  options?: { version?: 'short' | 'detailed' | 'executive'; instructions?: string }
+) {
+  return apiJson<{ data: ProjectGenerateResponse }>('/api/generate', {
+    method: 'POST',
+    body: JSON.stringify({
+      project_id: projectId,
+      type,
+      version: options?.version,
+      instructions: options?.instructions,
+    }),
+  });
 }
 
 export function updateCriticalItemStatus(itemId: string, status: 'acknowledged' | 'resolved') {
@@ -384,8 +411,10 @@ export async function replaceProjectFile(
   return body;
 }
 
-export function fetchSearchChatSessions() {
-  return apiJson<{ sessions: ChatSession[] }>('/api/chat/sessions?type=search');
+export function fetchSearchChatSessions(projectId?: string) {
+  const params = new URLSearchParams({ type: 'search' });
+  if (projectId) params.set('project_id', projectId);
+  return apiJson<{ sessions: ChatSession[] }>(`/api/chat/sessions?${params.toString()}`);
 }
 
 export type { ChatStreamHandlers };

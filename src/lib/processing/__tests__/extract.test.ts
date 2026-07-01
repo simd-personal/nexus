@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
   extractTextFromBuffer,
+  IMAGE_MIN_EXTRACTED_CHARS,
   isInsubstantialExtractedText,
   isPdfPageMarkerText,
   needsPdfOcrFallback,
@@ -13,6 +14,27 @@ import {
 vi.mock('@/lib/ai/openai', () => ({
   extractTextFromImage: vi.fn().mockResolvedValue('Slide title: Q3 revenue up 12 percent'),
 }));
+
+describe('isInsubstantialExtractedText', () => {
+  it('treats short markdown notes as insubstantial', () => {
+    expect(isInsubstantialExtractedText('Quick note')).toBe(true);
+  });
+
+  it('accepts short OCR text from photos', () => {
+    const slideTitle = 'Slide headline: Revenue up 12 percent';
+    expect(slideTitle.length).toBeLessThan(80);
+    expect(isInsubstantialExtractedText(slideTitle, undefined, { image: true })).toBe(false);
+  });
+
+  it('rejects nearly empty photo OCR', () => {
+    expect(isInsubstantialExtractedText('Hi', undefined, { image: true })).toBe(true);
+    expect(
+      isInsubstantialExtractedText('a'.repeat(IMAGE_MIN_EXTRACTED_CHARS), undefined, {
+        image: true,
+      })
+    ).toBe(false);
+  });
+});
 
 describe('pdf page marker detection', () => {
   it('detects pdf page marker boilerplate as non-substantive', () => {

@@ -90,6 +90,45 @@ export function resolveScopeProjectIds(scope: ChatScope): string[] | null {
   return scope.projectIds;
 }
 
+export function scopeCacheKeySuffix(scope: ChatScope): string {
+  if (scope.kind === 'all') return 'all';
+  return [...scope.projectIds].sort().join(',');
+}
+
+type StoredChatScope = {
+  project_ids?: string[];
+};
+
+export function storedScopeMatchesChatScope(
+  scope: ChatScope,
+  stored?: StoredChatScope | null
+): boolean {
+  if (scope.kind === 'all') {
+    return !stored?.project_ids || stored.project_ids.length === 0;
+  }
+  if (!stored?.project_ids?.length) return false;
+  return scopeCacheKeySuffix(scope) === [...stored.project_ids].sort().join(',');
+}
+
+export function primaryProjectIdForScope(scope: ChatScope): string | undefined {
+  if (scope.kind !== 'selected' || scope.projectIds.length !== 1) return undefined;
+  return scope.projectIds[0];
+}
+
+export function sessionMatchesChatScope(
+  session: { project_id?: string | null },
+  scope: ChatScope
+): boolean {
+  if (scope.kind === 'all') return !session.project_id;
+  if (scope.kind === 'selected' && scope.projectIds.length === 1) {
+    return session.project_id === scope.projectIds[0];
+  }
+  if (scope.kind === 'selected' && scope.projectIds.length > 1) {
+    return !session.project_id;
+  }
+  return true;
+}
+
 export function formatScopeSummary(scope: ChatScope): string {
   if (scope.kind === 'all') return 'All projects';
   if (scope.labels.length === 1) return scope.labels[0];

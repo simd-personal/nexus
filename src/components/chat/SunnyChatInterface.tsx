@@ -32,8 +32,10 @@ import {
 import {
   ALL_PROJECTS_SCOPE,
   resolveScopeProjectIds,
+  scopeCacheKeySuffix,
   type ChatScope,
 } from '@/lib/chat/scope';
+import { sessionMatchesChatScope } from '@upperdeck/shared/chat-scope';
 import { ChatScopeChips, ChatScopePicker } from '@/components/chat/ChatScopePicker';
 import type {
   ChatMessage,
@@ -77,8 +79,16 @@ function chatDescription(mode: ChatMode): string {
   return 'Ask about your project materials or tell Sunny to create emails, decks, and briefs. Responses stream live and conversations are saved automatically.';
 }
 
-function cacheScopeKey(mode: ChatMode, projectId?: string, lockScope?: boolean): string {
-  if (mode === 'search' && !lockScope) return 'global';
+function cacheScopeKey(
+  mode: ChatMode,
+  projectId?: string,
+  lockScope?: boolean,
+  chatScope: ChatScope = ALL_PROJECTS_SCOPE
+): string {
+  if (lockScope && projectId) return projectId;
+  if (mode === 'search' && !lockScope) {
+    return scopeCacheKeySuffix(chatScope);
+  }
   return projectId ?? 'all';
 }
 
@@ -252,7 +262,11 @@ export function SunnyChatInterface({
 }: SunnyChatInterfaceProps) {
   const lockScope = lockScopeProp ?? lockProject;
   const chatScope = chatScopeProp ?? ALL_PROJECTS_SCOPE;
-  const scopeKey = chatCacheKey(userId, mode, cacheScopeKey(mode, projectId, lockScope));
+  const scopeKey = chatCacheKey(
+    userId,
+    mode,
+    cacheScopeKey(mode, projectId, lockScope, chatScope)
+  );
 
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
     hydrateChatScopeFromStorage(scopeKey);
@@ -444,7 +458,10 @@ export function SunnyChatInterface({
       }
 
       const persistedId = loadPersistedActiveSession(scopeKey);
-      const latestId = getOrInitChatScopeState(scopeKey).sessions[0]?.id;
+      const scopedSessions = getOrInitChatScopeState(scopeKey).sessions.filter((session) =>
+        sessionMatchesChatScope(session, chatScope)
+      );
+      const latestId = scopedSessions[0]?.id;
       const targetId = persistedId ?? latestId;
       if (!targetId) return;
 
@@ -471,7 +488,7 @@ export function SunnyChatInterface({
         },
       });
     })();
-  }, [scopeKey, initialSessionId, initialMessages, loadSessions]);
+  }, [scopeKey, chatScope, initialSessionId, initialMessages, loadSessions]);
 
   // Pin to the latest message before paint — avoids a visible scroll from top on navigation.
   const scrollMessagesToBottom = useCallback((behavior: ScrollBehavior = 'auto') => {

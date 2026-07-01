@@ -74,7 +74,9 @@ export async function runFileProcessing(
   const supabase = createServiceClient();
   const { data: file, error } = await supabase
     .from('files')
-    .select('id, project_id, file_name, source_type, storage_path, extracted_text, status, metadata')
+    .select(
+      'id, project_id, file_name, source_type, storage_path, extracted_text, status, metadata, user_note'
+    )
     .eq('id', fileId)
     .single();
 
@@ -142,6 +144,7 @@ export async function runFileProcessing(
         sourceType: file.source_type as SourceType,
         buffer,
         pastedText,
+        userNote: file.user_note,
         resume,
       });
 

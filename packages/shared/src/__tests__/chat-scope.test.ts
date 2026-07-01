@@ -10,6 +10,7 @@ import {
   normalizeProjectPortfolios,
   removeScopeLabel,
   resolveScopeProjectIds,
+  scopeCacheKeySuffix,
   scopeFromPortfolio,
   splitProjectsByPortfolio,
   toggleNodeChecked,
@@ -205,5 +206,16 @@ describe('shared chat-scope', () => {
     const scope = scopeFromPortfolio(mixedPortfolios, 'personal');
     expect(formatScopeSummary(scope)).toBe('Personal projects');
     expect(removeScopeLabel(mixedPortfolios, scope, 'Personal projects')).toEqual(ALL_PROJECTS_SCOPE);
+  });
+
+  it('builds scope cache keys for per-project Sunny conversations', () => {
+    expect(scopeCacheKeySuffix(ALL_PROJECTS_SCOPE)).toBe('all');
+    expect(
+      scopeCacheKeySuffix({
+        kind: 'selected',
+        projectIds: ['p2', 'p1'],
+        labels: ['One', 'Two'],
+      })
+    ).toBe('p1,p2');
   });
 });
