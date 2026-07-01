@@ -30,6 +30,7 @@ import { ChatScopePicker } from '@/components/ChatScopePicker';
 import { TabScreenHeader } from '@/components/BrandHeader';
 import { useFloatingTabBarLift } from '@/components/FloatingTabBar';
 import { SunnyMark } from '@/components/SunnyMark';
+import { SwipeTabView } from '@/components/SwipeTabView';
 import { Screen } from '@/components/ui';
 import {
   fetchChatSession,
@@ -351,6 +352,7 @@ export default function SunnyScreen() {
   }
 
   return (
+    <SwipeTabView current="sunny">
     <Screen>
       <View style={styles.shell}>
         <TabScreenHeader
@@ -495,6 +497,7 @@ export default function SunnyScreen() {
         </View>
       </View>
     </Screen>
+    </SwipeTabView>
   );
 }
 
