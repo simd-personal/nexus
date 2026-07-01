@@ -4,6 +4,19 @@ export function formatUploadDate(date: string | Date): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+/** File upload label: relative time within 24h, calendar date after that. */
+export function formatFileUploadTime(date: string | Date, now: Date = new Date()): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const diffMs = now.getTime() - d.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  return formatUploadDate(d);
+}
+
 export function formatRelativeTime(date: string | Date, now: Date = new Date()): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   const diffMs = now.getTime() - d.getTime();

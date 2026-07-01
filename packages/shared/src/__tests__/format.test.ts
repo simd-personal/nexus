@@ -1,9 +1,29 @@
 import { describe, expect, it } from 'vitest';
-import { formatRelativeTime, formatUploadDate } from '../format';
+import { formatRelativeTime, formatUploadDate, formatFileUploadTime } from '../format';
 
 describe('formatUploadDate', () => {
   it('formats an ISO timestamp as a readable calendar date', () => {
     expect(formatUploadDate('2026-03-15T12:00:00.000Z')).toBe('Mar 15, 2026');
+  });
+});
+
+describe('formatFileUploadTime', () => {
+  const now = new Date('2026-06-30T12:00:00.000Z');
+
+  it('returns Just now for uploads under one minute', () => {
+    expect(formatFileUploadTime('2026-06-30T11:59:30.000Z', now)).toBe('Just now');
+  });
+
+  it('returns minutes ago within the first hour', () => {
+    expect(formatFileUploadTime('2026-06-30T11:45:00.000Z', now)).toBe('15m ago');
+  });
+
+  it('returns hours ago within 24 hours', () => {
+    expect(formatFileUploadTime('2026-06-30T08:00:00.000Z', now)).toBe('4h ago');
+  });
+
+  it('returns a calendar date after 24 hours', () => {
+    expect(formatFileUploadTime('2026-06-28T12:00:00.000Z', now)).toBe('Jun 28, 2026');
   });
 });
 

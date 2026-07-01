@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export { formatRelativeTime, formatUploadDate } from '@upperdeck/shared/format';
+export { formatRelativeTime, formatUploadDate, formatFileUploadTime } from '@upperdeck/shared/format';
 
 export function truncate(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;

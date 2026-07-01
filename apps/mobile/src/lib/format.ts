@@ -1,1 +1,1 @@
-export { formatRelativeTime, formatUploadDate } from '@upperdeck/shared/format';
+export { formatRelativeTime, formatUploadDate, formatFileUploadTime } from '@upperdeck/shared/format';

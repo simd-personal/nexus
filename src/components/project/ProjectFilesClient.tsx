@@ -21,7 +21,7 @@ import {
   type UploadProgressDetail,
 } from '@/lib/upload/progress-events';
 import type { FileRecord, SourceType } from '@/types/database';
-import { formatUploadDate } from '@/lib/utils';
+import { formatFileUploadTime } from '@/lib/utils';
 import { Eye, FileText, Image as ImageIcon } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -270,7 +270,7 @@ export function ProjectFilesClient({ projectId, initialFiles }: {
                           <p className="truncate text-xs text-gray-500 dark:text-gray-400">
                             {SOURCE_TYPE_LABELS[file.source_type as SourceType] ?? file.source_type}
                             {' · Uploaded '}
-                            {formatUploadDate(file.created_at)}
+                            {formatFileUploadTime(file.created_at)}
                             {file.origin_file_id ? ' · Shared copy' : ''}
                           </p>
                         </button>
