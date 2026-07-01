@@ -76,11 +76,11 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
   }
 
   return (
-    <View style={styles.assistantRow}>
+    <View style={styles.assistantRow} collapsable={false}>
       <View style={styles.avatarWrap}>
         <SunnyMark size={28} />
       </View>
-      <View style={styles.assistantBody}>
+      <View style={styles.assistantBody} collapsable={false}>
         <View style={styles.assistantHeader}>
           <Text style={styles.assistantName}>Sunny</Text>
           {message.model ? (
@@ -91,9 +91,11 @@ export function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
             </View>
           ) : null}
         </View>
-        <View style={styles.assistantBubble}>
+        <View style={styles.assistantBubble} collapsable={false}>
           {hasContent ? (
-            <Text style={styles.assistantText}>{body}</Text>
+            <Text style={styles.assistantText} selectable>
+              {body}
+            </Text>
           ) : isStreaming ? (
             <SunnyTypingIndicator />
           ) : null}
@@ -149,6 +151,7 @@ const styles = StyleSheet.create({
   assistantBody: {
     flex: 1,
     minWidth: 0,
+    alignSelf: 'stretch',
   },
   assistantHeader: {
     flexDirection: 'row',
@@ -175,6 +178,7 @@ const styles = StyleSheet.create({
     color: '#6B7280',
   },
   assistantBubble: {
+    alignSelf: 'stretch',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#F3F4F6',
     backgroundColor: BRAND.stone,
@@ -189,6 +193,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 21,
     color: BRAND.graphite,
+    flexShrink: 1,
   },
   copyButton: {
     flexDirection: 'row',

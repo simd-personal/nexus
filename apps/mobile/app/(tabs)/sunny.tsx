@@ -11,10 +11,10 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Keyboard,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -81,7 +81,7 @@ export default function SunnyScreen() {
   const [status, setStatus] = useState<string | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
-  const listRef = useRef<FlatList<UiMessage>>(null);
+  const scrollRef = useRef<ScrollView>(null);
   const assistantIdRef = useRef<string | null>(null);
   const stickToBottomRef = useRef(true);
   const scopeRef = useRef(scope);
@@ -95,7 +95,7 @@ export default function SunnyScreen() {
 
   const scrollToBottom = useCallback((animated = true) => {
     requestAnimationFrame(() => {
-      listRef.current?.scrollToEnd({ animated });
+      scrollRef.current?.scrollToEnd({ animated });
     });
   }, []);
 
@@ -349,10 +349,8 @@ export default function SunnyScreen() {
         ) : null}
 
         <View style={styles.chatColumn}>
-          <FlatList
-            ref={listRef}
-            data={messages}
-            keyExtractor={(item) => item.id}
+          <ScrollView
+            ref={scrollRef}
             style={styles.chatArea}
             contentContainerStyle={[
               hasMessages ? styles.messages : styles.messagesEmpty,
@@ -362,16 +360,17 @@ export default function SunnyScreen() {
             keyboardDismissMode="interactive"
             onScroll={handleScroll}
             scrollEventThrottle={16}
+            showsVerticalScrollIndicator={false}
             onContentSizeChange={() => {
               if (stickToBottomRef.current) scrollToBottom(false);
             }}
-            ListEmptyComponent={
-            loadingHistory ? (
+          >
+            {loadingHistory ? (
               <View style={styles.emptyWrap}>
                 <ActivityIndicator color={BRAND.graphite} />
                 <Text style={styles.emptyChat}>Loading conversation…</Text>
               </View>
-            ) : (
+            ) : !hasMessages ? (
               <View style={styles.emptyWrap}>
                 <SunnyMark size={56} />
                 <Text style={styles.emptyTitle}>
@@ -398,12 +397,12 @@ export default function SunnyScreen() {
                   ))}
                 </View>
               </View>
-            )
-          }
-          renderItem={({ item }) => (
-            <ChatMessageBubble message={toBubbleMessage(item, scope)} />
-          )}
-          />
+            ) : (
+              messages.map((item) => (
+                <ChatMessageBubble key={item.id} message={toBubbleMessage(item, scope)} />
+              ))
+            )}
+          </ScrollView>
 
           <View
             style={[styles.footer, { bottom: keyboardInset > 0 ? keyboardInset : tabBarLift }]}
@@ -520,6 +519,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   messages: {
+    flexGrow: 1,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },

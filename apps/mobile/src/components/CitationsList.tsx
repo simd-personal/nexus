@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   citationDisplayKey,
@@ -39,12 +39,7 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
   return (
     <View style={styles.wrap}>
       <Text style={styles.title}>Sources</Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-        keyboardShouldPersistTaps="handled"
-      >
+      <View style={styles.list}>
         {unique.map(({ citation, display }, index) => {
           const canOpen = Boolean(projectId && citation.file_id);
 
@@ -87,7 +82,7 @@ export function CitationsList({ citations, projectId }: CitationsListProps) {
             <View key={`${citation.file_id ?? display.fileName}-${index}`}>{chip}</View>
           );
         })}
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -106,13 +101,13 @@ const styles = StyleSheet.create({
   },
   list: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
-    paddingRight: spacing.sm,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: 220,
+    maxWidth: '100%',
     borderRadius: radius.full,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: '#E5E7EB',
