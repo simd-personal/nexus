@@ -13,7 +13,9 @@ import {
   getOpenActionItems,
   getDashboardUpdatesFeed,
   getPendingInboundEmails,
+  getExecutiveOnePagersForDashboard,
 } from '@/lib/data/queries';
+import { listDashboardProjectOptions } from '@/lib/dashboard/executive-one-pager';
 import { resolveActivePortfolioScope } from '@/lib/data/resolve-portfolio-scope';
 import { dashboardScopeLabel } from '@/lib/projects/portfolio';
 import { TAGLINE } from '@/lib/constants';
@@ -44,12 +46,16 @@ export default async function DashboardPage({
   const actionFetchLimit =
     stats.actionItemsCount > 0 ? Math.min(stats.actionItemsCount, 5) : 0;
 
-  const [criticalItems, actionItems, updatesFeed, pendingInboundEmails] = await Promise.all([
-    stats.criticalCount > 0 ? getCriticalItems(criticalLimit, portfolioScope) : Promise.resolve([]),
-    actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit, portfolioScope) : Promise.resolve([]),
-    getDashboardUpdatesFeed(5, portfolioScope),
-    getPendingInboundEmails(),
-  ]);
+  const dashboardProjectIds = listDashboardProjectOptions(projects).map((option) => option.id);
+
+  const [criticalItems, actionItems, updatesFeed, pendingInboundEmails, savedOnePagers] =
+    await Promise.all([
+      stats.criticalCount > 0 ? getCriticalItems(criticalLimit, portfolioScope) : Promise.resolve([]),
+      actionFetchLimit > 0 ? getOpenActionItems(actionFetchLimit, portfolioScope) : Promise.resolve([]),
+      getDashboardUpdatesFeed(5, portfolioScope),
+      getPendingInboundEmails(),
+      getExecutiveOnePagersForDashboard(dashboardProjectIds),
+    ]);
 
   return (
     <AppShellLayout>
@@ -92,7 +98,11 @@ export default async function DashboardPage({
 
         <DashboardUpdatesPanel portfolioScope={portfolioScope} initialFeed={updatesFeed} />
 
-        <ExecutiveOnePagerPanel portfolioScope={portfolioScope} projects={projects} />
+        <ExecutiveOnePagerPanel
+          portfolioScope={portfolioScope}
+          projects={projects}
+          initialSaved={savedOnePagers}
+        />
 
         <div>
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

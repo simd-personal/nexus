@@ -5,6 +5,7 @@ import { getProjectsWithStats } from '@/lib/data/queries';
 import {
   listDashboardProjectOptions,
   resolveExecutiveOnePagerProjectIds,
+  type SavedExecutiveOnePager,
 } from '@/lib/dashboard/executive-one-pager';
 import {
   parseDashboardPortfolioScope,
@@ -12,13 +13,7 @@ import {
 } from '@/lib/projects/portfolio';
 import { requireRequestAuth } from '@/lib/supabase/request-auth';
 
-export type ExecutiveOnePagerResult = {
-  project_id: string;
-  client_name: string;
-  project_name: string;
-  title: string;
-  content: string;
-};
+export type ExecutiveOnePagerResult = SavedExecutiveOnePager;
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,26 +53,37 @@ export async function POST(request: NextRequest) {
       );
       const title = `Executive One-Pager · ${project.client_name}`;
 
-      await auth.supabase.from('generated_documents').insert({
-        project_id: projectId,
-        type: 'brief',
-        title,
-        content,
-        citations: [],
-        metadata: {
-          doc_kind: 'executive_one_pager',
-          source: 'dashboard',
-          portfolio,
-          ...(instructions ? { instructions } : {}),
-        },
-      });
+      const { data: savedDoc, error: saveError } = await auth.supabase
+        .from('generated_documents')
+        .insert({
+          project_id: projectId,
+          type: 'brief',
+          title,
+          content,
+          citations: [],
+          metadata: {
+            doc_kind: 'executive_one_pager',
+            source: 'dashboard',
+            portfolio,
+            ...(instructions ? { instructions } : {}),
+          },
+        })
+        .select('id, created_at')
+        .single();
+
+      if (saveError || !savedDoc) {
+        console.error('Executive one-pager save error:', saveError?.message ?? 'No row returned');
+        return NextResponse.json({ error: 'Unable to save one-pager' }, { status: 500 });
+      }
 
       results.push({
+        id: savedDoc.id,
         project_id: projectId,
         client_name: project.client_name,
         project_name: project.project_name,
         title,
         content,
+        created_at: savedDoc.created_at,
       });
     }
 

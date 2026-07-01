@@ -739,6 +739,54 @@ export async function getLatestChatSession(opts: {
   return null;
 }
 
+export async function getExecutiveOnePagersForDashboard(
+  projectIds: string[],
+  limit = 12,
+  supabaseClient?: RequestSupabaseClient
+): Promise<
+  Array<{
+    id: string;
+    project_id: string;
+    client_name: string;
+    project_name: string;
+    title: string;
+    content: string;
+    created_at: string;
+  }>
+> {
+  if (projectIds.length === 0) return [];
+
+  const supabase = await resolveSupabase(supabaseClient);
+  const { data, error } = await supabase
+    .from('generated_documents')
+    .select('id, project_id, title, content, created_at, projects(client_name, project_name)')
+    .in('project_id', projectIds)
+    .contains('metadata', { doc_kind: 'executive_one_pager' })
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to load executive one-pagers: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => {
+    const joined = row.projects as
+      | { client_name: string; project_name: string }
+      | { client_name: string; project_name: string }[]
+      | null;
+    const project = Array.isArray(joined) ? joined[0] : joined;
+    return {
+      id: row.id as string,
+      project_id: row.project_id as string,
+      client_name: project?.client_name ?? '',
+      project_name: project?.project_name ?? '',
+      title: row.title as string,
+      content: row.content as string,
+      created_at: row.created_at as string,
+    };
+  });
+}
+
 export async function getGeneratedDocuments(
   projectId: string,
   type?: string

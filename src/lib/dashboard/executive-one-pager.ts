@@ -1,5 +1,15 @@
 import type { ProjectWithStats } from '@/types/database';
 
+export type SavedExecutiveOnePager = {
+  id: string;
+  project_id: string;
+  client_name: string;
+  project_name: string;
+  title: string;
+  content: string;
+  created_at: string;
+};
+
 export type DashboardProjectOption = {
   id: string;
   client_name: string;
