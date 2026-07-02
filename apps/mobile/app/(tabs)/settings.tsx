@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import type { ErrorBoundaryProps } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -35,6 +36,8 @@ const PLAN_CARD_COPY: Record<
 /** Small version of the signup plan tile — shows the account's current plan. */
 function PlanCard({ plan }: { plan: 'Free' | 'Pro' | 'Enterprise' }) {
   const copy = PLAN_CARD_COPY[plan];
+  // The label comes from the API — never crash the screen on an unknown value.
+  if (!copy) return null;
   return (
     <View style={styles.planCard}>
       <View style={styles.planCardIcon}>
@@ -81,6 +84,20 @@ function SettingsRow({
     <Pressable onPress={onPress} style={({ pressed }) => [pressed && styles.pressed]}>
       {content}
     </Pressable>
+  );
+}
+
+/** Route-level error boundary: a settings failure shows a retry card instead of crashing the app. */
+export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
+  return (
+    <Screen>
+      <View style={styles.errorWrap}>
+        <Ionicons name="warning-outline" size={32} color={BRAND.danger} />
+        <Text style={styles.errorTitle}>Settings hit a snag</Text>
+        <Text style={styles.errorBody}>{error.message}</Text>
+        <Button label="Try again" variant="secondary" onPress={() => void retry()} />
+      </View>
+    </Screen>
   );
 }
 
@@ -396,6 +413,25 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.75,
+  },
+  errorWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    padding: spacing.lg,
+  },
+  errorTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: APP.text,
+  },
+  errorBody: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: APP.textMuted,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
   },
   deleteButton: {
     alignItems: 'center',
