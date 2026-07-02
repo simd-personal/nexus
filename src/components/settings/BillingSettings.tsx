@@ -14,6 +14,13 @@ import {
 import { getSubscriptionAlert, subscriptionStatusLabel } from '@/lib/billing/subscription-ui';
 import type { Profile } from '@/types/database';
 
+const MOBILE_APP_SCHEME_URL = 'upperdeck://';
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
+
 export function BillingSettings({
   profile,
   userEmail,
@@ -29,6 +36,22 @@ export function BillingSettings({
   const [liveProfile, setLiveProfile] = useState(profile);
   const [paymentProcessing, setPaymentProcessing] = useState(billingNotice === 'success');
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [onMobileDevice, setOnMobileDevice] = useState(false);
+
+  useEffect(() => {
+    setOnMobileDevice(isMobileDevice());
+  }, []);
+
+  // Signups that started in the mobile app finish checkout in the browser.
+  // Once payment is confirmed, hand the user back to the app (Safari shows an
+  // "Open in UpperDeck?" prompt; the button below is the fallback).
+  useEffect(() => {
+    if (!paymentConfirmed || !onMobileDevice) return;
+    const timer = setTimeout(() => {
+      window.location.href = MOBILE_APP_SCHEME_URL;
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [paymentConfirmed, onMobileDevice]);
 
   const isEnterprise = liveProfile?.account_type === 'enterprise';
   const isTestPremium = isPremiumTestEmail(userEmail);
@@ -166,12 +189,28 @@ export function BillingSettings({
       )}
       {!paymentProcessing && paymentConfirmed && (
         <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          Subscription updated. Thanks for upgrading to Pro.
+          <p>Subscription updated. Thanks for upgrading to Pro.</p>
+          {onMobileDevice && (
+            <a
+              href={MOBILE_APP_SCHEME_URL}
+              className="mt-3 inline-flex items-center justify-center rounded-lg bg-green-700 px-4 py-2 text-sm font-medium text-white hover:bg-green-800"
+            >
+              Continue in the UpperDeck app
+            </a>
+          )}
         </div>
       )}
       {!paymentProcessing && billingNotice === 'success' && !paymentConfirmed && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Payment received. If Pro access is not visible yet, refresh this page in a moment.
+          <p>Payment received. If Pro access is not visible yet, refresh this page in a moment.</p>
+          {onMobileDevice && (
+            <a
+              href={MOBILE_APP_SCHEME_URL}
+              className="mt-3 inline-flex items-center justify-center rounded-lg bg-amber-700 px-4 py-2 text-sm font-medium text-white hover:bg-amber-800"
+            >
+              Continue in the UpperDeck app
+            </a>
+          )}
         </div>
       )}
       {billingNotice === 'canceled' && (

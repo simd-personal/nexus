@@ -24,6 +24,10 @@ export function resolveLoginMode(input: {
   mode?: string;
   plan?: string;
 }): LoginMode {
+  // An explicit mode always wins; a plan deep link defaults to signup.
+  if (input.mode === 'signin' || input.mode === 'signup' || input.mode === 'forgot') {
+    return input.mode;
+  }
   if (input.plan === 'pro' || input.plan === 'pro-annual') return 'signup';
   return parseLoginMode(input.mode);
 }

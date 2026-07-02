@@ -18,8 +18,12 @@ describe('resolveLoginMode', () => {
     expect(resolveLoginMode({ mode: 'signup' })).toBe('signup');
   });
 
-  it('prefers signup when a checkout plan is present', () => {
-    expect(resolveLoginMode({ mode: 'signin', plan: 'pro-annual' })).toBe('signup');
+  it('defaults to signup when a checkout plan is present without a mode', () => {
+    expect(resolveLoginMode({ plan: 'pro-annual' })).toBe('signup');
+  });
+
+  it('honors an explicit mode even when a checkout plan is present', () => {
+    expect(resolveLoginMode({ mode: 'signin', plan: 'pro-annual' })).toBe('signin');
   });
 });
 

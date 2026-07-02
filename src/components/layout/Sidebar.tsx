@@ -102,7 +102,9 @@ export function Sidebar({ mobileOpen = false, onMobileClose, account = null }: S
   return (
     <aside
       className={cn(
-        'app-sidebar fixed left-0 top-0 z-50 flex h-screen w-60 flex-col border-r transition-transform duration-200 ease-in-out',
+        // h-dvh (not h-screen/100vh) so the footer links stay visible above
+        // mobile Safari's bottom toolbar; safe-area padding for the home indicator.
+        'app-sidebar fixed left-0 top-0 z-50 flex h-dvh w-60 flex-col border-r pb-[env(safe-area-inset-bottom)] transition-transform duration-200 ease-in-out',
         mobileOpen ? 'translate-x-0' : '-translate-x-full',
         'lg:translate-x-0'
       )}

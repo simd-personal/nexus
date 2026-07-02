@@ -422,6 +422,7 @@ html.dark .docx-preview td {
   font-weight: 500;
   color: #64748b;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .auth-mode-tab:hover {
@@ -493,6 +494,7 @@ html.dark .docx-preview td {
   font-weight: 500;
   color: var(--brand-accent);
   transition: color 0.15s ease;
+  cursor: pointer;
 }
 
 .auth-link:hover {

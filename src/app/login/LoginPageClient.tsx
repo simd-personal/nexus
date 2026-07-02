@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { resendSignupConfirmation, requestPasswordReset } from '@/lib/actions/auth';
 import { BRAND_TAGLINE, TAGLINE, AI_EMPLOYEE_NAME } from '@/lib/constants';
-import { loginHref, type LoginMode } from '@/lib/auth/login-url';
+import { type LoginMode } from '@/lib/auth/login-url';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { SunnyMascot } from '@/components/brand/SunnyAvatar';
 import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
@@ -208,33 +208,33 @@ function GoogleAuthForm({
 
 function ModeTabs({
   mode,
-  checkoutPlan,
+  onSwitchMode,
 }: {
   mode: AuthMode;
-  checkoutPlan: 'pro' | 'pro-annual' | null;
+  onSwitchMode: (mode: AuthMode) => void;
 }) {
   if (mode === 'forgot') return null;
 
-  const plan = checkoutPlan ?? undefined;
-
   return (
     <div className="auth-mode-tabs" role="tablist" aria-label="Authentication mode">
-      <Link
-        href={loginHref({ mode: 'signin', plan })}
+      <button
+        type="button"
+        onClick={() => onSwitchMode('signin')}
         role="tab"
         aria-selected={mode === 'signin'}
         className={mode === 'signin' ? 'auth-mode-tab auth-mode-tab-active' : 'auth-mode-tab'}
       >
         Sign in
-      </Link>
-      <Link
-        href={loginHref({ mode: 'signup', plan })}
+      </button>
+      <button
+        type="button"
+        onClick={() => onSwitchMode('signup')}
         role="tab"
         aria-selected={mode === 'signup'}
         className={mode === 'signup' ? 'auth-mode-tab auth-mode-tab-active' : 'auth-mode-tab'}
       >
         Sign up
-      </Link>
+      </button>
     </div>
   );
 }
@@ -272,12 +272,12 @@ function GlassStatCard({
 function AuthMessage({
   message,
   mode,
-  checkoutPlan,
+  onSwitchMode,
   onResendConfirmation,
 }: {
   message: string;
   mode: AuthMode;
-  checkoutPlan: 'pro' | 'pro-annual' | null;
+  onSwitchMode: (mode: AuthMode) => void;
   onResendConfirmation?: () => void;
 }) {
   return (
@@ -292,9 +292,9 @@ function AuthMessage({
     >
       <p>{message}</p>
       {mode === 'signup' && message.includes('already exists') && (
-        <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link mt-2">
+        <button type="button" onClick={() => onSwitchMode('signin')} className="auth-link mt-2">
           Go to sign in
-        </Link>
+        </button>
       )}
       {isRateLimitMessage(message) && (
         <p className="mt-2 text-[13px] opacity-90">
@@ -315,7 +315,7 @@ function AuthMessage({
 }
 
 export default function LoginPageClient({
-  mode,
+  mode: initialMode,
   authError = false,
   checkoutPlan = null,
   initialMessage,
@@ -325,6 +325,14 @@ export default function LoginPageClient({
   checkoutPlan?: 'pro' | 'pro-annual' | null;
   initialMessage?: string;
 }) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
+  // Re-sync if a real navigation lands on /login with a different mode param
+  // (the page component doesn't remount when only searchParams change).
+  const [prevInitialMode, setPrevInitialMode] = useState(initialMode);
+  if (initialMode !== prevInitialMode) {
+    setPrevInitialMode(initialMode);
+    setMode(initialMode);
+  }
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [navigating, setNavigating] = useState(false);
@@ -332,6 +340,20 @@ export default function LoginPageClient({
   const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('free');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
+
+  // Swap modes in place (no navigation) so the page doesn't remount and the
+  // scroll position stays put — switching tabs on mobile was jumping the screen.
+  function switchMode(next: AuthMode) {
+    if (next === mode) return;
+    setMode(next);
+    setMessage('');
+    const params = new URLSearchParams();
+    // Always write mode explicitly so a reload keeps the tab, even with a plan deep link.
+    if (next !== 'signin' || checkoutPlan) params.set('mode', next);
+    if (checkoutPlan) params.set('plan', checkoutPlan);
+    const qs = params.toString();
+    window.history.replaceState(null, '', qs ? `/login?${qs}` : '/login');
+  }
 
   // Deep links from pricing/home fix the plan; otherwise signup offers a picker.
   const showPlanPicker = mode === 'signup' && !hasCheckoutPlan;
@@ -431,7 +453,7 @@ export default function LoginPageClient({
                 <UpperDeckLogo size="md" theme="light" />
               </div>
 
-              <ModeTabs mode={mode} checkoutPlan={checkoutPlan} />
+              <ModeTabs mode={mode} onSwitchMode={switchMode} />
 
               <div key={mode} className="auth-mode-enter mt-7">
                 <h1 className="auth-form-title">{copy.title}</h1>
@@ -493,12 +515,13 @@ export default function LoginPageClient({
                       <label htmlFor="password" className="auth-label mb-0">
                         Password
                       </label>
-                      <Link
-                        href={loginHref({ mode: 'forgot', plan: checkoutPlan })}
+                      <button
+                        type="button"
+                        onClick={() => switchMode('forgot')}
                         className="auth-link shrink-0 text-[13px]"
                       >
                         Forgot password?
-                      </Link>
+                      </button>
                     </div>
                     <input
                       id="password"
@@ -515,7 +538,7 @@ export default function LoginPageClient({
                     <AuthMessage
                       message={message}
                       mode={mode}
-                      checkoutPlan={checkoutPlan}
+                      onSwitchMode={switchMode}
                       onResendConfirmation={handleResendConfirmation}
                     />
                   )}
@@ -554,7 +577,7 @@ export default function LoginPageClient({
                     autoComplete="new-password"
                     placeholder="At least 8 characters"
                   />
-                  {message && <AuthMessage message={message} mode={mode} checkoutPlan={checkoutPlan} />}
+                  {message && <AuthMessage message={message} mode={mode} onSwitchMode={switchMode} />}
                   <button type="submit" className="auth-submit group mt-2">
                     {copy.cta}
                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
@@ -575,7 +598,7 @@ export default function LoginPageClient({
                     autoComplete="email"
                     placeholder="you@company.com"
                   />
-                  {message && <AuthMessage message={message} mode={mode} checkoutPlan={checkoutPlan} />}
+                  {message && <AuthMessage message={message} mode={mode} onSwitchMode={switchMode} />}
                   <button type="submit" disabled={loading} className="auth-submit group mt-2">
                     {loading ? (
                       <>
@@ -595,9 +618,9 @@ export default function LoginPageClient({
               {mode === 'forgot' && (
                 <p className="mt-6 text-center text-[14px] marketing-text">
                   Remember your password?{' '}
-                  <Link href={loginHref({ mode: 'signin', plan: checkoutPlan })} className="auth-link">
+                  <button type="button" onClick={() => switchMode('signin')} className="auth-link">
                     Back to sign in
-                  </Link>
+                  </button>
                 </p>
               )}
 
