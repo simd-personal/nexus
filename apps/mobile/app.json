@@ -36,6 +36,19 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPods": [
+              { "name": "AppCheckCore", "version": "11.2.0" },
+              { "name": "GoogleUtilities/Environment", "modular_headers": true },
+              { "name": "GoogleUtilities/UserDefaults", "modular_headers": true },
+              { "name": "RecaptchaInterop", "modular_headers": true }
+            ]
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "backgroundColor": "#0B1220",

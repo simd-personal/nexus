@@ -25,20 +25,22 @@ if (!apiUrl || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')) {
   process.exit(1);
 }
 
-console.log(`Pushing preview env to EAS (API: ${apiUrl})…`);
+for (const environment of ['preview', 'production'] as const) {
+  console.log(`Pushing ${environment} env to EAS (API: ${apiUrl})…`);
 
-const result = spawnSync(
-  'npx',
-  ['eas-cli', 'env:push', 'preview', '--path', mobileEnvPath, '--force'],
-  {
-    cwd: path.join(root, 'apps/mobile'),
-    stdio: 'inherit',
-    env: process.env,
+  const result = spawnSync(
+    'npx',
+    ['eas-cli', 'env:push', environment, '--path', mobileEnvPath, '--force'],
+    {
+      cwd: path.join(root, 'apps/mobile'),
+      stdio: 'inherit',
+      env: process.env,
+    }
+  );
+
+  if (result.status !== 0) {
+    process.exit(result.status ?? 1);
   }
-);
 
-if (result.status !== 0) {
-  process.exit(result.status ?? 1);
+  console.log(`EAS ${environment} environment updated.`);
 }
-
-console.log('EAS preview environment updated.');
