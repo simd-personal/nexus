@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -17,19 +16,38 @@ import {
 } from 'react-native';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
 import { MobileDataSecurityCard } from '@/components/MobileDataSecurityCard';
-import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { TabScreenHeader } from '@/components/BrandHeader';
+import { useFloatingTabBarInset } from '@/components/FloatingTabBar';
+import { SwipeTabView } from '@/components/SwipeTabView';
 import { Button, Card, Screen } from '@/components/ui';
 import { deleteAccount, fetchAccountSummary } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
 import { APP, BRAND, spacing } from '@/theme/colors';
 
-function PlanBadge({ plan }: { plan: 'Free' | 'Pro' | 'Enterprise' }) {
-  const paid = plan !== 'Free';
+const PLAN_CARD_COPY: Record<
+  'Free' | 'Pro' | 'Enterprise',
+  { icon: keyof typeof Ionicons.glyphMap; detail: string }
+> = {
+  Free: { icon: 'person-outline', detail: '$0 · 1 client project' },
+  Pro: { icon: 'flash-outline', detail: '$39/mo · unlimited projects' },
+  Enterprise: { icon: 'business-outline', detail: 'Custom plan for organizations' },
+};
+
+/** Small version of the signup plan tile — shows the account's current plan. */
+function PlanCard({ plan }: { plan: 'Free' | 'Pro' | 'Enterprise' }) {
+  const copy = PLAN_CARD_COPY[plan];
   return (
-    <View style={[styles.planBadge, paid ? styles.planBadgePaid : styles.planBadgeFree]}>
-      <Text style={[styles.planBadgeLabel, paid ? styles.planBadgeLabelPaid : styles.planBadgeLabelFree]}>
-        {plan.toUpperCase()}
-      </Text>
+    <View style={styles.planCard}>
+      <View style={styles.planCardIcon}>
+        <Ionicons name={copy.icon} size={18} color={APP.text} />
+      </View>
+      <View style={styles.planCardText}>
+        <Text style={styles.planCardName}>{plan}</Text>
+        <Text style={styles.planCardDetail}>{copy.detail}</Text>
+      </View>
+      <View style={styles.planCardCheck}>
+        <Ionicons name="checkmark" size={14} color="#fff" />
+      </View>
     </View>
   );
 }
@@ -37,13 +55,11 @@ function PlanBadge({ plan }: { plan: 'Free' | 'Pro' | 'Enterprise' }) {
 function SettingsRow({
   icon,
   title,
-  titleBadge,
   description,
   onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
-  titleBadge?: React.ReactNode;
   description?: string;
   onPress?: () => void;
 }) {
@@ -53,10 +69,7 @@ function SettingsRow({
         <Ionicons name={icon} size={20} color={APP.textMuted} />
       </View>
       <View style={styles.rowText}>
-        <View style={styles.rowTitleLine}>
-          <Text style={styles.rowTitle}>{title}</Text>
-          {titleBadge}
-        </View>
+        <Text style={styles.rowTitle}>{title}</Text>
         {description ? <Text style={styles.rowDescription}>{description}</Text> : null}
       </View>
       {onPress ? <Ionicons name="chevron-forward" size={18} color={APP.textMuted} /> : null}
@@ -162,13 +175,16 @@ function DeleteAccountModal({
 }
 
 export default function SettingsScreen() {
-  const router = useRouter();
   const { user, signOut } = useAuth();
+  const tabBarInset = useFloatingTabBarInset();
   const [deleting, setDeleting] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  // Scoped by user id so another account's cached summary can never render,
+  // even if a cache wipe races sign-in.
   const accountQuery = useQuery({
-    queryKey: ['account-summary'],
+    queryKey: ['account-summary', user?.id],
     queryFn: fetchAccountSummary,
+    enabled: Boolean(user?.id),
   });
 
   async function handleDeleteAccount() {
@@ -197,27 +213,23 @@ export default function SettingsScreen() {
   const email = user?.email ?? '';
 
   return (
-    <Screen edges={['top', 'left', 'right', 'bottom']}>
-      <ScreenHeader
-        title="Settings"
-        subtitle="Manage your account and security"
-        rightAction={
-          <HeaderActions>
-            <HeaderIconButton label="Close settings" icon="close" onPress={() => router.back()} />
-          </HeaderActions>
-        }
-      />
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <Screen>
+    <SwipeTabView current="settings">
+      <TabScreenHeader title="Settings" subtitle="Manage your account and security" />
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarInset }]}
+        showsVerticalScrollIndicator={false}
+      >
         <Card>
           <Text style={styles.cardLabel}>Account</Text>
           <SettingsRow
             icon="person-outline"
             title={displayName}
-            titleBadge={planLabel ? <PlanBadge plan={planLabel} /> : null}
             description={
               [accountSubtitle, email].filter(Boolean).join(' · ') || 'UpperDeck account'
             }
           />
+          {planLabel ? <PlanCard plan={planLabel} /> : null}
         </Card>
 
         <EmailForwardPanel mode="account" />
@@ -270,6 +282,7 @@ export default function SettingsScreen() {
           onCancel={() => setDeleteModalVisible(false)}
         />
       </ScrollView>
+    </SwipeTabView>
     </Screen>
   );
 }
@@ -277,7 +290,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.md,
     gap: spacing.md,
   },
   cardLabel: {
@@ -309,41 +322,52 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
-  rowTitleLine: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
   rowTitle: {
     fontSize: 15,
     fontWeight: '600',
     color: APP.text,
   },
-  planBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 9999,
-    borderWidth: StyleSheet.hairlineWidth,
+  planCard: {
+    marginTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.sm + 2,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: APP.text,
+    backgroundColor: APP.surfaceMuted,
   },
-  planBadgeFree: {
+  planCardIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: APP.btnSecondaryBg,
-    borderColor: APP.btnSecondaryBorder,
   },
-  planBadgePaid: {
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-    borderColor: 'rgba(37, 99, 235, 0.25)',
+  planCardText: {
+    flex: 1,
+    gap: 1,
   },
-  planBadgeLabel: {
-    fontSize: 11,
+  planCardName: {
+    fontSize: 16,
     fontWeight: '700',
-    letterSpacing: 0.5,
+    color: APP.text,
+    letterSpacing: -0.2,
   },
-  planBadgeLabelFree: {
+  planCardDetail: {
+    fontSize: 13,
+    lineHeight: 18,
     color: APP.textMuted,
   },
-  planBadgeLabelPaid: {
-    color: APP.accent,
+  planCardCheck: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: APP.text,
   },
   rowDescription: {
     fontSize: 13,

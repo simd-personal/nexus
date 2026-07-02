@@ -64,7 +64,6 @@ function AuthGate() {
       <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
         <Stack.Screen name="login" options={{ animation: 'none' }} />
         <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-        <Stack.Screen name="settings" options={{ presentation: 'modal' }} />
         <Stack.Screen name="project/new" options={{ presentation: 'modal' }} />
         <Stack.Screen name="update/[id]" options={stackDetailScreenOptions('Sunny update')} />
         <Stack.Screen name="action-item/[id]" options={stackDetailScreenOptions('Action item')} />

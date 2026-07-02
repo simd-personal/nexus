@@ -7,7 +7,6 @@ import { CriticalItemRow } from '@/components/lists';
 import { PortfolioScopeBar } from '@/components/PortfolioScopeBar';
 import { RefreshableScroll, SectionHeader } from '@/components/RefreshableScroll';
 import { TabScreenHeader } from '@/components/BrandHeader';
-import { HeaderActions, HeaderIconButton } from '@/components/ScreenHeader';
 import { DashboardSkeleton } from '@/components/Skeleton';
 import { SunnyUpdatePreviewCard } from '@/components/SunnyUpdateCard';
 import { SwipeTabView } from '@/components/SwipeTabView';
@@ -138,15 +137,6 @@ export default function HomeScreen() {
             compactBrand={false}
             title="Dashboard"
             subtitle={attentionSubtitle}
-            rightAction={
-              <HeaderActions>
-                <HeaderIconButton
-                  label="Settings"
-                  icon="settings-sharp"
-                  onPress={() => router.push('/settings')}
-                />
-              </HeaderActions>
-            }
           />
         }
       >

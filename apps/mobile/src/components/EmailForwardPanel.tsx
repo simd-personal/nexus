@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Card } from '@/components/ui';
 import { fetchAccountInbound, fetchProjectInbound } from '@/lib/api';
+import { useAuth } from '@/providers/AuthProvider';
 import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 type EmailForwardPanelProps =
@@ -13,17 +14,20 @@ type EmailForwardPanelProps =
 
 export function EmailForwardPanel(props: EmailForwardPanelProps) {
   const [copied, setCopied] = useState(false);
+  const { user } = useAuth();
 
+  // The account inbound address is per-user; scope its cache key by user id so
+  // a previous account's address can never render after switching accounts.
   const query = useQuery({
     queryKey:
       props.mode === 'project'
         ? ['project-inbound', props.projectId]
-        : ['account-inbound'],
+        : ['account-inbound', user?.id],
     queryFn: () =>
       props.mode === 'project'
         ? fetchProjectInbound(props.projectId)
         : fetchAccountInbound(),
-    enabled: props.mode === 'account' || Boolean(props.projectId),
+    enabled: props.mode === 'project' ? Boolean(props.projectId) : Boolean(user?.id),
   });
 
   const info = query.data;

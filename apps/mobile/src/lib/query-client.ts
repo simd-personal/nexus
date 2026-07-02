@@ -22,8 +22,10 @@ export const queryClient = new QueryClient({
   },
 });
 
-const PERSIST_CACHE_KEY = 'upperdeck-query-cache';
-const CACHE_OWNER_KEY = 'upperdeck-query-cache-owner';
+// v2: key bumped to discard caches persisted before the late-restore ownership
+// fix — old caches may hold another account's data under the wrong owner.
+const PERSIST_CACHE_KEY = 'upperdeck-query-cache-v2';
+const CACHE_OWNER_KEY = 'upperdeck-query-cache-owner-v2';
 
 /** Never block auth on cache restore for longer than this. */
 const RESTORE_WAIT_TIMEOUT_MS = 3000;
@@ -38,13 +40,32 @@ export const asyncStoragePersister = createAsyncStoragePersister({
 // memory on cold start — otherwise a late restore resurrects the previous
 // account's data and it flashes on screen until the first refetch.
 let resolveRestored: (() => void) | undefined;
+let restoreCompleted = false;
+let wipedBeforeRestore = false;
 const restoredPromise = new Promise<void>((resolve) => {
   resolveRestored = resolve;
 });
 
 /** Called by PersistQueryClientProvider once restore succeeds or fails. */
 export function markQueryCacheRestored(): void {
+  restoreCompleted = true;
   resolveRestored?.();
+
+  // If a wipe already ran (waitForRestore timed out on a slow hydration), the
+  // restore that just finished may have resurrected the previous account's
+  // data into memory — and the persister would write it back to disk under the
+  // new owner. Discard it again now that hydration is done.
+  if (wipedBeforeRestore) {
+    wipedBeforeRestore = false;
+    queryClient.clear();
+    void AsyncStorage.removeItem(PERSIST_CACHE_KEY);
+  }
+}
+
+function noteWipe(): void {
+  if (!restoreCompleted) {
+    wipedBeforeRestore = true;
+  }
 }
 
 function waitForRestore(): Promise<void> {
@@ -57,6 +78,7 @@ function waitForRestore(): Promise<void> {
 /** Wipe all cached server data (memory + disk). Call on sign-out. */
 export async function clearQueryCache(): Promise<void> {
   await waitForRestore();
+  noteWipe();
   queryClient.clear();
   await Promise.all([
     AsyncStorage.removeItem(PERSIST_CACHE_KEY),
@@ -74,6 +96,7 @@ export async function ensureQueryCacheOwner(userId: string): Promise<void> {
   const owner = await AsyncStorage.getItem(CACHE_OWNER_KEY);
   if (owner === userId) return;
 
+  noteWipe();
   queryClient.clear();
   await AsyncStorage.removeItem(PERSIST_CACHE_KEY);
   await AsyncStorage.setItem(CACHE_OWNER_KEY, userId);

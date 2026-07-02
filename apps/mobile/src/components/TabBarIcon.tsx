@@ -8,6 +8,7 @@ const TAB_ICONS: Record<string, { active: IconName; inactive: IconName }> = {
   index: { active: 'home', inactive: 'home-outline' },
   critical: { active: 'alert-circle', inactive: 'alert-circle-outline' },
   projects: { active: 'folder', inactive: 'folder-outline' },
+  settings: { active: 'settings', inactive: 'settings-outline' },
 };
 
 export function TabBarIcon({

@@ -10,7 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 /** Bottom tab order — keep in sync with app/(tabs)/_layout.tsx. */
-export const TAB_ORDER = ['index', 'projects', 'sunny', 'critical'] as const;
+export const TAB_ORDER = ['index', 'projects', 'sunny', 'critical', 'settings'] as const;
 export type TabName = (typeof TAB_ORDER)[number];
 
 /** Distance (pt) or flick velocity (pt/s) needed to commit a tab change. */
