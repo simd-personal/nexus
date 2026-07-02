@@ -1,9 +1,20 @@
 import { NextResponse } from 'next/server';
+import type { User } from '@supabase/supabase-js';
 import { applyNoStoreHeaders } from '@/lib/auth/cache-control';
 import { createClient } from '@/lib/supabase/server';
 import { provisionEnterpriseOrganization } from '@/lib/organizations/provision';
 import { getSiteUrlFromRequest, safeAuthNextPath } from '@/lib/auth/site-url';
+import { sendWelcomeEmail } from '@/lib/email/send-welcome';
 import type { OrganizationIndustry } from '@/types/database';
+
+const NEW_USER_WINDOW_MS = 5 * 60 * 1000;
+
+/** OAuth signups skip /api/auth/sign-up, so first-time users are detected here. */
+function isNewOAuthUser(user: User): boolean {
+  if (user.app_metadata?.provider !== 'google') return false;
+  const createdAt = new Date(user.created_at).getTime();
+  return Number.isFinite(createdAt) && Date.now() - createdAt < NEW_USER_WINDOW_MS;
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -29,6 +40,18 @@ export async function GET(request: Request) {
         return applyNoStoreHeaders(
           NextResponse.redirect(`${siteUrl}/upgrade?plan=${pendingPlan}`)
         );
+      }
+
+      if (user && isNewOAuthUser(user)) {
+        const fullName = String(
+          user.user_metadata?.full_name ?? user.user_metadata?.name ?? ''
+        ).trim();
+        if (user.email) {
+          await sendWelcomeEmail({ email: user.email, fullName });
+        }
+        // Preserve an explicit checkout redirect; otherwise onboard new users.
+        const target = next.startsWith('/upgrade') ? next : '/getting-started';
+        return applyNoStoreHeaders(NextResponse.redirect(`${siteUrl}${target}`));
       }
 
       return applyNoStoreHeaders(NextResponse.redirect(`${siteUrl}${next}`));

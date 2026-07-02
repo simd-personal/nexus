@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -12,21 +13,24 @@ import {
 } from 'react-native';
 import { Button, Screen, Subtitle, Title } from '@/components/ui';
 import { UpperDeckLogo } from '@/components/UpperDeckLogo';
+import { getApiBaseUrl } from '@/lib/config';
 import {
   getBiometricAvailability,
   getStoredBiometricEmail,
   isBiometricLoginEnabled,
   type BiometricAvailability,
 } from '@/lib/biometric-auth';
+import { isGoogleSignInConfigured } from '@/lib/google-auth';
 import { useAuth } from '@/providers/AuthProvider';
 import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
 export default function LoginScreen() {
-  const { signIn, signInWithBiometric, setBootstrapping } = useAuth();
+  const { signIn, signInWithGoogle, signInWithBiometric, setBootstrapping } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
   const [biometric, setBiometric] = useState<BiometricAvailability & { enabled: boolean; storedEmail: string | null }>({
     available: false,
@@ -68,6 +72,24 @@ export default function LoginScreen() {
     setSubmitting(false);
   }
 
+  async function handleGoogleSignIn() {
+    setError(null);
+    setGoogleLoading(true);
+    setBootstrapping(true);
+
+    const result = await signInWithGoogle();
+    if (result.cancelled) {
+      setBootstrapping(false);
+    } else if (result.error) {
+      setBootstrapping(false);
+      setError(result.error);
+    } else {
+      await loadBiometricState();
+    }
+
+    setGoogleLoading(false);
+  }
+
   async function handleBiometricSignIn() {
     setError(null);
     setBiometricLoading(true);
@@ -84,6 +106,8 @@ export default function LoginScreen() {
   }
 
   const showBiometric = biometric.available && biometric.enabled;
+  const showGoogle = isGoogleSignInConfigured();
+  const anyLoading = submitting || googleLoading || biometricLoading;
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
@@ -162,10 +186,34 @@ export default function LoginScreen() {
                 loading={submitting}
               />
 
+              {showGoogle || showBiometric ? (
+                <Text style={styles.dividerText}>or</Text>
+              ) : null}
+
+              {showGoogle ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Continue with Google"
+                  onPress={() => {
+                    Keyboard.dismiss();
+                    void handleGoogleSignIn();
+                  }}
+                  disabled={anyLoading}
+                  style={({ pressed }) => [
+                    styles.biometricButton,
+                    anyLoading && styles.biometricButtonDisabled,
+                    pressed && !anyLoading && styles.biometricButtonPressed,
+                  ]}
+                >
+                  <Ionicons name="logo-google" size={19} color={APP.text} />
+                  <Text style={styles.biometricLabel}>
+                    {googleLoading ? 'Signing in…' : 'Continue with Google'}
+                  </Text>
+                </Pressable>
+              ) : null}
+
               {showBiometric ? (
                 <>
-                  <Text style={styles.dividerText}>or</Text>
-
                   <Pressable
                     accessibilityRole="button"
                     accessibilityLabel={`Sign in with ${biometric.label}`}
@@ -173,11 +221,11 @@ export default function LoginScreen() {
                       Keyboard.dismiss();
                       void handleBiometricSignIn();
                     }}
-                    disabled={biometricLoading || submitting}
+                    disabled={anyLoading}
                     style={({ pressed }) => [
                       styles.biometricButton,
-                      (biometricLoading || submitting) && styles.biometricButtonDisabled,
-                      pressed && !biometricLoading && !submitting && styles.biometricButtonPressed,
+                      anyLoading && styles.biometricButtonDisabled,
+                      pressed && !anyLoading && styles.biometricButtonPressed,
                     ]}
                   >
                     <Ionicons
@@ -197,6 +245,17 @@ export default function LoginScreen() {
               ) : null}
             </View>
           </View>
+
+          <Text style={styles.signupPrompt}>
+            No account yet?{' '}
+            <Text
+              accessibilityRole="link"
+              style={styles.signupLink}
+              onPress={() => void Linking.openURL(`${getApiBaseUrl()}/login?mode=signup`)}
+            >
+              Sign up on the web
+            </Text>
+          </Text>
       </ScrollView>
     </Screen>
   );
@@ -299,5 +358,15 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: APP.textMuted,
     textAlign: 'center',
+  },
+  signupPrompt: {
+    fontSize: 14,
+    color: APP.textMuted,
+    textAlign: 'center',
+  },
+  signupLink: {
+    color: APP.text,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
   },
 });

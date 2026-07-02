@@ -14,6 +14,8 @@ dotenv.config({ path: envLocalPath, override: true });
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
 const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 const apiUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:3000';
+const googleWebClientId = process.env.GOOGLE_OAUTH_WEB_CLIENT_ID?.trim();
+const googleIosClientId = process.env.GOOGLE_OAUTH_IOS_CLIENT_ID?.trim();
 
 if (!supabaseUrl || !supabaseAnon) {
   console.error(
@@ -43,9 +45,16 @@ const lines = [
   `EXPO_PUBLIC_SUPABASE_URL=${supabaseUrl}`,
   `EXPO_PUBLIC_SUPABASE_ANON_KEY=${supabaseAnon}`,
   `EXPO_PUBLIC_API_URL=${apiUrl.replace(/\/$/, '')}`,
-  '',
-  '# iOS Simulator: localhost works (default above).',
 ];
+
+if (googleWebClientId) {
+  lines.push(`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=${googleWebClientId}`);
+}
+if (googleIosClientId) {
+  lines.push(`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=${googleIosClientId}`);
+}
+
+lines.push('', '# iOS Simulator: localhost works (default above).');
 
 if (lanIp) {
   lines.push(`# Physical iPhone on same Wi-Fi: EXPO_PUBLIC_API_URL=http://${lanIp}:3000`);

@@ -10,6 +10,7 @@ import {
   isPermanentRefreshTokenError,
   updateStoredRefreshToken,
 } from '@/lib/biometric-auth';
+import { getGoogleIdToken } from '@/lib/google-auth';
 import { supabase } from '@/lib/supabase';
 
 type AuthContextValue = {
@@ -19,6 +20,7 @@ type AuthContextValue = {
   bootstrapping: boolean;
   setBootstrapping: (value: boolean) => void;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signInWithGoogle: () => Promise<{ error?: string; cancelled?: boolean }>;
   signInWithBiometric: () => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 };
@@ -72,6 +74,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) return { error: error.message };
 
         await persistBiometricSession(email, data.session);
+        return {};
+      },
+      async signInWithGoogle() {
+        const result = await getGoogleIdToken();
+        if ('cancelled' in result) return { cancelled: true };
+        if ('error' in result) return { error: result.error };
+
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: result.idToken,
+        });
+        if (error) return { error: error.message };
+
+        if (data.user?.email) {
+          await persistBiometricSession(data.user.email, data.session);
+        }
         return {};
       },
       async signInWithBiometric() {
