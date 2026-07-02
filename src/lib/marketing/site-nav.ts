@@ -36,6 +36,11 @@ export const SOLUTION_LINKS: SiteNavLink[] = [
     description: 'Solo operators managing multiple clients',
   },
   {
+    href: '/for-freelancers',
+    label: 'For freelancers',
+    description: 'Keep every gig and client organized',
+  },
+  {
     href: '/for-agencies',
     label: 'For agencies',
     description: 'Shared context across delivery teams',

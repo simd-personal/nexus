@@ -7,6 +7,7 @@ const PRIORITIES: Record<string, number> = {
   '/pricing': 0.9,
   '/client-intelligence': 0.85,
   '/for-consultants': 0.8,
+  '/for-freelancers': 0.8,
   '/for-agencies': 0.8,
   '/integrations': 0.75,
   '/request-quote': 0.7,

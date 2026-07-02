@@ -11,6 +11,7 @@ export const MARKETING_PATHS = [
   '/pricing',
   '/integrations',
   '/for-consultants',
+  '/for-freelancers',
   '/for-agencies',
   '/client-intelligence',
   '/about',

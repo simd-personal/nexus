@@ -137,6 +137,11 @@ export default function ProductPage() {
                   Built for consultants →
                 </Link>
               </li>
+              <li>
+                <Link href="/for-freelancers" className="marketing-inline-link">
+                  Built for freelancers →
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

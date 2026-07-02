@@ -9,11 +9,12 @@ import { createMarketingMetadata } from '@/lib/marketing/seo';
 export const metadata = createMarketingMetadata({
   title: 'Pricing',
   description:
-    'UpperDeck pricing: start free on one client project, upgrade to Pro for unlimited Sunny, or request an enterprise quote for organizations.',
+    'UpperDeck pricing: start free on one project, upgrade to Pro for unlimited clients and Sunny, or request an enterprise quote. Built for consultants, freelancers, legal, and healthcare teams.',
   path: '/pricing',
   keywords: [
     'AI employee pricing',
     'consultant software pricing',
+    'freelancer client management pricing',
     'UpperDeck Pro',
     'freemium AI employee',
   ],
