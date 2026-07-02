@@ -96,15 +96,15 @@ export function FileViewerModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-4">
       <button
         type="button"
         className="absolute inset-0 bg-black/50"
         aria-label="Close preview"
         onClick={onClose}
       />
-      <div className="relative z-10 flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl bg-white shadow-xl dark:bg-[var(--ud-mist)]">
-        <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3 dark:border-[var(--ud-cloud)]">
+      <div className="relative z-10 flex h-full w-full flex-col overflow-hidden bg-white shadow-xl sm:h-auto sm:max-h-[90vh] sm:max-w-5xl sm:rounded-xl sm:[max-height:90dvh] dark:bg-[var(--ud-mist)]">
+        <div className="flex shrink-0 items-center justify-between border-b border-gray-200 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:pt-3 dark:border-[var(--ud-cloud)]">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold text-gray-900 dark:text-gray-100">{file.file_name}</h3>
             <p className="text-xs capitalize text-gray-500 dark:text-gray-400">{file.status.replaceAll('_', ' ')}</p>
@@ -115,7 +115,7 @@ export function FileViewerModal({
         </div>
 
         {(showOriginalTab || showSpreadsheetTab || showFormattedTab || showTextTab || showChangesTab) && (
-          <div className="flex gap-1 border-b border-gray-100 px-4 pt-2 dark:border-[var(--ud-cloud)]">
+          <div className="flex shrink-0 gap-1 overflow-x-auto border-b border-gray-100 px-4 pt-2 dark:border-[var(--ud-cloud)]">
             {showChangesTab && (
               <TabButton active={tab === 'changes'} onClick={() => setTab('changes')}>
                 Changes
@@ -144,7 +144,7 @@ export function FileViewerModal({
           </div>
         )}
 
-        <div className="min-h-[320px] flex-1 overflow-auto bg-gray-50 p-4 dark:bg-[var(--ud-stone)]">
+        <div className="min-h-0 flex-1 overflow-auto bg-gray-50 p-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] sm:min-h-[320px] dark:bg-[var(--ud-stone)]">
           {loading && (
             <div className="flex h-full min-h-[280px] items-center justify-center text-gray-500 dark:text-gray-400">
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -200,7 +200,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
+      className={`shrink-0 whitespace-nowrap rounded-t-lg px-3 py-2 text-sm font-medium transition-colors ${
         active
           ? 'border-b-2 border-gray-900 text-gray-900 dark:border-gray-100 dark:text-gray-100'
           : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'

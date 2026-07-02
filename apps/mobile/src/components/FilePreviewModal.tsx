@@ -1,6 +1,6 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -21,6 +21,35 @@ type FilePreviewModalProps = {
   visible: boolean;
   onClose: () => void;
 };
+
+type PreviewTab = 'original' | 'spreadsheet' | 'text';
+
+function getTextContent(preview: FilePreviewResponse): string {
+  return preview.text?.trim() || preview.html?.replace(/<[^>]+>/g, ' ').trim() || '';
+}
+
+function getAvailableTabs(preview: FilePreviewResponse): PreviewTab[] {
+  const tabs: PreviewTab[] = [];
+  if (
+    (preview.viewType === 'image' && preview.hasOriginal) ||
+    (preview.viewType === 'pdf' && preview.url)
+  ) {
+    tabs.push('original');
+  }
+  if (preview.viewType === 'spreadsheet' && preview.sheets?.length) {
+    tabs.push('spreadsheet');
+  }
+  if (getTextContent(preview)) {
+    tabs.push('text');
+  }
+  return tabs;
+}
+
+function tabLabel(tab: PreviewTab, preview: FilePreviewResponse): string {
+  if (tab === 'original') return preview.viewType === 'pdf' ? 'PDF' : 'Image';
+  if (tab === 'spreadsheet') return 'Spreadsheet';
+  return 'Text';
+}
 
 export function FilePreviewModal({ fileId, visible, onClose }: FilePreviewModalProps) {
   const insets = useSafeAreaInsets();
@@ -55,7 +84,7 @@ export function FilePreviewModal({ fileId, visible, onClose }: FilePreviewModalP
             <Text style={styles.errorText}>{(previewQuery.error as Error).message}</Text>
           </View>
         ) : preview && fileId ? (
-          <PreviewBody fileId={fileId} preview={preview} />
+          <PreviewBody key={fileId} fileId={fileId} preview={preview} />
         ) : null}
       </View>
     </Modal>
@@ -63,68 +92,99 @@ export function FilePreviewModal({ fileId, visible, onClose }: FilePreviewModalP
 }
 
 function PreviewBody({ fileId, preview }: { fileId: string; preview: FilePreviewResponse }) {
-  if (preview.viewType === 'image' && preview.hasOriginal) {
-    return <ImagePreview fileId={fileId} preview={preview} />;
-  }
+  const tabs = getAvailableTabs(preview);
+  const [tab, setTab] = useState<PreviewTab>(tabs[0] ?? 'text');
 
-  if (preview.viewType === 'pdf' && preview.url) {
+  // Preview data can arrive after mount (query refetch); keep the tab valid.
+  useEffect(() => {
+    if (tabs.length && !tabs.includes(tab)) {
+      setTab(tabs[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabs.join('|')]);
+
+  if (!tabs.length) {
+    if (preview.url) {
+      return (
+        <View style={styles.centered}>
+          <Text style={styles.openHint}>Preview is not available in-app for this file type.</Text>
+          <Pressable onPress={() => void Linking.openURL(preview.url!)} style={styles.openBtn}>
+            <Text style={styles.openBtnText}>Open file</Text>
+          </Pressable>
+        </View>
+      );
+    }
     return (
       <View style={styles.centered}>
-        <Ionicons name="document-text-outline" size={48} color={APP.textMuted} />
-        <Text style={styles.openHint}>Open this PDF in your device viewer.</Text>
-        <Pressable
-          onPress={() => void Linking.openURL(preview.url!)}
-          style={styles.openBtn}
-        >
-          <Text style={styles.openBtnText}>Open PDF</Text>
-        </Pressable>
-      </View>
-    );
-  }
-
-  if (preview.viewType === 'spreadsheet' && preview.sheets?.length) {
-    const sheet = preview.sheets[0];
-    return (
-      <ScrollView horizontal contentContainerStyle={styles.previewContent}>
-        <ScrollView>
-          {sheet.rows.slice(0, 100).map((row, rowIndex) => (
-            <View key={`row-${rowIndex}`} style={styles.sheetRow}>
-              {row.slice(0, 12).map((cell, cellIndex) => (
-                <Text key={`cell-${rowIndex}-${cellIndex}`} style={styles.sheetCell} numberOfLines={2}>
-                  {cell}
-                </Text>
-              ))}
-            </View>
-          ))}
-        </ScrollView>
-      </ScrollView>
-    );
-  }
-
-  const textContent = preview.text?.trim() || preview.html?.replace(/<[^>]+>/g, ' ').trim();
-  if (textContent) {
-    return (
-      <ScrollView contentContainerStyle={styles.textContent}>
-        <Text style={styles.textBody}>{textContent}</Text>
-      </ScrollView>
-    );
-  }
-
-  if (preview.url) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.openHint}>Preview is not available in-app for this file type.</Text>
-        <Pressable onPress={() => void Linking.openURL(preview.url!)} style={styles.openBtn}>
-          <Text style={styles.openBtnText}>Open file</Text>
-        </Pressable>
+        <Text style={styles.openHint}>
+          {preview.status === 'processing' || preview.status === 'pending'
+            ? 'Sunny is still reading this file. Check back in a moment.'
+            : 'No preview available for this file yet.'}
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.centered}>
-      <Text style={styles.openHint}>No preview available for this file yet.</Text>
+    <View style={styles.flex}>
+      {tabs.length > 1 ? (
+        <View style={styles.tabBar}>
+          {tabs.map((t) => (
+            <Pressable
+              key={t}
+              onPress={() => setTab(t)}
+              style={[styles.tabBtn, tab === t && styles.tabBtnActive]}
+            >
+              <Text style={[styles.tabLabel, tab === t && styles.tabLabelActive]}>
+                {tabLabel(t, preview)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
+      {tab === 'original' ? (
+        preview.viewType === 'image' ? (
+          <ImagePreview fileId={fileId} preview={preview} />
+        ) : (
+          <View style={styles.centered}>
+            <Ionicons name="document-text-outline" size={48} color={APP.textMuted} />
+            <Text style={styles.openHint}>Open this PDF in your device viewer.</Text>
+            <Pressable onPress={() => void Linking.openURL(preview.url!)} style={styles.openBtn}>
+              <Text style={styles.openBtnText}>Open PDF</Text>
+            </Pressable>
+          </View>
+        )
+      ) : tab === 'spreadsheet' ? (
+        <SpreadsheetPreview preview={preview} />
+      ) : (
+        <ScrollView contentContainerStyle={styles.textContent}>
+          <Text style={styles.textBody} selectable>
+            {getTextContent(preview)}
+          </Text>
+        </ScrollView>
+      )}
     </View>
+  );
+}
+
+function SpreadsheetPreview({ preview }: { preview: FilePreviewResponse }) {
+  const sheet = preview.sheets?.[0];
+  if (!sheet) return null;
+  return (
+    <ScrollView horizontal contentContainerStyle={styles.previewContent}>
+      <ScrollView>
+        {sheet.rows.slice(0, 100).map((row, rowIndex) => (
+          <View key={`row-${rowIndex}`} style={styles.sheetRow}>
+            {row.slice(0, 12).map((cell, cellIndex) => (
+              <Text key={`cell-${rowIndex}-${cellIndex}`} style={styles.sheetCell} numberOfLines={2}>
+                {cell}
+              </Text>
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    </ScrollView>
   );
 }
 
@@ -193,6 +253,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: APP.canvas,
   },
+  flex: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -214,6 +277,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: APP.text,
     textAlign: 'center',
+  },
+  tabBar: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  tabBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 7,
+    borderRadius: 9999,
+    backgroundColor: APP.btnSecondaryBg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: APP.border,
+  },
+  tabBtnActive: {
+    backgroundColor: APP.btnPrimaryBg,
+    borderColor: APP.btnPrimaryBg,
+  },
+  tabLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: APP.textMuted,
+  },
+  tabLabelActive: {
+    color: APP.btnPrimaryText,
   },
   centered: {
     flex: 1,
