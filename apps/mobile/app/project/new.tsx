@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -12,7 +11,7 @@ import {
   View,
 } from 'react-native';
 import { FormField } from '@/components/FormField';
-import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
+import { HeaderIconButton } from '@/components/ScreenHeader';
 import { Button, Screen } from '@/components/ui';
 import { ApiError, createProject } from '@/lib/api';
 import { APP, BRAND, radius, spacing } from '@/theme/colors';
@@ -65,17 +64,20 @@ export default function NewProjectScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScreenHeader
-          title="New project"
-          subtitle="Name it now — add photos and files from the project screen."
-          rightAction={
-            <HeaderActions>
-              <HeaderIconButton label="Close" icon="close" onPress={() => router.back()} />
-            </HeaderActions>
-          }
-        />
+        <View style={styles.header}>
+          <View style={styles.headerText}>
+            <Text style={styles.headerTitle} numberOfLines={2}>
+              New project
+            </Text>
+            <Text style={styles.headerSubtitle} numberOfLines={3}>
+              Name it now — add photos and files from the project screen.
+            </Text>
+          </View>
+          <HeaderIconButton label="Close" icon="close" onPress={() => router.back()} />
+        </View>
 
         <ScrollView
+          style={styles.flex}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -126,14 +128,16 @@ export default function NewProjectScreen() {
             multiline
           />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <View style={styles.footer}>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Button
-            label="Create project"
-            onPress={handleCreate}
-            loading={mutation.isPending}
-            disabled={!clientName.trim() || !projectName.trim()}
-          />
+            <Button
+              label="Create project"
+              onPress={handleCreate}
+              loading={mutation.isPending}
+              disabled={!clientName.trim() || !projectName.trim()}
+            />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Screen>
@@ -159,12 +163,41 @@ function PortfolioOption({
   );
 }
 
+const GUTTER = 20;
+
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    paddingHorizontal: GUTTER,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md,
+  },
+  headerText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+    paddingTop: 2,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: APP.text,
+    letterSpacing: -0.6,
+    lineHeight: 32,
+  },
+  headerSubtitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    color: APP.textMuted,
+  },
   content: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
+    paddingHorizontal: GUTTER,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xl + spacing.md,
+    gap: spacing.lg,
   },
   portfolioRow: {
     flexDirection: 'row',
@@ -190,6 +223,10 @@ const styles = StyleSheet.create({
   },
   portfolioLabelActive: {
     color: APP.text,
+  },
+  footer: {
+    marginTop: spacing.sm,
+    gap: spacing.sm,
   },
   error: {
     color: BRAND.danger,
