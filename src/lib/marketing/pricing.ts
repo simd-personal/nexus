@@ -43,7 +43,8 @@ export const B2C_PRICING: PricingTier[] = [
     name: 'Pro',
     price: '$39',
     period: '/ month',
-    description: 'For consultants and operators with multiple AI employees worth of client work.',
+    description:
+      'For consultants and operators with multiple clients. Recommended for freelancers on marketplaces like Upwork and Fiverr.',
     cta: 'Upgrade to Pro',
     ctaHref: loginHref({ mode: 'signup', plan: 'pro' }),
     highlighted: true,
@@ -55,22 +56,7 @@ export const B2C_PRICING: PricingTier[] = [
       'Semantic search across all files',
       'Audio transcription & PDF processing',
       'Priority processing & email support',
-    ],
-  },
-  {
-    id: 'pro-annual',
-    name: 'Pro Annual',
-    price: '$348',
-    period: '/ year',
-    description:
-      'Recommended for freelancers on marketplaces like Upwork and Fiverr who run client work as a business.',
-    cta: 'Start annual',
-    ctaHref: loginHref({ mode: 'signup', plan: 'pro-annual' }),
-    features: [
-      'Everything in Pro',
-      'Early access to integrations that make Sunny more capable',
       { text: 'Multi factor authentication', comingSoon: true },
-      'Export & API access (when available)',
     ],
   },
 ];
@@ -86,18 +72,18 @@ export const ENTERPRISE_TIER: PricingTier = {
   ctaHref: '/request-quote',
   features: [
     'Everything in Pro for every seat',
+    'SSO / SAML single sign on',
     'Slack, email & calendar connectors included from day one, with guided setup during onboarding',
     'Multi tenant organization workspace',
     'Admin roles & access request approvals',
     'PHI redaction for healthcare uploads',
-    'SSO / SAML (on request)',
     { text: 'Multi factor authentication', comingSoon: true },
     'Dedicated support & SLA options',
   ],
 };
 
 export function pricingButtonClass(tier: PricingTier): string {
-  if (tier.id === 'pro-annual') return 'marketing-btn-gold';
+  if (tier.id === 'enterprise') return 'marketing-btn-gold';
   if (tier.highlighted) return 'marketing-btn-primary';
   return 'marketing-btn-secondary';
 }

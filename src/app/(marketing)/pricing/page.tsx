@@ -29,7 +29,7 @@ export default function PricingPage() {
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">
-          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-6 lg:grid-cols-3">
             {[...B2C_PRICING, ENTERPRISE_TIER].map((tier) => (
               <div
                 key={tier.id}

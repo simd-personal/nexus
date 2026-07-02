@@ -16,7 +16,7 @@ import { AI_EMPLOYEE_NAME, BRAND_TAGLINE, SUNNY_HERO_LINE, TAGLINE } from '@/lib
 import { loginHref } from '@/lib/auth/login-url';
 import { HOME_WOW_POINTS, HOME_WORKFLOW_STEPS } from '@/lib/marketing/homepage';
 import { PricingFeatureList, PricingModelsDisclaimer } from '@/components/marketing/PricingFeatureList';
-import { B2C_PRICING, pricingButtonClass } from '@/lib/marketing/pricing';
+import { B2C_PRICING, ENTERPRISE_TIER, pricingButtonClass } from '@/lib/marketing/pricing';
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
   return <p className="marketing-eyebrow">{children}</p>;
@@ -185,7 +185,7 @@ export function HomePage() {
           </Reveal>
 
           <div className="mt-12 grid gap-6 lg:grid-cols-3">
-            {B2C_PRICING.map((tier, i) => (
+            {[...B2C_PRICING, ENTERPRISE_TIER].map((tier, i) => (
               <Reveal key={tier.id} delay={i * 90}>
                 <div
                   className={
