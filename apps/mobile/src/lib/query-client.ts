@@ -25,14 +25,38 @@ export const queryClient = new QueryClient({
 const PERSIST_CACHE_KEY = 'upperdeck-query-cache';
 const CACHE_OWNER_KEY = 'upperdeck-query-cache-owner';
 
+/** Never block auth on cache restore for longer than this. */
+const RESTORE_WAIT_TIMEOUT_MS = 3000;
+
 export const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,
   key: PERSIST_CACHE_KEY,
   throttleTime: 2000,
 });
 
+// Cache wipes must run AFTER the persisted cache finishes hydrating into
+// memory on cold start — otherwise a late restore resurrects the previous
+// account's data and it flashes on screen until the first refetch.
+let resolveRestored: (() => void) | undefined;
+const restoredPromise = new Promise<void>((resolve) => {
+  resolveRestored = resolve;
+});
+
+/** Called by PersistQueryClientProvider once restore succeeds or fails. */
+export function markQueryCacheRestored(): void {
+  resolveRestored?.();
+}
+
+function waitForRestore(): Promise<void> {
+  return Promise.race([
+    restoredPromise,
+    new Promise<void>((resolve) => setTimeout(resolve, RESTORE_WAIT_TIMEOUT_MS)),
+  ]);
+}
+
 /** Wipe all cached server data (memory + disk). Call on sign-out. */
 export async function clearQueryCache(): Promise<void> {
+  await waitForRestore();
   queryClient.clear();
   await Promise.all([
     AsyncStorage.removeItem(PERSIST_CACHE_KEY),
@@ -46,6 +70,7 @@ export async function clearQueryCache(): Promise<void> {
  * never flashes after sign-in.
  */
 export async function ensureQueryCacheOwner(userId: string): Promise<void> {
+  await waitForRestore();
   const owner = await AsyncStorage.getItem(CACHE_OWNER_KEY);
   if (owner === userId) return;
 

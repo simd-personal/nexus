@@ -2,7 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
 import { MobileDataSecurityCard } from '@/components/MobileDataSecurityCard';
 import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
@@ -44,38 +56,115 @@ function SettingsRow({
   );
 }
 
+const DELETE_WARNINGS = [
+  'All projects, uploaded files, and generated documents',
+  'All Sunny chat history and briefings',
+  'Any active subscription — canceled immediately, no refund',
+  'Your sign-in credentials and profile',
+];
+
+function DeleteAccountModal({
+  visible,
+  deleting,
+  onConfirm,
+  onCancel,
+}: {
+  visible: boolean;
+  deleting: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const [confirmText, setConfirmText] = useState('');
+  const confirmed = confirmText.trim().toUpperCase() === 'DELETE';
+
+  function close() {
+    setConfirmText('');
+    onCancel();
+  }
+
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.modalBackdrop}
+      >
+        <View style={styles.modalCard}>
+          <Text style={styles.modalTitle}>Delete account?</Text>
+          <Text style={styles.modalWarning}>
+            This is permanent and cannot be recovered. Deleting your account removes:
+          </Text>
+          <View style={styles.modalList}>
+            {DELETE_WARNINGS.map((item) => (
+              <View key={item} style={styles.modalListRow}>
+                <Ionicons name="close-circle" size={16} color={BRAND.danger} />
+                <Text style={styles.modalListText}>{item}</Text>
+              </View>
+            ))}
+          </View>
+
+          <Text style={styles.modalInputLabel}>
+            Type <Text style={styles.modalInputKeyword}>DELETE</Text> to confirm
+          </Text>
+          <TextInput
+            value={confirmText}
+            onChangeText={setConfirmText}
+            autoCapitalize="characters"
+            autoCorrect={false}
+            autoComplete="off"
+            placeholder="DELETE"
+            placeholderTextColor={APP.textSubtle}
+            editable={!deleting}
+            style={styles.modalInput}
+          />
+
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Permanently delete account"
+            onPress={onConfirm}
+            disabled={!confirmed || deleting}
+            style={[styles.modalDeleteButton, (!confirmed || deleting) && styles.modalDeleteButtonDisabled]}
+          >
+            {deleting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.modalDeleteLabel}>Permanently delete account</Text>
+            )}
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Cancel deletion"
+            onPress={close}
+            disabled={deleting}
+            style={({ pressed }) => [styles.modalCancelButton, pressed && styles.pressed]}
+          >
+            <Text style={styles.modalCancelLabel}>Cancel</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
   const [deleting, setDeleting] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const accountQuery = useQuery({
     queryKey: ['account-summary'],
     queryFn: fetchAccountSummary,
   });
 
-  function confirmDeleteAccount() {
-    Alert.alert(
-      'Delete account?',
-      'This permanently deletes your account, projects, files, and chat history. Any active subscription is canceled immediately without a refund. This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete account',
-          style: 'destructive',
-          onPress: () => void handleDeleteAccount(),
-        },
-      ]
-    );
-  }
-
   async function handleDeleteAccount() {
     setDeleting(true);
     try {
       await deleteAccount();
+      setDeleteModalVisible(false);
       // Clears the local session and stored biometric credentials.
       await signOut();
     } catch (error) {
       setDeleting(false);
+      setDeleteModalVisible(false);
       const message =
         error instanceof Error ? error.message : 'Could not delete your account. Try again.';
       Alert.alert('Deletion failed', message);
@@ -140,7 +229,7 @@ export default function SettingsScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Delete account"
-            onPress={confirmDeleteAccount}
+            onPress={() => setDeleteModalVisible(true)}
             disabled={deleting}
             style={({ pressed }) => [
               styles.deleteButton,
@@ -155,6 +244,13 @@ export default function SettingsScreen() {
             )}
           </Pressable>
         </Card>
+
+        <DeleteAccountModal
+          visible={deleteModalVisible}
+          deleting={deleting}
+          onConfirm={() => void handleDeleteAccount()}
+          onCancel={() => setDeleteModalVisible(false)}
+        />
       </ScrollView>
     </Screen>
   );
@@ -231,5 +327,91 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: BRAND.danger,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(17, 20, 24, 0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.lg,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: APP.surface,
+    borderRadius: 16,
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: APP.text,
+  },
+  modalWarning: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: APP.textMuted,
+  },
+  modalList: {
+    gap: 8,
+    marginTop: 2,
+    marginBottom: spacing.xs,
+  },
+  modalListRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+  },
+  modalListText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+    color: APP.textMuted,
+  },
+  modalInputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: APP.textSubtle,
+  },
+  modalInputKeyword: {
+    fontWeight: '700',
+    color: BRAND.danger,
+  },
+  modalInput: {
+    backgroundColor: APP.surfaceMuted,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: APP.border,
+    borderRadius: 10,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 11,
+    fontSize: 16,
+    letterSpacing: 1,
+    color: APP.text,
+  },
+  modalDeleteButton: {
+    marginTop: spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: BRAND.danger,
+  },
+  modalDeleteButtonDisabled: {
+    opacity: 0.45,
+  },
+  modalDeleteLabel: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  modalCancelButton: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  modalCancelLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: APP.textMuted,
   },
 });

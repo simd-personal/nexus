@@ -1,3 +1,4 @@
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import {
   FREE_CHAT_MESSAGES_PER_MONTH,
@@ -72,8 +73,11 @@ export async function checkChatQuota(
   return { exceeded: false, message: '' };
 }
 
-export async function countUserChatMessagesThisMonth(userId: string): Promise<number> {
-  const supabase = await createClient();
+export async function countUserChatMessagesThisMonth(
+  userId: string,
+  client?: SupabaseClient
+): Promise<number> {
+  const supabase = client ?? (await createClient());
   const startOfMonth = new Date();
   startOfMonth.setUTCDate(1);
   startOfMonth.setUTCHours(0, 0, 0, 0);

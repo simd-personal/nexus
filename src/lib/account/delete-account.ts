@@ -1,4 +1,11 @@
 import Stripe from 'stripe';
+import { recordDeletedAccount } from '@/lib/auth/deleted-accounts';
+import { countUserChatMessagesThisMonth } from '@/lib/billing/limits';
+import {
+  FREE_CHAT_MESSAGES_PER_MONTH,
+  FREE_PROJECT_LIMIT,
+  isPaidPlan,
+} from '@/lib/billing/plans';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { deleteProjectAndFiles } from '@/lib/projects/delete-project';
 import { getStripe } from '@/lib/stripe/client';
@@ -23,7 +30,7 @@ export async function deleteUserAccount(userId: string): Promise<DeleteAccountRe
 
   const { data: profile, error: profileError } = await admin
     .from('profiles')
-    .select('account_type, stripe_customer_id, stripe_subscription_id')
+    .select('account_type, stripe_customer_id, stripe_subscription_id, plan, subscription_status')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -74,6 +81,17 @@ export async function deleteUserAccount(userId: string): Promise<DeleteAccountRe
     return { error: 'Could not remove your projects.', status: 500 };
   }
 
+  // Snapshot email + free-quota usage before rows disappear, so free accounts
+  // that consumed their quota can't delete-and-recreate to reset limits.
+  const { data: userLookup } = await admin.auth.admin.getUserById(userId);
+  const email = userLookup?.user?.email ?? null;
+  const wasPaid = isPaidPlan(profile?.plan) || Boolean(profile?.subscription_status);
+  let hitFreeLimit = (projects?.length ?? 0) >= FREE_PROJECT_LIMIT;
+  if (!wasPaid && !hitFreeLimit) {
+    const chatMessagesUsed = await countUserChatMessagesThisMonth(userId, admin).catch(() => 0);
+    hitFreeLimit = chatMessagesUsed >= FREE_CHAT_MESSAGES_PER_MONTH;
+  }
+
   for (const project of projects ?? []) {
     const result = await deleteProjectAndFiles(admin, project.id, userId);
     if (result.error) {
@@ -100,6 +118,10 @@ export async function deleteUserAccount(userId: string): Promise<DeleteAccountRe
   if (deleteError) {
     console.error('Account deletion: auth user delete failed:', deleteError.message);
     return { error: 'Could not delete your account. Contact support.', status: 500 };
+  }
+
+  if (email) {
+    await recordDeletedAccount({ email, wasPaid, hitFreeLimit });
   }
 
   return {};

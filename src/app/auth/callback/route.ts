@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { User } from '@supabase/supabase-js';
 import { applyNoStoreHeaders } from '@/lib/auth/cache-control';
+import { BLOCKED_SIGNUP_MESSAGE, isEmailBlockedFromSignup } from '@/lib/auth/deleted-accounts';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/admin';
 import { provisionEnterpriseOrganization } from '@/lib/organizations/provision';
 import { getSiteUrlFromRequest, safeAuthNextPath } from '@/lib/auth/site-url';
 import { sendWelcomeEmail } from '@/lib/email/send-welcome';
@@ -27,6 +29,19 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser();
+
+      // OAuth signups skip the /api/auth/sign-up guard, so enforce the
+      // deleted-free-account block here: remove the just-created user.
+      if (user?.email && isNewOAuthUser(user) && (await isEmailBlockedFromSignup(user.email))) {
+        await createServiceClient().auth.admin.deleteUser(user.id);
+        await supabase.auth.signOut();
+        return applyNoStoreHeaders(
+          NextResponse.redirect(
+            `${siteUrl}/login?mode=signup&message=${encodeURIComponent(BLOCKED_SIGNUP_MESSAGE)}`
+          )
+        );
+      }
+
       if (user?.user_metadata?.account_type === 'enterprise') {
         const orgName = String(user.user_metadata.organization_name ?? '').trim();
         const industry = (user.user_metadata.organization_industry ?? 'other') as OrganizationIndustry;

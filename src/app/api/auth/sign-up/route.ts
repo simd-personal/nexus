@@ -5,6 +5,7 @@ import {
   isEmailRateLimitError,
   mapAuthErrorMessage,
 } from '@/lib/auth/auth-errors';
+import { BLOCKED_SIGNUP_MESSAGE, isEmailBlockedFromSignup } from '@/lib/auth/deleted-accounts';
 import { recoverAccountAfterEmailRateLimit } from '@/lib/auth/email-rate-limit-recovery';
 import { loginHref } from '@/lib/auth/login-url';
 import { getSiteUrlFromRequest } from '@/lib/auth/site-url';
@@ -59,6 +60,19 @@ export async function POST(request: NextRequest) {
           mode: 'signup',
           plan: checkoutPlan,
           message: 'Password must be at least 8 characters.',
+        })
+      )
+    );
+  }
+
+  if (await isEmailBlockedFromSignup(email)) {
+    return applyNoStoreHeaders(
+      redirectPost(
+        request,
+        loginHref({
+          mode: 'signup',
+          plan: checkoutPlan,
+          message: BLOCKED_SIGNUP_MESSAGE,
         })
       )
     );

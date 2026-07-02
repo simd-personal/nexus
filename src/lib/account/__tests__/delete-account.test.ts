@@ -4,9 +4,12 @@ const mockMaybeSingle = vi.fn();
 const mockProjectsEq = vi.fn();
 const mockFilesUpdateEq = vi.fn();
 const mockDeleteUser = vi.fn();
+const mockGetUserById = vi.fn();
 const mockSubscriptionsCancel = vi.fn();
 const mockCustomersDel = vi.fn();
 const mockDeleteProjectAndFiles = vi.fn();
+const mockRecordDeletedAccount = vi.fn();
+const mockCountChatMessages = vi.fn();
 
 vi.mock('@/lib/supabase/admin', () => ({
   createServiceClient: vi.fn(() => ({
@@ -30,7 +33,7 @@ vi.mock('@/lib/supabase/admin', () => ({
       }
       throw new Error(`Unexpected table: ${table}`);
     }),
-    auth: { admin: { deleteUser: mockDeleteUser } },
+    auth: { admin: { deleteUser: mockDeleteUser, getUserById: mockGetUserById } },
   })),
 }));
 
@@ -45,6 +48,14 @@ vi.mock('@/lib/projects/delete-project', () => ({
   deleteProjectAndFiles: (...args: unknown[]) => mockDeleteProjectAndFiles(...args),
 }));
 
+vi.mock('@/lib/auth/deleted-accounts', () => ({
+  recordDeletedAccount: (...args: unknown[]) => mockRecordDeletedAccount(...args),
+}));
+
+vi.mock('@/lib/billing/limits', () => ({
+  countUserChatMessagesThisMonth: (...args: unknown[]) => mockCountChatMessages(...args),
+}));
+
 import { deleteUserAccount } from '@/lib/account/delete-account';
 
 describe('deleteUserAccount', () => {
@@ -55,15 +66,20 @@ describe('deleteUserAccount', () => {
         account_type: 'individual',
         stripe_customer_id: 'cus_123',
         stripe_subscription_id: 'sub_123',
+        plan: 'pro',
+        subscription_status: 'active',
       },
       error: null,
     });
     mockProjectsEq.mockResolvedValue({ data: [{ id: 'proj-1' }], error: null });
     mockFilesUpdateEq.mockResolvedValue({ error: null });
     mockDeleteUser.mockResolvedValue({ error: null });
+    mockGetUserById.mockResolvedValue({ data: { user: { email: 'user@example.com' } } });
     mockSubscriptionsCancel.mockResolvedValue({});
     mockCustomersDel.mockResolvedValue({});
     mockDeleteProjectAndFiles.mockResolvedValue({ deletedFiles: 2 });
+    mockRecordDeletedAccount.mockResolvedValue(undefined);
+    mockCountChatMessages.mockResolvedValue(0);
   });
 
   it('cancels the subscription, deletes the Stripe customer, cleans projects, and deletes the user', async () => {
@@ -134,5 +150,83 @@ describe('deleteUserAccount', () => {
 
     expect(result.status).toBe(500);
     expect(result.error).toContain('Could not delete');
+    expect(mockRecordDeletedAccount).not.toHaveBeenCalled();
+  });
+
+  it('records paid accounts as re-signup eligible', async () => {
+    await deleteUserAccount('user-1');
+
+    expect(mockRecordDeletedAccount).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      wasPaid: true,
+      hitFreeLimit: true,
+    });
+  });
+
+  it('records free accounts that used their project quota as blocked', async () => {
+    mockMaybeSingle.mockResolvedValue({
+      data: {
+        account_type: 'individual',
+        stripe_customer_id: null,
+        stripe_subscription_id: null,
+        plan: 'free',
+        subscription_status: null,
+      },
+      error: null,
+    });
+
+    await deleteUserAccount('user-1');
+
+    expect(mockRecordDeletedAccount).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      wasPaid: false,
+      hitFreeLimit: true,
+    });
+  });
+
+  it('records untouched free accounts as re-signup eligible', async () => {
+    mockMaybeSingle.mockResolvedValue({
+      data: {
+        account_type: 'individual',
+        stripe_customer_id: null,
+        stripe_subscription_id: null,
+        plan: 'free',
+        subscription_status: null,
+      },
+      error: null,
+    });
+    mockProjectsEq.mockResolvedValue({ data: [], error: null });
+    mockCountChatMessages.mockResolvedValue(3);
+
+    await deleteUserAccount('user-1');
+
+    expect(mockRecordDeletedAccount).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      wasPaid: false,
+      hitFreeLimit: false,
+    });
+  });
+
+  it('blocks free accounts that exhausted the monthly chat quota', async () => {
+    mockMaybeSingle.mockResolvedValue({
+      data: {
+        account_type: 'individual',
+        stripe_customer_id: null,
+        stripe_subscription_id: null,
+        plan: 'free',
+        subscription_status: null,
+      },
+      error: null,
+    });
+    mockProjectsEq.mockResolvedValue({ data: [], error: null });
+    mockCountChatMessages.mockResolvedValue(25);
+
+    await deleteUserAccount('user-1');
+
+    expect(mockRecordDeletedAccount).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      wasPaid: false,
+      hitFreeLimit: true,
+    });
   });
 });

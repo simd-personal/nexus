@@ -4,6 +4,7 @@ import { AppState, type AppStateStatus } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   asyncStoragePersister,
+  markQueryCacheRestored,
   PERSIST_MAX_AGE_MS,
   queryClient,
 } from '@/lib/query-client';
@@ -38,6 +39,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
             shouldDehydrateQuery: (query) => query.state.status === 'success',
           },
         }}
+        onSuccess={markQueryCacheRestored}
+        onError={markQueryCacheRestored}
       >
         <RefetchOnAppForeground />
         {children}
