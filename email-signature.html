@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UpperDeck.dev — Gmail Email Signature</title>
+  <style>
+    body { margin: 0; background: #f4f5f7; font-family: Arial, Helvetica, sans-serif; color: #0b1220; }
+    .page { max-width: 640px; margin: 0 auto; padding: 32px 20px 64px; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    p.lead { color: #64748b; font-size: 13px; margin: 0 0 24px; }
+    .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 28px; }
+    .card + .card { margin-top: 20px; }
+    .card h2 { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: #94a3b8; margin: 0 0 16px; }
+    ol { margin: 0; padding-left: 18px; color: #334155; font-size: 14px; line-height: 1.7; }
+    code { background: #f1f5f9; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+    .note { font-size: 12px; color: #64748b; margin-top: 14px; line-height: 1.6; }
+    .copybar { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    button { background: #2563eb; color: #fff; border: 0; border-radius: 8px; padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    button:hover { background: #1d4ed8; }
+    .ok { color: #10b981; font-size: 13px; font-weight: 600; display: none; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Your UpperDeck.dev email signature</h1>
+    <p class="lead">Copy the signature below and paste it into Gmail settings.</p>
+
+    <div class="card">
+      <div class="copybar">
+        <button id="copyBtn" type="button">Copy signature</button>
+        <span class="ok" id="ok">Copied to clipboard</span>
+      </div>
+
+      <!-- ===== SIGNATURE START (this block gets copied) ===== -->
+      <div id="signature">
+        <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#0b1220;">
+          <tr>
+            <td style="padding:0 0 12px 0;">
+              <img src="public/brand/email-signature-logo.png" data-copy-src="https://upperdeck.dev/brand/email-signature-logo.png" alt="UpperDeck.dev" width="180" height="39" style="display:block;border:0;outline:none;text-decoration:none;" />
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:2px solid #2563eb;padding-top:12px;">
+              <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;">
+                <tr>
+                  <td style="font-size:16px;font-weight:bold;color:#0b1220;line-height:1.3;padding-bottom:2px;">Sim</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;color:#64748b;line-height:1.4;padding-bottom:6px;">Founder</td>
+                </tr>
+                <tr>
+                  <td style="font-size:13px;line-height:1.4;">
+                    <a href="https://upperdeck.dev" style="color:#2563eb;text-decoration:none;font-weight:600;">upperdeck.dev</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <!-- ===== SIGNATURE END ===== -->
+
+      <p class="note">The logo loads from <code>https://upperdeck.dev/brand/email-signature-logo.png</code>. It will render everywhere once that PNG is deployed to your live site (it is already committed to <code>public/brand/</code>).</p>
+    </div>
+
+    <div class="card">
+      <h2>How to add it in Gmail</h2>
+      <ol>
+        <li>Click <strong>Copy signature</strong> above.</li>
+        <li>In Gmail, open <strong>Settings</strong> (gear icon) &rarr; <strong>See all settings</strong>.</li>
+        <li>On the <strong>General</strong> tab, scroll to <strong>Signature</strong> and click <strong>Create new</strong> (name it e.g. &ldquo;UpperDeck&rdquo;).</li>
+        <li>Click into the signature box and paste (<code>Cmd&nbsp;+&nbsp;V</code>).</li>
+        <li>Under <strong>Signature defaults</strong>, set it for new emails and replies.</li>
+        <li>Scroll down and click <strong>Save Changes</strong>.</li>
+      </ol>
+      <p class="note">If the logo doesn't appear right after pasting, make sure the PNG is live at the URL above, then re-paste. Gmail proxies and caches images from public URLs only (it can't use local files or SVGs).</p>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('copyBtn');
+    const ok = document.getElementById('ok');
+    function buildSignatureHtml() {
+      const clone = document.getElementById('signature').cloneNode(true);
+      clone.querySelectorAll('img[data-copy-src]').forEach((img) => {
+        img.setAttribute('src', img.getAttribute('data-copy-src'));
+        img.removeAttribute('data-copy-src');
+      });
+      return clone.innerHTML;
+    }
+    btn.addEventListener('click', async () => {
+      const node = document.getElementById('signature');
+      try {
+        const html = buildSignatureHtml();
+        const blob = new Blob([html], { type: 'text/html' });
+        const text = new Blob([node.innerText], { type: 'text/plain' });
+        await navigator.clipboard.write([new ClipboardItem({ 'text/html': blob, 'text/plain': text })]);
+        ok.style.display = 'inline';
+        setTimeout(() => { ok.style.display = 'none'; }, 2500);
+      } catch (e) {
+        const range = document.createRange();
+        range.selectNode(node);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        document.execCommand('copy');
+        sel.removeAllRanges();
+        ok.style.display = 'inline';
+        setTimeout(() => { ok.style.display = 'none'; }, 2500);
+      }
+    });
+  </script>
+</body>
+</html>
