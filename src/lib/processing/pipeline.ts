@@ -318,16 +318,23 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         });
       }
 
-      // Auto-name images with generic camera names (photo-*.jpg, IMG_*.jpeg)
-      // using what Sunny read in the image — e.g. an invoice number.
-      if (isImage && hasGenericFileName(fileName)) {
-        await report({ stage: 'extracting', percent: 13, label: 'Naming file from its content…' });
-        const suggested = await suggestFileNameFromContent(text, fileName);
-        if (suggested && suggested !== fileName) {
-          metadata = { ...metadata, auto_named: true, original_file_name: fileName };
-          fileName = suggested;
-        }
+    // Auto-name images with generic camera names (photo-*.jpg, IMG_*.jpeg)
+    // from what Sunny read in the image, leading with the document type when
+    // obvious (e.g. "Invoice - County Industrial Supply 4392.jpg"). Images
+    // with no readable text never reach this point and keep their name.
+    if (isImage && hasGenericFileName(fileName)) {
+      await report({ stage: 'extracting', percent: 13, label: 'Naming file from its content…' });
+      const suggested = await suggestFileNameFromContent(text, fileName);
+      if (suggested && suggested.fileName !== fileName) {
+        metadata = {
+          ...metadata,
+          auto_named: true,
+          original_file_name: fileName,
+          ...(suggested.documentType ? { document_type: suggested.documentType } : {}),
+        };
+        fileName = suggested.fileName;
       }
+    }
 
       await report({
         stage: 'extracting',

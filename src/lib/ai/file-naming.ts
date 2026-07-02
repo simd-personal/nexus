@@ -22,37 +22,49 @@ function sanitizeSuggestedName(raw: string): string {
     .trim();
 }
 
+export type SuggestedFileName = {
+  fileName: string;
+  /** Document type when the content makes it obvious, e.g. "Invoice". */
+  documentType: string | null;
+};
+
 /**
  * Suggests a descriptive file name from extracted content (e.g. an invoice
- * number spotted in a photo). Returns null if the content is too vague or the
- * AI call fails — auto-naming must never block file processing.
+ * number spotted in a photo). Classifies the document type first (invoice,
+ * receipt, quote, …) and leads the name with it when obvious. Returns null
+ * only when the content is too sparse to say anything, or the AI call fails —
+ * auto-naming must never block file processing.
  */
 export async function suggestFileNameFromContent(
   text: string,
   currentFileName: string
-): Promise<string | null> {
+): Promise<SuggestedFileName | null> {
   const content = text.trim();
   if (content.length < 20) return null;
 
   try {
-    const result = await structuredExtraction<{ name?: string | null }>(
-      `You name uploaded files based on their content so they are easy to find later.
-Return JSON: {"name": "<short descriptive file name>"} — no file extension.
+    const result = await structuredExtraction<{ type?: string | null; name?: string | null }>(
+      `You name uploaded files (often photos of documents) based on their extracted text so they are easy to find later.
+Return JSON: {"type": "<document type or null>", "name": "<short descriptive file name>"} — no file extension.
 
-Rules:
-- 2 to 8 words, plain title case.
-- Lead with the most significant identifier: invoice number, PO number, receipt number, contract or agreement name, statement period, company/vendor name, or document title.
-- Examples: "Invoice 4392 - Acme Corp", "Receipt Home Depot 2026-06-14", "W9 Form - Jane Smith", "Lease Agreement 12 Main St".
-- Only use characters valid in file names (letters, numbers, spaces, hyphens, parentheses).
-- If the content has no meaningful identifier or is too vague to name confidently, return {"name": null}.`,
+Step 1 — classify. Decide what the document most likely is from its text: Invoice, Receipt, Quote, Estimate, Purchase Order, Packing Slip, Statement, Contract, Agreement, Business Card, Check, Tax Form, Permit, Label, Menu, Whiteboard Notes, Sign, Letter, etc. Set "type" to that word or phrase. If the type is genuinely unclear, set "type" to null.
+
+Step 2 — name. Build the best-sense name:
+- If the type is clear, lead with it, then the vendor/company/party, then the strongest identifier (number, date, period). Examples: "Invoice - County Industrial Supply 4392", "Receipt - Home Depot 2026-06-14", "Quote - Advanced Hydraulic Supply", "Business Card - Jane Smith".
+- If the type is unclear but the text is substantial, write a short descriptive title of what the content is about instead. Example: "Q3 Delivery Schedule Notes".
+- 2 to 8 words, plain title case, only characters valid in file names (letters, numbers, spaces, hyphens, parentheses).
+- Prefer a reasonable best guess over giving up. Return {"type": null, "name": null} only when the text is too sparse, garbled, or meaningless to describe at all.`,
       `Current file name: ${currentFileName}\n\nExtracted content:\n${content.slice(0, 6000)}`
     );
 
     const suggested = typeof result.name === 'string' ? sanitizeSuggestedName(result.name) : '';
     if (!suggested || suggested.length < 3) return null;
 
+    const documentType =
+      typeof result.type === 'string' && result.type.trim() ? result.type.trim().slice(0, 40) : null;
+
     const ext = getFileExtension(currentFileName);
-    return `${suggested}${ext}`;
+    return { fileName: `${suggested}${ext}`, documentType };
   } catch (error) {
     console.warn(
       '[file-naming] Suggestion failed:',
