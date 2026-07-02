@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -8,7 +8,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -17,7 +16,7 @@ import {
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
 import { MobileDataSecurityCard } from '@/components/MobileDataSecurityCard';
 import { TabScreenHeader } from '@/components/BrandHeader';
-import { useFloatingTabBarInset } from '@/components/FloatingTabBar';
+import { RefreshableScroll } from '@/components/RefreshableScroll';
 import { SwipeTabView } from '@/components/SwipeTabView';
 import { Button, Card, Screen } from '@/components/ui';
 import { deleteAccount, fetchAccountSummary } from '@/lib/api';
@@ -176,9 +175,10 @@ function DeleteAccountModal({
 
 export default function SettingsScreen() {
   const { user, signOut } = useAuth();
-  const tabBarInset = useFloatingTabBarInset();
+  const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   // Scoped by user id so another account's cached summary can never render,
   // even if a cache wipe races sign-in.
   const accountQuery = useQuery({
@@ -186,6 +186,18 @@ export default function SettingsScreen() {
     queryFn: fetchAccountSummary,
     enabled: Boolean(user?.id),
   });
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        accountQuery.refetch(),
+        queryClient.invalidateQueries({ queryKey: ['account-inbound'] }),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [accountQuery, queryClient]);
 
   async function handleDeleteAccount() {
     setDeleting(true);
@@ -215,10 +227,11 @@ export default function SettingsScreen() {
   return (
     <Screen>
     <SwipeTabView current="settings">
-      <TabScreenHeader title="Settings" subtitle="Manage your account and security" />
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: tabBarInset }]}
-        showsVerticalScrollIndicator={false}
+      <RefreshableScroll
+        refreshing={refreshing}
+        onRefresh={refresh}
+        contentContainerStyle={styles.content}
+        header={<TabScreenHeader title="Settings" subtitle="Manage your account and security" />}
       >
         <Card>
           <Text style={styles.cardLabel}>Account</Text>
@@ -281,7 +294,7 @@ export default function SettingsScreen() {
           onConfirm={() => void handleDeleteAccount()}
           onCancel={() => setDeleteModalVisible(false)}
         />
-      </ScrollView>
+      </RefreshableScroll>
     </SwipeTabView>
     </Screen>
   );
@@ -289,7 +302,6 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
     gap: spacing.md,
   },
