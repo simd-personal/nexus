@@ -33,6 +33,7 @@ import {
   shouldPauseForTimeBudget,
   type ProcessFileResult,
 } from '@/lib/processing/large-file';
+import { hasGenericFileName, suggestFileNameFromContent } from '@/lib/ai/file-naming';
 import { extractRelevantActionItems } from '@/lib/relevance/extract-relevant-actions';
 import { recomputeProjectStatus } from '@/lib/projects/health';
 import {
@@ -128,7 +129,8 @@ function applyPhiRedaction(
 
 export async function processFile(options: ProcessFileOptions): Promise<ProcessFileResult> {
   const supabase = createServiceClient();
-  const { fileId, projectId, fileName, sourceType, resume = false } = options;
+  const { fileId, projectId, sourceType, resume = false } = options;
+  let fileName = options.fileName;
   const startedAt = Date.now();
 
   const { data: existingFile } = await supabase
@@ -316,6 +318,17 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
         });
       }
 
+      // Auto-name images with generic camera names (photo-*.jpg, IMG_*.jpeg)
+      // using what Sunny read in the image — e.g. an invoice number.
+      if (isImage && hasGenericFileName(fileName)) {
+        await report({ stage: 'extracting', percent: 13, label: 'Naming file from its content…' });
+        const suggested = await suggestFileNameFromContent(text, fileName);
+        if (suggested && suggested !== fileName) {
+          metadata = { ...metadata, auto_named: true, original_file_name: fileName };
+          fileName = suggested;
+        }
+      }
+
       await report({
         stage: 'extracting',
         percent: 15,
@@ -332,6 +345,7 @@ export async function processFile(options: ProcessFileOptions): Promise<ProcessF
       await supabase
         .from('files')
         .update({
+          file_name: fileName,
           extracted_text: text,
           source_type: resolvedSourceType,
           metadata: { ...metadata, source_type: resolvedSourceType },

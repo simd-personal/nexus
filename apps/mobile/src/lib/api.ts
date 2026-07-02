@@ -337,6 +337,21 @@ export function fetchFilePreview(fileId: string) {
   return apiJson<FilePreviewResponse>(`/api/files/${fileId}/view`);
 }
 
+/**
+ * Image source for the authenticated raw-bytes endpoint. RN's Image can send
+ * headers, so this avoids relying on Supabase signed URLs being reachable
+ * from the device.
+ */
+export async function getFileRawImageSource(
+  fileId: string
+): Promise<{ uri: string; headers?: Record<string, string> }> {
+  const token = await getAccessToken();
+  return {
+    uri: `${getApiBaseUrl()}/api/files/${fileId}/raw`,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  };
+}
+
 export function patchProjectFile(
   fileId: string,
   patch: { file_name?: string; user_note?: string | null }

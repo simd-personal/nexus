@@ -1,5 +1,6 @@
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -12,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { fetchFilePreview, type FilePreviewResponse } from '@/lib/api';
+import { fetchFilePreview, getFileRawImageSource, type FilePreviewResponse } from '@/lib/api';
 import { APP, radius, spacing } from '@/theme/colors';
 
 type FilePreviewModalProps = {
@@ -53,21 +54,17 @@ export function FilePreviewModal({ fileId, visible, onClose }: FilePreviewModalP
           <View style={styles.centered}>
             <Text style={styles.errorText}>{(previewQuery.error as Error).message}</Text>
           </View>
-        ) : preview ? (
-          <PreviewBody preview={preview} />
+        ) : preview && fileId ? (
+          <PreviewBody fileId={fileId} preview={preview} />
         ) : null}
       </View>
     </Modal>
   );
 }
 
-function PreviewBody({ preview }: { preview: FilePreviewResponse }) {
-  if (preview.viewType === 'image' && preview.url) {
-    return (
-      <ScrollView contentContainerStyle={styles.previewContent}>
-        <Image source={{ uri: preview.url }} style={styles.image} resizeMode="contain" />
-      </ScrollView>
-    );
+function PreviewBody({ fileId, preview }: { fileId: string; preview: FilePreviewResponse }) {
+  if (preview.viewType === 'image' && preview.hasOriginal) {
+    return <ImagePreview fileId={fileId} preview={preview} />;
   }
 
   if (preview.viewType === 'pdf' && preview.url) {
@@ -131,6 +128,66 @@ function PreviewBody({ preview }: { preview: FilePreviewResponse }) {
   );
 }
 
+function ImagePreview({ fileId, preview }: { fileId: string; preview: FilePreviewResponse }) {
+  const [loaded, setLoaded] = useState(false);
+  const [triedSignedUrl, setTriedSignedUrl] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const sourceQuery = useQuery({
+    queryKey: ['file-raw-source', fileId],
+    queryFn: () => getFileRawImageSource(fileId),
+    staleTime: 60_000,
+  });
+
+  // Prefer the authenticated API endpoint (reachable wherever the API is);
+  // fall back to the Supabase signed URL if that load fails.
+  const source =
+    triedSignedUrl && preview.url ? { uri: preview.url } : sourceQuery.data ?? null;
+
+  if (failed) {
+    return (
+      <View style={styles.centered}>
+        <Ionicons name="image-outline" size={48} color={APP.textMuted} />
+        <Text style={styles.openHint}>Could not load this image. Check your connection and try again.</Text>
+      </View>
+    );
+  }
+
+  if (!source) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator color={APP.text} />
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.previewContent}>
+      <View style={styles.imageWrap}>
+        <Image
+          source={source}
+          style={styles.image}
+          resizeMode="contain"
+          onLoad={() => setLoaded(true)}
+          onError={() => {
+            if (!triedSignedUrl && preview.url) {
+              setLoaded(false);
+              setTriedSignedUrl(true);
+            } else {
+              setFailed(true);
+            }
+          }}
+        />
+        {!loaded ? (
+          <View style={styles.imageLoading} pointerEvents="none">
+            <ActivityIndicator color={APP.text} />
+          </View>
+        ) : null}
+      </View>
+    </ScrollView>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -178,9 +235,19 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     flexGrow: 1,
   },
+  imageWrap: {
+    flex: 1,
+    minHeight: 320,
+  },
   image: {
     width: '100%',
+    flex: 1,
     minHeight: 320,
+  },
+  imageLoading: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   openHint: {
     fontSize: 15,
