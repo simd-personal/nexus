@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Briefcase, Check } from 'lucide-react';
 import { MarketingShell } from '@/components/marketing/MarketingShell';
@@ -29,6 +29,8 @@ export function RequestQuoteForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  // When the form first rendered — used server-side to reject instant bot submits.
+  const renderedAtRef = useRef(Date.now());
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,6 +54,21 @@ export function RequestQuoteForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Anti-bot: hidden honeypot + render timestamp. Real users never touch these. */}
+      <div aria-hidden className="quote-hp" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
+        <label>
+          Company website
+          <input
+            type="text"
+            name="company_website"
+            tabIndex={-1}
+            autoComplete="off"
+            defaultValue=""
+          />
+        </label>
+      </div>
+      <input type="hidden" name="form_rendered_at" value={renderedAtRef.current} />
+
       <FormField label="Full name">
         <input name="full_name" type="text" required className="auth-input" />
       </FormField>
