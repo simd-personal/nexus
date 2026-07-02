@@ -62,17 +62,39 @@ export const B2C_PRICING: PricingTier[] = [
     name: 'Pro Annual',
     price: '$348',
     period: '/ year',
-    description: 'Save 25% when you commit for the year.',
+    description:
+      'Recommended for freelancers on marketplaces like Upwork and Fiverr who run client work as a business.',
     cta: 'Start annual',
     ctaHref: loginHref({ mode: 'signup', plan: 'pro-annual' }),
     features: [
       'Everything in Pro',
-      '2 months free vs monthly',
       'Early access to integrations that make Sunny more capable',
+      { text: 'Multi factor authentication', comingSoon: true },
       'Export & API access (when available)',
     ],
   },
 ];
+
+/** Sold via quote — rendered alongside B2C tiers but has no online checkout. */
+export const ENTERPRISE_TIER: PricingTier = {
+  id: 'enterprise',
+  name: 'Enterprise',
+  price: 'Custom',
+  period: 'annual quote',
+  description: 'For agencies, consultancies, and regulated teams rolling Sunny out across the organization.',
+  cta: 'Request a quote',
+  ctaHref: '/request-quote',
+  features: [
+    'Everything in Pro for every seat',
+    'Slack, email & calendar connectors included from day one, with guided setup during onboarding',
+    'Multi tenant organization workspace',
+    'Admin roles & access request approvals',
+    'PHI redaction for healthcare uploads',
+    'SSO / SAML (on request)',
+    { text: 'Multi factor authentication', comingSoon: true },
+    'Dedicated support & SLA options',
+  ],
+};
 
 export function pricingButtonClass(tier: PricingTier): string {
   if (tier.id === 'pro-annual') return 'marketing-btn-gold';
@@ -86,7 +108,7 @@ export const B2B_CAPABILITIES = [
   'Organization scoped projects & audit trail',
   'PHI redaction for healthcare uploads',
   'SSO / SAML (on request)',
-  'Slack, email & calendar connectors',
+  'Slack, email & calendar connectors included from day one',
   'Custom onboarding & security review',
   'Dedicated support & SLA options',
 ] as const;

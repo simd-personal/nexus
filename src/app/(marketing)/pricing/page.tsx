@@ -3,7 +3,7 @@ import { ArrowRight, Check } from 'lucide-react';
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
 import { LegalPolicyLinks } from '@/components/marketing/LegalPolicyLinks';
 import { PricingFeatureList, PricingModelsDisclaimer } from '@/components/marketing/PricingFeatureList';
-import { B2B_CAPABILITIES, B2C_PRICING, pricingButtonClass } from '@/lib/marketing/pricing';
+import { B2B_CAPABILITIES, B2C_PRICING, ENTERPRISE_TIER, pricingButtonClass } from '@/lib/marketing/pricing';
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
@@ -29,8 +29,8 @@ export default function PricingPage() {
     >
       <section className="marketing-section bg-white">
         <div className="marketing-container">
-          <div className="grid gap-6 lg:grid-cols-3">
-            {B2C_PRICING.map((tier) => (
+          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+            {[...B2C_PRICING, ENTERPRISE_TIER].map((tier) => (
               <div
                 key={tier.id}
                 className={

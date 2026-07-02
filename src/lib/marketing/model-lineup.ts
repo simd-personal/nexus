@@ -32,17 +32,25 @@ export const LATEST_MODELS_PRICING_DISCLAIMER =
 export const LATEST_MODELS_FEATURE = '__latest_models__' as const;
 export const LATEST_MODELS_PRO_FEATURE = '__latest_models_pro__' as const;
 
-export type PricingFeature = string | typeof LATEST_MODELS_FEATURE | typeof LATEST_MODELS_PRO_FEATURE;
+export type PricingFeature =
+  | string
+  | typeof LATEST_MODELS_FEATURE
+  | typeof LATEST_MODELS_PRO_FEATURE
+  | { text: string; comingSoon: true };
 
 export function resolvePricingFeature(feature: PricingFeature): {
   text: string;
   emphasis: 'models' | 'default';
+  comingSoon?: boolean;
 } {
   if (feature === LATEST_MODELS_FEATURE) {
     return { text: latestModelsPricingLine('every-plan'), emphasis: 'models' };
   }
   if (feature === LATEST_MODELS_PRO_FEATURE) {
     return { text: latestModelsPricingLine('included'), emphasis: 'models' };
+  }
+  if (typeof feature === 'object') {
+    return { text: feature.text, emphasis: 'default', comingSoon: true };
   }
   return { text: feature, emphasis: 'default' };
 }
