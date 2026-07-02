@@ -36,6 +36,7 @@
     "test:watch": "vitest",
     "stripe:setup": "tsx scripts/stripe-setup-products.ts",
     "test:stripe": "tsx scripts/test-stripe-sandbox.ts",
+    "test:quota": "tsx scripts/test-chat-quota.ts",
     "resend:setup": "tsx scripts/resend-setup.ts"
   },
   "dependencies": {

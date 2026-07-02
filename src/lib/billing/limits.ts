@@ -77,21 +77,41 @@ export async function countUserChatMessagesThisMonth(userId: string): Promise<nu
   const startOfMonth = new Date();
   startOfMonth.setUTCDate(1);
   startOfMonth.setUTCHours(0, 0, 0, 0);
+  const since = startOfMonth.toISOString();
 
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id')
-    .eq('owner_id', userId);
+  const [{ data: sessions }, { data: projects }] = await Promise.all([
+    supabase.from('chat_sessions').select('id').eq('owner_id', userId),
+    supabase.from('projects').select('id').eq('owner_id', userId),
+  ]);
 
+  const sessionIds = (sessions ?? []).map((session) => session.id);
   const projectIds = (projects ?? []).map((project) => project.id);
-  if (projectIds.length === 0) return 0;
 
-  const { count } = await supabase
-    .from('chat_messages')
-    .select('id', { count: 'exact', head: true })
-    .in('project_id', projectIds)
-    .eq('role', 'user')
-    .gte('created_at', startOfMonth.toISOString());
+  // Session-based messages cover the streaming chat surfaces, including the
+  // global Sunny search chat where project_id is null. Messages saved without
+  // a session (the non-streaming /api/chat route and pre-session history)
+  // only carry a project_id.
+  const [sessionCount, legacyCount] = await Promise.all([
+    sessionIds.length === 0
+      ? Promise.resolve(0)
+      : supabase
+          .from('chat_messages')
+          .select('id', { count: 'exact', head: true })
+          .in('session_id', sessionIds)
+          .eq('role', 'user')
+          .gte('created_at', since)
+          .then(({ count }) => count ?? 0),
+    projectIds.length === 0
+      ? Promise.resolve(0)
+      : supabase
+          .from('chat_messages')
+          .select('id', { count: 'exact', head: true })
+          .is('session_id', null)
+          .in('project_id', projectIds)
+          .eq('role', 'user')
+          .gte('created_at', since)
+          .then(({ count }) => count ?? 0),
+  ]);
 
-  return count ?? 0;
+  return sessionCount + legacyCount;
 }
