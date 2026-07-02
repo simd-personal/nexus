@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { EmailForwardPanel } from '@/components/EmailForwardPanel';
 import { MobileDataSecurityCard } from '@/components/MobileDataSecurityCard';
 import { HeaderActions, HeaderIconButton, ScreenHeader } from '@/components/ScreenHeader';
 import { Button, Card, Screen } from '@/components/ui';
-import { fetchAccountSummary } from '@/lib/api';
+import { deleteAccount, fetchAccountSummary } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
-import { APP, spacing } from '@/theme/colors';
+import { APP, BRAND, spacing } from '@/theme/colors';
 
 function SettingsRow({
   icon,
@@ -46,10 +47,40 @@ function SettingsRow({
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const [deleting, setDeleting] = useState(false);
   const accountQuery = useQuery({
     queryKey: ['account-summary'],
     queryFn: fetchAccountSummary,
   });
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Delete account?',
+      'This permanently deletes your account, projects, files, and chat history. Any active subscription is canceled immediately without a refund. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete account',
+          style: 'destructive',
+          onPress: () => void handleDeleteAccount(),
+        },
+      ]
+    );
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      // Clears the local session and stored biometric credentials.
+      await signOut();
+    } catch (error) {
+      setDeleting(false);
+      const message =
+        error instanceof Error ? error.message : 'Could not delete your account. Try again.';
+      Alert.alert('Deletion failed', message);
+    }
+  }
 
   const displayName =
     accountQuery.data?.displayName ??
@@ -98,6 +129,31 @@ export default function SettingsScreen() {
             <Text style={styles.bullet}>• Password, billing, and enterprise controls are in the web app</Text>
             <Text style={styles.bullet}>• Visit upperdeck.dev/settings on desktop for the full security panel</Text>
           </View>
+        </Card>
+
+        <Card>
+          <Text style={styles.cardLabel}>Delete account</Text>
+          <Text style={styles.cardHint}>
+            Permanently removes your account, projects, files, and chat history. Active
+            subscriptions are canceled immediately.
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Delete account"
+            onPress={confirmDeleteAccount}
+            disabled={deleting}
+            style={({ pressed }) => [
+              styles.deleteButton,
+              deleting && styles.deleteButtonDisabled,
+              pressed && !deleting && styles.pressed,
+            ]}
+          >
+            {deleting ? (
+              <ActivityIndicator color={BRAND.danger} />
+            ) : (
+              <Text style={styles.deleteButtonLabel}>Delete account</Text>
+            )}
+          </Pressable>
         </Card>
       </ScrollView>
     </Screen>
@@ -159,5 +215,21 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.75,
+  },
+  deleteButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BRAND.danger,
+  },
+  deleteButtonDisabled: {
+    opacity: 0.55,
+  },
+  deleteButtonLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: BRAND.danger,
   },
 });

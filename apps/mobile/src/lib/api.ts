@@ -242,6 +242,14 @@ export function fetchAccountInbound() {
   return apiJson<InboundInfo>('/api/account/inbound');
 }
 
+/** Permanently deletes the signed-in user's account and all data. */
+export function deleteAccount() {
+  return apiJson<{ success: boolean }>('/api/account/delete', {
+    method: 'POST',
+    body: JSON.stringify({ confirm: 'DELETE' }),
+  });
+}
+
 export type CreateProjectInput = {
   clientName: string;
   projectName: string;

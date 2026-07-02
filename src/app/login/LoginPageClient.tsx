@@ -8,7 +8,7 @@ import { loginHref, type LoginMode } from '@/lib/auth/login-url';
 import { UpperDeckLogo } from '@/components/brand/UpperDeckLogo';
 import { SunnyMascot } from '@/components/brand/SunnyAvatar';
 import { SignUpLegalNotice } from '@/components/marketing/LegalPolicyLinks';
-import { ArrowRight, Check, Lock, Users } from 'lucide-react';
+import { ArrowRight, Check, Lock, User, Users, Zap } from 'lucide-react';
 
 type AuthMode = LoginMode;
 
@@ -95,6 +95,69 @@ function FormField({
         placeholder={placeholder}
         className="auth-input"
       />
+    </div>
+  );
+}
+
+function PlanPicker({
+  selected,
+  onSelect,
+}: {
+  selected: 'free' | 'pro';
+  onSelect: (plan: 'free' | 'pro') => void;
+}) {
+  const options = [
+    {
+      id: 'free' as const,
+      icon: User,
+      name: 'Free',
+      detail: '$0 · 1 client project',
+    },
+    {
+      id: 'pro' as const,
+      icon: Zap,
+      name: 'Pro',
+      detail: '$39/mo · unlimited projects',
+    },
+  ];
+
+  return (
+    <div className="mt-5" role="radiogroup" aria-label="Choose your plan">
+      <p className="auth-label">Choose your plan</p>
+      <div className="grid grid-cols-2 gap-2">
+        {options.map((option) => {
+          const isSelected = selected === option.id;
+          const Icon = option.icon;
+          return (
+            <button
+              key={option.id}
+              type="button"
+              role="radio"
+              aria-checked={isSelected}
+              onClick={() => onSelect(option.id)}
+              className={`relative rounded-xl border px-3.5 py-3 text-left transition-colors ${
+                isSelected
+                  ? 'border-[var(--ud-graphite,#1f2937)] bg-gray-900/[0.04] ring-1 ring-[var(--ud-graphite,#1f2937)]'
+                  : 'border-gray-200 bg-white/60 hover:border-gray-300'
+              }`}
+            >
+              {isSelected && (
+                <span className="absolute right-2.5 top-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--ud-graphite,#1f2937)] text-white">
+                  <Check className="h-3 w-3" strokeWidth={3} />
+                </span>
+              )}
+              <Icon className="h-4.5 w-4.5 text-gray-700" strokeWidth={2} />
+              <p className="mt-1.5 text-[14px] font-semibold text-gray-900">{option.name}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{option.detail}</p>
+            </button>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-xs marketing-text-muted">
+        {selected === 'pro'
+          ? 'You’ll continue to secure checkout after creating your account.'
+          : 'No credit card required. Upgrade anytime.'}
+      </p>
     </div>
   );
 }
@@ -266,10 +329,19 @@ export default function LoginPageClient({
   const [loading, setLoading] = useState(false);
   const [navigating, setNavigating] = useState(false);
   const [message, setMessage] = useState(initialMessage ?? '');
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'pro'>('free');
   const hasCheckoutPlan = checkoutPlan === 'pro' || checkoutPlan === 'pro-annual';
   const copy = MODE_COPY[mode];
 
-  const signInRedirect = hasCheckoutPlan ? `/upgrade?plan=${checkoutPlan}` : '/dashboard';
+  // Deep links from pricing/home fix the plan; otherwise signup offers a picker.
+  const showPlanPicker = mode === 'signup' && !hasCheckoutPlan;
+  const effectivePlan: 'pro' | 'pro-annual' | null = hasCheckoutPlan
+    ? checkoutPlan
+    : showPlanPicker && selectedPlan === 'pro'
+      ? 'pro'
+      : null;
+
+  const signInRedirect = effectivePlan ? `/upgrade?plan=${effectivePlan}` : '/dashboard';
 
   async function handleForgotSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -370,6 +442,8 @@ export default function LoginPageClient({
                 </p>
               </div>
 
+              {showPlanPicker && <PlanPicker selected={selectedPlan} onSelect={setSelectedPlan} />}
+
               {hasCheckoutPlan && (
                 <div className="auth-alert auth-alert-success mt-5">
                   You selected{' '}
@@ -389,7 +463,7 @@ export default function LoginPageClient({
                 <>
                   <GoogleAuthForm
                     redirect={signInRedirect}
-                    checkoutPlan={checkoutPlan}
+                    checkoutPlan={effectivePlan}
                     onSubmit={() => setNavigating(true)}
                   />
                   <div className="auth-divider mt-5">or</div>
@@ -459,7 +533,7 @@ export default function LoginPageClient({
                   className="mt-5 space-y-4"
                   onSubmit={() => setNavigating(true)}
                 >
-                  {checkoutPlan && <input type="hidden" name="plan" value={checkoutPlan} />}
+                  {effectivePlan && <input type="hidden" name="plan" value={effectivePlan} />}
                   <FormField id="fullName" name="fullName" label="Full name" required autoComplete="name" placeholder="Your name" />
                   <FormField
                     id="email"

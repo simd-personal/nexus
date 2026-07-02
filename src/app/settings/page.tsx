@@ -9,6 +9,7 @@ import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { EmailForwardSettings } from '@/components/settings/EmailForwardSettings';
 import { OrganizationAdminPanel } from '@/components/settings/OrganizationAdminPanel';
 import { BillingSettings } from '@/components/settings/BillingSettings';
+import { DangerZoneSettings } from '@/components/settings/DangerZoneSettings';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { ProfileForm } from '@/components/settings/ProfileForm';
 import { DashboardPortfolioSettingsCard } from '@/components/settings/DashboardPortfolioSettings';
@@ -16,7 +17,7 @@ import { ProductTourSettingsCard } from '@/components/settings/ProductTourSettin
 import { DataSecurityPanel } from '@/components/security/DataSecurityPanel';
 import { getOrganizationAdminContext } from '@/lib/actions/organizations';
 import { getDashboardPortfolioPreference } from '@/lib/data/queries';
-import { planDisplayName } from '@/lib/billing/plans';
+import { hasActiveSubscription, planDisplayName } from '@/lib/billing/plans';
 import { hasProAccess } from '@/lib/billing/test-accounts';
 
 export default async function SettingsPage({
@@ -160,6 +161,20 @@ export default async function SettingsPage({
             <li>Healthcare tenants can enable PHI redaction during file processing</li>
             <li>API keys are server side only and never exposed to the browser</li>
           </ul>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader
+            title="Delete account"
+            description="Permanently remove your account and all data"
+          />
+          <DangerZoneSettings
+            isEnterprise={isEnterprise}
+            hasActiveSubscription={hasActiveSubscription(
+              data?.profile?.plan,
+              data?.profile?.subscription_status
+            )}
+          />
         </Card>
 
         {!isEnterprise && (

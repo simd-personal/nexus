@@ -22,8 +22,34 @@ export const queryClient = new QueryClient({
   },
 });
 
+const PERSIST_CACHE_KEY = 'upperdeck-query-cache';
+const CACHE_OWNER_KEY = 'upperdeck-query-cache-owner';
+
 export const asyncStoragePersister = createAsyncStoragePersister({
   storage: AsyncStorage,
-  key: 'upperdeck-query-cache',
+  key: PERSIST_CACHE_KEY,
   throttleTime: 2000,
 });
+
+/** Wipe all cached server data (memory + disk). Call on sign-out. */
+export async function clearQueryCache(): Promise<void> {
+  queryClient.clear();
+  await Promise.all([
+    AsyncStorage.removeItem(PERSIST_CACHE_KEY),
+    AsyncStorage.removeItem(CACHE_OWNER_KEY),
+  ]);
+}
+
+/**
+ * Ensures cached data belongs to the signed-in user. If the cache was written
+ * by a different (or unknown) account, wipe it so the previous user's data
+ * never flashes after sign-in.
+ */
+export async function ensureQueryCacheOwner(userId: string): Promise<void> {
+  const owner = await AsyncStorage.getItem(CACHE_OWNER_KEY);
+  if (owner === userId) return;
+
+  queryClient.clear();
+  await AsyncStorage.removeItem(PERSIST_CACHE_KEY);
+  await AsyncStorage.setItem(CACHE_OWNER_KEY, userId);
+}

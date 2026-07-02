@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
+  Alert,
   Keyboard,
   Linking,
   Pressable,
@@ -21,6 +22,7 @@ import {
   type BiometricAvailability,
 } from '@/lib/biometric-auth';
 import { isGoogleSignInConfigured } from '@/lib/google-auth';
+import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/AuthProvider';
 import { APP, BRAND, radius, spacing } from '@/theme/colors';
 
@@ -32,6 +34,7 @@ export default function LoginScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [biometric, setBiometric] = useState<BiometricAvailability & { enabled: boolean; storedEmail: string | null }>({
     available: false,
     label: 'Face ID',
@@ -90,6 +93,31 @@ export default function LoginScreen() {
     setGoogleLoading(false);
   }
 
+  async function handleForgotPassword() {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) {
+      setError('Enter your email above, then tap Forgot password.');
+      return;
+    }
+
+    setError(null);
+    setResetLoading(true);
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmed, {
+      redirectTo: `${getApiBaseUrl()}/auth/reset-password`,
+    });
+    setResetLoading(false);
+
+    if (resetError) {
+      setError(resetError.message);
+      return;
+    }
+
+    Alert.alert(
+      'Check your email',
+      `If an account exists for ${trimmed}, we sent a link to choose a new password. It opens in your browser.`
+    );
+  }
+
   async function handleBiometricSignIn() {
     setError(null);
     setBiometricLoading(true);
@@ -107,7 +135,7 @@ export default function LoginScreen() {
 
   const showBiometric = biometric.available && biometric.enabled;
   const showGoogle = isGoogleSignInConfigured();
-  const anyLoading = submitting || googleLoading || biometricLoading;
+  const anyLoading = submitting || googleLoading || biometricLoading || resetLoading;
 
   return (
     <Screen edges={['top', 'left', 'right', 'bottom']}>
@@ -173,6 +201,20 @@ export default function LoginScreen() {
                 placeholderTextColor={APP.textSubtle}
                 style={styles.input}
               />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Forgot password"
+                onPress={() => {
+                  Keyboard.dismiss();
+                  void handleForgotPassword();
+                }}
+                disabled={anyLoading}
+                style={styles.forgotWrap}
+              >
+                <Text style={styles.forgotLink}>
+                  {resetLoading ? 'Sending reset link…' : 'Forgot password?'}
+                </Text>
+              </Pressable>
             </View>
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -367,6 +409,16 @@ const styles = StyleSheet.create({
   signupLink: {
     color: APP.text,
     fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  forgotWrap: {
+    alignSelf: 'flex-end',
+    marginTop: 2,
+  },
+  forgotLink: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: APP.textMuted,
     textDecorationLine: 'underline',
   },
 });

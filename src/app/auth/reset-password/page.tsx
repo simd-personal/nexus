@@ -12,17 +12,27 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [done, setDone] = useState(false);
+  const [googleOnly, setGoogleOnly] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
 
+    function checkProviders(user: { app_metadata?: { providers?: string[] } } | null | undefined) {
+      const providers = user?.app_metadata?.providers ?? [];
+      setGoogleOnly(providers.includes('google') && !providers.includes('email'));
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setReady(true);
+      if (session) {
+        setReady(true);
+        checkProviders(session.user);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'PASSWORD_RECOVERY' || session) {
         setReady(true);
+        checkProviders(session?.user);
       }
     });
 
@@ -69,6 +79,12 @@ export default function ResetPasswordPage() {
           <p className="text-sm text-emerald-600">Password updated. Redirecting…</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
+            {googleOnly && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                You currently sign in with Google. Setting a password also enables email
+                sign-in — you can keep using Google either way.
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New password</label>
               <input

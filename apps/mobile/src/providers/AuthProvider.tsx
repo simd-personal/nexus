@@ -11,6 +11,7 @@ import {
   updateStoredRefreshToken,
 } from '@/lib/biometric-auth';
 import { getGoogleIdToken } from '@/lib/google-auth';
+import { clearQueryCache, ensureQueryCacheOwner } from '@/lib/query-client';
 import { supabase } from '@/lib/supabase';
 
 type AuthContextValue = {
@@ -42,7 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [bootstrapping, setBootstrapping] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      // Wipe cached server data if it belongs to a different account, so a
+      // previous user's data never flashes on screen.
+      if (data.session?.user) {
+        await ensureQueryCacheOwner(data.session.user.id);
+      }
       setSession(data.session);
       if (data.session?.refresh_token) {
         void updateStoredRefreshToken(data.session.refresh_token);
@@ -51,12 +57,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((event, nextSession) => {
-      setSession(nextSession);
-      setLoading(false);
+      void (async () => {
+        if (event === 'SIGNED_OUT') {
+          await clearQueryCache();
+        } else if (nextSession?.user) {
+          // Run before exposing the session so screens mount with a clean cache.
+          await ensureQueryCacheOwner(nextSession.user.id);
+        }
 
-      if (nextSession?.refresh_token && (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) {
-        void updateStoredRefreshToken(nextSession.refresh_token);
-      }
+        setSession(nextSession);
+        setLoading(false);
+
+        if (nextSession?.refresh_token && (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN')) {
+          void updateStoredRefreshToken(nextSession.refresh_token);
+        }
+      })();
     });
 
     return () => subscription.subscription.unsubscribe();
