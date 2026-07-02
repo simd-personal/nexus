@@ -23,14 +23,27 @@ import { deleteAccount, fetchAccountSummary } from '@/lib/api';
 import { useAuth } from '@/providers/AuthProvider';
 import { APP, BRAND, spacing } from '@/theme/colors';
 
+function PlanBadge({ plan }: { plan: 'Free' | 'Pro' | 'Enterprise' }) {
+  const paid = plan !== 'Free';
+  return (
+    <View style={[styles.planBadge, paid ? styles.planBadgePaid : styles.planBadgeFree]}>
+      <Text style={[styles.planBadgeLabel, paid ? styles.planBadgeLabelPaid : styles.planBadgeLabelFree]}>
+        {plan.toUpperCase()}
+      </Text>
+    </View>
+  );
+}
+
 function SettingsRow({
   icon,
   title,
+  titleBadge,
   description,
   onPress,
 }: {
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
+  titleBadge?: React.ReactNode;
   description?: string;
   onPress?: () => void;
 }) {
@@ -40,7 +53,10 @@ function SettingsRow({
         <Ionicons name={icon} size={20} color={APP.textMuted} />
       </View>
       <View style={styles.rowText}>
-        <Text style={styles.rowTitle}>{title}</Text>
+        <View style={styles.rowTitleLine}>
+          <Text style={styles.rowTitle}>{title}</Text>
+          {titleBadge}
+        </View>
         {description ? <Text style={styles.rowDescription}>{description}</Text> : null}
       </View>
       {onPress ? <Ionicons name="chevron-forward" size={18} color={APP.textMuted} /> : null}
@@ -177,6 +193,7 @@ export default function SettingsScreen() {
     user?.email?.split('@')[0] ??
     'Your account';
   const accountSubtitle = accountQuery.data?.subtitle;
+  const planLabel = accountQuery.data?.planLabel;
   const email = user?.email ?? '';
 
   return (
@@ -196,6 +213,7 @@ export default function SettingsScreen() {
           <SettingsRow
             icon="person-outline"
             title={displayName}
+            titleBadge={planLabel ? <PlanBadge plan={planLabel} /> : null}
             description={
               [accountSubtitle, email].filter(Boolean).join(' · ') || 'UpperDeck account'
             }
@@ -291,10 +309,41 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  rowTitleLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
   rowTitle: {
     fontSize: 15,
     fontWeight: '600',
     color: APP.text,
+  },
+  planBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  planBadgeFree: {
+    backgroundColor: APP.btnSecondaryBg,
+    borderColor: APP.btnSecondaryBorder,
+  },
+  planBadgePaid: {
+    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+    borderColor: 'rgba(37, 99, 235, 0.25)',
+  },
+  planBadgeLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  planBadgeLabelFree: {
+    color: APP.textMuted,
+  },
+  planBadgeLabelPaid: {
+    color: APP.accent,
   },
   rowDescription: {
     fontSize: 13,

@@ -232,6 +232,7 @@ export function fetchProjectInbound(projectId: string) {
 export type AccountSummary = {
   displayName: string;
   subtitle: string;
+  planLabel?: 'Free' | 'Pro' | 'Enterprise';
 };
 
 export function fetchAccountSummary() {

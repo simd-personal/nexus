@@ -1,11 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { getAccountDisplaySummary } from '@/lib/account/display';
+import { hasProAccess } from '@/lib/billing/test-accounts';
 import type { RequestSupabaseClient } from '@/lib/supabase/request-auth';
 import type { User } from '@supabase/supabase-js';
 
 export type AccountSummary = {
   displayName: string;
   subtitle: string;
+  planLabel: 'Free' | 'Pro' | 'Enterprise';
 };
 
 export async function getAccountSummaryForUser(
@@ -14,7 +16,7 @@ export async function getAccountSummaryForUser(
 ): Promise<AccountSummary> {
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, account_type, default_organization_id')
+    .select('full_name, account_type, default_organization_id, plan, subscription_status')
     .eq('user_id', user.id)
     .single();
 
@@ -28,12 +30,27 @@ export async function getAccountSummaryForUser(
     organizationName = organization?.name ?? null;
   }
 
-  return getAccountDisplaySummary({
-    fullName: profile?.full_name,
-    email: user.email,
-    accountType: profile?.account_type,
-    organizationName,
-  });
+  const planLabel: AccountSummary['planLabel'] =
+    profile?.account_type === 'enterprise'
+      ? 'Enterprise'
+      : hasProAccess({
+            plan: profile?.plan,
+            subscriptionStatus: profile?.subscription_status,
+            accountType: profile?.account_type,
+            email: user.email,
+          })
+        ? 'Pro'
+        : 'Free';
+
+  return {
+    ...getAccountDisplaySummary({
+      fullName: profile?.full_name,
+      email: user.email,
+      accountType: profile?.account_type,
+      organizationName,
+    }),
+    planLabel,
+  };
 }
 
 export async function getAccountSummary(): Promise<AccountSummary | null> {
