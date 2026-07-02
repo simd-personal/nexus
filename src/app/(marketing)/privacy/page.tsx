@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
 import {
   APP_DOMAIN,
@@ -30,7 +31,11 @@ export default function PrivacyPage() {
           <p>{LEGAL_PRIVACY_CONTROLLER}</p>
           <p>
             This policy describes what information we collect, how we use it, and the choices you
-            have when you use UpperDeck.
+            have when you use UpperDeck. For how uploaded project content is stored, processed, and
+            deleted, see our{' '}
+            <Link href="/data-policy" className="marketing-inline-link">Data policy</Link>. Usage
+            rules are in our{' '}
+            <Link href="/acceptable-use" className="marketing-inline-link">Acceptable use policy</Link>.
           </p>
 
           <h2>Information we collect</h2>

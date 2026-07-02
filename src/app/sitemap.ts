@@ -14,6 +14,9 @@ const PRIORITIES: Record<string, number> = {
   '/about': 0.5,
   '/privacy': 0.3,
   '/terms': 0.3,
+  '/data-policy': 0.3,
+  '/acceptable-use': 0.3,
+  '/refund-policy': 0.3,
 };
 
 export default function sitemap(): MetadataRoute.Sitemap {

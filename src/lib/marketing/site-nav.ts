@@ -57,8 +57,16 @@ export const COMPANY_LINKS: SiteNavLink[] = [
   { href: '/request-quote', label: 'Contact sales' },
 ];
 
-export const LEGAL_LINKS: SiteNavLink[] = [
+export const SUPPORT_LINKS: SiteNavLink[] = [
   { href: SUPPORT_MAILTO, label: 'Contact support', description: SUPPORT_EMAIL },
+];
+
+export const LEGAL_LINKS: SiteNavLink[] = [
+  { href: '/terms', label: 'Terms of service' },
+  { href: '/privacy', label: 'Privacy policy' },
+  { href: '/data-policy', label: 'Data policy' },
+  { href: '/acceptable-use', label: 'Acceptable use policy' },
+  { href: '/refund-policy', label: 'Return & refund policy' },
 ];
 
 export const PRIMARY_NAV_LINKS: SiteNavLink[] = [

@@ -17,6 +17,9 @@ export const MARKETING_PATHS = [
   '/about',
   '/privacy',
   '/terms',
+  '/data-policy',
+  '/acceptable-use',
+  '/refund-policy',
   '/request-quote',
 ] as const;
 

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { MarketingPageLayout } from '@/components/marketing/MarketingPageLayout';
 import {
   APP_DOMAIN,
@@ -36,6 +37,14 @@ export default function TermsPage() {
             By creating an account or using UpperDeck, you agree to these terms. If you use UpperDeck
             on behalf of an organization, you represent that you have authority to bind that
             organization.
+          </p>
+          <p>
+            These terms incorporate our{' '}
+            <Link href="/privacy" className="marketing-inline-link">Privacy policy</Link>,{' '}
+            <Link href="/data-policy" className="marketing-inline-link">Data policy</Link>,{' '}
+            <Link href="/acceptable-use" className="marketing-inline-link">Acceptable use policy</Link>, and{' '}
+            <Link href="/refund-policy" className="marketing-inline-link">Return &amp; refund policy</Link>{' '}
+            by reference.
           </p>
 
           <h2>The service</h2>
@@ -114,6 +123,13 @@ export default function TermsPage() {
             <li>Reverse engineer or abuse rate limits or API endpoints</li>
             <li>Upload malware or content intended to disrupt the service</li>
           </ul>
+          <p>
+            Full usage rules, including AI-specific restrictions, are set out in our{' '}
+            <Link href="/acceptable-use" className="marketing-inline-link">
+              Acceptable use policy
+            </Link>
+            , which is part of these terms.
+          </p>
 
           <h2>Subscriptions & billing</h2>
           <p>
@@ -124,7 +140,12 @@ export default function TermsPage() {
           <p>
             When you cancel a paid subscription, cancellation takes effect immediately on the same
             day you cancel. You will not receive a refund for any unused portion of the current
-            billing period, including partial months or years. No prorated credits are issued.
+            billing period, including partial months or years. No prorated credits are issued. See
+            our{' '}
+            <Link href="/refund-policy" className="marketing-inline-link">
+              Return &amp; refund policy
+            </Link>{' '}
+            for details, including billing-error exceptions.
           </p>
 
           <h2>Account deletion</h2>
