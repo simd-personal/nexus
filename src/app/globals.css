@@ -1596,12 +1596,6 @@ html.dark .playbook-suggestion-chip:hover {
   color: var(--marketing-muted);
 }
 
-.marketing-pricing-feature-models {
-  font-size: 0.8125rem;
-  font-style: italic;
-  color: var(--marketing-muted);
-}
-
 .marketing-footer {
   border-top: 1px solid var(--brand-border);
   background: var(--brand-bg-secondary);

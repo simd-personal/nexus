@@ -13,11 +13,7 @@ export function PricingFeatureList({ features }: { features: PricingFeature[] })
         return (
           <li
             key={`${resolved.text}-${index}`}
-            className={`flex items-start gap-2.5 marketing-text ${
-              resolved.emphasis === 'models'
-                ? 'marketing-pricing-feature-models text-sm'
-                : 'text-sm'
-            }`}
+            className="flex items-start gap-2.5 marketing-text text-sm"
           >
             {resolved.comingSoon ? (
               <Clock className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ud-graphite)]/40" strokeWidth={2.5} />

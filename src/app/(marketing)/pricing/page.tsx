@@ -40,7 +40,7 @@ export default function PricingPage() {
                 {tier.highlighted && <span className="marketing-pricing-badge">Most popular</span>}
                 <h2 className="text-lg font-semibold text-[var(--ud-graphite)]">{tier.name}</h2>
                 <p className="mt-2 text-sm marketing-text">{tier.description}</p>
-                <p className="mt-6">
+                <p className="mt-6 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
                   <span className="text-4xl font-semibold tracking-tight text-[var(--ud-graphite)]">
                     {tier.price}
                   </span>

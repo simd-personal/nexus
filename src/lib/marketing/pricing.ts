@@ -26,7 +26,7 @@ export const B2C_PRICING: PricingTier[] = [
     name: 'Free',
     price: '$0',
     period: 'forever',
-    description: 'For freelancers adding an AI employee on a single client.',
+    description: 'For getting one project or client under control with your AI employee.',
     cta: 'Start free',
     ctaHref: loginHref({ mode: 'signup' }),
     features: [
@@ -44,7 +44,7 @@ export const B2C_PRICING: PricingTier[] = [
     price: '$39',
     period: '/ month',
     description:
-      'For consultants and operators with multiple clients. Recommended for freelancers on marketplaces like Upwork and Fiverr.',
+      'For anyone juggling multiple clients or projects — consultants, freelancers, legal and healthcare teams.',
     cta: 'Upgrade to Pro',
     ctaHref: loginHref({ mode: 'signup', plan: 'pro' }),
     highlighted: true,
