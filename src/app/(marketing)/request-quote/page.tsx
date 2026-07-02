@@ -2,9 +2,9 @@ import { RequestQuotePageContent } from '@/components/enterprise/RequestQuoteFor
 import { createMarketingMetadata } from '@/lib/marketing/seo';
 
 export const metadata = createMarketingMetadata({
-  title: 'Request a quote',
+  title: 'Talk to sales',
   description:
-    'Request an UpperDeck organization quote for shared AI employees on delivery teams, with admin controls, PHI redaction, SSO, and enterprise integrations.',
+    'Talk to the UpperDeck team about shared AI employees for your organization, with admin controls, PHI redaction, SSO, and enterprise integrations. We scope it in one call.',
   path: '/request-quote',
   keywords: ['enterprise client intelligence', 'organization workspace quote', 'agency software'],
 });

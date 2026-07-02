@@ -197,7 +197,13 @@ export function HomePage() {
                   {tier.highlighted && <p className="marketing-pricing-badge">Most popular</p>}
                   <h3 className="text-lg font-semibold text-[var(--ud-graphite)]">{tier.name}</h3>
                   <div className="mt-3 flex flex-wrap items-baseline gap-x-1.5 gap-y-1">
-                    <span className="text-4xl font-semibold text-[var(--ud-graphite)]">
+                    <span
+                      className={
+                        tier.price.startsWith('$')
+                          ? 'text-4xl font-semibold text-[var(--ud-graphite)]'
+                          : 'text-2xl font-medium leading-10 text-[var(--ud-graphite)]'
+                      }
+                    >
                       {tier.price}
                     </span>
                     <span className="text-sm marketing-text">{tier.period}</span>
@@ -238,12 +244,12 @@ export function HomePage() {
                     Need admin controls, PHI safeguards, or multi tenant access?
                   </h3>
                   <p className="mt-2 max-w-xl text-sm leading-relaxed marketing-text">
-                    Organization accounts are sold by quote. Tell us about your team and we will
-                    follow up with pricing, security details, and a rollout plan.
+                    Talk to us and we&apos;ll scope it in one call — pricing, security details, and
+                    a rollout plan for your team.
                   </p>
                 </div>
                 <Link href="/request-quote" className="marketing-btn-primary shrink-0 justify-center lg:px-8">
-                  Request more information
+                  Talk to sales
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -267,7 +273,7 @@ export function HomePage() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <Link href="/request-quote" className="marketing-btn-secondary marketing-btn-lg w-full sm:w-auto">
-                Request organization info
+                Talk to us about your org
               </Link>
             </div>
           </Reveal>

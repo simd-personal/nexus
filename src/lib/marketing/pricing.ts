@@ -65,10 +65,10 @@ export const B2C_PRICING: PricingTier[] = [
 export const ENTERPRISE_TIER: PricingTier = {
   id: 'enterprise',
   name: 'Enterprise',
-  price: 'Custom',
-  period: 'annual quote',
+  price: 'Talk to us',
+  period: "we'll scope it in one call",
   description: 'For agencies, consultancies, and regulated teams rolling Sunny out across the organization.',
-  cta: 'Request a quote',
+  cta: 'Talk to sales',
   ctaHref: '/request-quote',
   features: [
     'Everything in Pro for every seat',

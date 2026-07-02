@@ -117,7 +117,7 @@ export function RequestQuoteForm() {
       )}
 
       <button type="submit" disabled={loading} className="auth-submit">
-        {loading ? 'Submitting…' : 'Request a quote'}
+        {loading ? 'Submitting…' : "Let's talk"}
         {!loading && <ArrowRight className="h-4 w-4" />}
       </button>
     </form>
@@ -135,12 +135,12 @@ export function RequestQuotePageContent() {
           <Reveal>
             <p className="marketing-hero-eyebrow">Organizations</p>
             <h1 className="marketing-hero-title fun-hero-title mt-3 max-w-3xl">
-              Request a quote for your team
+              Talk to us — we&apos;ll scope it in one call
             </h1>
             <p className="marketing-hero-body mt-4 max-w-2xl">
-              Tell us about your organization. We&apos;ll follow up with pricing, security details,
-              and a tailored rollout plan. Organization accounts are sold by quote, not free online
-              signup.
+              Tell us about your organization and we&apos;ll come back with pricing, security
+              details, and a tailored rollout plan. One call is all it takes to get your team set
+              up.
             </p>
           </Reveal>
         </div>
